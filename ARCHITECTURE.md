@@ -37612,3 +37612,23 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 
 **Ce qui n'est pas vérifié** : l'icône sur un vrai iPhone et un vrai Android, une fois l'appli réinstallée sur l'écran d'accueil (un téléphone garde l'ancienne icône tant que le raccourci n'est pas recréé). Regardée ici en carré arrondi, en rond, dans le cercle minimal et à 16 px.
 
+
+## §587 : La mise à jour note son issue elle-même, à l'allumage comme au bouton
+
+*18 novembre 2026, son devis « Main d'œuvre : abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm), taille de photinias », 4 jour/homme à 400 €, une seule case.*
+
+**Ce qui s'est passé.** Ce libellé est la signature exacte de `libelleMainOeuvre`, retirée par §579 le 9 novembre au soir (« Main d'œuvre : » puis les travaux, chacun en minuscule) ; `main` écrit « Main d’œuvre » seule, puis chaque travail à sa grille. Sa fiche le confirme : son espace (empreinte 6cdb1c, celui de la capture) servait `d673dbb`, le 9 novembre à 11 h 36, 86 versions derrière `main`. Il l'a rallumé à 22 h 15 : le quart d'heure suivant servait toujours `d673dbb`, arbre propre, rien de divergent. La mise à jour de l'allumage avait refusé, et **rien ne disait pourquoi** : `demarrer.sh` gardait son issue dans une variable, seul le bouton de Réglages l'écrivait dans `/tmp/atlas-mise-a-jour.txt`, que la fiche lit.
+
+| Décision | Pourquoi |
+|---|---|
+| `mettre-a-jour.sh` écrit lui-même « HH:MM, issue » dans `/tmp/atlas-mise-a-jour.txt`, quel que soit son appelant | l'issue naît là ; deux appelants qui la notent chacun, c'est un appelant qui oublie (le défaut de ce soir) |
+| le corps devient une fonction jouée dans une substitution ; ses `exit` ne quittent que la sous-coquille | toutes les issues passent par la même écriture, sans toucher à aucune de ses prudences |
+| `mettreAJourApplicationAction` ne note plus l'issue que si le script n'a pas pu finir (exception, délai) | sinon deux écrivains pour une ligne |
+| détournable par `ATLAS_ISSUE_MISE_A_JOUR`, que les deux suites qui lancent le script posent | jouées sur son espace, elles réécrivaient le verdict de sa machine avec celui d'un dépôt d'essai |
+| aucune correction de la cause du refus | elle n'est pas connue : rendre bavard d'abord (`AGENTS.md`). Hypothèse dans `TODO.md` |
+
+**Ce que l'écran gagne sans changer de place** : la ligne « Dernier essai : … » de Réglages dit désormais aussi l'essai de l'allumage. Le texte est le même, seule la matière s'élargit.
+
+**Ce qui ne marche qu'une fois arrivé chez lui** : son espace porte encore l'ancien script. Le premier passage sur le code neuf se fait par le bouton « Chercher les dernières corrections » (qui notait déjà son issue), ou par un allumage qui réussit.
+
+`scripts/test-mise-a-jour-espace.ts`, trois cas vus rouges sur le script d'avant : le refus s'écrit avec son heure, une réussite remplace le refus d'avant sans salir l'arbre, et les trois lecteurs visent le même fichier.

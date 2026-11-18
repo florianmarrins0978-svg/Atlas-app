@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { exigerLesOutils } from "./_outil-requis";
@@ -54,9 +54,21 @@ function git(dossier: string, ...args: string[]) {
   });
 }
 
+// **Où la mise à jour écrit son verdict, détourné pour TOUTE la suite.** Sans
+// cela, chaque cas réécrirait `/tmp/atlas-mise-a-jour.txt` de la machine qui
+// joue la suite : sur son espace, la fiche et l'écran Réglages diraient alors
+// le verdict d'un dépôt d'essai au lieu du sien.
+const DOSSIER_ISSUE = mkdtempSync(path.join(tmpdir(), "atlas-issue-"));
+const ISSUE = path.join(DOSSIER_ISSUE, "issue.txt");
+
 function lancer(dossier: string): string {
-  return execFileSync("bash", [SCRIPT, dossier], { encoding: "utf8" }).trim();
+  return execFileSync("bash", [SCRIPT, dossier], {
+    encoding: "utf8",
+    env: { ...process.env, ATLAS_ISSUE_MISE_A_JOUR: ISSUE },
+  }).trim();
 }
+
+const issueEcrite = () => (existsSync(ISSUE) ? readFileSync(ISSUE, "utf8").trim() : null);
 
 /** Un « distant » et un espace de travail qui le suit, comme chez le patron. */
 function monterEspace(): { distant: string; espace: string; racine: string } {
@@ -119,6 +131,53 @@ cas("UN ESPACE EN RETARD RATTRAPE — le défaut du 4 août", () => {
     avant,
     "Le script a dit « faite » sans que rien ne bouge — pire qu'un aveu d'échec."
   );
+});
+
+console.log("=== Son verdict se lit après coup, quel que soit celui qui l'a lancée ===");
+
+// **Sa soirée du 18 novembre 2026.** Il a rallumé son espace à 22 h 15 : la
+// mise à jour de l'allumage n'a rien rapporté, et son devis est sorti du code
+// du 9 novembre au matin, une ligne « Main d'œuvre : abattage…, taille… » que
+// `main` ne fabrique plus depuis le soir même. Sa fiche disait « 86 versions de
+// retard », arbre propre, et RIEN de la raison : `demarrer.sh` gardait le
+// verdict pour lui, seul le bouton de Réglages l'écrivait. Le verdict s'écrit
+// donc là où il naît, dans ce script, pour ses deux appelants.
+cas("UN REFUS À L'ALLUMAGE SE DIT : sa raison est écrite là où la fiche et Réglages la lisent", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+  writeFileSync(path.join(espace, "fichier.txt"), "ce que le patron était en train d'écrire\n");
+  rmSync(ISSUE, { force: true });
+
+  const issue = lancer(espace);
+  assert.ok(issue.startsWith("impossible"), `Attendu un refus, reçu « ${issue} ».`);
+  const ecrite = issueEcrite();
+  assert.ok(ecrite !== null, "Le refus n'a laissé aucune trace : la fiche ne dira jamais pourquoi l'espace reste en retard.");
+  assert.match(ecrite!, /^\d\d:\d\d, /, `L'issue doit porter son heure, comme celle du bouton (reçu « ${ecrite} »).`);
+  assert.equal(ecrite!.replace(/^\d\d:\d\d, /, ""), issue, "L'issue écrite n'est pas celle que le script a rendue.");
+});
+
+cas("une mise à jour réussie remplace le refus d'avant : l'issue est celle du DERNIER essai", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+  writeFileSync(ISSUE, "08:00, impossible : un refus d'hier\n");
+
+  assert.equal(lancer(espace), "faite");
+  assert.match(issueEcrite() ?? "", /^\d\d:\d\d, faite$/, `Reçu « ${issueEcrite()} ».`);
+  assert.equal(
+    git(espace, "status", "--porcelain").trim(),
+    "",
+    "Le verdict a été écrit DANS le dépôt : l'arbre sali, toutes les mises à jour suivantes refuseraient."
+  );
+});
+
+cas("sans détour, le verdict va au fichier que la fiche et l'écran Réglages lisent", () => {
+  const lire = (fichier: string) => readFileSync(path.join(__dirname, "..", fichier), "utf8");
+  const attendu = "/tmp/atlas-mise-a-jour.txt";
+  assert.ok(lire(".devcontainer/mettre-a-jour.sh").includes(`ATLAS_ISSUE_MISE_A_JOUR:-${attendu}`), "le script n'écrit plus là où on le lit");
+  assert.ok(lire("scripts/diagnostiquer-espace.mjs").includes(`FICHIER_ISSUE = "${attendu}"`), "la fiche ne lit plus là où le script écrit");
+  assert.ok(lire("src/app/reglages/actions.ts").includes(`FICHIER_ISSUE = "${attendu}"`), "l'écran Réglages ne lit plus là où le script écrit");
 });
 
 console.log("=== Ce à quoi il ne touche jamais ===");
@@ -358,7 +417,7 @@ cas("une main LOCALE qui porte un commit à elle n'est jamais forcée", () => {
   assert.equal(brancheCourante(espace), "claude/lot-fini", "Le refus a laissé l'espace ailleurs que là où il était.");
 });
 
-for (const d of aNettoyer) rmSync(d, { recursive: true, force: true });
+for (const d of [...aNettoyer, DOSSIER_ISSUE]) rmSync(d, { recursive: true, force: true });
 
 if (echecs > 0) {
   console.error(`\n${echecs} contrôle(s) en échec.`);

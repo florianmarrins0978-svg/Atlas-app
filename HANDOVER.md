@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## « J'AI ENCORE LE DÉFAUT D'AVANT » : LIRE D'ABORD QUEL CODE SON ESPACE SERT (18 novembre 2026)
+
+Son devis « Main d'œuvre : abattage…, taille… » sur une seule case venait du code du 9 novembre au matin : §579 l'a corrigé le soir même, et son espace servait encore `d673dbb`, son rallumage ne l'ayant pas avancé. Devant un défaut déjà corrigé, la ligne « Code SERVI » de sa fiche (issue n° 47) se compare au commit de la correction (`git merge-base --is-ancestor <correction> <servi>`) AVANT de chercher dans le produit. Depuis §587, la ligne « Dernière m.à.j. » dit pourquoi une mise à jour a refusé, allumage compris. Ce qui reste : `TODO.md`, en tête.
+
 ## LA SIGNATURE DU CLIENT, DEVIS, CONTRAT ET FICHE D'ENTRETIEN : SUR `main` (18 novembre 2026)
 
 Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §584, migrations 0182 et 0183. Sa planche B, choisie le 18 : la toile du devis et du contrat d'entretien est dans une feuille, la page tient sur un écran (migration 0184 pour le contrat). Batterie de niveau 3 verte le 18 (605 suites base, 217 navigateur, connexion derrière un proxy), puis `main`. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).

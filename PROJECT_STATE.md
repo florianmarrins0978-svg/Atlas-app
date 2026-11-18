@@ -1,5 +1,9 @@
 # État du projet
 
+## LA MISE À JOUR DE SON ESPACE DIT POURQUOI ELLE REFUSE, ALLUMAGE COMPRIS, CODÉ (18 novembre 2026), PAS SUR `main`
+
+`mettre-a-jour.sh` note son issue lui-même (`ARCHITECTURE.md` §587) ; avant, seul le bouton de Réglages la notait. Né de son devis du soir, sorti d'un espace resté sur le code du 9 novembre. La cause du refus reste à lire puis à corriger (`TODO.md`). Contrôles de son niveau à jouer sur son « oui ».
+
 ## LA SIGNATURE DU CLIENT, DEVIS, CONTRAT ET FICHE D'ENTRETIEN : SUR `main` (18 novembre 2026)
 
 Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §584, migrations 0182 et 0183. Sa planche B, choisie le 18 : la toile du devis et du contrat d'entretien est dans une feuille, la page tient sur un écran (migration 0184 pour le contrat). Batterie de niveau 3 verte le 18 (605 suites base, 217 navigateur, connexion derrière un proxy), puis `main`. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).

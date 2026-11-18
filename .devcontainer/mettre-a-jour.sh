@@ -32,8 +32,18 @@
 #
 # Écrit sur la sortie standard une seule ligne : l'issue.
 #   à jour | faite | impossible : <raison>
+#
+# **Et la même issue dans `/tmp/atlas-mise-a-jour.txt`, quel que soit celui qui
+# l'a lancé — 18 novembre 2026.** Il a rallumé son espace : la mise à jour n'a
+# rien fait, et son devis est sorti du code du 9 novembre au matin. La fiche
+# disait « 86 versions de retard », arbre propre, sans la raison : seul le
+# bouton de Réglages écrivait l'issue, `demarrer.sh` la gardait pour lui. Elle
+# s'écrit donc ici, où elle naît ; la fiche (`diagnostiquer-espace.mjs`) et
+# l'écran Réglages la lisent. Détournable (`ATLAS_ISSUE_MISE_A_JOUR`) pour les
+# seules suites : elles ne doivent pas réécrire celle de la machine qui les joue.
 set -uo pipefail
 
+mettre_a_jour() {
 DEPOT="${1:-$(pwd)}"
 cd "$DEPOT" 2>/dev/null || { echo "impossible : dossier introuvable"; exit 0; }
 
@@ -161,3 +171,13 @@ if [ "$AVANT" = "$(git rev-parse HEAD)" ]; then
 fi
 
 echo "faite"
+}
+
+# Chaque issue ci-dessus sort par `exit` : jouée dans une substitution, elle ne
+# quitte que la sous-coquille, et l'écriture qui suit a toujours lieu.
+SORTIE="$(mettre_a_jour "$@")"
+echo "$SORTIE"
+# **Noter l'issue ne doit jamais changer l'issue** : un `/tmp` plein ou
+# interdit laisse la mise à jour telle qu'elle a été, sans trace, comme avant.
+printf '%s, %s\n' "$(date +%H:%M)" "${SORTIE##*$'\n'}" \
+  > "${ATLAS_ISSUE_MISE_A_JOUR:-/tmp/atlas-mise-a-jour.txt}" 2>/dev/null || true

@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
+
+Son espace 6cdb1c servait `d673dbb` (9 novembre, 11 h 36), 86 versions derrière
+`main` ; rallumé à 22 h 15, il servait encore `d673dbb` au quart d'heure, arbre
+propre, rien de divergent. Son devis du soir en est sorti, avec le défaut que §579
+a corrigé le 9 au soir. Depuis §587, `mettre-a-jour.sh` écrit son issue dans
+`/tmp/atlas-mise-a-jour.txt` : la fiche la publie (« Dernière m.à.j. »), Réglages
+aussi (« Dernier essai »). **Ce qui reste** : une fois ce code chez lui (bouton
+« Chercher les dernières corrections », qui notait déjà son issue), lire la
+raison au premier allumage qui refuse, et corriger CETTE cause.
+
+**Hypothèse, non prouvée (confiance faible)** : à l'allumage, la fiche part
+détachée JUSTE AVANT la mise à jour (`demarrer.sh`, publication « avant les
+étapes qui bloquent ») et `diagnostiquer-espace.mjs` lance son propre
+`git fetch origin main` en même temps que celui de `mettre-a-jour.sh`. Deux
+fetch simultanés : l'un échoue sur « cannot lock ref 'refs/remotes/origin/main':
+is at … but expected … » (reproduit en local avec deux fetch d'un dépôt
+`file://`). Rejoué avec le vrai script contre GitHub, la mise à jour a gagné
+huit fois sur huit : le cas n'est pas tranché. Le refus porterait alors « le
+dépôt distant n'a pas pu être joint ». Ne rien corriger avant de l'avoir lu.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
 
 `appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran

@@ -554,8 +554,10 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
     const { stdout } = await executer("bash", [`${racine}/.devcontainer/mettre-a-jour.sh`, racine], {
       timeout: 120_000,
     });
+    // L'issue est déjà notée : le script l'écrit lui-même, pour l'allumage
+    // comme pour ce bouton (18 novembre 2026). Seul un script qui n'a pas pu
+    // aller au bout la laisse à noter ici, plus bas.
     const etat = stdout.trim().split("\n").pop() ?? "";
-    await noterIssue(etat);
 
     if (etat.startsWith("impossible")) {
       return { succes: false, erreur: `Mise à jour ${etat}` };
