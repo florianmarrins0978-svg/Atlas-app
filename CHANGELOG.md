@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-18
+
+- **Le tour des failles que GitHub signale dans les dépendances** (sa demande). Cinq failles distinctes (picomatch, minimatch, glob, esbuild, `@simplewebauthn/server`) ; aucune n'est atteignable dans l'application servie : quatre ne vivent que dans les outils de construction et de relecture, la cinquième vise l'attestation de Face ID, que l'application ne lit pas. Rien n'a été changé : `npm audit fix` réécrivait le fichier de verrouillage pour des outils, et sa version forcée rétrogradait Next.js, next-auth et Sentry. `ARCHITECTURE.md` §583, deux choses à surveiller dans `TODO.md`.
+
 ## 2026-11-17
 
 - **Sur une ligne Main d'œuvre, le prix de chaque travail à la place de sa croix** (sa planche « La carte sur une ligne », son « ok »). En « Sur une ligne », la croix ne changeait rien au prix d'un travail ; elle sort de la carte, et chaque travail montre le prix qu'il aura sur le devis : sa grille, sinon « À chiffrer ». La feuille « + Main d'œuvre » du devis, qui monte la même carte, montre le montant de chaque ligne. Une croix posée en « Répartis » ne déplace plus la ligne Main d'œuvre une fois passé sur une ligne. `ARCHITECTURE.md` §579. Suite base vue rouge sur le code d'avant ; batterie de niveau 3 sur son « oui », la rencontre avec `main` rejouée verte (600 suites base, 114 suites navigateur), puis `main` le 18 novembre.

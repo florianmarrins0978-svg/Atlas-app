@@ -1,5 +1,18 @@
 # Prochaines tâches
 
+## LES FAILLES DES DÉPENDANCES : RIEN D'ATTEIGNABLE, DEUX CHOSES À SURVEILLER (18 novembre 2026)
+
+Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
+aucune n'est atteignable dans l'application servie, rien n'a été changé.
+Restent deux choses, à faire quand elles se présentent :
+
+- **`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**, dans un lot à lui, le
+  jour où l'on touche à Face ID (`src/server/cle-appareil.ts`) : la faille
+  vise l'attestation, que l'application ne lit pas, mais cinq versions
+  majeures d'écart sur l'authentification se rattrapent mal d'un coup ;
+- **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
+  prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
+
 ## ⏳ CAUSE : CE QUI ATTEND APRÈS LE CHANGEMENT DE NOM (17 novembre 2026)
 
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
