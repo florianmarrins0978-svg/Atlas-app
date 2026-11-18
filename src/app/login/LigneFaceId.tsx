@@ -68,7 +68,7 @@ export default function LigneFaceId() {
           return;
         }
         const { startAuthentication } = await import("@simplewebauthn/browser");
-        const reponse = await startAuthentication(defi.options);
+        const reponse = await startAuthentication({ optionsJSON: defi.options });
         const r = await connexionParCleAction(JSON.stringify(reponse));
         // `connexionParCleAction` redirige quand elle réussit ; si l'on est
         // encore là, c'est qu'elle a rendu quelque chose.

@@ -24,7 +24,7 @@ Sa demande, depuis son téléphone : *« une planche pour l'icône de l'applicat
 ---
 ## LE SITE DE VENTE EN MOUVEMENT, UNE PLANCHE (17 novembre 2026), VUE PAR LUI, EN ATTENTE DE SON CHOIX
 
-Il l'a regardée le soir même. Un seul bémol, *« le moment de choisir les salariés [...] c'est pas fluide »* : le film de l'équipe a été remonté pour elle (`nov-film-equipe-fluide`, les mêmes neuf états de l'appli, mais chaque élément glisse de l'un au suivant ; `appli/scripts/film-equipe-fluide.py`). L'appli, elle, change toujours d'un coup à cet endroit : à lui de dire s'il la veut aussi souple (`TODO.md`). Le 18 novembre, sa demande : « tous » en mot fort du titre des métiers, Paysagiste et Élagueur en tête de la liste ; fait dans la planche seule.
+Il l'a regardée le soir même. Un seul bémol, *« le moment de choisir les salariés [...] c'est pas fluide »* : le film de l'équipe a été remonté pour elle (`nov-film-equipe-fluide`, les mêmes neuf états de l'appli, mais chaque élément glisse de l'un au suivant ; `appli/scripts/film-equipe-fluide.py`). L'appli, elle, change toujours d'un coup à cet endroit : à lui de dire s'il la veut aussi souple (`TODO.md`). Le 18 novembre, sa demande : « tous » en mot fort du titre des métiers, Paysagiste et Élagueur en tête de la liste ; fait dans la planche seule. Le même jour : la fiche d'intervention animée (Maps s'ouvre avec l'adresse, Appeler le client ouvre le téléphone, la note s'écrit), un film composé sur la vraie capture, la carte et l'écran d'appel dessinés (`appli/scripts/film-fiche.cjs`).
 
 Sa demande, depuis son téléphone : *« une maquette de la version améliorée, des animations plus jolies, plus spectaculaires, je te laisse toutes les libertés, ne modifie pas cette version »*. `appli/vente/cause-2.html`, à côté de `appli/vente/cause.html` qui n'a pas bougé : mêmes textes, mêmes prix, mêmes captures et mêmes films, seul le mouvement change (son en-tête dit quoi et pourquoi). Éprouvé dans Chromium, téléphone (390 × 664) et ordinateur, chaque geste touché ; **pas regardé sur Safari**, ce poste n'en a pas. Rien dans `src/`. Ce qu'il a à dire, et la question des trois pages à tenir s'il la retient : `TODO.md`.
 
@@ -32,6 +32,11 @@ Sa demande, depuis son téléphone : *« une maquette de la version améliorée,
 ## LA FICHE DE CHANTIER SOIGNÉE, D ET B, CODÉE (9 novembre 2026), SUR `main` LE 16 NOVEMBRE
 
 Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.
+
+---
+## FACE ID PASSE À `@simplewebauthn` 13.3.3, CODÉ (18 novembre 2026), SUR `main` LE 18 NOVEMBRE
+
+Sa demande après le tour des failles des dépendances. `src/server/cle-appareil.ts` suit l'API 13 (`credential` au lieu de `authenticator`, identifiant du compte en octets UTF-8 comme en 9), le navigateur passe `{ optionsJSON }`, les types viennent de `@simplewebauthn/server`. Base inchangée. Types, lint et contrôles purs verts ; `test-face-id-e2e.ts` porte deux cas neufs (le compte retenu sous le même nom qu'en 9, une clé posée avant la 13 qui s'ouvre toujours et une clé fausse qui ne s'ouvre pas) ; batterie de niveau 3 verte sur son « oui », 217 suites navigateur sur 217. Reste à l'essayer sur son téléphone, avec une clé déjà enregistrée. `ARCHITECTURE.md` §583.
 
 ---
 ## SUR UNE LIGNE, LE PRIX DE CHAQUE TRAVAIL À LA PLACE DE SA CROIX, CODÉ (17 novembre 2026), SUR `main` LE 18 NOVEMBRE

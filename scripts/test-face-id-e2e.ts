@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync, randomBytes } from "node:crypto";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
@@ -166,7 +167,7 @@ async function main() {
   const messagesDeConsole: string[] = [];
   page.on("console", (m) => messagesDeConsole.push(m.text()));
 
-  await poserUnAppareil(page);
+  const appareil = await poserUnAppareil(page);
 
   await cas("on entre AU MOT DE PASSE — c'est toujours par là qu'on commence", async () => {
     // Sa règle du 23 août : « l'utilisateur va commencer par créer son compte
@@ -313,6 +314,25 @@ async function main() {
     assert.match(texte, /Enregistré le \d{2}\/\d{2}\/\d{4}/, "la ligne de l'appareil ne porte aucune date");
   });
 
+  await cas("L'APPAREIL RETIENT LE COMPTE SOUS LE MÊME NOM QU'AVANT LA VERSION 13", async () => {
+    /**
+     * **La montée de `@simplewebauthn` de 9 à 13, le 18 novembre 2026.** La
+     * version 9 envoyait l'identifiant du compte en texte, que le navigateur
+     * posait en UTF-8 sur la clé ; la 13 attend des octets, et en tire au
+     * hasard si on ne lui en donne pas. Des octets différents feraient, pour le
+     * téléphone, un AUTRE compte : une clé refaite sur l'appareil s'ajouterait
+     * à l'ancienne au lieu de la remplacer. On lit ce que l'appareil a retenu.
+     */
+    const [moi] = await interrogerLaBase<{ id: string }>("SELECT id FROM users WHERE email = $1", [COMPTE]);
+    const { credentials } = await appareil.cdp.send("WebAuthn.getCredentials", { authenticatorId: appareil.authenticatorId });
+    assert.equal(credentials.length, 1, `l'appareil porte ${credentials.length} clé(s)`);
+    assert.equal(
+      Buffer.from(credentials[0].userHandle ?? "", "base64").toString("utf8"),
+      moi.id,
+      "l'appareil a retenu le compte sous un autre nom qu'avant la version 13"
+    );
+  });
+
   await cas("AUCUNE donnée biométrique n'arrive en base — c'est ce que l'écran promet", async () => {
     const [ligne] = await interrogerLaBase<{ cle_publique: string; nom_appareil: string }>(
       "SELECT cle_publique, nom_appareil FROM cles_appareil LIMIT 1"
@@ -430,6 +450,77 @@ async function main() {
     await page.fill('input[name="password"]', MOT_DE_PASSE);
     await page.click('button[type="submit"]');
     await page.waitForURL(`${BASE}/`, { timeout: 20_000 });
+  });
+
+  // ─── Une clé posée avant la version 13 ───────────────────────────────────
+
+  await cas("UNE CLÉ POSÉE AVANT LA VERSION 13 S'OUVRE TOUJOURS, et une clé fausse non", async () => {
+    /**
+     * **Ses téléphones et ceux des artisans ont des clés enregistrées sous
+     * `@simplewebauthn` 9.** La montée à 13 ne doit leur faire perdre ni la
+     * porte ni le geste. La clé est donc fabriquée ICI, rangée en base comme la
+     * version 9 la rangeait (identifiant et clé publique COSE en base64url,
+     * compte en UTF-8 sur l'appareil), puis confiée à l'appareil simulé : c'est
+     * la situation exacte d'un téléphone enregistré avant la mise à jour.
+     *
+     * **Le contrôle sait échouer** : la même ligne portant une AUTRE clé
+     * publique doit être refusée. Sans ce refus d'abord, un vert pourrait
+     * venir d'une signature qu'on ne vérifie pas.
+     */
+    const [moi] = await interrogerLaBase<{ id: string }>("SELECT id FROM users WHERE email = $1", [COMPTE]);
+    const coseP256 = (cle: import("node:crypto").KeyObject) => {
+      const jwk = cle.export({ format: "jwk" });
+      const x = Buffer.from(jwk.x!, "base64url");
+      const y = Buffer.from(jwk.y!, "base64url");
+      // { 1: 2 (EC2), 3: -7 (ES256), -1: 1 (P-256), -2: x, -3: y }, ce que l'appareil envoie.
+      return Buffer.concat([Buffer.from([0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]), x, Buffer.from([0x22, 0x58, 0x20]), y]);
+    };
+    const vraie = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    const autre = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    const identifiant = randomBytes(16);
+
+    await interrogerLaBase(
+      `INSERT INTO cles_appareil (utilisateur_id, identifiant_cle, cle_publique, compteur, nom_appareil)
+       VALUES ($1, $2, $3, 0, 'iPhone posé en version 9')`,
+      [moi.id, identifiant.toString("base64url"), coseP256(autre.publicKey).toString("base64url")]
+    );
+    try {
+      await appareil.cdp.send("WebAuthn.clearCredentials", { authenticatorId: appareil.authenticatorId });
+      await appareil.cdp.send("WebAuthn.addCredential", {
+        authenticatorId: appareil.authenticatorId,
+        credential: {
+          credentialId: identifiant.toString("base64"),
+          isResidentCredential: true,
+          rpId: new URL(BASE).hostname,
+          privateKey: (vraie.privateKey.export({ format: "der", type: "pkcs8" }) as Buffer).toString("base64"),
+          userHandle: Buffer.from(moi.id, "utf8").toString("base64"),
+          signCount: 0,
+        },
+      });
+      const ouvrir = async () => {
+        await contexte.clearCookies();
+        await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+        await page.waitForTimeout(800);
+        await page.getByRole("button", { name: /Ouvrir avec Face ID/i }).click();
+        await page.waitForTimeout(3000);
+        return new URL(page.url()).pathname;
+      };
+
+      assert.equal(await ouvrir(), "/login", "une clé publique qui ne correspond pas a ouvert la porte : la signature n'est pas vérifiée");
+
+      await interrogerLaBase("UPDATE cles_appareil SET cle_publique = $2 WHERE identifiant_cle = $1", [
+        identifiant.toString("base64url"),
+        coseP256(vraie.publicKey).toString("base64url"),
+      ]);
+      assert.equal(await ouvrir(), "/", "la clé posée avant la version 13 n'ouvre plus la porte");
+      const [ligne] = await interrogerLaBase<{ dernier_usage_le: Date | null }>(
+        "SELECT dernier_usage_le FROM cles_appareil WHERE identifiant_cle = $1",
+        [identifiant.toString("base64url")]
+      );
+      assert.ok(ligne.dernier_usage_le !== null, "l'ouverture par la clé d'avant n'a pas été datée");
+    } finally {
+      await interrogerLaBase("DELETE FROM cles_appareil WHERE identifiant_cle = $1", [identifiant.toString("base64url")]);
+    }
   });
 
   await contexte.close();

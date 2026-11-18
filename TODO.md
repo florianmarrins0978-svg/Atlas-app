@@ -6,10 +6,11 @@ Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
 aucune n'est atteignable dans l'application servie, rien n'a été changé.
 Restent deux choses, à faire quand elles se présentent :
 
-- **`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**, dans un lot à lui, le
-  jour où l'on touche à Face ID (`src/server/cle-appareil.ts`) : la faille
-  vise l'attestation, que l'application ne lit pas, mais cinq versions
-  majeures d'écart sur l'authentification se rattrapent mal d'un coup ;
+- ~~**`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**~~ : **CODÉ LE
+  18 NOVEMBRE, sur sa demande** (« occupe-toi de Face ID »), en 13.3.3, le
+  navigateur avec (`ARCHITECTURE.md` §583). Batterie de niveau 3 verte sur son
+  « oui » (217 suites navigateur sur 217), sur `main` le 18 novembre. Reste à essayer Face ID sur son téléphone, une clé
+  déjà enregistrée ;
 - **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
   prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
 
@@ -292,10 +293,22 @@ leur rang, et les autres suivent. **Lu ainsi, pas plus :** ni le titre de
 l'ouverture ni l'ordre des sections n'ont bougé. S'il voulait que le SITE
 commence par là, c'est à refaire.
 
-**Ce qu'il a à dire :** si ces deux passages lui vont, s'il garde ce
-mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone. Et si
-l'ordre des métiers doit être reporté dans `cause.html` et
-`chapitres-6.html`, qui gardent l'ancien.
+**Le 18 novembre, une seconde demande, faite :** *« Il faut faire une
+animation pour cette page aussi ! Qu'on voit qu'en un clic on peut avoir
+l'adresse sur Maps ou Waze. Pour la note tu peux écrire quelque chose comme tu
+as fait pour le retour du jour. »* La fiche d'intervention est devenue un film
+(`nov-film-fiche`, `appli/scripts/film-fiche.cjs`) : Maps s'ouvre depuis sa
+case avec l'adresse déjà posée, « Appeler le client » ouvre le téléphone avec
+son numéro (à la place de Waze, sa demande du soir), puis la note s'écrit et
+s'enregistre. **La carte et l'écran d'appel sont dessinés**, sans logo : ce ne
+sont pas des captures de Google Maps ni d'un téléphone (l'appli les ouvre, elle
+n'a ni carte ni téléphone à elle). La note écrite est de moi : « Clé du portail chez la voisine.
+Prendre le broyeur. »
+
+**Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
+qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
+d'appel dessinés lui conviennent, et la phrase de la note. Et si l'ordre des métiers doit être
+reporté dans `cause.html` et `chapitres-6.html`, qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
