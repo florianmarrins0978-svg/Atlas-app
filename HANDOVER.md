@@ -8,7 +8,7 @@ Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, 
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-17 · `main` : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-18 · `main` : Face ID passe à `@simplewebauthn` 13.3.3, les clés déjà enregistrées gardées (`ARCHITECTURE.md` §583), batterie verte ; reste à l'essayer sur son téléphone. Avant, le 17 novembre : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). La croix de la carte en mode « ligne » :
 planche choisie le 17 novembre, sur `main` le 18 (le prix du travail à sa

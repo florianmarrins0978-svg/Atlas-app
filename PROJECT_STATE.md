@@ -30,9 +30,9 @@ Sa demande, depuis son téléphone : *« une maquette de la version améliorée,
 Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.
 
 ---
-## FACE ID PASSE À `@simplewebauthn` 13.3.3, CODÉ (18 novembre 2026), BATTERIE EN ATTENTE DE SON « OUI »
+## FACE ID PASSE À `@simplewebauthn` 13.3.3, CODÉ (18 novembre 2026), SUR `main` LE 18 NOVEMBRE
 
-Sa demande après le tour des failles des dépendances. `src/server/cle-appareil.ts` suit l'API 13 (`credential` au lieu de `authenticator`, identifiant du compte en octets UTF-8 comme en 9), le navigateur passe `{ optionsJSON }`, les types viennent de `@simplewebauthn/server`. Base inchangée. Types, lint et contrôles purs verts ; `test-face-id-e2e.ts` porte deux cas neufs, pas encore joués (son « oui »). `ARCHITECTURE.md` §583.
+Sa demande après le tour des failles des dépendances. `src/server/cle-appareil.ts` suit l'API 13 (`credential` au lieu de `authenticator`, identifiant du compte en octets UTF-8 comme en 9), le navigateur passe `{ optionsJSON }`, les types viennent de `@simplewebauthn/server`. Base inchangée. Types, lint et contrôles purs verts ; `test-face-id-e2e.ts` porte deux cas neufs (le compte retenu sous le même nom qu'en 9, une clé posée avant la 13 qui s'ouvre toujours et une clé fausse qui ne s'ouvre pas) ; batterie de niveau 3 verte sur son « oui », 217 suites navigateur sur 217. Reste à l'essayer sur son téléphone, avec une clé déjà enregistrée. `ARCHITECTURE.md` §583.
 
 ---
 ## SUR UNE LIGNE, LE PRIX DE CHAQUE TRAVAIL À LA PLACE DE SA CROIX, CODÉ (17 novembre 2026), SUR `main` LE 18 NOVEMBRE
