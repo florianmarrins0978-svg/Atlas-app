@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ « MAIN D'ŒUVRE » DU DEVIS POSE UNE LIGNE DE PLUS AU LIEU DE CHANGER LA SIENNE (18 novembre 2026), SA RÉPONSE ATTENDUE
+## « MAIN D'ŒUVRE » DU DEVIS POSE UNE LIGNE DE PLUS AU LIEU DE CHANGER LA SIENNE (18 novembre 2026), PLANCHE À FAIRE
 
 Sa capture : un devis préparé « sur une ligne » porte déjà sa main d'œuvre
 (2 hommes × 2 jours, 4 jour/homme, 1 600 €). Il ouvre « Main d'œuvre » pour
@@ -12,9 +12,11 @@ Vrai aussi sur `main`, lu dans le code (pas vu à l'écran ici) :
 `ajouterMainDoeuvreChoisieAction` appelle toujours `ajouterLignePrix`, et
 `donneesDeLaMainOeuvre` ne lit que la dictée, jamais les lignes du devis.
 
-**Question posée** : la feuille CHANGE la ligne de son équipe (une seule ligne,
-6 jour/homme, 2 400 €), ou AJOUTE à elle (10 jour/homme, 4 000 €) ? Puis
-planche sur le vrai devis (`CLAUDE.md` §3 bis, quinquies), le code ensuite.
+**Sa réponse du 18 novembre** : la feuille **CHANGE la ligne de son équipe**
+(une seule ligne, 3 hommes × 2 jours = 6 jour/homme, 2 400 €), elle n'y ajoute
+pas (10 jour/homme, 4 000 €, écarté : les 4 jours déjà posés compteraient deux
+fois). Puis planche sur le vrai devis (`CLAUDE.md` §3 bis, quinquies), le code
+ensuite.
 Gravité argent : niveau 3. Une main d'œuvre de partenaire garde sa ligne à son
 nom, sauf avis contraire de sa part.
 
