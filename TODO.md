@@ -9,12 +9,15 @@ devra faire : `docs/abonnement-module-paysage.md`. **Rien dans `src/`.**
 **Tranché par lui le 18 novembre** : Artisan est **un seul accès**, salariés
 compris ; le module **Paysage** coûte **6 € HT par mois, 60 € HT à l'année**,
 ouvre les **trois** outils de Paysage (arrosage, diagnostic, fiches de
-chantier) et s'ajoute à Artisan seul (compris dans Entreprise et Illimité) ;
-choisir Artisan avec des salariés déjà invités est **refusé** tant qu'il ne
-les a pas retirés (article 14.6). **À trancher par lui : A (dans la carte
-Artisan, conseillé) ou B (en haut).** Puis : la version 4 des conditions
-générales (la version 3 dit les salariés jamais comptés), et le plafond d'IA
-d'Artisan avec le module.
+chantier) et se vend **avec les trois formules** (sa correction du soir :
+*« ça doit être pour toutes les formules »*), donc Entreprise et Illimité ne
+les comprennent plus ; choisir Artisan avec des salariés déjà invités est
+**refusé** tant qu'il ne les a pas retirés (article 14.6). Le module se règle
+**en haut**, une fois pour les trois (la variante « dans la carte Artisan » est
+tombée avec sa correction). **À confirmer par lui** : le même prix pour les
+trois formules. Puis : la version 4 des conditions générales (la version 3 dit
+les salariés jamais comptés et Paysage compris dans Entreprise), et les
+plafonds d'IA avec le module.
 
 **Écart trouvé en chemin, déjà là** : le passage d'Entreprise à Artisan avec
 plusieurs personnes qui facturent n'est refusé nulle part (`placePourUnFabricant`

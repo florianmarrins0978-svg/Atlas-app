@@ -80,14 +80,14 @@
 </tr>
 <tr>
 <td>À qui</td>
-<td>s'ajoute à <strong>Artisan</strong>. Entreprise et Illimité le comprennent déjà</td>
+<td><strong>les trois formules</strong> (sa correction du même soir : <em>« ça doit être pour toutes les formules, pas que pour la formule artisan »</em>). Entreprise et Illimité <strong>ne comprennent donc plus</strong> ces trois outils</td>
 </tr>
 <tr>
 <td>Des salariés déjà invités (pendant l'essai) et il choisit Artisan</td>
 <td><strong>refusé</strong> tant qu'il ne les a pas retirés dans Équipe. C'est ce que dit déjà l'article 14.6 des conditions générales</td>
 </tr>
 </tbody></table></div>
-<p><strong>Reste à choisir : A ou B.</strong></p>
+<p><strong>Lu par moi, à confirmer par lui</strong> : le module coûte <strong>6 € quelle que soit la formule</strong>. Il n'a donné qu'un prix, et rien ne dit qu'Entreprise paie plus.</p>
 <h2 id="ce-que-la-planche-montre">Ce que la planche montre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -95,39 +95,49 @@
 <th></th>
 </tr></thead><tbody>
 <tr>
-<td><strong>A, dans la carte Artisan</strong></td>
-<td>« Ajouter Paysage » et son interrupteur au-dessus des trois lignes qu'il ouvre. Allumé : les trois lignes se cochent, le prix passe à 45 €, le bouton dit « S'abonner à Artisan et Paysage »</td>
+<td><strong>En haut</strong></td>
+<td>« Ajouter Paysage », +6 € par mois, son interrupteur, et les trois outils dessous : barrés éteint, cochés allumé</td>
 </tr>
 <tr>
-<td><strong>B, en haut</strong></td>
-<td>la même rangée sous « au mois ou à l'année ». Avec Entreprise ou Illimité, l'interrupteur s'efface : « Compris dans Entreprise ». La carte Artisan dit « Avec Paysage »</td>
+<td><strong>Les cartes</strong></td>
+<td>elles ne parlent plus de Paysage. Allumé, chaque prix prend 6 € (Artisan 45 €, Entreprise 65 €, Illimité 165 €), la carte choisie dit « Avec Paysage », le bouton dit « S'abonner à Entreprise et Paysage »</td>
 </tr>
 <tr>
-<td><strong>Les deux</strong></td>
-<td>« Vos salariés ont accès au planning » quitte « Dans les trois formules » et se lit barré sur Artisan ; l'accroche d'Artisan commence par « Pour vous seul. » ; à l'année, 540 € barrés, 450 €, « Vous gagnez 90 € »</td>
+<td><strong>À l'année</strong></td>
+<td>+60 € ; Entreprise avec Paysage : 780 € barrés, 650 €, « Vous gagnez 130 € »</td>
+</tr>
+<tr>
+<td><strong>Artisan</strong></td>
+<td>« Vos salariés ont accès au planning » quitte « Dans les trois formules » et se lit barré sur Artisan ; son accroche commence par « Pour vous seul. »</td>
+</tr>
+<tr>
+<td><strong>Entreprise</strong></td>
+<td>son accroche disait « Accès illimité à tous les outils » : ce n'est plus vrai. Elle dit « Jusqu'à cinq personnes qui facturent, et tous vos salariés. »</td>
 </tr>
 <tr>
 <td><strong>« Avec 2 salariés »</strong></td>
 <td>Artisan dit « Vous avez 2 salariés. Retirez-les d'abord dans Équipe. », et le bouton s'éteint</td>
 </tr>
 </tbody></table></div>
-<p><strong>Mon conseil : A.</strong> Un seul module, qui ne sert qu'à Artisan : l'interrupteur vit là où se lit ce qui manque. B devient le bon choix le jour où un second module se vendra aussi avec Entreprise.</p>
+<p><strong>Une seule place, en haut.</strong> La première planche proposait aussi le module dans la carte Artisan (A) : pour trois formules, il aurait fallu trois interrupteurs pour la même chose, ou un interrupteur qui change de carte quand on en touche une autre. En haut, il se règle une fois, et un second module viendra s'y ranger dessous.</p>
 <h2 id="ce-que-le-code-devra-faire-niveau-3--cest-de-largent">Ce que le code devra faire (niveau 3 : c'est de l'argent)</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>La règle</strong> (<code>src/lib/abonnements.ts</code>) : une liste fermée de modules, son prix, ses fonctions ; <code>fonctionOuverte</code> lit la formule ET les modules ; la ligne des salariés devient réservée ; Artisan compte tous les accès, pas seulement ceux qui facturent.</li>
+<li><strong>La règle</strong> (<code>src/lib/abonnements.ts</code>) : une liste fermée de modules, son prix, ses fonctions ; <code>fonctionOuverte</code> lit la formule ET les modules ; les trois outils quittent les <code>fonctions</code> d'Entreprise et d'Illimité ; la ligne des salariés devient réservée ; Artisan compte tous les accès, pas seulement ceux qui facturent.</li>
+<li><strong>L'essai</strong> ouvre toujours tout, Paysage compris : <em>on essaie tout, on choisit après</em> (<code>FORMULE_DE_LESSAI</code>).</li>
 <li><strong>La base</strong> : les modules souscrits, sur la ligne d'abonnement, en expand (colonne ajoutée, vide par défaut).</li>
 <li><strong>Le paiement</strong> : une seconde ligne dans la page de paiement, et l'ajout ou le retrait du module au prorata sur un abonnement qui court ; les modules relus au retour et au crochet, comme la formule.</li>
 <li><strong>Les deux refus</strong> : inviter un salarié sur Artisan, et passer à Artisan avec d'autres comptes.</li>
-<li><strong>Les écrans fermés</strong> : « Le plan d'arrosage est dans Entreprise » devra proposer aussi le module.</li>
-<li><strong>La facture d'abonnement de Cause</strong> : deux lignes au lieu d'une.</li>
+<li><strong>Les écrans fermés</strong> : « Le plan d'arrosage est dans Entreprise » devient « dans le module Paysage », pour les trois formules.</li>
+<li><strong>La facture d'abonnement de Cause</strong> : une ligne de plus pour le module.</li>
 </ol>
 <h2 id="ce-qui-a-été-trouvé-en-chemin">Ce qui a été trouvé en chemin</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
-<li><strong>Un écart déjà là, sans rapport avec le module</strong> : passer d'Entreprise à Artisan avec trois personnes qui facturent n'est refusé nulle part aujourd'hui (le plafond ne se vérifie qu'à l'invitation), alors que l'article 14.6 le promet. Le refus du point 4 le fermera.</li>
-<li><strong>Les conditions générales publiées (version 3) disent le contraire</strong> : <em>« Les comptes salarié ne sont pas comptés et ne donnent lieu à aucun supplément, quel que soit leur nombre »</em>, et le module n'y existe pas. Il faudra une <strong>version 4</strong>, que chaque compte acceptera de nouveau. La publier est sa décision.</li>
+<li><strong>Un écart déjà là, sans rapport avec le module</strong> : passer d'Entreprise à Artisan avec trois personnes qui facturent n'est refusé nulle part aujourd'hui (le plafond ne se vérifie qu'à l'invitation), alors que l'article 14.6 le promet. Le refus du point 5 le fermera.</li>
+<li><strong>Les conditions générales publiées (version 3) disent le contraire</strong> : <em>« Les comptes salarié ne sont pas comptés et ne donnent lieu à aucun supplément, quel que soit leur nombre »</em> ; Entreprise et Illimité y « comprennent les outils de paysage » ; le module n'existe pas. Il faudra une <strong>version 4</strong>, que chaque compte acceptera de nouveau. La publier est sa décision.</li>
 <li><strong><code>PRODUCT.md</code> dit encore</strong> que l'arrosage, le diagnostic et les fiches « font partie du cœur, pas d'un module optionnel ». À corriger au codage.</li>
+<li><strong>Aucun abonné réel</strong> : personne ne perd Paysage en cours d'abonnement.</li>
 </ul>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -136,11 +146,11 @@
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td>A ou B</td>
+<td>Le même prix (6 €) pour les trois formules</td>
 <td>lui</td>
 </tr>
 <tr>
-<td>Le plafond d'IA d'Artisan (10 € par mois) avec le module, qui lit des photos. Mon avis : le garder, et regarder la consommation réelle, qu'on n'a pas encore</td>
+<td>Les plafonds d'IA (Artisan 10 €, Entreprise 20 €, Illimité 60 € par mois) avec le module, qui lit des photos. Mon avis : les garder, et regarder la consommation réelle, qu'on n'a pas encore</td>
 <td>lui</td>
 </tr>
 <tr>
