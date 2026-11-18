@@ -1,8 +1,8 @@
 # État du projet
 
-## LA MISE À JOUR DE SON ESPACE DIT POURQUOI ELLE REFUSE, ALLUMAGE COMPRIS, CODÉ (18 novembre 2026), PAS SUR `main`
+## LA MISE À JOUR DE SON ESPACE DIT POURQUOI ELLE REFUSE, ALLUMAGE COMPRIS (18 novembre 2026), SUR `main`
 
-`mettre-a-jour.sh` note son issue lui-même (`ARCHITECTURE.md` §587) ; avant, seul le bouton de Réglages la notait. Né de son devis du soir, sorti d'un espace resté sur le code du 9 novembre. La cause du refus reste à lire puis à corriger (`TODO.md`). Contrôles de son niveau à jouer sur son « oui ».
+`mettre-a-jour.sh` note son issue lui-même (`ARCHITECTURE.md` §587) ; avant, seul le bouton de Réglages la notait. Né de son devis du soir, sorti d'un espace resté sur le code du 9 novembre. La cause du refus reste à lire puis à corriger (`TODO.md`). Niveau 2 au vert sur son « oui » (suites du dépôt, 31 suites navigateur sur 31).
 
 ## LA SIGNATURE DU CLIENT, DEVIS, CONTRAT ET FICHE D'ENTRETIEN : SUR `main` (18 novembre 2026)
 
