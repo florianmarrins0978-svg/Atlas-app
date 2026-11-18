@@ -649,7 +649,10 @@ export default function FormulaireReponse({
               }}
             />
           </div>
-          {erreur && (
+          {/* **La feuille ne parle QUE du trait.** Un autre refus (une date à
+              choisir, une cadence atteinte) l'a refermée et se lit sur la page :
+              le redire ici, à la réouverture, montrerait un message périmé. */}
+          {erreur === SIGNEZ_AVANT_D_ACCEPTER && (
             <p role="alert" className="mb-2 text-[14px] font-semibold" style={{ color: colors.alert }}>
               {erreur}
             </p>
