@@ -21,7 +21,9 @@ plusieurs personnes qui facturent n'est refusé nulle part (`placePourUnFabrican
 ne sert qu'à l'invitation, `membres-entreprise.ts`), contre l'article 14.6. Le
 lot du module le fermera.
 
-## `npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3 (18 novembre 2026)
+## ~~`npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3~~ RÉPARÉ LE 18 NOVEMBRE 2026
+
+**Réparé par un `overrides` limité à next-auth dans `package.json`** (`ARCHITECTURE.md` §585), pas par `.npmrc` `legacy-peer-deps=true`, qui tairait tous les conflits de pairs, le suivant compris. Éprouvé par un `npm ci` sur un dossier vide (574 paquets, `@simplewebauthn` 13), batterie de niveau 3 verte ; `test-dependances-installables.ts` refait la résolution de `npm ci` à chaque `npm test`. Ce qui suit est le constat d'origine.
 
 Vu en rejouant la batterie de la signature : `6ef2ae3` (« Passer Face ID à
 @simplewebauthn 13.3.3 ») déclare `@simplewebauthn/server` et `browser` en 13,
@@ -45,7 +47,9 @@ Restent deux choses, à faire quand elles se présentent :
   18 NOVEMBRE, sur sa demande** (« occupe-toi de Face ID »), en 13.3.3, le
   navigateur avec (`ARCHITECTURE.md` §583). Batterie de niveau 3 verte sur son
   « oui » (217 suites navigateur sur 217), sur `main` le 18 novembre. Reste à essayer Face ID sur son téléphone, une clé
-  déjà enregistrée ;
+  déjà enregistrée. **Son `npm ci` refusait le dépôt** (next-auth réclame la 9) :
+  réparé le même jour par une dérogation limitée à next-auth, à retirer quand
+  next-auth acceptera la 13 (`ARCHITECTURE.md` §585) ;
 - **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
   prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
 
