@@ -1,5 +1,18 @@
 # Prochaines tâches
 
+## LES FAILLES DES DÉPENDANCES : RIEN D'ATTEIGNABLE, DEUX CHOSES À SURVEILLER (18 novembre 2026)
+
+Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
+aucune n'est atteignable dans l'application servie, rien n'a été changé.
+Restent deux choses, à faire quand elles se présentent :
+
+- **`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**, dans un lot à lui, le
+  jour où l'on touche à Face ID (`src/server/cle-appareil.ts`) : la faille
+  vise l'attestation, que l'application ne lit pas, mais cinq versions
+  majeures d'écart sur l'authentification se rattrapent mal d'un coup ;
+- **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
+  prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
+
 ## ⏳ CAUSE : CE QUI ATTEND APRÈS LE CHANGEMENT DE NOM (17 novembre 2026)
 
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
@@ -27,7 +40,7 @@ signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
 
-**Approuvée et CODÉE le 18 novembre** (`ARCHITECTURE.md` §583, migration
+**Approuvée et CODÉE le 18 novembre** (`ARCHITECTURE.md` §584, migration
 0183), sur la branche de session, pas sur `main`. Le jour seul, sans l'heure,
 comme sur le devis. Reste : `test-fiche-signee-db` (écrite, pas jouée : elle
 vide la base, sa règle du 5 novembre) et la batterie, sur son « oui ».
@@ -53,7 +66,7 @@ sien, à revoir avec l'accord en ligne. Constat : aujourd'hui, le PDF d'un devis
 accepté en ligne est identique à celui d'avant (encadré vide). Le devis papier
 signé (`accordSurPapier`) ne change pas.
 
-**Approuvée (sans l'heure) et CODÉE le 18 novembre** (`ARCHITECTURE.md` §583,
+**Approuvée (sans l'heure) et CODÉE le 18 novembre** (`ARCHITECTURE.md` §584,
 migration 0182), sur la branche de session, pas sur `main`. **Une question à
 lui avant la batterie** : sa règle du 31 août veut la page du client sur un
 seul écran de 390 × 664, sans défiler (`test-devis-client-e2e`, « TOUT TIENT

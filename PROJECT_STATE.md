@@ -2,7 +2,7 @@
 
 ## LA SIGNATURE DU CLIENT, DEVIS ET FICHE D'ENTRETIEN : CODÉE, PAS SUR `main` (18 novembre 2026)
 
-Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §583, migrations 0182 et 0183. **Ce qui manque avant `main`** : son arbitrage sur la page du devis qui ne tient plus sur un écran (`TODO.md`), les deux suites base (elles vident la base : son « oui »), puis la batterie de niveau 3. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).
+Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §584, migrations 0182 et 0183. **Ce qui manque avant `main`** : son arbitrage sur la page du devis qui ne tient plus sur un écran (`TODO.md`), les deux suites base (elles vident la base : son « oui »), puis la batterie de niveau 3. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).
 
 ## LA FICHE OUVERTE ET COMPOSER MA FICHE (A), ET « VOTRE DICTÉE » ENLEVÉE, SUR `main` (17 novembre 2026)
 

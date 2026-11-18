@@ -37522,7 +37522,23 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
 | **le même refus vient d'un `node_modules` resté en arrière** (18 novembre 2026) : une fusion de `main` qui monte `package.json` ne réinstalle rien, et la batterie construit avec la version d'avant (« ▲ Next.js 16.4.2 » dans son journal, 16.4.6 dans le `package.json`) | avant de croire à une nouvelle faille, comparer la version que la construction annonce à celle du `package-lock.json` ; après une fusion qui touche `package.json`, `npm ci` avant la batterie |
 
-## §583 : La signature du client, sur le devis et sur la fiche d'entretien
+## §583 : Les failles que GitHub signale dans les dépendances : aucune n'est atteignable dans l'application servie
+
+*18 novembre 2026, sa demande : GitHub en comptait 6 sur `main` (1 haute, 4 moyennes, 1 faible). `npm audit` en trouve 5 distinctes ; la sixième de GitHub est sans doute picomatch compté sur ses deux versions installées (2.3.2 et 4.0.5), non vérifié faute d'accès à la page Dependabot d'ici.*
+
+| Faille | Qui l'amène | Atteignable chez un artisan ? | Ce qu'on fait |
+|---|---|---|---|
+| picomatch, déni de service par un motif piégé (haute, GHSA-fc5q-39xc-vjpf) | les outils de construction et de relecture : le greffon de Sentry au moment du `next build`, ESLint | non : les motifs sont écrits dans notre configuration, jamais par un utilisateur | **aucune version corrigée n'existe** (la dernière, 4.0.7, est visée) : attendre |
+| minimatch, déni de service par un motif (moyenne, GHSA-g3hv-75wg-m249) | ESLint (`typescript-eslint`), Sentry à la construction | non, même raison | `typescript-eslint` 8.73 l'enlève d'ESLint ; pas pour lui seul (ci-dessous) |
+| glob, délai d'abandon contourné (moyenne, GHSA-3g3m-2fjr-6pw4) | Sentry, à la construction | non | attendre que Sentry passe à glob 14 |
+| esbuild, serveur de développement lisible par un site (moyenne, GHSA-67mh-4wv8-2f99) | `drizzle-kit` (son vieux chargeur `@esbuild-kit`) | non : `drizzle-kit` ne lance jamais le serveur d'esbuild, et ne tourne que sur un poste de développement | attendre `drizzle-kit` ; `npm audit` propose de le RAMENER à 0.18, ce qui serait pire |
+| @simplewebauthn/server 9.0.3, chaîne de certificats de l'attestation mal vérifiée (faible, GHSA-6hxq-p678-4hr2) | l'entrée par Face ID (`src/server/cle-appareil.ts`), la seule qui tourne dans l'application | non : l'enregistrement demande `attestationType: "none"` et ne décide rien d'après l'attestation (ni modèle d'appareil, ni AAGUID). Ce que la faille fausse, l'application ne le lit pas | passer à 13.3.3 ou 14 le jour où l'on touche à Face ID, dans un lot à lui : cinq versions majeures d'écart sur l'authentification ne se montent pas en passant |
+
+**Pourquoi pas `npm audit fix`.** Sans `--force`, il réécrit une large part de `package-lock.json` (des dizaines de liaisons de plateforme) pour ne mettre à jour que des outils de relecture : un lot de niveau 3, une batterie entière, et rien de plus sûr pour un artisan. Avec `--force`, il rétrograde `eslint-config-next` en 14, `@sentry/nextjs` en 8, `next-auth` en 4 et `drizzle-kit` en 0.18 : il casserait l'application pour des failles qu'elle n'atteint pas.
+
+**Ce qui ferait changer ce verdict** : une faille dans un paquet que le SERVEUR exécute pour une requête (Next.js, next-auth, `@simplewebauthn/server` avec une attestation lue, `pg`, les fournisseurs d'IA), ou une version corrigée de picomatch. Refaire le tour avec `npm audit --json`, puis `npm ls <paquet>` pour savoir qui l'amène.
+
+## §584 : La signature du client, sur le devis et sur la fiche d'entretien
 
 *18 novembre 2026, ses deux planches du 17 (`appli/soignee/devis-signe-par-le-client.html`, `appli/soignee/fiche-signee-par-le-client.html`), puis « les deux me vont, tu peux coder ».*
 
