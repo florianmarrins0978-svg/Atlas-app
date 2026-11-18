@@ -38,7 +38,9 @@ PDF : « Votre signature » (la toile de `Signature.tsx`) avant « J'accepte ce
 devis », qui refuse tant que rien n'est signé ; accepté, la signature reste à
 l'écran ; dans le PDF, elle remplit l'encadré « Bon pour accord » avec
 « Signé en ligne par Mme Lefèvre, le … », et la mention du pied ne réclame
-plus la mention manuscrite. **Décision prise, à lui de la défaire** : la
+plus la mention manuscrite. **Sans l'heure** (son choix du 18 novembre : *« pas besoin
+de mettre l'heure de la signature »*) : la date seule s'affiche, l'heure reste
+dans la preuve en base. **Décision prise, à lui de la défaire** : la
 signature est OBLIGATOIRE pour accepter en ligne (sinon l'encadré resterait
 vide sur la moitié des devis). Ses conditions générales disent encore « retourné
 daté et signé avec la mention bon pour accord » (article 1) : le texte est le
