@@ -41,6 +41,18 @@ signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
 
+## ⏳ UNE PLANCHE À REGARDER : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
+
+**Sa demande :** *« fais-moi une planche pour la B »*. La toile de 170 px de la
+planche d'avant faisait déborder la page du client, que sa règle du 31 août
+veut sur un seul écran de 390 × 664 (`test-devis-client-e2e`, « TOUT TIENT
+DANS UN ÉCRAN »). `appli/soignee/devis-signe-dans-une-feuille.html`, posée sur
+le vrai lien et sur une vraie feuille de l'appli (celle du calendrier, son
+contenu remplacé) : « J'accepte ce devis » ouvre « Votre signature », la toile
+et « J'accepte ce devis », qui refuse tant que rien n'est signé. La page,
+sans toile, mesure 664 px. **Ce qu'il a à dire : B, ou la planche d'avant.**
+Son choix vaudra aussi pour le contrat d'entretien, pas encore codé.
+
 ## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
 **Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
@@ -253,8 +265,29 @@ montrait tel quel (neuf états, huit coupes). La planche joue maintenant
 (`appli/scripts/film-equipe-fluide.py`). Les deux autres pages gardent leur
 film.
 
-**Ce qu'il a à dire :** si ce passage lui va maintenant, s'il garde ce
-mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone.
+**Le 18 novembre, une demande, faite :** *« le mot fort, c'est de dire que
+c'est pour tous les artisans. Et ensuite, il faut mettre en priorité paysagiste
+et élagueur, et tu enchaînes avec les autres. »* Dans la section des métiers,
+« tous » porte le titre, Paysagiste et Élagueur ouvrent la liste, seuls sur
+leur rang, et les autres suivent. **Lu ainsi, pas plus :** ni le titre de
+l'ouverture ni l'ordre des sections n'ont bougé. S'il voulait que le SITE
+commence par là, c'est à refaire.
+
+**Le 18 novembre, une seconde demande, faite :** *« Il faut faire une
+animation pour cette page aussi ! Qu'on voit qu'en un clic on peut avoir
+l'adresse sur Maps ou Waze. Pour la note tu peux écrire quelque chose comme tu
+as fait pour le retour du jour. »* La fiche d'intervention est devenue un film
+(`nov-film-fiche`, `appli/scripts/film-fiche.cjs`) : Maps puis Waze s'ouvrent
+depuis leur case avec l'adresse déjà posée, puis la note s'écrit et
+s'enregistre. **Les deux cartes sont dessinées**, sans logo : ce ne sont pas
+des captures de Google Maps ni de Waze (l'appli les ouvre, elle n'a pas de
+carte à elle). La note écrite est de moi : « Clé du portail chez la voisine.
+Prendre le broyeur. »
+
+**Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
+qu'il en retire, et ce qui accroche sur son iPhone. Si les cartes dessinées
+lui conviennent, et la phrase de la note. Et si l'ordre des métiers doit être
+reporté dans `cause.html` et `chapitres-6.html`, qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
