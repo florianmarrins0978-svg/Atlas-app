@@ -25,8 +25,10 @@
   des films, éprouvée sur son iPhone : la première image posée dessous, le
   film qui ne se montre qu'une fois lancé, la dernière image à la fin.
   L'en-tête de cause.html dit d'où vient chaque texte, chaque capture et
-  chaque film : il reste vrai ici. Un seul film n'est plus le sien, celui
-  de l'équipe (voir « LE FILM DE L'ÉQUIPE » plus bas).
+  chaque film : il reste vrai ici. Deux écarts, voulus par lui après avoir
+  vu la planche : le film de l'équipe n'est plus le sien (voir « LE FILM DE
+  L'ÉQUIPE » plus bas), et les métiers ont changé d'ordre (voir « POUR TOUS
+  LES ARTISANS »).
 
   L'IDÉE : RIEN NE SE RETAPE, TOUT SE PORTE. C'est la promesse du produit
   (« du devis dicté à la facture, sans rien retaper »), et c'est le geste que
@@ -55,8 +57,9 @@
     · « Vous êtes artisan. Pas secrétaire. » : les trois corvées se barrent
       d'un trait d'or, et la réponse n'arrive qu'une fois la troisième
       barrée ;
-    · les métiers sortent d'un flou, l'un après l'autre, « et le vôtre. » en
-      dernier ; les coches se tracent ;
+    · les métiers sortent d'un flou une fois leur titre monté : Paysagiste
+      et Élagueur d'abord, un temps, puis les autres à la suite, « et le
+      vôtre. » en dernier ; les coches se tracent ;
     · les bandes vert nuit montent comme des feuilles aux coins arrondis ;
     · la bascule des prix glisse et les prix roulent ; les questions
       s'ouvrent en douceur ; le menu du téléphone s'ouvre depuis son bouton ;
@@ -135,6 +138,20 @@
   À SAVOIR : le site montre donc ce passage plus souple que l'appli ne le
   fait aujourd'hui. Rendre l'appli aussi souple est un autre travail, qui
   passe par une planche d'abord.
+
+  POUR TOUS LES ARTISANS, SA DEMANDE DU 18 NOVEMBRE : « Commence par, donc
+  pour tous les artisans [...] le mot fort, c'est de dire que c'est pour
+  tous les artisans. Et ensuite, il faut mettre en priorité paysagiste et
+  élagueur, et tu enchaînes avec les autres. » Le titre était déjà en tête
+  de la section, mais les deux métiers fermaient la liste. Désormais :
+  « tous » porte le titre (l'italique vert du titre de l'ouverture), et
+  « et le vôtre. » lui répond dans le même vert ; Paysagiste et Élagueur
+  ouvrent la liste, seuls sur leur rang, à l'encre pleine ; les neuf autres
+  suivent dans l'ordre d'avant. Le mouvement dit la même chose : le titre
+  monte, puis les deux premiers, puis les autres. Lu ainsi, pas plus :
+  ni le titre de l'ouverture ni l'ordre des sections n'ont bougé. cause.html
+  et chapitres-6.html gardent l'ancien ordre tant qu'il ne dit pas de le
+  reporter.
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : la planche est à regarder sur
   son iPhone. Ce qui a été écrit pour lui : chaque masque porte son préfixe,
@@ -394,16 +411,33 @@ html.anime .corvees.vu li span,html:not(.anime) .corvees li span{background:line
 @media (min-width:960px){.douleur-grille{grid-template-columns:1.1fr .9fr;align-items:end;gap:88px}}
 
 /* ── Pour tous les artisans : les métiers en grand, puis ce qui les sert ── */
+/* Sa demande du 18 novembre 2026 : « le mot fort, c'est de dire que c'est
+   pour tous les artisans. Et ensuite, il faut mettre en priorité paysagiste
+   et élagueur, et tu enchaînes avec les autres. » D'où trois choses :
+   « tous » porte le titre (l'italique vert du titre de l'ouverture) ;
+   Paysagiste et Élagueur ouvrent la liste, seuls sur leur rang, à l'encre
+   pleine ; les autres suivent, et arrivent après eux. */
+.metiers .mot em{font-style:italic;color:var(--feuille)}
 /* Les métiers se lisent comme un mur de mots, sans séparateur : un point ou
    un tiret entre eux est refusé ici (CLAUDE.md §3), et l'espace suffit. */
 .liste-metiers{list-style:none;margin:40px 0 0;padding:28px 0 0;border-top:1px solid var(--trait);display:flex;flex-wrap:wrap;gap:2px clamp(18px,2.6vw,34px);font:400 clamp(34px,7.6vw,68px)/1.06 var(--display);letter-spacing:-.015em}
-.liste-metiers li:nth-child(even){color:var(--encre-2)}
+/* Le saut de rang après les deux premiers : un faux élément rangé entre eux
+   et les suivants. La liste garde ses douze métiers, sans ligne de plus pour
+   qui l'écoute. */
+.liste-metiers::before{content:"";flex-basis:100%;height:.14em;order:1}
+.liste-metiers li:nth-child(n+3){order:2}
+/* « et le vôtre. » répond à « tous », dans le même italique vert. Il était
+   écrit vert depuis cause.html et se lisait gris : la règle des tons, plus
+   précise, l'emportait sur lui. */
+.liste-metiers li:nth-child(2n+4):not(.le-votre){color:var(--encre-2)}
 .liste-metiers .le-votre{font-style:italic;color:var(--feuille)}
 /* Ils sortent d'un flou, l'un après l'autre, comme une mise au point qui
-   parcourt le mur ; « et le vôtre. » arrive en dernier. */
-html.anime .liste-metiers li{opacity:0;filter:blur(12px);transform:translateY(.22em);transition:opacity .5s ease,filter .75s ease,transform .95s var(--sortie);transition-delay:calc(var(--i,0) * 60ms)}
+   parcourt le mur : les deux premiers, un temps, puis les autres à la suite ;
+   « et le vôtre. » arrive en dernier. */
+html.anime .liste-metiers li{opacity:0;filter:blur(12px);transform:translateY(.22em);transition:opacity .5s ease,filter .75s ease,transform .95s var(--sortie);transition-delay:calc(var(--i,0) * 90ms)}
 html.anime .liste-metiers.vu li{opacity:1;filter:none;transform:none}
-html.anime .liste-metiers .le-votre{transition-delay:calc(var(--i,0) * 60ms + 260ms)}
+html.anime .liste-metiers li:nth-child(n+3){transition-delay:calc(var(--i,0) * 60ms + 320ms)}
+html.anime .liste-metiers .le-votre{transition-delay:calc(var(--i,0) * 60ms + 580ms)}
 .faits.atouts{margin-top:clamp(48px,6vw,72px)}
 @media (min-width:860px){.atouts{grid-template-columns:1fr 1fr;column-gap:64px}.atouts li:nth-child(2){border-top:1px solid var(--trait)}}
 
@@ -843,9 +877,9 @@ html.anime .geant.vu span{transform:none}
 
 <section class="metiers papier nappe" id="metiers">
   <div class="large">
-    <h2 class="mot" data-monte>Pour tous les artisans.</h2>
+    <h2 class="mot" data-monte>Pour <em>tous</em> les artisans.</h2>
     <ul class="liste-metiers" data-vu="0.3">
-      <li>Maçon</li><li>Plombier</li><li>Électricien</li><li>Menuisier</li><li>Peintre</li><li>Couvreur</li><li>Carreleur</li><li>Chauffagiste</li><li>Plaquiste</li><li>Paysagiste</li><li>Élagueur</li><li class="le-votre">et le vôtre.</li>
+      <li>Paysagiste</li><li>Élagueur</li><li>Maçon</li><li>Plombier</li><li>Électricien</li><li>Menuisier</li><li>Peintre</li><li>Couvreur</li><li>Carreleur</li><li>Chauffagiste</li><li>Plaquiste</li><li class="le-votre">et le vôtre.</li>
     </ul>
     <ul class="faits atouts" data-vu="0.25">
       <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Particulier, entreprise ou mairie.</b><span>La fiche client les distingue. Le particulier reçoit son formulaire de rétractation.</span></li>
@@ -1393,13 +1427,23 @@ html.anime .geant.vu span{transform:none}
   // page : garder sa marge empêchait le grand nom, tout en bas, d'être jamais
   // assez « vu » pour monter (il restait à moitié enfoui sur téléphone).
   var guets = {};
+  var voir = function(el){ el.classList.add("vu"); el.vuA = performance.now(); };
   var guetter = function(el, seuil){
     var marge = grand || el.closest(".pied") ? "-8%" : sousLePouce, cle = seuil + " " + marge;
     if (!guets[cle]) guets[cle] = new IntersectionObserver(function(es, o){
-      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); e.target.vuA = performance.now(); o.unobserve(e.target); } });
+      es.forEach(function(e){
+        if (!e.isIntersecting) return;
+        o.unobserve(e.target);
+        // « Commence par pour tous les artisans » : les métiers laissent
+        // leur titre monter d'abord. Un titre pas encore vu ne retient
+        // rien : on arrive alors par le bas, et il est au-dessus de l'écran.
+        var avant = e.target.apres, reste = avant && avant.vuA ? 480 - (performance.now() - avant.vuA) : 0;
+        if (reste > 0) setTimeout(voir, reste, e.target); else voir(e.target);
+      });
     }, {rootMargin:"0px 0px " + marge + " 0px", threshold:seuil});
     guets[cle].observe(el);
   };
+  un(".liste-metiers").apres = un(".metiers h2");
   // Le titre de l'ouverture part au chargement, et la réponse aux corvées
   // attend qu'elles soient barrées : ces deux-là ont leur propre départ.
   tous("[data-monte]").forEach(function(el){ if (el.tagName !== "H1" && !el.classList.contains("reponse")) guetter(el, 0.35); });
