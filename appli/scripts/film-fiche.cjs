@@ -8,9 +8,10 @@
 
    La composition vit dans film-fiche.html, qui dit ce qui est vrai (la
    capture de la fiche, la note telle que l'appli l'écrit) et ce qui est
-   dessiné (les deux cartes : Maps et Waze ne se filment pas ici). Ce script
-   la photographie image par image, à soixante par seconde, et en tire
-   vente/images/nov-film-fiche.mp4, .webm, -debut.jpg et -fin.jpg.
+   dessiné (la carte et l'écran d'appel : Maps et le téléphone ne se filment
+   pas ici). Ce script la photographie image par image, à soixante par
+   seconde, et en tire vente/images/nov-film-fiche.mp4, .webm, -debut.jpg et
+   -fin.jpg (la mécanique commune est dans _pellicule.cjs).
 
    Pourquoi un film, et pas la scène jouée dans la page : c'est la mécanique
    des autres scènes, qu'il a vues jouer sur son iPhone (la première image
@@ -29,8 +30,8 @@
    celui de PLAYWRIGHT_EXECUTABLE_PATH, comme pour tests/e2e.js.
    ======================================================================= */
 const { chromium } = require('playwright');
-const { spawn, spawnSync } = require('child_process');
 const path = require('path');
+const { tourner, pixels } = require('./_pellicule.cjs');
 
 const L = 294, H = 532, ECHELLE = 3;          // la capture : 882 × 1596, trois pixels pour un
 const IPS = 60;
@@ -41,19 +42,11 @@ const IPS = 60;
 const FILM = { l: 720, h: 1302 };
 const EXEMPLE = 'Penser à prendre le broyeur. Client dispo à partir de 9 h.';
 const FOND_NOTE = [241, 235, 223];
-const COULEUR = ['-color_range', 'tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709'];
 
 const dossier = process.argv[2];
 if (!dossier) { console.error('Usage : node appli/scripts/film-fiche.cjs <dossier des images du site> [--sans-film]'); process.exit(2); }
 const SANS_FILM = process.argv.includes('--sans-film');
 const base = path.join(dossier, 'nov-film-fiche');
-
-/** Les pixels d'une image PNG, en rouge, vert, bleu. */
-function pixels(png) {
-  const r = spawnSync('ffmpeg', ['-v', 'error', '-f', 'png_pipe', '-i', 'pipe:0', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'], { input: png, maxBuffer: 64 * 1024 * 1024 });
-  if (r.status !== 0 || r.stdout.length !== L * ECHELLE * H * ECHELLE * 3) throw new Error('image illisible : ' + String(r.stderr));
-  return r.stdout;
-}
 
 /** L'encre d'une zone : vrai là où le pixel s'écarte du fond de la note. */
 function encre(rvb, seuil) {
@@ -63,12 +56,6 @@ function encre(rvb, seuil) {
     m.push(Math.abs(rvb[i] - FOND_NOTE[0]) + Math.abs(rvb[i + 1] - FOND_NOTE[1]) + Math.abs(rvb[i + 2] - FOND_NOTE[2]) > seuil);
   }
   return m;
-}
-
-function ecrire(flux, tampon) {
-  return new Promise((resolve, reject) => {
-    flux.write(tampon, (e) => (e ? reject(e) : resolve()));
-  });
 }
 
 (async () => {
@@ -85,9 +72,9 @@ function ecrire(flux, tampon) {
   // ── Le calage : la note s'écrit-elle là où l'appli écrit ? ────────────────
   const inter = await page.evaluate(() => document.fonts.check('16px Inter'));
   await page.evaluate(() => window.poser(0));
-  const capture = encre(pixels(await photo()), 60);
+  const capture = encre(pixels(await photo(), L * ECHELLE, H * ECHELLE), 60);
   await page.evaluate((t) => window.calage(t), EXEMPLE);
-  const pose = encre(pixels(await photo()), 120);
+  const pose = encre(pixels(await photo(), L * ECHELLE, H * ECHELLE), 120);
   let commun = 0, tout = 0;
   for (let i = 0; i < capture.length; i++) { if (capture[i] && pose[i]) commun++; if (capture[i] || pose[i]) tout++; }
   const recouvrement = tout ? commun / tout : 0;
@@ -103,38 +90,15 @@ function ecrire(flux, tampon) {
   console.log(images + ' images à ' + IPS + ' par seconde, soit ' + duree.toFixed(2) + ' s ; la note : « ' + (await page.evaluate(() => window.NOTE)) + ' »');
   if (SANS_FILM) { await navigateur.close(); return; }
 
-  // ── Les deux films, nourris de la même suite d'images ─────────────────────
-  const filtre = 'scale=' + FILM.l + ':' + FILM.h + ':flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt709:out_range=tv,format=yuv420p';
-  const entree = ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(IPS), '-c:v', 'png', '-i', 'pipe:0', '-vf', filtre];
-  const encodeurs = [
-    // Une seule image clé : le film ne se lit que depuis son début, et une
-    // image clé toutes les deux secondes lui coûtait 140 Ko de plus. Le
-    // reste du poids est dans les quatre passages d'une appli à l'autre ;
-    // mesuré à qualité 20, 22 et 23, le texte ne change pas à l'œil.
-    [base + '.mp4', ['-c:v', 'libx264', '-preset', 'veryslow', '-crf', '22', '-tune', 'animation', '-profile:v', 'high', '-level', '4.1', '-g', String(IPS * 10), '-movflags', '+faststart']],
-    [base + '.webm', ['-c:v', 'libvpx-vp9', '-crf', '36', '-b:v', '0', '-deadline', 'good', '-cpu-used', '1', '-row-mt', '1', '-g', String(IPS * 10)]],
-  ].map(([sortie, reglages]) => {
-    const p = spawn('ffmpeg', entree.concat(reglages, COULEUR, ['-an', sortie]), { stdio: ['pipe', 'inherit', 'inherit'] });
-    return { sortie, p, fini: new Promise((resolve) => p.on('close', resolve)) };
+  // Une seule image clé : le film ne se lit que depuis son début, et une
+  // image clé toutes les deux secondes lui coûtait 140 Ko de plus. Le reste
+  // du poids est dans les quatre passages d'une appli à l'autre ; mesuré à
+  // qualité 20, 22 et 23, le texte ne change pas à l'œil.
+  const ecrits = await tourner({
+    page, base, film: FILM, ips: IPS, duree,
+    x264: ['-crf', '22', '-tune', 'animation', '-level', '4.1', '-g', String(IPS * 10)],
+    vp9: ['-crf', '36', '-g', String(IPS * 10)],
   });
-  let premiere = null, derniere = null;
-  for (let k = 0; k < images; k++) {
-    await page.evaluate((t) => window.poser(t), k / IPS);
-    const png = await photo();
-    if (k === 0) premiere = png;
-    derniere = png;
-    await Promise.all(encodeurs.map((e) => ecrire(e.p.stdin, png)));
-  }
-  for (const e of encodeurs) {
-    e.p.stdin.end();
-    if ((await e.fini) !== 0) throw new Error('l\'encodage a échoué : ' + e.sortie);
-  }
-  // La première et la dernière image, à la taille de la capture : la page
-  // les montre avant et après le film.
-  for (const [suffixe, png] of [['-debut.jpg', premiere], ['-fin.jpg', derniere]]) {
-    const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'png_pipe', '-i', 'pipe:0', '-frames:v', '1', '-q:v', '4', base + suffixe], { input: png });
-    if (r.status !== 0) throw new Error('image fixe non écrite : ' + base + suffixe + ' ' + String(r.stderr));
-  }
   await navigateur.close();
-  console.log('Écrits : ' + ['.mp4', '.webm', '-debut.jpg', '-fin.jpg'].map((s) => path.basename(base) + s).join(', '));
+  console.log('Écrits : ' + ecrits.join(', '));
 })().catch((e) => { console.error(e); process.exit(1); });
