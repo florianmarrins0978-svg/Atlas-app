@@ -1,5 +1,19 @@
 # Prochaines tâches
 
+## `npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3 (18 novembre 2026)
+
+Vu en rejouant la batterie de la signature : `6ef2ae3` (« Passer Face ID à
+@simplewebauthn 13.3.3 ») déclare `@simplewebauthn/server` et `browser` en 13,
+alors que `next-auth@5.0.0-beta.32` les attend en `^9` (dépendances pairs,
+facultatives). `npm ci` s'arrête alors sur **ERESOLVE**, sur `main` seul, sans
+aucun autre lot (vérifié dans une copie propre de `origin/main`). Ce qui passe :
+`npm ci --legacy-peer-deps`. **Le risque chez lui** : `.devcontainer/demarrer.sh`
+lance `npm ci`, puis `npm install` en repli, qui bute sur le même conflit ; son
+espace peut alors servir l'ancien `node_modules` (9.0.3) sous le code de la 13,
+et Face ID tombe. À trancher dans un lot à part : un `overrides` dans
+`package.json`, ou un `.npmrc` `legacy-peer-deps=true`, éprouvé par un `npm ci`
+sur un dossier vide. Le lot de la signature n'y touche pas.
+
 ## LES FAILLES DES DÉPENDANCES : RIEN D'ATTEIGNABLE, DEUX CHOSES À SURVEILLER (18 novembre 2026)
 
 Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
@@ -21,7 +35,7 @@ Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
 - **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
-## ⏳ CODÉ, EN ATTENTE DE SA BATTERIE : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
+## ✅ LIVRÉ SUR `main` : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
 
 **Sa demande, qui revient sur sa décision du 16 août** (pas de signature sur les
 rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
@@ -43,10 +57,9 @@ d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été sign
 
 **Approuvée et CODÉE le 18 novembre** (`ARCHITECTURE.md` §584, migration
 0183), sur la branche de session, pas sur `main`. Le jour seul, sans l'heure,
-comme sur le devis. Reste : `test-fiche-signee-db` (écrite, pas jouée : elle
-vide la base, sa règle du 5 novembre) et la batterie, sur son « oui ».
+comme sur le devis. Jouée dans la batterie verte du 18 novembre, puis `main`.
 
-## ⏳ CODÉE, EN ATTENTE DE SA BATTERIE : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
+## ✅ LIVRÉE SUR `main` : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
 
 **Sa demande :** *« fais-moi une planche pour la B »*. La toile de 170 px de la
 planche d'avant faisait déborder la page du client, que sa règle du 31 août
@@ -61,9 +74,9 @@ Son choix vaudra aussi pour le contrat d'entretien, pas encore codé.
 **Son choix du 18 novembre : la B, « pour tout ».** Codée pour le devis et le
 contrat d'entretien (migration 0184), `ARCHITECTURE.md` §584. La fiche
 d'entretien garde sa toile dans l'écran de l'artisan, comme sa planche validée.
-La batterie tourne sur son « oui » du même jour.
+Batterie verte le 18 novembre, puis `main`.
 
-## ⏳ CODÉ, EN ATTENTE DE SON ARBITRAGE ET DE SA BATTERIE : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
+## ✅ LIVRÉ SUR `main` : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
 **Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
 case où il puisse accoler sa signature, cliquer sur signer, et la signature
