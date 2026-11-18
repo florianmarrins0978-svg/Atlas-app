@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## « MAIN D'ŒUVRE » DU DEVIS POSE UNE LIGNE DE PLUS AU LIEU DE CHANGER LA SIENNE (18 novembre 2026), PLANCHE À FAIRE
+## ⏳ UNE PLANCHE À REGARDER : « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE (18 novembre 2026)
 
 Sa capture : un devis préparé « sur une ligne » porte déjà sa main d'œuvre
 (2 hommes × 2 jours, 4 jour/homme, 1 600 €). Il ouvre « Main d'œuvre » pour
@@ -19,6 +19,16 @@ fois). Puis planche sur le vrai devis (`CLAUDE.md` §3 bis, quinquies), le code
 ensuite.
 Gravité argent : niveau 3. Une main d'œuvre de partenaire garde sa ligne à son
 nom, sauf avis contraire de sa part.
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`, figée
+sur le vrai devis et la vraie feuille (`scripts/planche-figee/`). Aujourd'hui :
+la seconde ligne arrive (6 jour/homme, 2 400 €, à côté des 1 600 €). Proposé :
+« Repris de votre ligne », « Changer la main d’œuvre », et sa ligne passe à
+6 jour/homme, 2 400 €. **Rien dans `src/`.** Proposé aussi, à lui de le dire :
+« Répartis sur les travaux » retire sa ligne et verse le montant dans le prix
+des travaux (sinon les deux compteraient). **À trancher en codant** : une
+ligne dont les jours ne se lisent pas en hommes × jours (5 jour/homme tapés à
+la main) s'ouvre sur quoi.
 
 ## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
 
