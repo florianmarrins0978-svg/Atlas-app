@@ -18,12 +18,30 @@ Aujourd'hui : la capture de l'écran réel. Huit chartes. Exemple : la fiche 4
 (peuplier), importée dans la base locale de la session seulement, jamais dans
 `donnees/`. **Rien dans `src/`.**
 
-**À trancher par lui** :
+**Ses retouches du 19 novembre, portées sur la planche** : les trois notes de
+l'INRAE restent, **en barres seules**, sans « 1 sur 3 » à côté ni la ligne
+« Les notes de l'INRAE » ; **rien sous la photo** : sa légende et son crédit
+(auteur, licence), puis la source, vont **tout en bas de « Voir les détails »,
+sous « Rattacher à un chantier »**. Codées, les notes feront trois champs de
+plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ;
+sans note, la ligne disparaît et la phrase reste entière. Le crédit d'une
+photo libre reste ainsi affiché sur la fiche, une fois les détails ouverts.
 
-| | |
-|---|---|
-| **les trois notes de l'INRAE** (impact, agressivité, fréquence, sur 3) en jauges sous « Est-ce grave pour l'arbre ? » | la planche les lit dans la phrase `graviteSelonLaSource`. Codées, ce seraient trois champs de plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ; sans note, la ligne disparaît et la phrase reste entière |
-| le code : toute la planche ou une partie | elle s'ajoute au lot du 22 septembre (migration, donc niveau 3) |
+**SA RÈGLE DU 19 NOVEMBRE AU SOIR, ET ELLE VAUT POUR TOUTES LES FICHES :**
+*« L'idée c'est de ne pas parler de l'INRAE dans les fiches visibles et on
+peut en parler dans la description. »* Le nom de l'organisme ne s'écrit que
+dans « Voir les détails » (la fiche, la source) ; ce qui se lit sans les ouvrir
+dit les faits sans les attribuer. Portée le soir même sur les quatre
+brouillons (`conduiteRecommandee` du chêne, du hêtre, du frêne et du
+peuplier : « Aucun traitement… » au lieu de « L’INRAE ne donne aucun
+traitement… ») ; les fiches 1 à 3 en base ne le nomment déjà que dans leur
+source. Reste `graviteSelonLaSource` du peuplier, qui ouvre sur « L’INRAE
+donne un impact de 1 sur 3… » : la phrase part du texte le jour où les trois
+notes deviennent trois champs. **À savoir en relisant** : « Aucun traitement »
+dit un peu plus que la source, qui dit seulement n'en donner aucun.
+
+**Encore à trancher par lui** : le code, toute la planche ou une partie. Elle
+s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 
 **Trouvé en regardant l'écran réel, à corriger en codant la fiche 4** : la
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
