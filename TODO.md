@@ -24,6 +24,20 @@ insécable avant les unités. Le « Surveillez l'arbre » du peuplier en est par
 demandes) ; les confusions entre fiches proches (vides pour l'instant) ;
 « Rouilles (basidiomycètes) » est une page générale, sans fiche servable.
 
+## UNE ESPÈCE RECONNUE ÉCARTE LES FICHES DE SON GENRE : À CORRIGER (19 novembre 2026)
+
+Trouvé en écrivant les fiches de l'INRAE, lu dans le code, **pas reproduit** :
+`rapprocher` (`src/lib/diagnostic-vegetal.ts`) compare l'essence de la photo
+aux hôtes de la fiche **au code près** (`h.taxonId === taxonObserve`). La base
+porte des ESPÈCES (`pinus-pinaster`, `picea-abies`…, fiche du fomès) et des
+GENRES (`pinus`, `quercus`…, les autres fiches). Une photo reconnue « pin
+maritime » écarte donc toute fiche à liste d'hôtes close qui ne nomme que
+« pin » : un diagnostic manqué sans un mot, le pire effet que le commentaire
+du moteur nomme lui-même. **À faire, en lot à part** : un test rouge (une
+espèce, une fiche au genre), puis l'hôte reconnu quand l'espèce appartient au
+genre (le nom latin le dit : « Pinus pinaster » est dans « Pinus »), dans une
+fonction pure. Niveau 3 (le moteur).
+
 ## IDÉE À DESSINER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
 
 Sa proposition : *« une fois que quelqu'un a photographié un champignon ou une
