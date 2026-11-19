@@ -9,6 +9,7 @@ Format : le plus récent en tête.
 ## 2026-11-19
 
 - **Le retour d'intervention dit « Mme » à une cliente** (sa demande : « il faut corriger ça »). Le PDF adressait « Mr. Lefèvre » à Mme Lefèvre : à l'envoi, la fiche figeait le nom du client, jamais sa civilité. Elle se fige désormais avec lui (migration 0185), et les rapports déjà partis la reçoivent de la fiche de leur client. `ARCHITECTURE.md` §588. Suite pure vue rouge puis verte, migration éprouvée sur une base habitée.
+- **Un compte créé par l'inscription fait son premier devis** (sa question : « et les nouveaux comptes ne peuvent pas faire de devis ???? »). Le compteur des numéros n'était pas posé à l'inscription : le premier devis, la première facture et le premier avoir tombaient. Les deux chemins qui créent une entreprise passent désormais par la même mise en place (`poserLEntrepriseNeuve`), et la migration 0186 pose le compteur aux comptes déjà inscrits, sans toucher aux numéros des autres. `ARCHITECTURE.md` §589. Suite base vue rouge puis verte, migration éprouvée sur une base habitée.
 
 ## 2026-11-18
 
