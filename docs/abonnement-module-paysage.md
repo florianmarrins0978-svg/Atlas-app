@@ -25,22 +25,42 @@ confirmé par lui le 19 novembre (*« ouais »*).
 | **En haut** | le bloc des outils (voir juste dessous) |
 | **Les cartes** | elles ne parlent plus de Paysage. Ajoutés, chaque prix prend 6 € (Artisan 45 €, Entreprise 65 €, Illimité 165 €) |
 | **À l'année** | +60 € ; Entreprise avec Paysage : 780 € barrés, 650 €, « Vous gagnez 130 € » |
-| **Artisan** | « Vos salariés ont accès au planning » quitte « Dans les trois formules » et se lit barré sur Artisan ; son accroche commence par « Pour vous seul. » |
+| **Artisan** | ses quatre lignes cochées, puis « Vos salariés ont accès au planning » et le reste, barrés ; son accroche commence par « Pour vous seul. » |
 | **Entreprise** | son accroche disait « Accès illimité à tous les outils » : ce n'est plus vrai. Elle dit « Jusqu'à cinq personnes qui facturent, et tous vos salariés. » |
 | **« Avec 2 salariés »** | Artisan dit « Vous avez 2 salariés. Retirez-les d'abord dans Équipe. », et le bouton s'éteint |
 
 **Le nom et le bloc, sa demande du 19 novembre** : *« quelqu'un qui découvre
 l'application voit "ajouter Paysage", il ne comprend pas ce que c'est »*, et le
 bloc *« tout blanc, tout pâle, sur un fond blanc »* ne donnait pas envie. Le
-bloc dit donc **« Ajoutez les outils de paysage »**, montre **un vrai plan
-d'arrosage** sorti par le calcul (le jardin en L de `capture-plan-arrosage.ts`),
-les trois outils avec leurs icônes de la page Paysage, et un seul bouton,
+bloc dit donc **« Ajoutez les outils de paysage »**, et un seul bouton,
 **« Ajouter pour 6 € par mois »** ; ajouté, il dit « Ajoutés à votre formule »
-et « Retirer ». Deux couleurs à choisir : **A, vert profond** (le seul bloc
-sombre de l'écran, conseillé), **B, doré**. Le bouton du bas dit « S'abonner à
-Artisan et aux outils », la carte choisie « Avec les outils ». Sur la page
-Paysage, le cadenas dit « En option » au lieu de « Paysage », et l'outil fermé
-« Ajouter les outils ».
+et « Retirer ». Le bouton du bas dit « S'abonner à Artisan et aux outils », la
+carte choisie « Avec les outils ». Sur la page Paysage, le cadenas dit « En
+option » au lieu de « Paysage », et l'outil fermé « Ajouter les outils ».
+
+**Pas d'image, le même soir.** Il n'aimait pas le plan dans le bloc, et se
+demandait s'il fallait une photo. Mon avis, retenu sur la planche : **non**.
+Réduit à 150 pixels, le plan ne se lit plus (ses cotes, ses réseaux), et une
+image qui vend doit se comprendre en une seconde ; nous n'avons aucune vraie
+photo de ses chantiers, et une photo de jardin prise ailleurs serait du décor.
+Ce qui vend, c'est ce que chaque outil fait, dit avec les phrases de l'appli
+(`phraseDeLaFermeture`). Deux présentations à choisir : **A, trois lignes**
+(l'icône, le nom, ce qu'il fait) ou **B, trois tuiles** (l'icône et le nom,
+plus court) ; et deux couleurs, **vert profond** ou **doré**, qui valent pour
+l'une comme pour l'autre. Si une image revient un jour, ce sera une vraie photo
+de ses chantiers, fournie par lui.
+
+**Artisan ne montrait plus que des lignes barrées**, sa remarque du même soir :
+ce que les trois formules ont en commun se lisait une fois, au-dessus. Il était
+déjà presque tout barré avant le module (six lignes sur six). Désormais
+« Dans les trois formules » disparaît : **Artisan porte ses quatre lignes
+cochées** (devis et factures, dictées, planning, TVA), puis ce qui lui manque,
+barré ; **Entreprise** dit « Tout ce qu'offre Artisan, et : » ; **Illimité**
+« Tout ce qu'offre Entreprise, et : », suivi de sa seule différence. Artisan
+ne barre plus que le palier du dessus (« Jusqu'à 5 personnes »), pas aussi
+« Autant de personnes que vous voulez » : deux plafonds barrés pour dire la
+même chose, c'était une ligne de trop. Les lignes ont changé de place, et
+c'est voulu : c'est la place qui rendait Artisan vide.
 
 **Une seule place, en haut.** La première planche proposait aussi le module
 dans la carte Artisan (A) : pour trois formules, il aurait fallu trois
