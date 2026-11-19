@@ -135,6 +135,38 @@ async function main() {
       );
     });
 
+    // **Sa capture du 18 novembre 2026** : rouvrir la feuille pour ajouter un
+    // homme posait une SECONDE ligne à côté de la sienne. Sa réponse : la
+    // feuille change sa ligne (`appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`).
+    await cas("rouverte, la feuille repart de SA ligne, et un homme de plus la CHANGE : une seule ligne", async () => {
+      await ouvrir();
+      assert.equal(await texte('[data-atlas="mo-hommes"]'), "2");
+      assert.equal(await texte('[data-atlas="mo-duree"]'), "2 jours");
+      assert.equal(await page.locator('[data-atlas="mo-tarif"]').inputValue(), "280");
+      assert.ok((await texte('[data-atlas="feuille-mo"]')).includes("Repris de votre ligne"), "la feuille ne dit pas qu'elle repart de sa ligne");
+      assert.equal(await texte('[data-atlas="mo-valider"]'), "Changer la main d’œuvre");
+      await page.click('[data-atlas="mo-hommes-plus"]');
+      assert.equal(await texte('[data-atlas="mo-calcul"]'), "3 hommes × 2 jours × 280 €");
+      await page.click('[data-atlas="mo-valider"]');
+      let l = await lignesMO();
+      for (const essai of [1, 2, 3, 4, 5, 6]) {
+        if (l.length === 1 && Number(l[0].quantite) === 6) break;
+        await page.waitForTimeout(essai * 500);
+        l = await lignesMO();
+      }
+      assert.deepEqual(
+        l.map((x) => ({ quantite: Number(x.quantite), montant: Number(x.montant) })),
+        [{ quantite: 6, montant: 1680 }],
+        "la feuille a posé une seconde ligne au lieu de changer la sienne"
+      );
+      const aLEcran = await page.locator('[data-atlas="croix-ligne"]').count();
+      await ouvrir();
+      assert.equal(await texte('[data-atlas="mo-hommes"]'), "3", "rouverte, la feuille ne repart pas de ses 3 hommes");
+      assert.equal(await texte('[data-atlas="mo-duree"]'), "2 jours");
+      await page.getByRole("button", { name: "Annuler" }).click();
+      assert.equal(await page.locator('[data-atlas="croix-ligne"]').count(), aLEcran, "l'écran a gardé une ligne en trop");
+    });
+
     await cas("« Mes partenaires » à droite du titre ouvre ses prix, rangés sous chaque partenaire", async () => {
       await ouvrir();
       await page.click('[data-atlas="mo-partenaires"]');
@@ -175,7 +207,7 @@ async function main() {
       );
     });
 
-    await cas("la croix ramène à son équipe, et un tarif effacé arrive À CHIFFRER, jamais à zéro", async () => {
+    await cas("la croix ramène à son équipe, et un tarif effacé met SA ligne À CHIFFRER, jamais à zéro", async () => {
       await ouvrir();
       await page.click('[data-atlas="mo-partenaires"]');
       await page.click(`[data-atlas="mo-prix-${prixFaience}"]`);
@@ -184,10 +216,17 @@ async function main() {
       await page.fill('[data-atlas="mo-tarif"]', "");
       assert.equal(await texte('[data-atlas="mo-total"]'), "à chiffrer");
       await page.click('[data-atlas="mo-valider"]');
-      const l = (await quandIlYEnA(4))[3];
-      assert.ok(l, "la ligne à chiffrer n'est pas en base");
-      assert.equal(l.a_chiffrer, true, "une main d'œuvre sans prix ne retient pas le devis");
-      assert.equal(Number(l.montant), 0);
+      // Sa ligne change (planche du 18 novembre 2026) : les deux partenaires
+      // gardent les leurs, et il n'en naît pas une quatrième.
+      let l = await lignesMO();
+      for (const essai of [1, 2, 3, 4, 5, 6]) {
+        if (l[0]?.a_chiffrer) break;
+        await page.waitForTimeout(essai * 500);
+        l = await lignesMO();
+      }
+      assert.equal(l.length, 3, `une ligne est née au lieu de changer la sienne : ${l.map((x) => x.libelle).join(", ")}`);
+      assert.equal(l[0].a_chiffrer, true, "une main d'œuvre sans prix ne retient pas le devis");
+      assert.equal(Number(l[0].montant), 0);
     });
 
     // ── RÉPARTIE SUR LES TRAVAUX — la même feuille, l'autre choix ───────────

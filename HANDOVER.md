@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE (19 novembre 2026), PAS ENCORE SUR `main`
+
+Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0185) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §589.
+
 ## LA DÉSIGNATION NE PORTE NI SES RÉPONSES À LA GRILLE NI PARENTHÈSES (19 novembre 2026), SUR `main`
 
 Ses réponses « Avant de chiffrer » (façon d'abattre, diamètre) restent écrites dans le libellé en base, parce que les moteurs y relisent le diamètre ; `libelleClient` les retire de ce que le client lit, nom choisi par lui compris (`methodeLibelle`, lu dans ses grilles). Cette écriture puis effacement est une dette : ranger ses réponses dans leurs colonnes seules la supprimerait (proposé le 19 novembre, sans réponse encore). `ARCHITECTURE.md` §588.

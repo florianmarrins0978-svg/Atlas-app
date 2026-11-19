@@ -1,34 +1,44 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE (18 novembre 2026)
+## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : CODÉ, BATTERIE SUR SON « OUI » (19 novembre 2026)
 
-Sa capture : un devis préparé « sur une ligne » porte déjà sa main d'œuvre
-(2 hommes × 2 jours, 4 jour/homme, 1 600 €). Il ouvre « Main d'œuvre » pour
-ajouter un homme : la feuille repart de sa dictée (2 × 2, « Repris de votre
-dictée ») et **pose une seconde ligne** « Main d’œuvre » 6 jour/homme, 2 400 €.
-Ses mots : *« il me recrée une autre ligne avec de la main d'œuvre, alors que
-sur la première ligne il y a les 1 600 € ; ça devrait juste s'ajouter »*.
-Vrai aussi sur `main`, lu dans le code (pas vu à l'écran ici) :
-`ajouterMainDoeuvreChoisieAction` appelle toujours `ajouterLignePrix`, et
-`donneesDeLaMainOeuvre` ne lit que la dictée, jamais les lignes du devis.
+Sa capture du 18 novembre, sa réponse (*« changer ma ligne »*), sa planche
+(`appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`) ; le 19 : *« on a
+déjà fait une planche hier »*, donc codée. `ARCHITECTURE.md` §589, migration
+0185. Types, style, `test-feuille-main-oeuvre.ts` (sept cas vus rouges) verts.
+**Pas joué** : `test-main-oeuvre-change-sa-ligne-db.ts`,
+`test-feuille-main-oeuvre-e2e.ts` (son geste, rouge attendu sur `main`), puis la
+batterie (niveau 3 : migration, argent). Tout vide la base d'essai : son « oui »
+d'abord.
 
-**Sa réponse du 18 novembre** : la feuille **CHANGE la ligne de son équipe**
-(une seule ligne, 3 hommes × 2 jours = 6 jour/homme, 2 400 €), elle n'y ajoute
-pas (10 jour/homme, 4 000 €, écarté : les 4 jours déjà posés compteraient deux
-fois). Puis planche sur le vrai devis (`CLAUDE.md` §3 bis, quinquies), le code
-ensuite.
-Gravité argent : niveau 3. Une main d'œuvre de partenaire garde sa ligne à son
-nom, sauf avis contraire de sa part.
+## DEUX RENCONTRES DE LA MAIN D'ŒUVRE TROUVÉES EN CODANT §589 (19 novembre 2026)
 
-**La planche** : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`, figée
-sur le vrai devis et la vraie feuille (`scripts/planche-figee/`). Aujourd'hui :
-la seconde ligne arrive (6 jour/homme, 2 400 €, à côté des 1 600 €). Proposé :
-« Repris de votre ligne », « Changer la main d’œuvre », et sa ligne passe à
-6 jour/homme, 2 400 €. **Rien dans `src/`.** Proposé aussi, à lui de le dire :
-« Répartis sur les travaux » retire sa ligne et verse le montant dans le prix
-des travaux (sinon les deux compteraient). **À trancher en codant** : une
-ligne dont les jours ne se lisent pas en hommes × jours (5 jour/homme tapés à
-la main) s'ouvre sur quoi.
+1. **Répartir une seconde fois AJOUTE** aux parts déjà posées
+   (`partsAppliquees` part de la part d'avant) : la même main d'œuvre répartie
+   deux fois compterait deux fois. Pas vu chez lui ; lu dans le code.
+2. **Préparer le devis à nouveau repart de la dictée** (2 hommes), pas de la
+   ligne qu'il a changée à 3 : sa correction se perd au rejeu. Lu dans le code.
+
+Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
+son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
+
+## RANGER SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
+
+Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
+chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
+(les moteurs y relisent le diamètre), `debutsDUnLibelleEnrichi` les reconnaît
+sous deux formes, `libelleClient` les efface (§588). Les colonnes `methode` et
+`caracteristiques` les portent déjà (`structureDepuisPrecisions`), et
+`mesuresResolues` les lit.
+
+**Ordre retenu, le 19 novembre** : après §589. En deux temps :
+1. ne plus les écrire dans le libellé, ses réponses l'emportant dans les
+   colonnes. **Une planche d'abord** : aujourd'hui il ne relit ses réponses que
+   dans ce libellé (lu dans le code, aucun écran ne montre les colonnes), il
+   faut donc les montrer ailleurs ;
+2. une fois les libellés d'avant convertis (migration de données, base habitée,
+   FORCE RLS), retirer `debutsDUnLibelleEnrichi` et l'effacement de
+   `libelleClient`.
 
 ## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
 

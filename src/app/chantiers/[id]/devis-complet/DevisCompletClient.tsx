@@ -50,7 +50,7 @@ import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
 import FeuilleDuTaux from "@/components/atlas/FeuilleDuTaux";
 import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
 import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
-import type { ChoixDeMainOeuvre, DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
+import { estLaLigneDeSonEquipe, type ChoixDeMainOeuvre, type DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
@@ -153,6 +153,8 @@ type Ligne = {
   /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
+  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
+  hommesMainDoeuvre?: number | null;
 };
 
 /**
@@ -917,6 +919,15 @@ export default function DevisCompletClient(props: Props) {
    */
   const [tauxDeLaMainOeuvre, setTauxDeLaMainOeuvre] = useState<string | null>(null);
   const [refusMainOeuvre, setRefusMainOeuvre] = useState<string | null>(null);
+  // La ligne de son équipe dans la TVA où il a appuyé : la feuille s'ouvre sur
+  // elle et la change (sa planche du 18 novembre 2026). La première, quand un
+  // devis d'avant en porte deux.
+  const saLigneDeMainOeuvre = lignesVisibles.find(
+    (l) =>
+      estLaLigneDeSonEquipe(l) &&
+      !estLigneOuverte(l.id) &&
+      (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+  );
 
   /**
    * « Répartis sur les travaux » : chaque travail reçoit sa part dans son prix.
@@ -926,17 +937,22 @@ export default function DevisCompletClient(props: Props) {
   async function repartirMainDoeuvre(choix: ChoixDeMainOeuvre, parts: Record<string, number>) {
     setFeuille(null);
     setRefusMainOeuvre(null);
-    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts));
+    const remplace = saLigneDeMainOeuvre?.id ?? null;
+    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts, remplace));
     if (!pose) return;
     if (!pose.ok) {
       setRefusMainOeuvre(pose.raison);
       return;
     }
+    // Répartie, la main d'œuvre de son équipe entre dans le prix des travaux :
+    // sa ligne part, le serveur l'a retirée dans la même écriture.
     setLignes((cur) =>
-      cur.map((l) => {
-        const r = pose.lignes.find((x) => x.id === l.id);
-        return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
-      })
+      cur
+        .filter((l) => l.id !== pose.retiree)
+        .map((l) => {
+          const r = pose.lignes.find((x) => x.id === l.id);
+          return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
+        })
     );
     annoncer(...pose.lignes.map((r) => `ligne:${r.id}`));
   }
@@ -946,32 +962,34 @@ export default function DevisCompletClient(props: Props) {
     setRefusMainOeuvre(null);
     // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
     const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    // Sa planche du 18 novembre 2026 : son équipe CHANGE sa ligne ; un
+    // partenaire pose la sienne, à son nom.
+    const saLigne = choix.qui === "equipe" ? (saLigneDeMainOeuvre?.id ?? null) : null;
     const pose = await aLaSuite(async () => {
       if (ouverte) await idEnBase(ouverte);
-      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix);
+      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix, saLigne);
     });
     if (!pose) return;
     if (!pose.ok) {
       setRefusMainOeuvre(pose.raison);
       return;
     }
-    const creee = pose.ligne;
-    setLignes((cur) => [
-      ...cur,
-      {
-        id: creee.id,
-        libelle: creee.libelle,
-        quantite: creee.quantite,
-        // À chiffrer, la case du prix arrive VIDE : un zéro s'y lirait gratuit.
-        prixUnitaire: creee.aChiffrer ? "" : creee.prixUnitaire,
-        montant: creee.montant,
-        unite: creee.unite,
-        aChiffrer: creee.aChiffrer,
-        tauxTva: creee.tauxTva ?? null,
-        mainDoeuvre: true,
-      },
-    ]);
-    annoncer(`ligne:${creee.id}`);
+    const posee = pose.ligne;
+    const aLEcran: Ligne = {
+      id: posee.id,
+      libelle: posee.libelle,
+      quantite: posee.quantite,
+      // À chiffrer, la case du prix arrive VIDE : un zéro s'y lirait gratuit.
+      prixUnitaire: posee.aChiffrer ? "" : posee.prixUnitaire,
+      montant: posee.montant,
+      unite: posee.unite,
+      aChiffrer: posee.aChiffrer,
+      tauxTva: posee.tauxTva ?? null,
+      mainDoeuvre: true,
+      hommesMainDoeuvre: posee.hommesMainDoeuvre,
+    };
+    setLignes((cur) => (pose.changee ? cur.map((l) => (l.id === posee.id ? { ...l, ...aLEcran } : l)) : [...cur, aLEcran]));
+    annoncer(`ligne:${posee.id}`);
   }
 
   /**
@@ -2029,6 +2047,7 @@ export default function DevisCompletClient(props: Props) {
       <FeuilleMainDoeuvre
         ouverte={feuille === "mo"}
         donnees={props.mainOeuvre}
+        saLigne={saLigneDeMainOeuvre}
         repartition={{
           // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
           // d'œuvre répartie prend le taux de chaque travail, donc celui-là.

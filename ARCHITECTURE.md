@@ -37649,3 +37649,24 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | **la désignation ne porte aucune parenthèse** ; ce qu'elles disaient reste dans la phrase (« Abattage d'un chêne Quercus robur »), colonnes ou non (`sansParentheses`) | sa réponse du 18 novembre, devant le nom latin que la lecture de la dictée met entre parenthèses : *« il reste, sans les ( ) »*. Enlever deux signes n'efface rien ; quatre anciens contrôles qui attendaient les parenthèses attendent désormais les mêmes mots sans elles |
 
 `test-libelle-client.ts` (six cas, cinq vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).
+
+## §589 : La feuille « Main d'œuvre » change la ligne de son équipe
+
+*18 novembre 2026, sa capture : un devis préparé « sur une ligne » portait sa main d'œuvre (2 hommes × 2 jours, 4 jour/homme, 1 600 €) ; « Main d'œuvre » pour ajouter un homme posait une seconde ligne de 2 400 € à côté. Ses mots : « ça devrait juste s'ajouter ». Sa réponse : « changer ma ligne », une seule ligne à 3 hommes × 2 jours. Planche : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`.*
+
+**D'où venait la seconde ligne.** La feuille ne connaissait que la dictée (`donneesDeLaMainOeuvre`) et l'action appelait toujours `ajouterLignePrix`. La dictée, la feuille, ses partenaires et la répartition posaient chacun de la main d'œuvre sans savoir que les autres existaient.
+
+| Décision | Pourquoi |
+|---|---|
+| la ligne de son équipe se reconnaît à `main_doeuvre` ET à l'unité « jour/homme » (`estLaLigneDeSonEquipe`) | un partenaire garde l'unité de son prix, et `UNITES_ACHAT` n'a pas de « jour/homme » ; le libellé, lui, il le renomme au doigt |
+| une par TVA : l'écran prend la première de la TVA où il a appuyé, le serveur revérifie qu'elle est encore celle de son équipe | l'écran a pu vieillir ; une ligne effacée, un travail ou un partenaire ne se réécrit pas, et le refus se dit |
+| « Changer la main d’œuvre » change quantité, prix et hommes ; son libellé reste le sien (`poserLaMainDoeuvreDeLaFeuille`) | sa réponse ; 10 jour/homme (ajouter les 6 aux 4) était écarté, les 4 jours compteraient deux fois |
+| un partenaire pose toujours SA ligne, à son nom | sa réponse : *« il faudrait qu'elle se mette sur une autre ligne »* |
+| « Répartis sur les travaux » retire sa ligne dans la même transaction que les parts | répartie, sa main d'œuvre entre dans le prix des travaux ; la ligne laissée à côté la compterait deux fois |
+| `lignes_prix.hommes_main_doeuvre` (migration 0185, expand seul) | 6 jour/homme ne disent pas 3 × 2 ou 2 × 3 ; la feuille se rouvre sur ce qu'il a posé. Sans la colonne (ligne d'avant), les hommes de la dictée, sinon un homme, au premier cran qui garde ses jours d'homme (`equipeDeSaLigne`) |
+| la préparation du devis écrit aussi ses hommes : ceux qu'elle facture, un engin avec son homme en moins | 2 hommes et une mini pelle font 1 homme × 2 jours sur la ligne (`journeesFacturees`) |
+| les hommes passent par un paramètre que seul le serveur fournit (`modifierLignePrix(…, duServeur)`) | les actions d'édition transmettent `data` tel que la page l'envoie ; la liste de `seulement` ne s'élargit pas |
+
+**Ce que ce lot ne règle pas, et que le relevé a trouvé** : répartir une seconde fois AJOUTE aux parts posées (`partsAppliquees` part de la part d'avant) ; et préparer le devis à nouveau repart de la dictée (2 hommes), pas de la ligne qu'il a changée. Les deux sont dans `TODO.md`.
+
+`test-feuille-main-oeuvre.ts` (sept cas, vus rouges avant), `test-main-oeuvre-change-sa-ligne-db.ts` (sa dictée, « Changer », le partenaire, les refus, « Répartis »), `test-feuille-main-oeuvre-e2e.ts` (son geste : rouvrir, un homme de plus, une seule ligne).

@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-19
+
+- **La feuille « Main d'œuvre » change la ligne de son équipe au lieu d'en poser une seconde** (sa capture : 2 400 € à côté des 1 600 €, puis sa réponse *« changer ma ligne »*). Rouverte, elle repart de sa ligne (« Repris de votre ligne ») et « Changer la main d’œuvre » la change : 3 hommes × 2 jours font une seule ligne de 6 jour/homme. Un partenaire garde sa propre ligne ; « Répartis sur les travaux » retire sa ligne, sinon la main d'œuvre compterait deux fois. Les hommes se gardent sur la ligne (migration 0185, une colonne vide sur les lignes d'avant). `ARCHITECTURE.md` §589.
+
 ## 2026-11-18
 
 - **Sa façon d'abattre et le diamètre ne s'écrivent plus sur la désignation** (sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) »). La parenthèse de ses réponses à la grille part de ce que le client lit ; la ligne reste chiffrée par sa case, et le texte en base les garde pour les moteurs. Vrai pour une façon d'abattre qu'il a nommée lui-même (son nom est lu dans ses grilles, `listerPrestationsDuDevis`) comme pour celles d'origine. **Et plus aucune parenthèse sur la désignation** (sa réponse : le nom latin *« reste, sans les ( ) »*) : « Abattage d'un chêne Quercus robur ». `ARCHITECTURE.md` §588. Suite sans base : cinq cas rouges avant, verts après. Sur `main` le 19 novembre : batterie 216 sur 217, la rouge (la dictée depuis l'anneau) verte des deux côtés sur la base de `main`.

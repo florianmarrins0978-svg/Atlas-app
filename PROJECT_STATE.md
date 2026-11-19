@@ -1,5 +1,9 @@
 # État du projet
 
+## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : CODÉE, PAS ENCORE SUR `main` (19 novembre 2026)
+
+Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0185 (les hommes de sa ligne). Sur `claude/sleepy-sagan-gq6c0x` ; suites de base et navigateur, puis batterie, sur son « oui ». `ARCHITECTURE.md` §589.
+
 ## SA FAÇON D'ABATTRE ET LE DIAMÈTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : SUR `main` (19 novembre 2026)
 
 Sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Le client lit désormais « Abattage d'un chêne Quercus robur » ; la ligne reste chiffrée par sa case, et le texte en base garde ses réponses pour les moteurs. Vrai pour une façon d'abattre qu'il a nommée lui-même (lue dans ses grilles par `listerPrestationsDuDevis`). Batterie : 216 suites navigateur sur 217, la seule rouge (`test-anneau-dictee-e2e`) verte des deux côtés quand elle est rejouée sur la base de `main`, donc étrangère au lot. `ARCHITECTURE.md` §588.

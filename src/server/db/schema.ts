@@ -1414,6 +1414,12 @@ export const lignesPrix = pgTable(
      */
     joursMainDoeuvre: numeric("jours_main_doeuvre", { precision: 12, scale: 6 }),
     /**
+     * Les hommes de son équipe sur sa ligne de main d'œuvre (migration 0185) :
+     * la feuille se rouvre sur 3 hommes × 2 jours, et non sur 2 × 3, pour les
+     * mêmes 6 jour/homme. Nuls sur une ligne d'avant, un partenaire, un travail.
+     */
+    hommesMainDoeuvre: integer("hommes_main_doeuvre"),
+    /**
      * Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173),
      * comme `prixAncien` et `prixGrille` pour son travail : l'ancienne part,
      * et la même au prix du jour d'aujourd'hui quand il a bougé.
