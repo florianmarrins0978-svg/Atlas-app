@@ -201,8 +201,9 @@ l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge
    qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
    sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
    facture, qui lit le même compteur.
-2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
-   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+2. ~~**Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.**~~ **Corrigé le 19 novembre 2026** (migration 0185, la civilité
+   figée avec le nom), sur sa demande. `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
    `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
    pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
 

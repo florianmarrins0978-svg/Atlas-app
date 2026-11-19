@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-19
+
+- **Le retour d'intervention dit « Mme » à une cliente** (sa demande : « il faut corriger ça »). Le PDF adressait « Mr. Lefèvre » à Mme Lefèvre : à l'envoi, la fiche figeait le nom du client, jamais sa civilité. Elle se fige désormais avec lui (migration 0185), et les rapports déjà partis la reçoivent de la fiche de leur client. `ARCHITECTURE.md` §588. Suite pure vue rouge puis verte, migration éprouvée sur une base habitée.
+
 ## 2026-11-18
 
 - **Planche « La main d’œuvre change sa ligne »** (sa capture et son choix du 18 novembre). Sur son vrai devis, « Main d’œuvre » posait une seconde ligne (2 400 € à côté des 1 600 €) ; proposé : la feuille s'ouvre sur sa ligne et la change. `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`. Rien dans `src/`.

@@ -37632,3 +37632,18 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce qui ne marche qu'une fois arrivé chez lui** : son espace porte encore l'ancien script. Le premier passage sur le code neuf se fait par le bouton « Chercher les dernières corrections » (qui notait déjà son issue), ou par un allumage qui réussit.
 
 `scripts/test-mise-a-jour-espace.ts`, trois cas vus rouges sur le script d'avant : le refus s'écrit avec son heure, une réussite remplace le refus d'avant sans salir l'arbre, et les trois lecteurs visent le même fichier.
+
+## §588 : Le retour d'intervention fige la civilité du client avec son nom
+
+*19 novembre 2026, sa demande : « il faut corriger ça ».*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Mme Lefèvre recevait un retour d'intervention adressé à « Mr. Lefèvre » | vu sur le vrai PDF le 17 novembre |
+| La racine : à l'envoi, `figerPassage` recopiait le nom (`client_nom`, 0055), jamais la civilité ; `RapportPublic` ne la portait pas, et `avecCivilite` retombait sur sa civilité par défaut | la civilité se fige avec le nom (`client_civilite`, migration 0185), au même instant, pour la même raison : un rapport parti ne change plus |
+| Pourquoi pas la lire en direct sur la fiche du client | le nom est figé pour qu'un rapport parti ne bouge plus ; lire la civilité en direct ferait deux règles pour la même adresse |
+| Les rapports déjà partis | 0185 leur recopie la civilité de leur client, boucle par entreprise sous FORCE RLS (modèle 0037), éprouvée sur une base habitée (`test-migration-0185-base-habitee.ts`, qui sait rougir sans la boucle). Sans client ou sans civilité : NULL, rien ne s'invente |
+| La page du client | inchangée : elle écrit « chez Lefèvre », sans civilité, et personne ne l'a demandé |
+
+`test-rapport-civilite-pdf.ts`, vu rouge sur le code d'avant (« Mr. Lefèvre »).
+
