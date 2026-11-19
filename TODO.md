@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ LES FICHES DE L'INRAE À VÉRIFIER, À CÔTÉ DE LEUR PAGE (19 novembre 2026)
+
+Sa demande : *« tu vas m'enchaîner les fiches les unes après les autres sans
+jouer de batterie [...] et tu me fais la fiche et à côté la page de l'INRAE que
+tu as utilisée, que je puisse vérifier les infos ; une photo de la page suffit,
+elle n'ira jamais dans l'appli »*. Les 55 pages maladies de la rubrique Forêts
+d'Ephytia (champignons des feuilles, du tronc et des branches, des racines,
+des vaisseaux) sont lues ; les fiches sont écrites au nouveau modèle (§591).
+
+**Où il vérifie : une page PRIVÉE** (https://claude.ai/artifact/8PX6o5pUoNqJg9syfyrB78),
+et non une planche dans `appli/` : les mentions légales d'Ephytia interdisent
+de recopier ses pages, et `appli/` est publié sur un site public. La capture
+de la page de l'INRAE ne va donc ni dans le dépôt ni en ligne. Chaque fiche y
+est l'écran de l'appli CODÉE (branche de ce jour), figé sur une base locale.
+
+**Les brouillons** : écrits dans le dossier de la session, à verser dans
+`donnees/phyto/fiches/` fiche par fiche **sur son oui**, jamais avant. Règles
+ajoutées en écrivant : aucun conseil déduit d'un fait (« Que faire ? » ne dit
+que ce que la page conseille), l'INRAE seulement dans les détails, espace
+insécable avant les unités. Le « Surveillez l'arbre » du peuplier en est parti.
+**Reste** : les photos libres de plusieurs fiches (Wikimedia limitait les
+demandes) ; les confusions entre fiches proches (vides pour l'instant) ;
+« Rouilles (basidiomycètes) » est une page générale, sans fiche servable.
+
 ## IDÉE À DESSINER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
 
 Sa proposition : *« une fois que quelqu'un a photographié un champignon ou une
