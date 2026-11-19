@@ -165,9 +165,9 @@ export const FicheSchema = z.object({
   graviteSelonLaSource: z.string().min(10).nullable().default(null),
   /** Les trois notes sur 3 que donne la source, en barres à l'écran. Toutes ou
    *  aucune : contrôle 9 ci-dessous, et contrainte en base. */
-  noteImpact: z.number().int().min(1).max(3).nullable().default(null),
-  noteAgressivite: z.number().int().min(1).max(3).nullable().default(null),
-  noteFrequence: z.number().int().min(1).max(3).nullable().default(null),
+  noteImpact: z.number().int().min(0).max(3).nullable().default(null),
+  noteAgressivite: z.number().int().min(0).max(3).nullable().default(null),
+  noteFrequence: z.number().int().min(0).max(3).nullable().default(null),
   commentCaArrive: z.string().min(10).nullable().default(null),
   quandCaSeVoit: z.string().min(10).nullable().default(null),
   autresEssences: z.string().min(10).nullable().default(null),

@@ -35,13 +35,15 @@ ALTER TABLE "fiches_phyto" ADD COLUMN IF NOT EXISTS "quand_ca_se_voit" text;
 ALTER TABLE "fiches_phyto" ADD COLUMN IF NOT EXISTS "autres_essences" text;
 ALTER TABLE "taxons" ADD COLUMN IF NOT EXISTS "article" text;
 
--- Les notes se lisent sur 3, et vont ensemble. Vérifiée sur toutes les lignes
+-- Les notes se lisent sur 3, et vont ensemble. Zéro existe : la page de
+-- Phytophthora ramorum ne colore aucune case de sa fréquence, et trois cases
+-- vides disent quelque chose que « pas de note » ne dit pas. Vérifiée sur toutes les lignes
 -- par PostgreSQL : sur une base habitée, les fiches d'avant ont les trois à
 -- NULL, ce que la contrainte accepte.
 ALTER TABLE "fiches_phyto" DROP CONSTRAINT IF EXISTS "fiches_phyto_notes_source_ck";
 ALTER TABLE "fiches_phyto" ADD CONSTRAINT "fiches_phyto_notes_source_ck" CHECK (
   (note_impact IS NULL AND note_agressivite IS NULL AND note_frequence IS NULL)
-  OR (note_impact BETWEEN 1 AND 3 AND note_agressivite BETWEEN 1 AND 3 AND note_frequence BETWEEN 1 AND 3)
+  OR (note_impact BETWEEN 0 AND 3 AND note_agressivite BETWEEN 0 AND 3 AND note_frequence BETWEEN 0 AND 3)
 );
 
 ALTER TABLE "taxons" DROP CONSTRAINT IF EXISTS "taxons_article_ck";

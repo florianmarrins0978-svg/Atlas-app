@@ -618,6 +618,10 @@ cas("une fiche portant les champs neufs passe, et les garde", () => {
 
 cas("une note sur 4 n'existe pas, un article inventé non plus", () => {
   refus(lot({ fiches: [ficheValide({ noteImpact: 4, noteAgressivite: 1, noteFrequence: 1 })] }), /noteImpact/);
+  refus(lot({ fiches: [ficheValide({ noteImpact: -1, noteAgressivite: 1, noteFrequence: 1 })] }), /noteImpact/);
+  // Zéro case colorée existe sur la page de Phytophthora ramorum : il se garde.
+  const zero = validerLot(lot({ fiches: [ficheValide({ noteImpact: 2, noteAgressivite: 3, noteFrequence: 0 })] }), { autoriserFixtures: false });
+  assert.equal(zero.ok, true, zero.ok ? "" : JSON.stringify(zero.problemes));
   refus(lot({ taxons: [{ code: "populus", nomCommun: "Peuplier", article: "le" }] }), /article/);
 });
 
