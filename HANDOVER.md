@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
+
+Le PDF du retour d'intervention appelait « Mr. » chaque cliente : la civilité se fige désormais avec le nom à l'envoi (migration 0185, `ARCHITECTURE.md` §589). Un compte créé par l'inscription ne pouvait faire ni devis, ni facture, ni avoir, faute de compteur de numéros : toute entreprise neuve passe par `poserLEntrepriseNeuve`, et la migration 0186 pose le compteur aux comptes déjà inscrits (§590). Une seule batterie pour les deux, sur sa demande, verte.
+
 ## LA DÉSIGNATION NE PORTE NI SES RÉPONSES À LA GRILLE NI PARENTHÈSES (19 novembre 2026), SUR `main`
 
 Ses réponses « Avant de chiffrer » (façon d'abattre, diamètre) restent écrites dans le libellé en base, parce que les moteurs y relisent le diamètre ; `libelleClient` les retire de ce que le client lit, nom choisi par lui compris (`methodeLibelle`, lu dans ses grilles). Cette écriture puis effacement est une dette : ranger ses réponses dans leurs colonnes seules la supprimerait (proposé le 19 novembre, sans réponse encore). `ARCHITECTURE.md` §588.
