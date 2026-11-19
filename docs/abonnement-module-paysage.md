@@ -22,12 +22,25 @@ confirmé par lui le 19 novembre (*« ouais »*).
 
 | | |
 |---|---|
-| **En haut** | « Ajouter Paysage », +6 € par mois, son interrupteur, et les trois outils dessous : barrés éteint, cochés allumé |
-| **Les cartes** | elles ne parlent plus de Paysage. Allumé, chaque prix prend 6 € (Artisan 45 €, Entreprise 65 €, Illimité 165 €), la carte choisie dit « Avec Paysage », le bouton dit « S'abonner à Entreprise et Paysage » |
+| **En haut** | le bloc des outils (voir juste dessous) |
+| **Les cartes** | elles ne parlent plus de Paysage. Ajoutés, chaque prix prend 6 € (Artisan 45 €, Entreprise 65 €, Illimité 165 €) |
 | **À l'année** | +60 € ; Entreprise avec Paysage : 780 € barrés, 650 €, « Vous gagnez 130 € » |
 | **Artisan** | « Vos salariés ont accès au planning » quitte « Dans les trois formules » et se lit barré sur Artisan ; son accroche commence par « Pour vous seul. » |
 | **Entreprise** | son accroche disait « Accès illimité à tous les outils » : ce n'est plus vrai. Elle dit « Jusqu'à cinq personnes qui facturent, et tous vos salariés. » |
 | **« Avec 2 salariés »** | Artisan dit « Vous avez 2 salariés. Retirez-les d'abord dans Équipe. », et le bouton s'éteint |
+
+**Le nom et le bloc, sa demande du 19 novembre** : *« quelqu'un qui découvre
+l'application voit "ajouter Paysage", il ne comprend pas ce que c'est »*, et le
+bloc *« tout blanc, tout pâle, sur un fond blanc »* ne donnait pas envie. Le
+bloc dit donc **« Ajoutez les outils de paysage »**, montre **un vrai plan
+d'arrosage** sorti par le calcul (le jardin en L de `capture-plan-arrosage.ts`),
+les trois outils avec leurs icônes de la page Paysage, et un seul bouton,
+**« Ajouter pour 6 € par mois »** ; ajouté, il dit « Ajoutés à votre formule »
+et « Retirer ». Deux couleurs à choisir : **A, vert profond** (le seul bloc
+sombre de l'écran, conseillé), **B, doré**. Le bouton du bas dit « S'abonner à
+Artisan et aux outils », la carte choisie « Avec les outils ». Sur la page
+Paysage, le cadenas dit « En option » au lieu de « Paysage », et l'outil fermé
+« Ajouter les outils ».
 
 **Une seule place, en haut.** La première planche proposait aussi le module
 dans la carte Artisan (A) : pour trois formules, il aurait fallu trois
@@ -52,7 +65,7 @@ Planche : `appli/soignee/paysage-plan-offert.html`, sur la vraie page Paysage.
 | ce qui ne la consomme pas | un croquis refusé (métrés manquants, photo illisible), une photo de plante refusée : il n'a rien eu, il n'a rien dépensé |
 | les retouches du plan offert | comprises : demander une modification du même plan ne compte pas un second plan |
 | les fiches de chantier | pas d'offre ; ouvertes pendant l'essai (elles ne coûtent aucune IA), fermées ensuite sans Paysage |
-| à l'écran | « 1 offert » à la place du cadenas dans Paysage ; une fois l'offre prise, le cadenas et « Paysage » ; l'outil fermé dit « Votre plan offert est fait. Pour les suivants, ajoutez Paysage : 6 € HT par mois. » et son bouton « Ajouter Paysage » ouvre l'Abonnement, Paysage déjà allumé |
+| à l'écran | « 1 offert » à la place du cadenas dans Paysage ; une fois l'offre prise, le cadenas et « En option » ; l'outil fermé dit « Votre plan offert est fait. Pour les suivants, ajoutez les outils de paysage : 6 € HT par mois. » et son bouton « Ajouter les outils » ouvre l'Abonnement, les outils déjà ajoutés |
 
 **Écart à son écran, dit** : la ligne rouge « Aucun fournisseur de lecture
 d'image n'est configuré » a été retirée de l'écran d'arrosage figé. Elle vient
