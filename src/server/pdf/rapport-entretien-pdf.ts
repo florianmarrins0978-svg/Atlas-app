@@ -52,6 +52,9 @@ export async function composerRapportEntretienPdf(
       ...entete,
       entrepriseNom: rapport.entrepriseNom,
       clientNom: rapport.clientNom,
+      // La civilité figée à l'envoi : sans elle, `avecCivilite` retombait sur
+      // « Mr. » devant chaque cliente (migration 0185).
+      clientCivilite: rapport.clientCivilite,
       lignes,
       conditionsPaiement: rapport.observations,
       // Le moteur commun exige ces champs ; `sansChiffrage` n'en imprime aucun.

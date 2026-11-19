@@ -50,6 +50,8 @@ plus court) ; et deux couleurs, **vert profond** ou **doré**, qui valent pour
 l'une comme pour l'autre. Si une image revient un jour, ce sera une vraie photo
 de ses chantiers, fournie par lui.
 
+**Son choix du 19 novembre : A, trois lignes, en doré.**
+
 **Artisan ne montrait plus que des lignes barrées**, sa remarque du même soir :
 ce que les trois formules ont en commun se lisait une fois, au-dessus. Il était
 déjà presque tout barré avant le module (six lignes sur six). Désormais

@@ -106,8 +106,8 @@ Paysage ; planche `appli/soignee/paysage-plan-offert.html` sur la vraie page
 Paysage (ce qui consomme l'offre, et ce qui ne la consomme pas : même
 document). **Le 19 novembre encore** : le bloc dit « Ajoutez les outils de
 paysage », **sans image** (le plan réduit ne se lisait pas), et se choisit en
-**A, trois lignes** ou **B, trois tuiles**, **vert profond** ou **doré** : à
-trancher par lui. « Dans les trois formules » disparaît : Artisan porte ses
+**A, trois lignes** ou **B, trois tuiles**, **vert profond** ou **doré**.
+**Tranché par lui le 19 novembre : A, trois lignes, en doré.** « Dans les trois formules » disparaît : Artisan porte ses
 quatre lignes cochées, Entreprise dit « Tout ce qu'offre Artisan, et : », Illimité « Tout ce qu'offre Entreprise, et : ». Puis : la version 4 des conditions générales (la version 3 dit
 les salariés jamais comptés et Paysage compris dans Entreprise), et les
 plafonds d'IA avec le module.
@@ -233,7 +233,7 @@ désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
 l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
 
-1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+1. ~~**Un compte créé par l'inscription ne peut pas faire son premier devis.**~~ **Corrigé le 19 novembre 2026** (`poserLEntrepriseNeuve`, migration 0186), sur sa demande.
    `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
    n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
    `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :
@@ -243,8 +243,9 @@ l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge
    qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
    sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
    facture, qui lit le même compteur.
-2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
-   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+2. ~~**Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.**~~ **Corrigé le 19 novembre 2026** (migration 0185, la civilité
+   figée avec le nom), sur sa demande. `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
    `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
    pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
 
