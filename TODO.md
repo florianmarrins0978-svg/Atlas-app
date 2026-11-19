@@ -18,12 +18,17 @@ Aujourd'hui : la capture de l'écran réel. Huit chartes. Exemple : la fiche 4
 (peuplier), importée dans la base locale de la session seulement, jamais dans
 `donnees/`. **Rien dans `src/`.**
 
-**À trancher par lui** :
+**Ses retouches du 19 novembre, portées sur la planche** : les trois notes de
+l'INRAE restent, **en barres seules**, sans « 1 sur 3 » à côté ni la ligne
+« Les notes de l'INRAE » ; **rien sous la photo** : sa légende et son crédit
+(auteur, licence), puis la source, vont **tout en bas de « Voir les détails »,
+sous « Rattacher à un chantier »**. Codées, les notes feront trois champs de
+plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ;
+sans note, la ligne disparaît et la phrase reste entière. Le crédit d'une
+photo libre reste ainsi affiché sur la fiche, une fois les détails ouverts.
 
-| | |
-|---|---|
-| **les trois notes de l'INRAE** (impact, agressivité, fréquence, sur 3) en jauges sous « Est-ce grave pour l'arbre ? » | la planche les lit dans la phrase `graviteSelonLaSource`. Codées, ce seraient trois champs de plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ; sans note, la ligne disparaît et la phrase reste entière |
-| le code : toute la planche ou une partie | elle s'ajoute au lot du 22 septembre (migration, donc niveau 3) |
+**Encore à trancher par lui** : le code, toute la planche ou une partie. Elle
+s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 
 **Trouvé en regardant l'écran réel, à corriger en codant la fiche 4** : la
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
