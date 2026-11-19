@@ -308,6 +308,40 @@ de la planche B). Tant que l'encadré est vide, il ne gêne pas ; avec une
 signature dedans, il passe sur son haut. Pas touché ici (le film montre le PDF
 tel qu'il est) : à regarder dans le lot de la signature.
 
+**Le 19 novembre, deux défauts qu'il a vus.** *« Comme si elle freezait une
+demi-seconde »* à l'ouverture : c'était le geste de l'appli (le « + » tourne
+520 ms avant que la fiche monte, son choix du 6 octobre), invisible à la taille
+du site. Le film de cette page est recoupé (`nov-creer-un-devis-vif`,
+`appli/scripts/film-creer-un-devis-vif.sh`) et la caméra suit l'horloge du
+film : **corrigé**. *« L'écran passe de plein écran à un peu plus petit quand
+on reste figé dessus »* sur le retour du soir : c'est dans le film
+(`nov-film-travaux`). La carte repliée, la caméra recule quatorze images sur un
+écran immobile. **Pas corrigé** : ses sources ne sont pas dans le dépôt, et sa
+question ci-dessous décide de ce qu'il devient. Trouvé en cherchant, et
+corrigé : à la fin d'un film, sa première image repassait le temps d'un rendu.
+
+**Sa question du même message, EN ATTENTE DE SA RÉPONSE :** *« est-ce que les
+retours du soir, il ne faut pas les mettre sur la même cinématique que Waze, le
+téléphone, et ensuite on montre les travaux à cocher, et une fois coché, bam,
+que ça débarque sur le retour du soir. Ça fait peut-être une cinématique de
+moins. Qu'est-ce que t'en penses ? »* **Mon avis, donné le 19 : oui.** Dans
+l'appli, les travaux et le retour du jour vivent DANS la fiche d'intervention
+(la rangée « Travaux à faire » s'y déplie) : une seule cinématique sur la fiche
+dit « tout tient sur la fiche », et la facture ne vient plus avant le soir. Ce
+que ça coûte : une dizaine de secondes de film ; la note de la fiche ne
+s'écrirait plus (la remarque du retour tient ce rôle) ; la section « Et aussi »
+disparaît. **À savoir avant de le faire :** la fiche travaux a été refaite dans
+l'appli le 6 novembre (la A : le nom en grand, la quantité à droite, « 4
+travaux »), et le film comme la capture de la fiche montrent encore l'ancienne.
+Filmer celle d'aujourd'hui demande de lancer l'appli ici sur une base d'essai
+(serveur, amorçage : son oui), comme l'en-tête de `cause.html` le raconte pour
+les films du 7 novembre. **S'il garde la scène à part** : recouper la fin du
+film des travaux pour que la caméra recule PENDANT que la carte se replie.
+
+**Les deux autres pages** (`cause.html`, `chapitres-6.html`) gardent le film
+d'ouverture d'origine et l'ancienne fin de film : à reporter le jour où il dit
+laquelle reste.
+
 **Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
 qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
 d'appel dessinés lui conviennent, et la phrase de la note. Si le paraphe et la
