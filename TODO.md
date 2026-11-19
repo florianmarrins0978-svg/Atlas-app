@@ -100,8 +100,10 @@ diagnostic **offerts une seule fois par entreprise, essai compris**, puis
 Paysage ; planche `appli/soignee/paysage-plan-offert.html` sur la vraie page
 Paysage (ce qui consomme l'offre, et ce qui ne la consomme pas : même
 document). **Le 19 novembre encore** : le bloc dit « Ajoutez les outils de
-paysage », montre un vrai plan, et se choisit en **A, vert profond**
-(conseillé) ou **B, doré** : à trancher par lui. Puis : la version 4 des conditions générales (la version 3 dit
+paysage », **sans image** (le plan réduit ne se lisait pas), et se choisit en
+**A, trois lignes** ou **B, trois tuiles**, **vert profond** ou **doré** : à
+trancher par lui. « Dans les trois formules » disparaît : Artisan porte ses
+quatre lignes cochées, Entreprise dit « Tout ce qu'offre Artisan, et : », Illimité « Tout ce qu'offre Entreprise, et : ». Puis : la version 4 des conditions générales (la version 3 dit
 les salariés jamais comptés et Paysage compris dans Entreprise), et les
 plafonds d'IA avec le module.
 
