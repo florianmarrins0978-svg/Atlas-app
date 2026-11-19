@@ -33,9 +33,11 @@
    Le devis sur lequel elle se pose est le vrai PDF du chantier Lemaire
    (vente/images/nov-devis.jpg). La signature dans son encadré et la mention
    « Signé en ligne par » sont posées dessus comme la planche les montre, à
-   la même place et dans le même caractère : la fonction est en cours de
-   codage, il n'existe pas encore de PDF signé à photographier. Le jour où
-   elle est dans l'appli, ce film se refait en filmant l'appli.
+   la même place et dans le même caractère : la fonction était en cours de
+   codage, il n'existait pas encore de PDF signé à photographier.
+   DEPUIS : la signature a été livrée dans l'appli le soir même (18 novembre
+   2026). Ce film est donc à refaire en filmant l'appli ; cette composition
+   ne vaut que d'ici là.
 
    CE QUI EST DU MONTAGE, ET PAS DE L'APPLI. La feuille monte et redescend
    (dans l'appli elle apparaît d'un coup), la case des quatorze jours prend
