@@ -191,7 +191,7 @@ désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
 l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
 
-1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+1. ~~**Un compte créé par l'inscription ne peut pas faire son premier devis.**~~ **Corrigé le 19 novembre 2026** (`poserLEntrepriseNeuve`, migration 0186), sur sa demande.
    `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
    n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
    `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :

@@ -37632,3 +37632,15 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce qui ne marche qu'une fois arrivé chez lui** : son espace porte encore l'ancien script. Le premier passage sur le code neuf se fait par le bouton « Chercher les dernières corrections » (qui notait déjà son issue), ou par un allumage qui réussit.
 
 `scripts/test-mise-a-jour-espace.ts`, trois cas vus rouges sur le script d'avant : le refus s'écrit avec son heure, une réussite remplace le refus d'avant sans salir l'arbre, et les trois lecteurs visent le même fichier.
+
+## §589 : Toute entreprise neuve reçoit la même mise en place, quel que soit son chemin
+
+*19 novembre 2026, sa question : « et les nouveaux comptes ne peuvent pas faire de devis ???? »*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Un compte créé par la porte d'inscription (`creerSonCompte`) tombait sur son premier devis : « Cannot read properties of undefined (reading 'numero') » | vu le 17 novembre sur un compte créé par le vrai parcours, reproduit par `test-compte-neuf-numerote-db.ts` |
+| La racine : deux chemins créent une entreprise, et chacun recopiait sa mise en place ; `creerEntreprise` posait le compteur des numéros, `creerSonCompte` l'oubliait. Les suites passent par le premier : personne ne le voyait | une seule fonction, `poserLEntrepriseNeuve` (propriétaire, compteur, modèle de fiche), appelée par les deux. La recopie de la porte est retirée |
+| Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
+| Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
+

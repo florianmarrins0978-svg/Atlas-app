@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-19
+
+- **Un compte créé par l'inscription fait son premier devis** (sa question : « et les nouveaux comptes ne peuvent pas faire de devis ???? »). Le compteur des numéros n'était pas posé à l'inscription : le premier devis, la première facture et le premier avoir tombaient. Les deux chemins qui créent une entreprise passent désormais par la même mise en place (`poserLEntrepriseNeuve`), et la migration 0186 pose le compteur aux comptes déjà inscrits, sans toucher aux numéros des autres. `ARCHITECTURE.md` §589. Suite base vue rouge puis verte, migration éprouvée sur une base habitée.
+
 ## 2026-11-18
 
 - **Planche « La main d’œuvre change sa ligne »** (sa capture et son choix du 18 novembre). Sur son vrai devis, « Main d’œuvre » posait une seconde ligne (2 400 € à côté des 1 600 €) ; proposé : la feuille s'ouvre sur sa ligne et la change. `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`. Rien dans `src/`.
