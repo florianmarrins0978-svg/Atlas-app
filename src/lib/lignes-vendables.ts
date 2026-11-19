@@ -70,6 +70,8 @@ export type PrestationAGrouper = {
    */
   espece?: string | null;
   methode?: string | null;
+  /** Le nom de cette technique dans SA grille (`listerPrestationsDuDevis`). */
+  methodeLibelle?: string | null;
   caracteristiques?: unknown;
   corrigeParHumain?: boolean | null;
   /** Le prix HT qu'il a dicté pour ce travail (migration 0135). */

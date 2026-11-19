@@ -37632,3 +37632,20 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce qui ne marche qu'une fois arrivé chez lui** : son espace porte encore l'ancien script. Le premier passage sur le code neuf se fait par le bouton « Chercher les dernières corrections » (qui notait déjà son issue), ou par un allumage qui réussit.
 
 `scripts/test-mise-a-jour-espace.ts`, trois cas vus rouges sur le script d'avant : le refus s'écrit avec son heure, une réussite remplace le refus d'avant sans salir l'arbre, et les trois lecteurs visent le même fichier.
+
+## §588 : Ce qu'il a choisi dans sa grille ne s'écrit pas sur la désignation
+
+*18 novembre 2026, sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Ses mots : « abattage entre 10 et 20 mètres, ça ne doit pas figurer sur la désignation. Et même le diamètre ne doit pas figurer. »*
+
+**D'où venait la parenthèse.** `libelleEnrichi` recolle ses réponses d'« Avant de chiffrer » au libellé de la prestation, en base, parce que des moteurs y relisent encore le diamètre (`mesures-arbre.ts`). `libelleClient` retire ensuite du texte client un fragment dont TOUT est déjà en colonne ; il connaissait le diamètre (`caracteristiques`) mais pas le NOM de la technique : la colonne `methode` ne porte qu'une clé, et pour une façon d'abattre qu'il a nommée lui-même (`t_abattage_entre_10_et_20_m`, tronquée, figée à sa création) le nom ne vit que dans ses grilles. La parenthèse restait entière, diamètre compris. Vrai sur `main` aussi, pas seulement sur le code ancien de son espace.
+
+| Décision | Pourquoi |
+|---|---|
+| un fragment qui nomme EN ENTIER la technique de la colonne, et ne dit rien d'autre que des mesures en colonne, s'en va (`seulementDesMesuresConnues`) | c'est la règle du 30 août (*« les caractéristiques techniques servent au moteur et au calcul du prix ; elles ne doivent PAS être répétées dans la description visible »*), étendue à la technique, que la colonne porte depuis le 31 août |
+| nommée en entier, et seulement alors | « en rétention » dicté ne dit pas « démontage avec rétention » : « Érable — démontage en rétention » se rédige toujours « Démontage en rétention d'un érable ». Un fragment qui ajoute autre chose (« côté voisin ») reste entier |
+| le nom vient de SES grilles, au serveur : `listerPrestationsDuDevis`, seule porte des quatre chemins qui écrivent un devis | une clé ne se relit pas en nom sans deviner ; le catalogue d'origine reste le repli |
+| le texte en base garde ses réponses | les moteurs y relisent le diamètre ; le retirer casserait le prix de la case en silence. Seul ce que le client lit change |
+| une technique de base répondue à la question part aussi | même règle pour toutes ; le 30 août, « Démontage en rétention d'un érable » venait d'un tiret dicté, qui ne change pas |
+| « (Quercus robur) » reste | il n'en a rien dit ; ce n'est pas une réponse de grille |
+
+`test-libelle-client.ts` (quatre cas, trois vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).

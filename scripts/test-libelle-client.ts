@@ -485,5 +485,64 @@ cas("mais un fragment qui apprend quelque chose n'est pas touché", () => {
   );
 });
 
+console.log("\n=== Ce qu'il a choisi dans sa grille ne se lit pas sur le devis ===\n");
+
+// **Sa capture du 18 novembre 2026** : « Abattage d'un chêne (Quercus robur)
+// (abattage entre 10 et 20 m, ø 80 cm) ». Ses mots : *« abattage entre 10 et
+// 20 mètres, ça ne doit pas figurer sur la désignation. Et même le diamètre ne
+// doit pas figurer. »* La parenthèse est celle que `libelleEnrichi` recolle
+// avec ses réponses d'« Avant de chiffrer » ; la case choisie est rangée en
+// colonne (`methode`), le diamètre aussi. « Abattage entre 10 et 20 m » est
+// une façon d'abattre qu'il a nommée lui-même dans sa grille : seul le serveur
+// connaît son nom, et le passe (`methodeLibelle`).
+cas("SA capture : sa façon d'abattre et le diamètre partent, le reste du libellé reste", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ⌀ 80 cm)",
+      nature: "abattage",
+      methode: "t_abattage_entre_10_et_20_m",
+      methodeLibelle: "Abattage entre 10 et 20 m",
+      caracteristiques: { diametreCm: 80 },
+    }),
+    "Abattage d'un chêne (Quercus robur)"
+  );
+});
+
+cas("une façon d'abattre de base répondue à la question part aussi, avec son diamètre", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Abattage d'un chêne mort (démontage avec rétention, ⌀ 70 cm)",
+      nature: "abattage",
+      methode: "demontage_retention",
+      caracteristiques: { diametreCm: 70 },
+    }),
+    "Abattage d'un chêne mort"
+  );
+});
+
+cas("la façon d'abattre seule, sans diamètre répondu, part de même", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Abattage d'un chêne (abattage entre 10 et 20 m)",
+      nature: "abattage",
+      methode: "t_abattage_entre_10_et_20_m",
+      methodeLibelle: "Abattage entre 10 et 20 m",
+    }),
+    "Abattage d'un chêne"
+  );
+});
+
+cas("une parenthèse qui dit AUTRE CHOSE que sa réponse reste entière", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Abattage d'un chêne (abattage entre 10 et 20 m, côté voisin)",
+      nature: "abattage",
+      methode: "t_abattage_entre_10_et_20_m",
+      methodeLibelle: "Abattage entre 10 et 20 m",
+    }),
+    "Abattage d'un chêne (abattage entre 10 et 20 m, côté voisin)"
+  );
+});
+
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
 if (echecs > 0) process.exitCode = 1;
