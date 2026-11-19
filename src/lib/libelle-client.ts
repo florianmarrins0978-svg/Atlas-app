@@ -73,6 +73,15 @@ export type PrestationLisible = {
   espece?: string | null;
   /** La technique en colonne (`demontage_retention`…), quand le texte ne la dit pas. */
   methode?: string | null;
+  /**
+   * Le NOM de cette technique dans SA grille (« Abattage entre 10 et 20 m »).
+   *
+   * Une façon d'abattre qu'il a nommée lui-même n'a qu'une clé en colonne
+   * (`t_abattage_entre_10_et_20_m`), tronquée, et qui ne suit pas un
+   * changement de nom : seul le serveur, qui lit ses grilles, sait la dire.
+   * Absent, on retombe sur le catalogue d'origine.
+   */
+  methodeLibelle?: string | null;
   caracteristiques?: unknown;
 };
 
@@ -141,16 +150,27 @@ function couvert(mot: string, valeurs: Set<string>, unites: Set<string>): boolea
  *
  * Un fragment vide de mesure ne compte pas : « — en rétention » ne porte aucun
  * chiffre, et le retirer effacerait la seule chose que ce fragment apprend.
+ *
+ * **Sauf s'il nomme EN ENTIER la technique que la colonne porte — 18 novembre
+ * 2026.** Sa capture : « Abattage d'un chêne (abattage entre 10 et 20 m, ø 80
+ * cm) », et sa règle : *« ça ne doit pas figurer sur la désignation, et même
+ * le diamètre ne doit pas figurer »*. C'est la parenthèse de `libelleEnrichi`,
+ * faite de ses réponses à la grille : la case choisie est en colonne
+ * (`methode`), le diamètre aussi. Nommée en entier, et seulement alors : « en
+ * rétention » ne dit pas « démontage avec rétention », et un fragment dicté
+ * qui la cite parmi autre chose (« côté voisin ») reste entier.
  */
 function seulementDesMesuresConnues(
   fragment: string,
   valeurs: Set<string>,
-  unites: Set<string>
+  unites: Set<string>,
+  technique: ReadonlySet<string>
 ): boolean {
   const mots = motsDe(fragment);
   if (mots.length === 0) return false;
-  if (!mots.some((m) => valeurs.has(m))) return false;
-  return mots.every((m) => couvert(m, valeurs, unites));
+  const nommeLaTechnique = technique.size > 0 && [...technique].every((m) => mots.includes(m));
+  if (!nommeLaTechnique && !mots.some((m) => valeurs.has(m))) return false;
+  return mots.every((m) => couvert(m, valeurs, unites) || technique.has(m));
 }
 
 /** Les valeurs que les colonnes portent, écrites comme un texte les écrirait. */
@@ -379,13 +399,18 @@ const TECHNIQUE_POUR_LE_CLIENT: Readonly<Record<string, string>> = {
   demontage_retention: "démontage en rétention",
 };
 
+/** Le nom d'une technique dans le catalogue d'origine, ou `null`. */
+function techniqueDuCatalogue(cle: string | null | undefined): string | null {
+  return TECHNIQUES_PAR_DEFAUT.find((t) => t.cle === cle)?.libelle ?? null;
+}
+
 function techniqueEcrite(cle: string | null | undefined): string | null {
   if (!cle) return null;
   const pourLeClient = TECHNIQUE_POUR_LE_CLIENT[cle];
   if (pourLeClient) return pourLeClient;
   // Une technique que le devis ne sait pas encore dire : on retombe sur le mot
   // du catalogue plutôt que de la taire.
-  return TECHNIQUES_PAR_DEFAUT.find((t) => t.cle === cle)?.libelle ?? null;
+  return techniqueDuCatalogue(cle);
 }
 
 /** La première lettre en capitale, le reste intact. */
@@ -406,7 +431,8 @@ export function libelleClient(p: PrestationLisible): string {
   if (!base) return "";
 
   const { valeurs, unites } = valeursConnues(p);
-  if (valeurs.size === 0 && !p.methode) return base;
+  if (valeurs.size === 0 && !p.methode) return sansParentheses(base);
+  const motsDeSaTechnique = new Set(motsDe(p.methodeLibelle ?? techniqueDuCatalogue(p.methode) ?? ""));
 
   // ── 1. Les parenthèses techniques s'en vont, OÙ QU'ELLES SOIENT ──────
   //
@@ -428,7 +454,7 @@ export function libelleClient(p: PrestationLisible): string {
     const motif = /\(([^()]*)\)/g;
     let retire = false;
     for (let m = motif.exec(reste); m !== null; m = motif.exec(reste)) {
-      if (!seulementDesMesuresConnues(m[1], valeurs, unites)) continue;
+      if (!seulementDesMesuresConnues(m[1], valeurs, unites, motsDeSaTechnique)) continue;
       const avant = reste.slice(0, m.index).trimEnd();
       const apres = reste.slice(m.index + m[0].length).trimStart();
       reste = (avant && apres ? `${avant} ${apres}` : avant + apres).trim();
@@ -459,7 +485,7 @@ export function libelleClient(p: PrestationLisible): string {
     //
     // `sansLaQuantite` garde son emploi : les fragments MIXTES, où le nombre
     // de tête est une quantité et le reste apprend quelque chose.
-    const complement = seulementDesMesuresConnues(tiret[2], valeurs, unites)
+    const complement = seulementDesMesuresConnues(tiret[2], valeurs, unites, motsDeSaTechnique)
       ? ""
       : sansLaQuantite(tiret[2], valeurs);
     if (complement.length === 0) {
@@ -494,5 +520,22 @@ export function libelleClient(p: PrestationLisible): string {
   // ses mesures — « 800 ml » et rien d'autre —, le client doit quand même lire
   // quelque chose : on rend alors le texte d'origine.
   const nettoye = reste.replace(/[\s,;:·]+$/u, "").trim();
-  return nettoye.length > 0 ? capitale(nettoye) : base;
+  return nettoye.length > 0 ? capitale(sansParentheses(nettoye)) : sansParentheses(base);
+}
+
+/**
+ * Ce que disaient les parenthèses reste dans la phrase ; elles, s'en vont.
+ *
+ * **Sa réponse du 18 novembre 2026**, devant « Abattage d'un chêne (Quercus
+ * robur) » : *« il reste, sans les ( ) »*. La lecture de la dictée met entre
+ * parenthèses ce qu'elle ajoute ; ce qui relevait des colonnes est déjà parti
+ * plus haut, le reste est du texte qu'il garde. Appliqué au texte d'origine
+ * aussi, quand rien n'est en colonne : enlever deux signes n'efface aucune
+ * information.
+ */
+function sansParentheses(texte: string): string {
+  return texte
+    .replace(/\s*\(\s*([^()]*?)\s*\)/g, (_, dedans: string) => (dedans ? ` ${dedans}` : ""))
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }

@@ -16,6 +16,14 @@ import { lireGrillePrix, poserPrixGrille, prixConnusDe } from "../src/server/rep
 import { AXES_PAR_DEFAUT, NATURES_PAR_DEFAUT, celluleAbattage } from "../src/lib/grille-prix";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as brouillonsRepo from "../src/server/repositories/brouillons-informations";
+import * as prestationsRepo from "../src/server/repositories/prestations";
+import { listerLignesPrix } from "../src/server/repositories/lignes-prix";
+import { confirmerBrouillon } from "../src/server/ai/services/brouillon-service";
+import { brouillonVide } from "../src/server/ai/schemas/extraction";
+import { questionsRestantes, enregistrerPrecisionsEtReprendre } from "../src/server/services/devis-depuis-dictee";
+import { precisionLisible } from "../src/lib/questions-chiffrage";
 
 // **« Je dois pouvoir ajouter ou retirer des cases. »** — le patron, le 14 août
 // 2026.
@@ -242,6 +250,61 @@ async function main() {
     assert.equal((await lireGrilles(A)).axes.hauteurs.length, avantA, "les hauteurs de A ont bougé");
     // Six d'origine, moins « plus de 25 m » retirée, plus la sienne.
     assert.equal((await lireGrilles(B)).axes.hauteurs.length, AXES_PAR_DEFAUT.hauteurs.length);
+  });
+
+  // **Sa capture du 18 novembre 2026** : il a nommé dans sa grille une façon
+  // d'abattre « Abattage entre 10 et 20 m », l'a choisie à la question, a
+  // répondu 80 cm, et son devis disait « Abattage d'un chêne (abattage entre 10
+  // et 20 m, ø 80 cm) ». Sa règle : *« ça ne doit pas figurer sur la
+  // désignation, et même le diamètre ne doit pas figurer »*. Par son chemin à
+  // lui : la question, sa réponse, puis le devis écrit.
+  await test("sa façon d'abattre et le diamètre répondus chiffrent la ligne, sans s'écrire sur la désignation", async () => {
+    const { entreprise: e, utilisateurId } = await entreprisesRepo.creerEntreprise(
+      { nom: "Élagage Désignation" },
+      { email: `designation-${Date.now()}@t.test` }
+    );
+    const D = { entrepriseId: e.id, utilisateurId };
+    const r = await ajouterTechnique(D, "Abattage entre 10 et 20 m");
+    assert.ok(r.ok, `refusé : ${r.ok ? "" : r.raison}`);
+    const cle = r.ok ? r.cle : "";
+    await poserPrixGrille(D, "abattage", celluleAbattage(cle, 80, (await lireGrilles(D)).axes)!.cle, "1100");
+
+    const c = await chantiersRepo.creerChantier(D, { nom: "Le chêne" });
+    await brouillonsRepo.enregistrerGeneration(
+      D,
+      c.id,
+      {
+        ...brouillonVide(),
+        prestations: [
+          { libelle: "Abattage d'un chêne", description: null, quantite: null, unite: null, nature: "abattage", espece: "chêne", aConfirmer: false },
+        ],
+      },
+      "dictée"
+    );
+    assert.ok((await confirmerBrouillon(D, c.id)).succes);
+
+    const questions = await questionsRestantes(D, c.id, []);
+    const technique = questions.find((q) => q.id.startsWith("abattage.technique"));
+    const diametre = questions.find((q) => q.id.startsWith("abattage.diametre"));
+    assert.ok(technique && diametre, `questions posées : ${questions.map((q) => q.id).join(", ")}`);
+    assert.ok(technique!.options?.some((o) => o.valeur === cle), "sa façon d'abattre n'est pas proposée");
+
+    await enregistrerPrecisionsEtReprendre(D, c.id, [
+      { sujet: technique!.id, libellePrestation: technique!.libellePrestation, valeur: cle, lisible: precisionLisible(technique!, cle) },
+      { sujet: diametre!.id, libellePrestation: diametre!.libellePrestation, valeur: "80", lisible: precisionLisible(diametre!, "80") },
+    ]);
+
+    // Le texte en base garde ses réponses : les moteurs y relisent encore le
+    // diamètre (`mesures-arbre.ts`). Sans elles, ce contrôle ne prouverait rien.
+    const [prestation] = await prestationsRepo.listerPrestations(D, c.id);
+    assert.match(prestation.libelle, /abattage entre 10 et 20 m, ⌀ 80 cm/, `en base : « ${prestation.libelle} »`);
+
+    const lignes = await listerLignesPrix(D, c.id);
+    assert.deepEqual(
+      lignes.map((l) => [l.libelle.split("\n")[0], l.montant]),
+      [["Abattage d'un chêne", "1100.00"]],
+      "la ligne doit être chiffrée par sa case, et ne dire que le travail"
+    );
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

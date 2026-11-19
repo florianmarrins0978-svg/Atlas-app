@@ -2,12 +2,32 @@ import { and, asc, eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { prestations } from "../db/schema";
 import type { Ctx } from "./context";
+import { lireGrilles } from "./grilles-reglables";
 import { quantiteDuLibelle, quantiteLue } from "../../lib/prestation-structuree";
 
 export async function listerPrestations(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx.select().from(prestations).where(eq(prestations.chantierId, chantierId)).orderBy(asc(prestations.ordre))
   );
+}
+
+/**
+ * Les prestations telles que le DEVIS les lit : chacune avec le nom de sa
+ * technique dans SA grille (`methodeLibelle`).
+ *
+ * **Sa capture du 18 novembre 2026** : « Abattage d'un chêne (abattage entre
+ * 10 et 20 m, ø 80 cm) », et sa règle, *« ça ne doit pas figurer sur la
+ * désignation »*. La colonne `methode` ne porte qu'une clé : pour une façon
+ * d'abattre qu'il a nommée lui-même, ni tronquée ni figée au nom d'origine,
+ * le nom vit dans ses grilles, et le libellé client (`libelle-client.ts`) ne
+ * peut retirer la réponse qu'en la reconnaissant. Une seule porte pour tous
+ * les chemins qui écrivent un devis : un appelant qui l'oublierait laisserait
+ * la réponse sur la désignation.
+ */
+export async function listerPrestationsDuDevis(ctx: Ctx, chantierId: string) {
+  const [lignes, { axes }] = await Promise.all([listerPrestations(ctx, chantierId), lireGrilles(ctx)]);
+  const noms = new Map(axes.techniques.map((t) => [t.cle, t.libelle]));
+  return lignes.map((p) => ({ ...p, methodeLibelle: p.methode ? (noms.get(p.methode) ?? null) : null }));
 }
 
 /**

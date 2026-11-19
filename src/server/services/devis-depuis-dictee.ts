@@ -16,7 +16,7 @@ import { preparerPropositionPrix, questionMainOeuvre, type OriginePrix } from ".
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerLaPiece } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
-import { listerPrestations, renommerPrestation, completerPrestation } from "../repositories/prestations";
+import { listerPrestations, listerPrestationsDuDevis, renommerPrestation, completerPrestation } from "../repositories/prestations";
 import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
@@ -455,7 +455,7 @@ async function chiffrerEtPreparer(
     // dictée était le premier réflexe, et il était faux : le patron aurait vu
     // « abattage », « broyage », « évacuation » sur trois lignes séparées, puis
     // aurait dû les réunir à la main — l'inverse exact de sa règle.
-    const prestations = await listerPrestations(ctx, chantierId);
+    const prestations = await listerPrestationsDuDevis(ctx, chantierId);
     const aEcrire = lignesVendables(prestations).lignes;
     for (const vendable of aEcrire) {
       // La quantité PHYSIQUE survit même sans prix : une haie de 800 ml qu'on
