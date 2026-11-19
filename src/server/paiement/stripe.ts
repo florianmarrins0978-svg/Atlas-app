@@ -39,10 +39,14 @@ import { getEnv } from "../env";
 import { logger } from "../logger";
 import {
   FORMULES,
+  MODULES,
+  estModule,
   formule,
+  nomDeLAbonnement,
   centimes,
   TVA_ABONNEMENT_POURCENT,
   type FormuleCode,
+  type ModuleCode,
   type Periodicite,
 } from "@/lib/abonnements";
 import { remboursementAuProrata, type RaisonDepart } from "@/lib/resiliation";
@@ -140,10 +144,24 @@ async function appeler(
  * bouge, un objet neuf naît tout seul et l'ancien reste attaché aux abonnements
  * qui le portaient — ce qui est précisément ce qu'on veut, personne ne devant
  * être reprélevé d'un montant qu'il n'a pas accepté.
+ *
+ * **LES OUTILS DE PAYSAGE ENTRENT DANS CE MÊME PRIX** (18 et 19 novembre 2026) :
+ * « Artisan, avec les outils de paysage » est un prix à lui
+ * (`atlas_artisan_paysage_mensuelle_4500`), jamais une seconde ligne. Un
+ * abonnement Atlas n'a qu'une ligne — `changerLaFormule` refuse d'en deviner
+ * une parmi deux —, et ajouter ou retirer les outils en cours de mois se fait
+ * au prorata en changeant ce prix, exactement comme un changement de formule.
  */
-async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Periodicite): Promise<{ ok: true; prix: string } | Echec> {
-  const montant = centimes(f, periodicite);
-  const cle = `atlas_${f.code}_${periodicite}_${montant}`;
+async function prixDeLaFormule(
+  f: (typeof FORMULES)[number],
+  periodicite: Periodicite,
+  modules: readonly ModuleCode[]
+): Promise<{ ok: true; prix: string } | Echec> {
+  const montant = centimes(f, periodicite, modules);
+  // L'ordre de `MODULES`, jamais celui de l'appelant : deux ordres feraient
+  // deux clés, donc deux prix, pour le même abonnement.
+  const avec = MODULES.filter((m) => modules.includes(m.code));
+  const cle = ["atlas", f.code, ...avec.map((m) => m.code), periodicite, montant].join("_");
 
   const existant = await appeler(
     `/v1/prices?lookup_keys[]=${encodeURIComponent(cle)}&active=true&limit=1`,
@@ -167,7 +185,7 @@ async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Period
       // reprendre évite un refus pour clé occupée — la seule cause possible
       // étant un prix qu'on a nous-même désactivé.
       transfer_lookup_key: "true",
-      "product_data[name]": `Cause ${f.nom}`,
+      "product_data[name]": `Cause ${nomDeLAbonnement(f.code, modules)}`,
     })
   );
   if (!cree.ok) return cree;
@@ -231,15 +249,17 @@ async function tauxDeTva(): Promise<{ ok: true; taux: string } | Echec> {
 /**
  * OUVRIR LE PAIEMENT — la page hébergée où il saisit sa carte.
  *
- * **`metadata` porte la formule choisie**, et c'est par là qu'on la relit au
- * retour : déduire la formule du montant obligerait à faire correspondre des
- * centimes à une grille, et une remise suffirait à tout fausser.
+ * **`metadata` porte la formule choisie, et ses modules**, et c'est par là
+ * qu'on les relit au retour : déduire la formule du montant obligerait à faire
+ * correspondre des centimes à une grille, et une remise suffirait à tout
+ * fausser.
  */
 export async function ouvrirLePaiement(params: {
   entrepriseId: string;
   email: string | null;
   formule: FormuleCode;
   periodicite: Periodicite;
+  modules: readonly ModuleCode[];
   /** Où le patron revient — succès et abandon. Fournies par l'appelant. */
   retourSucces: string;
   retourAbandon: string;
@@ -247,7 +267,7 @@ export async function ouvrirLePaiement(params: {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
 
-  const prix = await prixDeLaFormule(f, params.periodicite);
+  const prix = await prixDeLaFormule(f, params.periodicite, params.modules);
   if (!prix.ok) return prix;
   const tva = await tauxDeTva();
   if (!tva.ok) return tva;
@@ -266,6 +286,7 @@ export async function ouvrirLePaiement(params: {
     "subscription_data[metadata][entreprise_id]": params.entrepriseId,
     "subscription_data[metadata][formule]": params.formule,
     "subscription_data[metadata][periodicite]": params.periodicite,
+    "subscription_data[metadata][modules]": etiquetteDesModules(params.modules),
     // Sur l'abonnement, pas sur la ligne : un changement de formule remplace
     // la ligne, et la TVA partirait avec elle.
     "subscription_data[default_tax_rates][0]": tva.taux,
@@ -340,6 +361,25 @@ function estObjet(v: unknown): v is Record<string, unknown> {
 }
 
 /**
+ * L'ÉTIQUETTE DES MODULES : « paysage », ou vide. **Vide l'efface** chez le
+ * prestataire : c'est ainsi qu'un abonnement qui retire ses outils perd aussi
+ * l'étiquette qui les lui rendait.
+ */
+function etiquetteDesModules(modules: readonly ModuleCode[]): string {
+  return MODULES.filter((m) => modules.includes(m.code))
+    .map((m) => m.code)
+    .join(",");
+}
+
+/** Relit l'étiquette ; `null` quand elle nomme un module qu'Atlas ne connaît pas. */
+function modulesLus(brut: unknown): ModuleCode[] | null {
+  if (brut === undefined || brut === null || brut === "") return [];
+  if (typeof brut !== "string") return null;
+  const codes = brut.split(",").map((c) => c.trim());
+  return codes.every(estModule) ? (codes as ModuleCode[]) : null;
+}
+
+/**
  * LA TRADUCTION D'UN ABONNEMENT STRIPE EN ÉTAT D'ATLAS.
  *
  * **Exportée, parce que le crochet en a besoin autant que le retour de
@@ -373,9 +413,18 @@ export function lireUnAbonnement(brut: Record<string, unknown>): EtatVenuDuPrest
     logger.error("Abonnement sans périodicité reconnue", { abonnement: id, periodicite: String(codePeriodicite) });
     return null;
   }
+  // Un module inconnu : on ne devine pas ce qui est payé, pour la même raison
+  // qu'une formule inconnue. Absent ou vide : aucun module, les abonnements
+  // d'avant le 18 novembre 2026 n'en portent pas.
+  const modules = modulesLus(meta.modules);
+  if (!modules) {
+    logger.error("Abonnement aux modules non reconnus", { abonnement: id, modules: String(meta.modules) });
+    return null;
+  }
 
   return {
     formule: codeFormule as FormuleCode,
+    modules,
     periodicite: codePeriodicite,
     statut: statutLu(brut.status),
     periodeFin: finDePeriode(brut),
@@ -509,6 +558,8 @@ export async function changerLaFormule(params: {
   abonnementPrestataire: string;
   formule: FormuleCode;
   periodicite: Periodicite;
+  /** Les modules VOULUS, pas ceux d'avant : les retirer, c'est passer une liste vide. */
+  modules: readonly ModuleCode[];
 }): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
@@ -526,7 +577,7 @@ export async function changerLaFormule(params: {
   }
   const ligneId = lignes[0].id;
 
-  const prix = await prixDeLaFormule(f, params.periodicite);
+  const prix = await prixDeLaFormule(f, params.periodicite, params.modules);
   if (!prix.ok) return prix;
 
   const r = await appeler(
@@ -543,6 +594,7 @@ export async function changerLaFormule(params: {
       // une seule façon de savoir quelle formule porte un abonnement.
       "metadata[formule]": params.formule,
       "metadata[periodicite]": params.periodicite,
+      "metadata[modules]": etiquetteDesModules(params.modules),
       // Un changement de formule annule une résiliation en cours : il vient de
       // choisir de rester. Laisser le drapeau couperait son abonnement neuf à
       // la fin du mois, sans que rien ne l'en avertisse.

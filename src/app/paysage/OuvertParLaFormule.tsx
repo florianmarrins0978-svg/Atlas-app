@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { colors, font } from "@/lib/design-tokens";
-import { fonctionOuverte, type FonctionReservee as Fonction } from "@/lib/abonnements";
+import type { FonctionReservee as Fonction } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { accesDeLaFonction } from "@/server/garde-action";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import FonctionReservee from "@/components/atlas/FonctionReservee";
 
@@ -20,6 +20,9 @@ import FonctionReservee from "@/components/atlas/FonctionReservee";
  *
  * **Elle ne remplace pas la garde des actions** (`exigerFonction`) : une action
  * serveur s'appelle sans écran.
+ *
+ * **Un outil OFFERT s'ouvre** (le plan d'arrosage et le diagnostic, une fois,
+ * 19 novembre 2026) : c'est en s'en servant qu'il le découvre.
  */
 export default async function OuvertParLaFormule({
   fonction,
@@ -30,9 +33,7 @@ export default async function OuvertParLaFormule({
   titre: string;
   children: ReactNode;
 }) {
-  const ctx = await getCurrentCtx();
-  const abonnement = await abonnementDeLEntreprise(ctx);
-  if (fonctionOuverte(abonnement?.formule, fonction)) return children;
+  if ((await accesDeLaFonction(await getCurrentCtx(), fonction)) !== "fermee") return children;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

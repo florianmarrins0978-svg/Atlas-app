@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { colors, font, voile } from "@/lib/design-tokens";
-import { formule, montantDu, type FormuleCode, type Periodicite } from "@/lib/abonnements";
+import { formule, montantDu, type FormuleCode, type ModuleCode, type Periodicite } from "@/lib/abonnements";
 import { RAISONS_DEPART, TEXTE_DEPART_MAX, formuleMoinsChere, type RaisonDepart } from "@/lib/resiliation";
 import { changerDeFormuleAction, resilierAction } from "./actions";
 
@@ -24,10 +24,13 @@ import { changerDeFormuleAction, resilierAction } from "./actions";
  */
 export default function AvantDePartir({
   formuleActuelle,
+  modules,
   periodicite,
   fermer,
 }: {
   formuleActuelle: FormuleCode;
+  /** Ses outils restent avec la formule moins chère : partir d'une formule n'est pas partir des outils. */
+  modules: readonly ModuleCode[];
   periodicite: Periodicite;
   fermer: () => void;
 }) {
@@ -61,7 +64,7 @@ export default function AvantDePartir({
         {moinsChere && actuelle && (
           <button
             type="button"
-            onClick={() => agir(() => changerDeFormuleAction(moinsChere.code, periodicite))}
+            onClick={() => agir(() => changerDeFormuleAction(moinsChere.code, periodicite, [...modules]))}
             disabled={enCours}
             data-atlas="passer-a-moins-chere"
             className="mb-1 block w-full rounded-[6px] px-[18px] py-4 text-left disabled:opacity-60"
@@ -72,7 +75,7 @@ export default function AvantDePartir({
               Passer à {moinsChere.nom}
             </span>
             <span className="mt-1.5 block text-[17px] leading-[1.3]" style={{ fontFamily: font.display, color: colors.ink }}>
-              {montantDu(moinsChere, periodicite)} € HT {rythme}, au lieu de {montantDu(actuelle, periodicite)}
+              {montantDu(moinsChere, periodicite, modules)} € HT {rythme}, au lieu de {montantDu(actuelle, periodicite, modules)}
             </span>
           </button>
         )}

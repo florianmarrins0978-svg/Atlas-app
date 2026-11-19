@@ -26,9 +26,12 @@ import type { Tour } from "@/server/ai/services/discuter-plan";
  */
 export default function DiscuterLePlan({
   parametres,
+  jetonOffert,
   surNouveauPlan,
 }: {
   parametres: ParametresPlan;
+  /** Le jeton du plan offert, `null` pour un abonné aux outils. */
+  jetonOffert: string | null;
   /** Appelé quand le plan a été refait : l'écran remplace ce qu'il montre. */
   surNouveauPlan: (etat: Extract<EtatDiscussion, { etat: "repondu" }>) => void;
 }) {
@@ -51,7 +54,7 @@ export default function DiscuterLePlan({
     setFil(filAvant);
     setEnCours(true);
     try {
-      const r = await discuterDuPlan(parametres, fil, demande);
+      const r = await discuterDuPlan(parametres, fil, demande, jetonOffert);
       if (r.etat === "repondu") {
         setFil([...filAvant, { role: "atlas", texte: r.texte }]);
         if (r.chiffres) setChiffresDe((c) => ({ ...c, [filAvant.length]: r.chiffres as string }));

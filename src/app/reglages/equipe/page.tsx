@@ -96,8 +96,8 @@ export default async function EquipePage({
     ]);
   // Les absences et les retours sont un plus d'« Entreprise » (10 septembre
   // 2026). La règle est dans `fonctionOuverte` ; sans abonnement, tout est ouvert.
-  const absencesOuvertes = fonctionOuverte(abonnement?.formule, "absences");
-  const retoursOuverts = fonctionOuverte(abonnement?.formule, "retours");
+  const absencesOuvertes = fonctionOuverte(abonnement, "absences");
+  const retoursOuverts = fonctionOuverte(abonnement, "retours");
   // Le numéro d'intervenant de chacun (migration 0178), pour l'attestation
   // fiscale : seulement une entreprise déclarée, et c'est cette lecture qui
   // numérote ceux qui n'en ont pas encore. APRÈS `listerEquipes`, jamais en

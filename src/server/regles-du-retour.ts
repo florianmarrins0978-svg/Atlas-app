@@ -18,7 +18,7 @@ import type { Ctx } from "@/server/repositories/context";
  */
 export async function reglesDuRetour(ctx: Ctx): Promise<ReglesDuRetour> {
   const [entreprise, abonnement] = await Promise.all([getEntreprise(ctx), abonnementDeLEntreprise(ctx)]);
-  const ouvert = fonctionOuverte(abonnement?.formule, "retours");
+  const ouvert = fonctionOuverte(abonnement, "retours");
   return {
     demande: ouvert && (entreprise?.retourDemande ?? false),
     photoExigee: ouvert && (entreprise?.retourPhotoExigee ?? false),

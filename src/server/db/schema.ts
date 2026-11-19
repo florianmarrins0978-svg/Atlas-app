@@ -4138,6 +4138,11 @@ export const abonnements = pgTable(
     annulationDemandee: boolean("annulation_demandee").notNull().default(false),
     clientPrestataire: text("client_prestataire"),
     abonnementPrestataire: text("abonnement_prestataire"),
+    /**
+     * Les modules souscrits (migration 0187) : `paysage` pour les outils de
+     * paysage, 6 € HT par mois. Une liste, parce que d'autres viendront.
+     */
+    modules: text("modules").array().notNull().default(sql`'{}'::text[]`),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -4146,6 +4151,25 @@ export const abonnements = pgTable(
     // prélèvements et deux plafonds contradictoires.
     unique("abonnements_entreprise_uk").on(t.entrepriseId),
   ]
+);
+
+/**
+ * L'OFFRE PRISE — migration 0187. Un plan d'arrosage et un diagnostic offerts,
+ * une fois par entreprise, essai compris (ses réponses du 19 novembre 2026).
+ * La clé primaire rend la prise atomique ; le jeton ouvre les retouches du plan
+ * offert pendant 24 heures (`retoucheDuPlanOfferte`).
+ */
+export const offresPrises = pgTable(
+  "offres_prises",
+  {
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    outil: text("outil", { enum: ["arrosage", "diagnostic"] }).notNull(),
+    jeton: uuid("jeton").notNull().defaultRandom(),
+    priseLe: timestamp("prise_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ name: "offres_prises_pk", columns: [t.entrepriseId, t.outil] })]
 );
 
 /**

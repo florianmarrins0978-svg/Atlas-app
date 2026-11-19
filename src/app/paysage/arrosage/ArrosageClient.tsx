@@ -86,9 +86,13 @@ export default function ArrosageClient({
   // Une lecture neuve se reçoit pendant le rendu, comme React le recommande
   // pour un état qui suit une valeur reçue : un effet la rendrait en deux temps.
   const [etatVu, setEtatVu] = useState(etat);
+  // Le jeton du plan offert survit à un refus entre deux retouches : sans lui,
+  // la retouche suivante serait refusée comme un second plan.
+  const [jetonOffert, setJetonOffert] = useState<string | null>(null);
   if (etat !== etatVu) {
     setEtatVu(etat);
     if (etat.etat === "lu") setReplie(true);
+    if (etat.etat === "lu" && etat.jetonOffert) setJetonOffert(etat.jetonOffert);
     if (etat.etat === "a-verifier") {
       setReplie(false);
       setPlanLu(etat.plan);
@@ -378,6 +382,7 @@ export default function ArrosageClient({
         {/* **Sous la photo, sans la déplacer** : il reconnaît son écran par la
             place de ce qu'il lit (`CLAUDE.md` §3). */}
         <input ref={champDessin} type="hidden" name="dessin" defaultValue="" />
+        <input type="hidden" name="jeton-offert" value={jetonOffert ?? ""} readOnly />
         {/* Pendant la lecture, l'attente seule : dessiner à côté ferait deux plans pour un croquis. */}
         {!dessiner && !(enCours && !parDessin) && (
           <button
@@ -476,7 +481,9 @@ export default function ArrosageClient({
           sur le plan d'un autre ferait répondre Atlas à côté. */}
       </div>
 
-      {etat.etat === "lu" && <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} actionVisible={replie} />}
+      {etat.etat === "lu" && (
+        <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} actionVisible={replie} jetonOffert={jetonOffert} />
+      )}
     </form>
   );
 }
@@ -487,7 +494,16 @@ export default function ArrosageClient({
  * même fonction. La discussion se pose APRÈS le plan, et seulement avec lui :
  * sa borne du 21 août, *« la discussion ne doit jamais créer un plan »*.
  */
-function PlanLu({ etat, actionVisible }: { etat: Extract<EtatPlan, { etat: "lu" }>; actionVisible: boolean }) {
+function PlanLu({
+  etat,
+  actionVisible,
+  jetonOffert,
+}: {
+  etat: Extract<EtatPlan, { etat: "lu" }>;
+  actionVisible: boolean;
+  /** Le jeton du plan offert : la discussion est une retouche (`exigerLArrosage`). */
+  jetonOffert: string | null;
+}) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
   // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
   // et le total de la liste. Le patron seul les reçoit ; sinon, aucun prix.
@@ -514,7 +530,11 @@ function PlanLu({ etat, actionVisible }: { etat: Extract<EtatPlan, { etat: "lu" 
           setSesPrix((d) => d && { ...d, fournisseurs: d.fournisseurs.map((f) => (f.id === id ? { ...f, ...champs } : f)) })
         }
       />
-      <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
+      <DiscuterLePlan
+        parametres={parametres}
+        jetonOffert={jetonOffert}
+        surNouveauPlan={(refait) => setParametres(refait.parametres)}
+      />
     </>
   );
 }

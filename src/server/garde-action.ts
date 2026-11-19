@@ -6,9 +6,16 @@ import {
   peutModifierLePlanning,
   peutVoirLesMontants,
 } from "@/lib/acces-roles";
-import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
+import {
+  accesALaFonction,
+  estOutilOffert,
+  retoucheDuPlanOfferte,
+  type AccesALaFonction,
+  type FonctionReservee,
+} from "@/lib/abonnements";
 import { accesDeLaPersonne, getRole } from "./autorisation";
 import { abonnementDeLEntreprise } from "./repositories/abonnements";
+import { offreDeLOutil } from "./repositories/offres";
 import { chantiersDeLEquipe, getChantier } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
@@ -328,16 +335,58 @@ export async function exigerFacturation(ctx: Ctx, action: string): Promise<void>
  *
  * Sa décision du 10 septembre 2026 — *« oui bloqué pour l'abonnement artisan »* :
  * les absences d'équipe et les retours d'intervention sont un plus
- * d'« Entreprise ». L'écran le montre (`FonctionReservee`) ; cette garde le
- * TIENT, parce qu'un écran fermé ne ferme pas l'action — c'est tout l'en-tête
- * de ce fichier.
+ * d'« Entreprise ». Depuis le 18 novembre, les outils de paysage s'ajoutent à
+ * n'importe quelle formule. L'écran le montre (`FonctionReservee`) ; cette
+ * garde le TIENT, parce qu'un écran fermé ne ferme pas l'action — c'est tout
+ * l'en-tête de ce fichier.
  *
- * La règle n'est pas ici : `fonctionOuverte` décide, et une entreprise sans
+ * **Elle laisse passer un outil OFFERT** (le plan d'arrosage et le diagnostic,
+ * une fois, 19 novembre 2026) et dit à l'appelant lequel des deux il a reçu :
+ * c'est lui qui prend l'offre, au moment où le plan sort ou le diagnostic
+ * s'ouvre, jamais avant.
+ *
+ * La règle n'est pas ici : `accesALaFonction` décide, et une entreprise sans
  * abonnement passe — une fermeture est la conséquence d'une formule choisie.
  */
-export async function exigerFonction(ctx: Ctx, fonction: FonctionReservee, action: string): Promise<void> {
+export async function exigerFonction(
+  ctx: Ctx,
+  fonction: FonctionReservee,
+  action: string
+): Promise<Exclude<AccesALaFonction, "fermee">> {
+  const acces = await accesDeLaFonction(ctx, fonction);
+  if (acces === "fermee") throw new ActionRefuseeError(action);
+  return acces;
+}
+
+/**
+ * Le même accès, SANS lever : pour un écran qui le montre, ou une action qui
+ * préfère rendre la phrase de la fermeture plutôt qu'une erreur opaque (le
+ * message d'une exception n'arrive jamais jusqu'à lui, `AGENTS.md`).
+ */
+export async function accesDeLaFonction(ctx: Ctx, fonction: FonctionReservee): Promise<AccesALaFonction> {
   const abonnement = await abonnementDeLEntreprise(ctx);
-  if (!fonctionOuverte(abonnement?.formule, fonction)) {
-    throw new ActionRefuseeError(action);
-  }
+  const offre = abonnement && estOutilOffert(fonction) ? await offreDeLOutil(ctx, fonction) : null;
+  return accesALaFonction(abonnement, fonction, offre !== null);
+}
+
+/**
+ * **LE PLAN D'ARROSAGE : ouvert, offert, ou la retouche du plan offert.**
+ *
+ * Le plan n'est pas rangé : corriger une cote ou demander une modification le
+ * refait. Sans cette porte, la retouche du plan offert serait refusée comme un
+ * second plan, et il aurait payé son essai d'un plan qu'il ne peut pas
+ * corriger. Elle s'ouvre au jeton que le plan offert a reçu, pendant 24 heures
+ * (`retoucheDuPlanOfferte`).
+ */
+export async function exigerLArrosage(
+  ctx: Ctx,
+  action: string,
+  jeton: string | null
+): Promise<"ouverte" | "offerte" | "retouche"> {
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  const offre = abonnement ? await offreDeLOutil(ctx, "arrosage") : null;
+  const acces = accesALaFonction(abonnement, "arrosage", offre !== null);
+  if (acces !== "fermee") return acces;
+  if (retoucheDuPlanOfferte(offre, jeton, new Date())) return "retouche";
+  throw new ActionRefuseeError(action);
 }

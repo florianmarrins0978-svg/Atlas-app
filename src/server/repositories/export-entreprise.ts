@@ -85,6 +85,7 @@ import {
   transmissionsFactures,
   facturesAtlas,
   objectifsAnnee,
+  offresPrises,
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
@@ -263,6 +264,7 @@ export async function exporterEntreprise(
       saLiaisonUrssaf,
       sesInscriptionsUrssaf,
       sesDemandesUrssaf,
+      sesOffresPrises,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -531,6 +533,9 @@ export async function exporterEntreprise(
       tx.select(urssafSansCodes).from(liaisonsUrssaf).where(eq(liaisonsUrssaf.entrepriseId, e)),
       tx.select().from(inscriptionsUrssaf).where(eq(inscriptionsUrssaf.entrepriseId, e)),
       tx.select().from(demandesUrssaf).where(eq(demandesUrssaf.entrepriseId, e)),
+      // Le plan d'arrosage et le diagnostic offerts qu'il a déjà pris (0187) :
+      // une reprise qui les perdrait les lui offrirait une seconde fois.
+      tx.select().from(offresPrises).where(eq(offresPrises.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -661,6 +666,7 @@ export async function exporterEntreprise(
       liaisons_urssaf: saLiaisonUrssaf,
       inscriptions_urssaf: sesInscriptionsUrssaf,
       demandes_urssaf: sesDemandesUrssaf,
+      offres_prises: sesOffresPrises,
     };
 
     const compte: Record<string, number> = {};

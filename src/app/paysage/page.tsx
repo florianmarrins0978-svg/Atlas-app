@@ -1,11 +1,12 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import TuileIcone from "@/components/atlas/TuileIcone";
 import { cardShadow, colors, font, libelleCaps, radius, texteSituation } from "@/lib/design-tokens";
-import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
+import { accesALaFonction, estOutilOffert, etiquetteDeLOutil, type AccesALaFonction, type FonctionReservee } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { offresDejaPrises } from "@/server/repositories/offres";
+import DessinOutilPaysage, { type OutilDessine } from "@/components/atlas/DessinOutilPaysage";
 import { garderLaPage } from "@/server/garde-page";
 
 /**
@@ -59,10 +60,10 @@ type Outil = {
   href: string;
   /** La fonction que la formule doit ouvrir ; absente, l'outil est ouvert à tous. */
   fonction?: FonctionReservee;
-  dessin: ReactNode;
+  /** Le dessin de la planche, partagé avec le bloc des outils de l'écran Abonnement. */
+  dessin: OutilDessine;
 };
 
-// Les tracés sont ceux de la planche, au trait près.
 const OUTILS: Outil[] = [
   {
     // **DANS l'application depuis le 20 août 2026** — *« code le tout dans
@@ -70,12 +71,7 @@ const OUTILS: Outil[] = [
     nom: "Plan d'arrosage automatique",
     href: "/paysage/arrosage",
     fonction: "arrosage",
-    dessin: (
-      <>
-        <path d="M12 2.5C12 2.5 4.8 10.3 4.8 14.9a7.2 7.2 0 0 0 14.4 0C19.2 10.3 12 2.5 12 2.5z" />
-        <path d="M8.7 15.3a3.3 3.3 0 0 0 3.3 3.3" />
-      </>
-    ),
+    dessin: "arrosage",
   },
   {
     // Sa demande du 17 août : *« la ranger comme étant un outil dans la case
@@ -83,14 +79,7 @@ const OUTILS: Outil[] = [
     nom: "Fiche de chantier",
     href: "/paysage/fiche",
     fonction: "fiche-chantier",
-    dessin: (
-      <>
-        <rect x="5" y="4.5" width="14" height="16.5" rx="2" />
-        <path d="M9 3h6v3H9z" />
-        <path d="M8.5 12.5l2 2 4-4.5" />
-        <path d="M8.5 18h7" />
-      </>
-    ),
+    dessin: "fiche-chantier",
   },
   {
     // **Le troisième outil, et le premier qui APPELLE un modèle.** Sa demande du
@@ -104,14 +93,7 @@ const OUTILS: Outil[] = [
     nom: "Diagnostic végétal",
     href: "/paysage/diagnostic",
     fonction: "diagnostic",
-    dessin: (
-      <>
-        <path d="M4 19c0-8 5-14 15-15-0.5 4-1.6 7-3.3 9.2" />
-        <path d="M4 19c2.5-4 5.5-7 9-9.5" />
-        <circle cx="15.5" cy="16.5" r="3" />
-        <path d="M17.7 18.7L20.5 21.5" />
-      </>
-    ),
+    dessin: "diagnostic",
   },
   // Sa décision du 21 septembre 2026, après avoir vu Terminés : *« il faut créer
   // une catégorie dans Paysage »*. La fiche elle-même se remplit depuis le
@@ -119,12 +101,7 @@ const OUTILS: Outil[] = [
   {
     nom: "Fiches de sécurité",
     href: "/paysage/fiches-securite",
-    dessin: (
-      <>
-        <path d="M12 3l7 2.8v5.6c0 4.5-3 8.1-7 9.6-4-1.5-7-5.1-7-9.6V5.8z" />
-        <path d="M8.8 12.2l2.2 2.2 4.2-4.4" />
-      </>
-    ),
+    dessin: "fiches-securite",
   },
 ];
 
@@ -133,7 +110,11 @@ export default async function PaysagePage() {
   // L'artisan découvrait la fermeture APRÈS avoir appuyé (la planche, état
   // « Formule Artisan »). La liste la dit désormais, mais ne décide de rien :
   // la règle reste `fonctionOuverte`, la même que lit `OuvertParLaFormule`.
-  const abonnement = await abonnementDeLEntreprise(await getCurrentCtx());
+  const ctx = await getCurrentCtx();
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  // Le plan et le diagnostic offerts une fois (19 novembre 2026) : la ligne dit
+  // « 1 offert » tant qu'il ne l'a pas pris. Sans abonnement, rien ne se compte.
+  const prises = abonnement ? await offresDejaPrises(ctx) : new Set<string>();
 
   return (
     <div
@@ -157,7 +138,11 @@ export default async function PaysagePage() {
               key={o.nom}
               outil={o}
               premiere={i === 0}
-              fermee={o.fonction !== undefined && !fonctionOuverte(abonnement?.formule, o.fonction)}
+              acces={
+                o.fonction === undefined
+                  ? "ouverte"
+                  : accesALaFonction(abonnement, o.fonction, estOutilOffert(o.fonction) && prises.has(o.fonction))
+              }
             />
           ))}
         </nav>
@@ -170,7 +155,9 @@ export default async function PaysagePage() {
   );
 }
 
-function LigneOutil({ outil, premiere, fermee }: { outil: Outil; premiere: boolean; fermee: boolean }) {
+function LigneOutil({ outil, premiere, acces }: { outil: Outil; premiere: boolean; acces: AccesALaFonction }) {
+  const fermee = acces === "fermee";
+  const etiquette = etiquetteDeLOutil(acces);
   // 64 px : on touche juste, même avec des gants (la planche). La ligne fermée
   // reste un lien : l'écran fermé reste atteignable, c'est la règle de
   // `FonctionReservee`.
@@ -188,18 +175,7 @@ function LigneOutil({ outil, premiere, fermee }: { outil: Outil; premiere: boole
         />
       )}
       <TuileIcone eteinte={fermee}>
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {outil.dessin}
-        </svg>
+        <DessinOutilPaysage outil={outil.dessin} />
       </TuileIcone>
       <span
         className="min-w-0 flex-1 text-[18px] leading-[1.25]"
@@ -207,22 +183,30 @@ function LigneOutil({ outil, premiere, fermee }: { outil: Outil; premiere: boole
       >
         {outil.nom}
       </span>
-      {fermee ? (
-        <span className={`flex flex-none items-center gap-[6px] ${libelleCaps}`} style={{ color: colors.or }}>
-          <svg
-            aria-hidden="true"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
-            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-          </svg>
-          Entreprise
+      {etiquette ? (
+        // « 1 offert » sans cadenas : l'outil s'ouvre. « En option » avec : il
+        // ne s'ouvre plus, et l'écran qu'il ouvre dit comment l'ajouter.
+        <span
+          className={`flex flex-none items-center gap-[6px] ${libelleCaps}`}
+          style={{ color: colors.or }}
+          data-atlas={`etiquette-${outil.fonction}`}
+        >
+          {fermee && (
+            <svg
+              aria-hidden="true"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+            </svg>
+          )}
+          {etiquette}
         </span>
       ) : (
         <span

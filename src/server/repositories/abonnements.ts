@@ -17,7 +17,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { abonnements, entreprises, evenementsPaiement, membresEntreprise } from "../db/schema";
 import { abonnementRouvreLeCompte } from "@/lib/fermeture-compte";
-import { roleFabrique, type FormuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
+import { estModule, roleFabrique, type EquipeComptee, type FormuleCode, type ModuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
 import { ROLES } from "@/lib/acces-roles";
 import type { Ctx } from "./context";
 
@@ -25,6 +25,8 @@ export type Abonnement = {
   formule: FormuleCode;
   periodicite: Periodicite;
   statut: StatutAbonnement;
+  /** Les modules souscrits ; un code inconnu de `MODULES` n'est jamais rendu. */
+  modules: ModuleCode[];
   periodeFin: Date | null;
   annulationDemandee: boolean;
   clientPrestataire: string | null;
@@ -48,11 +50,14 @@ export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | nu
         annulationDemandee: abonnements.annulationDemandee,
         clientPrestataire: abonnements.clientPrestataire,
         abonnementPrestataire: abonnements.abonnementPrestataire,
+        modules: abonnements.modules,
       })
       .from(abonnements)
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId))
       .limit(1);
-    return ligne ?? null;
+    // La base refuse déjà un module inconnu (0187) ; le filtre garde le type
+    // honnête plutôt que d'affirmer ce que la colonne ne promet pas.
+    return ligne ? { ...ligne, modules: ligne.modules.filter(estModule) } : null;
   });
 }
 
@@ -73,18 +78,23 @@ const ROLES_QUI_FABRIQUENT = ROLES.filter(roleFabrique);
  * C'est le nombre que le plafond de la formule borne — sa correction du
  * 9 septembre 2026 : on compte qui FABRIQUE, jamais les salariés au planning.
  */
-export async function compterLesFabricants(ctx: Ctx): Promise<number> {
+/**
+ * L'ÉQUIPE COMPTÉE, le patron compris : tous les accès, ceux qui fabriquent,
+ * les salariés. **Un seul comptage pour les trois**, d'une seule requête :
+ * trois requêtes pourraient lire trois équipes différentes à une invitation
+ * près, et la phrase de refus dirait un nombre faux.
+ */
+export async function compterLEquipe(ctx: Ctx): Promise<EquipeComptee> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
-      .select({ combien: sql<number>`count(*)::int` })
+      .select({
+        comptes: sql<number>`count(*)::int`,
+        fabricants: sql<number>`(count(*) FILTER (WHERE ${inArray(membresEntreprise.role, ROLES_QUI_FABRIQUENT)}))::int`,
+        salaries: sql<number>`(count(*) FILTER (WHERE ${eq(membresEntreprise.role, "salarie")}))::int`,
+      })
       .from(membresEntreprise)
-      .where(
-        and(
-          eq(membresEntreprise.entrepriseId, ctx.entrepriseId),
-          inArray(membresEntreprise.role, ROLES_QUI_FABRIQUENT)
-        )
-      );
-    return ligne?.combien ?? 0;
+      .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId));
+    return { comptes: ligne?.comptes ?? 0, fabricants: ligne?.fabricants ?? 0, salaries: ligne?.salaries ?? 0 };
   });
 }
 
@@ -98,6 +108,8 @@ export async function compterLesFabricants(ctx: Ctx): Promise<number> {
  */
 export type EtatVenuDuPrestataire = {
   formule: FormuleCode;
+  /** Relus sur l'abonnement du prestataire, comme la formule (`lireUnAbonnement`). */
+  modules: ModuleCode[];
   periodicite: Periodicite;
   statut: StatutAbonnement;
   periodeFin: Date | null;
@@ -109,6 +121,7 @@ export type EtatVenuDuPrestataire = {
 function versLaLigne(etat: EtatVenuDuPrestataire) {
   return {
     formule: etat.formule,
+    modules: etat.modules,
     periodicite: etat.periodicite,
     statut: etat.statut,
     periodeFin: etat.periodeFin,

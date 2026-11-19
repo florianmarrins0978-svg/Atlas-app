@@ -42,7 +42,7 @@ export default async function ContratPage({ params }: { params: Promise<{ id: st
   ]);
   // Une prestation écrite ici entre dans sa fiche (29 septembre 2026) : les
   // mêmes droits que « Composer ma fiche », sans quoi l'action refuserait.
-  const ficheModifiable = proprietaire && fonctionOuverte(abonnement?.formule, "fiche-chantier");
+  const ficheModifiable = proprietaire && fonctionOuverte(abonnement, "fiche-chantier");
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

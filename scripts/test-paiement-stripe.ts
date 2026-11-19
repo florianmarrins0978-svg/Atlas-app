@@ -119,6 +119,7 @@ async function main() {
       email: "patron@exemple.fr",
       formule: "entreprise",
       periodicite: "mensuelle",
+      modules: [],
       retourSucces: "https://atlas.example/reglages/abonnement?paiement={CHECKOUT_SESSION_ID}",
       retourAbandon: "https://atlas.example/reglages/abonnement?paiement=abandon",
     });
@@ -182,6 +183,95 @@ async function main() {
     serveur.close();
   }
 
+  // **LES OUTILS DE PAYSAGE PARTENT DANS LE MÊME PRIX** (18 et 19 novembre
+  // 2026) : un seul prix « formule et outils », jamais une seconde ligne. Un
+  // abonnement Atlas n'a qu'une ligne (`changerLaFormule` le vérifie), et le
+  // prorata d'un ajout se fait en changeant ce prix, comme un changement de
+  // formule.
+  console.log("\n=== Les outils de paysage : un seul prix, formule et outils ===\n");
+
+  {
+    const { serveur, recues } = fauxPrestataire((r) => {
+      if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_outils" } };
+      if (r.chemin.startsWith("/v1/tax_rates?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_neuf" } };
+      return { statut: 200, corps: { id: "cs_outils", url: "https://paiement.example/cs_outils" } };
+    });
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+
+    const r = await stripe.ouvrirLePaiement({
+      entrepriseId: "ent-outils",
+      email: null,
+      formule: "artisan",
+      periodicite: "mensuelle",
+      modules: ["paysage"],
+      retourSucces: "https://atlas.example/reglages/abonnement?paiement={CHECKOUT_SESSION_ID}",
+      retourAbandon: "https://atlas.example/reglages/abonnement?paiement=abandon",
+    });
+
+    await cas("ARTISAN ET LES OUTILS : 45 € en centimes, sous une clé qui nomme les outils", async () => {
+      assert.equal(r.ok, true);
+      const creation = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/prices");
+      assert.ok(creation, "aucun prix n'a été créé");
+      const c = champs(creation.corps);
+      assert.equal(c.get("unit_amount"), "4500");
+      assert.equal(c.get("lookup_key"), "atlas_artisan_paysage_mensuelle_4500");
+      assert.equal(c.get("product_data[name]"), "Cause Artisan, avec les outils de paysage");
+    });
+
+    await cas("la session porte les outils en étiquette, et UNE seule ligne", async () => {
+      const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
+      assert.ok(session);
+      const c = champs(session.corps);
+      assert.equal(c.get("subscription_data[metadata][modules]"), "paysage");
+      assert.equal(c.get("line_items[0][price]"), "price_outils");
+      assert.equal(c.get("line_items[1][price]"), null, "les outils sont partis sur une seconde ligne");
+    });
+
+    serveur.close();
+  }
+
+  {
+    const { serveur, recues } = fauxPrestataire((r) => {
+      if (r.methode === "GET" && r.chemin === "/v1/subscriptions/sub_123") return { statut: 200, corps: abonnementRendu() };
+      if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_sans" }] } };
+      if (r.methode === "POST" && r.chemin === "/v1/subscriptions/sub_123") {
+        return { statut: 200, corps: abonnementRendu({ metadata: { formule: "entreprise", periodicite: "mensuelle" } }) };
+      }
+      return { statut: 404, corps: {} };
+    });
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+    const r = await stripe.changerLaFormule({ abonnementPrestataire: "sub_123", formule: "entreprise", periodicite: "mensuelle", modules: [] });
+
+    await cas("RETIRER LES OUTILS efface leur étiquette, et le prix sans eux remplace la ligne", async () => {
+      assert.equal(r.ok, true);
+      const maj = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123");
+      assert.ok(maj);
+      const c = champs(maj.corps);
+      // Une étiquette vide, c'est ainsi que le prestataire l'efface.
+      assert.equal(c.get("metadata[modules]"), "");
+      assert.equal(c.get("items[0][price]"), "price_sans");
+      const recherche = recues.find((x) => x.chemin.startsWith("/v1/prices?"));
+      assert.match(decodeURIComponent(recherche!.chemin), /lookup_keys\[\]=atlas_entreprise_mensuelle_5900/);
+    });
+    serveur.close();
+  }
+
+  await cas("les outils se relisent sur l'abonnement : présents, absents, vides ou inconnus", async () => {
+    const stripe = await moduleFrais();
+    const avec = stripe.lireUnAbonnement(abonnementRendu({ metadata: { formule: "artisan", periodicite: "mensuelle", modules: "paysage" } }));
+    assert.deepEqual(avec?.modules, ["paysage"]);
+    assert.deepEqual(stripe.lireUnAbonnement(abonnementRendu())?.modules, []);
+    assert.deepEqual(stripe.lireUnAbonnement(abonnementRendu({ metadata: { formule: "artisan", periodicite: "mensuelle", modules: "" } }))?.modules, []);
+    // Un module qu'Atlas ne connaît pas : on ne devine pas ce qui est payé.
+    assert.equal(stripe.lireUnAbonnement(abonnementRendu({ metadata: { formule: "artisan", periodicite: "mensuelle", modules: "piscine" } })), null);
+  });
+
   console.log("\n=== L'année : deux mois offerts, et l'intervalle suit ===\n");
 
   {
@@ -199,6 +289,7 @@ async function main() {
       email: null,
       formule: "artisan",
       periodicite: "annuelle",
+      modules: [],
       retourSucces: "https://atlas.example/a",
       retourAbandon: "https://atlas.example/b",
     });
@@ -247,6 +338,7 @@ async function main() {
       email: null,
       formule: "artisan",
       periodicite: "mensuelle",
+      modules: [],
       retourSucces: "https://atlas.example/a",
       retourAbandon: "https://atlas.example/b",
     });
@@ -370,6 +462,7 @@ async function main() {
       abonnementPrestataire: "sub_123",
       formule: "illimite",
       periodicite: "mensuelle",
+      modules: [],
     });
 
     await cas("la nouvelle formule est rendue", async () => {
@@ -414,6 +507,7 @@ async function main() {
       abonnementPrestataire: "sub_123",
       formule: "illimite",
       periodicite: "mensuelle",
+      modules: [],
     });
     assert.equal(r.ok, false, "une ligne a été choisie au hasard parmi deux");
     serveur.close();

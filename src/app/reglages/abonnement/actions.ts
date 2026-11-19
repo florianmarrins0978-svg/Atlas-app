@@ -15,7 +15,7 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
-import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, compterLEquipe, enregistrerLAbonnement } from "@/server/repositories/abonnements";
 import {
   ouvrirLePaiement,
   ouvrirLeGuichet,
@@ -25,7 +25,7 @@ import {
 } from "@/server/paiement/stripe";
 import { revalidatePath } from "next/cache";
 import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
-import { estFormule, estPeriodicite } from "@/lib/abonnements";
+import { equipeTientDansLaFormule, estFormule, estModule, estPeriodicite, type ModuleCode } from "@/lib/abonnements";
 import { estRaisonDepart, texteDeDepart } from "@/lib/resiliation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
@@ -53,19 +53,47 @@ function phrase(erreur: "non_configure" | "prestataire_injoignable" | "prestatai
 }
 
 /**
+ * LES MODULES VOULUS, REVALIDÉS : une action serveur s'appelle sans écran, et un
+ * code inventé arriverait tel quel jusqu'au montant. `null` s'il en nomme un
+ * qu'Atlas ne connaît pas ; on refuse plutôt que de l'oublier en silence.
+ */
+function modulesVoulus(brut: unknown): ModuleCode[] | null {
+  if (!Array.isArray(brut)) return null;
+  if (!brut.every((m) => typeof m === "string" && estModule(m))) return null;
+  return [...new Set(brut as ModuleCode[])];
+}
+
+/**
+ * L'ÉQUIPE TIENT-ELLE DANS LA FORMULE ? L'article 14.6 des conditions générales,
+ * et sa réponse du 18 novembre 2026 (« refusé avant ») : choisir Artisan avec
+ * des salariés déjà invités se refuse, et la phrase dit qui retirer.
+ */
+async function refusDeLEquipe(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, formuleVoulue: string): Promise<string | null> {
+  return equipeTientDansLaFormule(formuleVoulue, await compterLEquipe(ctx));
+}
+
+/**
  * OUVRIR LA PAGE DE PAIEMENT pour une formule et une périodicité.
  *
  * **La formule est REVALIDÉE ici**, même si l'écran ne propose que trois
  * boutons : une action serveur est appelable directement, et un code inventé
  * arriverait tel quel jusqu'au montant envoyé au prestataire.
  */
-export async function sabonnerAction(formuleVoulue: string, periodiciteVoulue: string): Promise<ReponsePaiement> {
+export async function sabonnerAction(
+  formuleVoulue: string,
+  periodiciteVoulue: string,
+  modulesBruts: unknown
+): Promise<ReponsePaiement> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "ouvrir la page de paiement");
 
-  if (!estFormule(formuleVoulue) || !estPeriodicite(periodiciteVoulue)) {
+  const modules = modulesVoulus(modulesBruts);
+  if (!estFormule(formuleVoulue) || !estPeriodicite(periodiciteVoulue) || !modules) {
     return { ok: false, message: "Cette formule n’existe pas." };
   }
+  // Avant la page de paiement : refuser après qu'il a payé serait pire.
+  const equipe = await refusDeLEquipe(ctx, formuleVoulue);
+  if (equipe) return { ok: false, message: equipe };
 
   // **Vérifié AVANT d'appeler le prestataire, et non par une exception.** Sans
   // adresse de retour, `adresseDeRetour` lève — et le message d'une exception
@@ -89,6 +117,7 @@ export async function sabonnerAction(formuleVoulue: string, periodiciteVoulue: s
     email: entreprise?.email ?? null,
     formule: formuleVoulue,
     periodicite: periodiciteVoulue,
+    modules,
     // `{CHECKOUT_SESSION_ID}` est remplacé par le prestataire au moment de la
     // redirection : c'est par là que l'écran de retour sait quoi relire.
     retourSucces: adresseDeRetour("/reglages/abonnement?paiement={CHECKOUT_SESSION_ID}"),
@@ -147,14 +176,18 @@ export async function ouvrirLeGuichetAction(): Promise<ReponsePaiement> {
  */
 export async function changerDeFormuleAction(
   formuleVoulue: string,
-  periodiciteVoulue: string
+  periodiciteVoulue: string,
+  modulesBruts: unknown
 ): Promise<ReponsePaiement> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "changer de formule");
 
-  if (!estFormule(formuleVoulue) || !estPeriodicite(periodiciteVoulue)) {
+  const modules = modulesVoulus(modulesBruts);
+  if (!estFormule(formuleVoulue) || !estPeriodicite(periodiciteVoulue) || !modules) {
     return { ok: false, message: "Cette formule n’existe pas." };
   }
+  const equipe = await refusDeLEquipe(ctx, formuleVoulue);
+  if (equipe) return { ok: false, message: equipe };
 
   const limite = await verifierLimite(`ouvrirLePaiement:${ctx.entrepriseId}`, LIMITES.ouvrirLePaiement);
   if (!limite.autorise) {
@@ -170,6 +203,7 @@ export async function changerDeFormuleAction(
     abonnementPrestataire: abonnement.abonnementPrestataire,
     formule: formuleVoulue,
     periodicite: periodiciteVoulue,
+    modules,
   });
   if (!r.ok) return { ok: false, message: phrase(r.erreur) };
 
