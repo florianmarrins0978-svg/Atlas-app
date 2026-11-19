@@ -15,8 +15,8 @@ Planche : `appli/soignee/abonnement-module-paysage.html`
 | À qui | **les trois formules** (sa correction du même soir : *« ça doit être pour toutes les formules, pas que pour la formule artisan »*). Entreprise et Illimité **ne comprennent donc plus** ces trois outils |
 | Des salariés déjà invités (pendant l'essai) et il choisit Artisan | **refusé** tant qu'il ne les a pas retirés dans Équipe. C'est ce que dit déjà l'article 14.6 des conditions générales |
 
-**Lu par moi, à confirmer par lui** : le module coûte **6 € quelle que soit la
-formule**. Il n'a donné qu'un prix, et rien ne dit qu'Entreprise paie plus.
+**Le même prix pour les trois formules** : 6 € quelle que soit la formule,
+confirmé par lui le 19 novembre (*« ouais »*).
 
 ## Ce que la planche montre
 
@@ -34,6 +34,32 @@ dans la carte Artisan (A) : pour trois formules, il aurait fallu trois
 interrupteurs pour la même chose, ou un interrupteur qui change de carte quand
 on en touche une autre. En haut, il se règle une fois, et un second module
 viendra s'y ranger dessous.
+
+## Un plan et un diagnostic offerts (19 novembre 2026)
+
+Planche : `appli/soignee/paysage-plan-offert.html`, sur la vraie page Paysage.
+
+| | Sa réponse |
+|---|---|
+| L'offre | **un plan d'arrosage et un diagnostic végétal offerts**, puis il faut Paysage (*« un seul essai pour le plan d'arrosage de gratuit et ensuite ils doivent payer »*) |
+| Combien de fois | **une seule fois par entreprise, essai de 15 jours compris**. Sans cela, un paysagiste ferait tous ses plans pendant l'essai sans jamais payer |
+
+**Ce que j'ai décidé, et qui se change d'un mot s'il dit autre chose :**
+
+| | |
+|---|---|
+| ce qui consomme l'offre | un plan qui **sort**, avec sa liste de pièces ; un diagnostic qui **rend son résultat** |
+| ce qui ne la consomme pas | un croquis refusé (métrés manquants, photo illisible), une photo de plante refusée : il n'a rien eu, il n'a rien dépensé |
+| les retouches du plan offert | comprises : demander une modification du même plan ne compte pas un second plan |
+| les fiches de chantier | pas d'offre ; ouvertes pendant l'essai (elles ne coûtent aucune IA), fermées ensuite sans Paysage |
+| à l'écran | « 1 offert » à la place du cadenas dans Paysage ; une fois l'offre prise, le cadenas et « Paysage » ; l'outil fermé dit « Votre plan offert est fait. Pour les suivants, ajoutez Paysage : 6 € HT par mois. » et son bouton « Ajouter Paysage » ouvre l'Abonnement, Paysage déjà allumé |
+
+**Écart à son écran, dit** : la ligne rouge « Aucun fournisseur de lecture
+d'image n'est configuré » a été retirée de l'écran d'arrosage figé. Elle vient
+de ce poste, qui n'a pas de clé ; son espace ne l'affiche pas.
+
+**À vérifier au codage** : ce qui reste du plan offert quand il quitte l'écran.
+S'il ne se rouvre pas, il aura payé son essai d'un plan perdu.
 
 ## Ce que le code devra faire (niveau 3 : c'est de l'argent)
 
@@ -54,6 +80,12 @@ viendra s'y ranger dessous.
 6. **Les écrans fermés** : « Le plan d'arrosage est dans Entreprise » devient
    « dans le module Paysage », pour les trois formules.
 7. **La facture d'abonnement de Cause** : une ligne de plus pour le module.
+8. **L'offre** : un compteur par entreprise (sous RLS, par `withEntreprise`),
+   écrit quand le plan sort ou que le diagnostic rend son résultat, jamais
+   avant ; la règle qui dit « ouvert, offert ou fermé » vit dans
+   `src/lib/abonnements.ts`, et la page Paysage comme les actions serveur la
+   lisent (`exigerFonction`). Les conditions générales (14.2) disent que
+   l'essai ouvre « tous les outils » : la version 4 dira l'offre.
 
 ## Ce qui a été trouvé en chemin
 
@@ -75,6 +107,5 @@ viendra s'y ranger dessous.
 
 | | Qui |
 |---|---|
-| Le même prix (6 €) pour les trois formules | lui |
 | Les plafonds d'IA (Artisan 10 €, Entreprise 20 €, Illimité 60 € par mois) avec le module, qui lit des photos. Mon avis : les garder, et regarder la consommation réelle, qu'on n'a pas encore | lui |
 | Publier la version 4 des conditions générales | lui |
