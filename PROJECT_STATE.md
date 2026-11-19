@@ -1,5 +1,9 @@
 # État du projet
 
+## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
+
+Le PDF du retour d'intervention appelait « Mr. » chaque cliente : la civilité se fige désormais avec le nom à l'envoi (migration 0185, `ARCHITECTURE.md` §589). Un compte créé par l'inscription ne pouvait faire ni devis, ni facture, ni avoir, faute de compteur de numéros : toute entreprise neuve passe par `poserLEntrepriseNeuve`, et la migration 0186 pose le compteur aux comptes déjà inscrits (§590). Une seule batterie pour les deux, sur sa demande, verte.
+
 ## SA FAÇON D'ABATTRE ET LE DIAMÈTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : SUR `main` (19 novembre 2026)
 
 Sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Le client lit désormais « Abattage d'un chêne Quercus robur » ; la ligne reste chiffrée par sa case, et le texte en base garde ses réponses pour les moteurs. Vrai pour une façon d'abattre qu'il a nommée lui-même (lue dans ses grilles par `listerPrestationsDuDevis`). Batterie : 216 suites navigateur sur 217, la seule rouge (`test-anneau-dictee-e2e`) verte des deux côtés quand elle est rejouée sur la base de `main`, donc étrangère au lot. `ARCHITECTURE.md` §588.

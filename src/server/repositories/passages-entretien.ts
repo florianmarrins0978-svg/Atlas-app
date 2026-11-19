@@ -395,6 +395,9 @@ export async function figerPassage(
         // Le nom part avec le rapport : voir la migration 0055. Le relire à la
         // lecture le ferait changer sous les yeux du client.
         clientNomFige: passage.clientNom,
+        // La civilité part avec le nom, et pour la même raison : sans elle, le
+        // retour d'intervention appelait « Mr. » chaque cliente (migration 0185).
+        clientCiviliteFigee: passage.clientCivilite as CiviliteClient | null,
         // Le nom du signataire se fige avec sa signature : la fiche dit qui a
         // signé ce jour-là, même si la fiche du client change ensuite.
         signaturePng,
@@ -558,6 +561,8 @@ export type RapportPublic = {
   minutes: number | null;
   observations: string | null;
   clientNom: string | null;
+  /** Figée avec le nom, à l'envoi (migration 0185). */
+  clientCivilite: CiviliteClient | null;
   entrepriseNom: string;
   /** **Ce qui a été FAIT, et rien d'autre** — voir plus bas. */
   faites: { famille: string; libelle: string }[];
@@ -598,6 +603,7 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
         observations: passagesEntretien.observations,
         envoyeLe: passagesEntretien.envoyeLe,
         clientNom: passagesEntretien.clientNomFige,
+        clientCivilite: passagesEntretien.clientCiviliteFigee,
         entrepriseNom: entreprises.nom,
         signaturePng: passagesEntretien.signaturePng,
         signataire: passagesEntretien.signataire,
@@ -624,6 +630,7 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
       minutes: p.tempsVisible ? p.minutes : null,
       observations: p.observations,
       clientNom: p.clientNom ?? null,
+      clientCivilite: p.clientCivilite ?? null,
       entrepriseNom: p.entrepriseNom,
       faites,
       signature:

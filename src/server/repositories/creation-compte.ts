@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { abonnements, entreprises, membresEntreprise, users } from "@/server/db/schema";
+import { abonnements, entreprises, users } from "@/server/db/schema";
 import { FORMULE_DE_LESSAI, finDeLEssai } from "@/lib/abonnements";
 import { MAX_EQUIPES } from "@/lib/equipes";
 import { adresseNormalisee } from "@/lib/donner-un-acces";
@@ -12,7 +12,7 @@ import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
-import { remettreLeModeleDans } from "./prestations-entretien";
+import { poserLEntrepriseNeuve } from "./entreprises";
 
 /**
  * CRÉER SON COMPTE ET SON ENTREPRISE — le geste de la porte.
@@ -219,16 +219,10 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
       })
       .returning({ id: users.id });
 
-    // Contexte RLS fixé dès que l'entreprise existe : `membres_entreprise`
-    // porte `FORCE ROW LEVEL SECURITY`, et une écriture sans contexte n'y
-    // passerait pas — silencieusement.
-    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entreprise.id}, true)`);
-
-    await tx.insert(membresEntreprise).values({
-      entrepriseId: entreprise.id,
-      utilisateurId: compte.id,
-      role: "proprietaire",
-    });
+    // Son propriétaire, son compteur de numéros, son modèle de fiche : la même
+    // mise en place que toute entreprise neuve (`poserLEntrepriseNeuve`). Elle
+    // était recopiée ici, sans le compteur, et son premier devis tombait.
+    await poserLEntrepriseNeuve(tx, entreprise.id, compte.id);
 
     // **L'essai commence ICI, et seulement ici** — sa décision du 10 septembre
     // 2026 : « essai gratuit 15 jours ». Un compte créé par la porte est le
@@ -242,12 +236,6 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
       statut: "essai",
       periodeFin: finDeLEssai(new Date()),
     });
-
-    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
-    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
-    // modifieront s'ils le souhaitent »*. La même écriture que `creerEntreprise`
-    // et que le bouton « Remettre le modèle Atlas ».
-    await remettreLeModeleDans(tx, entreprise.id);
 
     logger.info("Compte créé depuis la porte", {
       entrepriseId: entreprise.id,

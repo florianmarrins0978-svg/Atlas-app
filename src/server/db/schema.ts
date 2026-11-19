@@ -503,6 +503,11 @@ export const passagesEntretien = pgTable(
     observations: text("observations"),
     /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),
+    /**
+     * Recopiée avec le nom (migration 0185) : sans elle, le PDF appelait
+     * « Mr. » chaque cliente. NULL : un client sans civilité, ou disparu.
+     */
+    clientCiviliteFigee: text("client_civilite", { enum: ["mr", "mme", "entreprise", "public"] }),
     envoyeLe: timestamp("envoye_le", { withTimezone: true }),
     empreinte: char("empreinte", { length: 64 }),
     /** L'adresse publique du rapport. NULL tant qu'il n'est pas parti. */
