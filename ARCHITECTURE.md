@@ -37646,6 +37646,6 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | le nom vient de SES grilles, au serveur : `listerPrestationsDuDevis`, seule porte des quatre chemins qui écrivent un devis | une clé ne se relit pas en nom sans deviner ; le catalogue d'origine reste le repli |
 | le texte en base garde ses réponses | les moteurs y relisent le diamètre ; le retirer casserait le prix de la case en silence. Seul ce que le client lit change |
 | une technique de base répondue à la question part aussi | même règle pour toutes ; le 30 août, « Démontage en rétention d'un érable » venait d'un tiret dicté, qui ne change pas |
-| « (Quercus robur) » reste | il n'en a rien dit ; ce n'est pas une réponse de grille |
+| **la désignation ne porte aucune parenthèse** ; ce qu'elles disaient reste dans la phrase (« Abattage d'un chêne Quercus robur »), colonnes ou non (`sansParentheses`) | sa réponse du 18 novembre, devant le nom latin que la lecture de la dictée met entre parenthèses : *« il reste, sans les ( ) »*. Enlever deux signes n'efface rien ; quatre anciens contrôles qui attendaient les parenthèses attendent désormais les mêmes mots sans elles |
 
-`test-libelle-client.ts` (quatre cas, trois vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).
+`test-libelle-client.ts` (six cas, cinq vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).

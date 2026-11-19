@@ -1,12 +1,12 @@
 # Prochaines tâches
 
-## SA FAÇON D'ABATTRE HORS DE LA DÉSIGNATION : CODÉ, SA BATTERIE ATTEND SON « OUI » (18 novembre 2026)
+## SA FAÇON D'ABATTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : CODÉ, BATTERIE SUR SON « OUI » (18 novembre 2026)
 
 `ARCHITECTURE.md` §588. Codé sur `claude/sleepy-sagan-gq6c0x`, types et style
 verts, `test-libelle-client.ts` rouge puis vert. **Pas joué** :
 `test-cases-reglables-db.ts` (son chemin en base, rouge attendu sur le code
 d'avant), puis la batterie entière (devis : gravité argent). Le lancer vide la
-base d'essai : son accord d'abord (`CLAUDE.md` §5).
+base d'essai : son accord, donné le 18 novembre (« oui, mais sans les ( ) »).
 
 ## ⏳ UNE PLANCHE À REGARDER : « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE (18 novembre 2026)
 

@@ -431,7 +431,7 @@ export function libelleClient(p: PrestationLisible): string {
   if (!base) return "";
 
   const { valeurs, unites } = valeursConnues(p);
-  if (valeurs.size === 0 && !p.methode) return base;
+  if (valeurs.size === 0 && !p.methode) return sansParentheses(base);
   const motsDeSaTechnique = new Set(motsDe(p.methodeLibelle ?? techniqueDuCatalogue(p.methode) ?? ""));
 
   // ── 1. Les parenthèses techniques s'en vont, OÙ QU'ELLES SOIENT ──────
@@ -520,5 +520,22 @@ export function libelleClient(p: PrestationLisible): string {
   // ses mesures — « 800 ml » et rien d'autre —, le client doit quand même lire
   // quelque chose : on rend alors le texte d'origine.
   const nettoye = reste.replace(/[\s,;:·]+$/u, "").trim();
-  return nettoye.length > 0 ? capitale(nettoye) : base;
+  return nettoye.length > 0 ? capitale(sansParentheses(nettoye)) : sansParentheses(base);
+}
+
+/**
+ * Ce que disaient les parenthèses reste dans la phrase ; elles, s'en vont.
+ *
+ * **Sa réponse du 18 novembre 2026**, devant « Abattage d'un chêne (Quercus
+ * robur) » : *« il reste, sans les ( ) »*. La lecture de la dictée met entre
+ * parenthèses ce qu'elle ajoute ; ce qui relevait des colonnes est déjà parti
+ * plus haut, le reste est du texte qu'il garde. Appliqué au texte d'origine
+ * aussi, quand rien n'est en colonne : enlever deux signes n'efface aucune
+ * information.
+ */
+function sansParentheses(texte: string): string {
+  return texte
+    .replace(/\s*\(\s*([^()]*?)\s*\)/g, (_, dedans: string) => (dedans ? ` ${dedans}` : ""))
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }

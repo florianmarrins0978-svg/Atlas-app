@@ -203,7 +203,9 @@ cas("ni la tête ni le complément ne sont un geste connu : le texte reste", () 
 cas("une mesure que les colonnes NE portent PAS reste écrite", () => {
   assert.equal(
     libelleClient({ libelle: "Haie de laurier (800 ml)", quantite: null, unite: null }),
-    "Haie de laurier (800 ml)"
+    // Sans ses parenthèses depuis sa réponse du 18 novembre 2026 : la mesure
+    // reste écrite, c'est ce que ce contrôle défend.
+    "Haie de laurier 800 ml"
   );
 });
 
@@ -223,24 +225,22 @@ cas("une valeur DIFFÉRENTE de la colonne n'est pas retirée", () => {
 
 console.log("\n=== La compatibilité : rien d'ancien n'est réinterprété ===\n");
 
-cas("une prestation d'avant, sans aucune colonne, garde son texte entier", () => {
-  for (const ancien of [
-    "Abattage d'un chêne — ⌀ 45 cm, 18 m de haut",
-    "Haie (tout genre) (800 ml)",
-    "Élagage du tilleul",
+cas("une prestation d'avant, sans aucune colonne, garde tout ce qu'elle dit", () => {
+  // Seules ses parenthèses partent (sa réponse du 18 novembre 2026) : aucun
+  // mot n'est retiré ni réinterprété.
+  for (const [ancien, lu] of [
+    ["Abattage d'un chêne — ⌀ 45 cm, 18 m de haut", "Abattage d'un chêne — ⌀ 45 cm, 18 m de haut"],
+    ["Haie (tout genre) (800 ml)", "Haie tout genre 800 ml"],
+    ["Élagage du tilleul", "Élagage du tilleul"],
   ]) {
-    assert.equal(
-      libelleClient({ libelle: ancien }),
-      ancien,
-      `« ${ancien} » ne doit pas bouger sans colonnes`
-    );
+    assert.equal(libelleClient({ libelle: ancien }), lu, `« ${ancien} » ne doit perdre aucun mot sans colonnes`);
   }
 });
 
 cas("un libellé qui ne dirait QUE sa mesure n'est jamais vidé", () => {
   assert.equal(
     libelleClient({ libelle: "(800 ml)", quantite: "800.00", unite: "ml" }),
-    "(800 ml)"
+    "800 ml"
   );
 });
 
@@ -441,7 +441,7 @@ cas("une parenthèse qui dit autre chose reste, et la suivante part quand même"
       nature: "haie",
       caracteristiques: {},
     }),
-    "Taille (haie mixte)"
+    "Taille haie mixte"
   );
 });
 
@@ -504,7 +504,7 @@ cas("SA capture : sa façon d'abattre et le diamètre partent, le reste du libel
       methodeLibelle: "Abattage entre 10 et 20 m",
       caracteristiques: { diametreCm: 80 },
     }),
-    "Abattage d'un chêne (Quercus robur)"
+    "Abattage d'un chêne Quercus robur"
   );
 });
 
@@ -532,7 +532,7 @@ cas("la façon d'abattre seule, sans diamètre répondu, part de même", () => {
   );
 });
 
-cas("une parenthèse qui dit AUTRE CHOSE que sa réponse reste entière", () => {
+cas("un fragment qui dit AUTRE CHOSE que sa réponse reste entier", () => {
   assert.equal(
     libelleClient({
       libelle: "Abattage d'un chêne (abattage entre 10 et 20 m, côté voisin)",
@@ -540,8 +540,23 @@ cas("une parenthèse qui dit AUTRE CHOSE que sa réponse reste entière", () => 
       methode: "t_abattage_entre_10_et_20_m",
       methodeLibelle: "Abattage entre 10 et 20 m",
     }),
-    "Abattage d'un chêne (abattage entre 10 et 20 m, côté voisin)"
+    "Abattage d'un chêne abattage entre 10 et 20 m, côté voisin"
   );
+});
+
+// **Sa réponse du 18 novembre 2026**, devant « Abattage d'un chêne (Quercus
+// robur) » : *« il reste, sans les ( ) »*. La lecture de la dictée met le nom
+// latin entre parenthèses ; la désignation n'en porte aucune, ce qu'elles
+// disaient reste dans la phrase.
+cas("le nom latin reste, SANS ses parenthèses", () => {
+  assert.equal(
+    libelleClient({ libelle: "Abattage d'un chêne (Quercus robur)", nature: "abattage", caracteristiques: { diametreCm: 80 } }),
+    "Abattage d'un chêne Quercus robur"
+  );
+});
+
+cas("même sans rien en colonne, une parenthèse ne passe pas sur la désignation", () => {
+  assert.equal(libelleClient({ libelle: "Abattage d'un chêne (Quercus robur)" }), "Abattage d'un chêne Quercus robur");
 });
 
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
