@@ -87,7 +87,11 @@ cas("un partenaire : son prix multiplié par la marge de la main d'œuvre", () =
   assert.equal(p.marge, "1.20");
   assert.equal(p.margePropre, false);
   const l = ligneDeSonPartenaire(p, 3);
-  assert.deepEqual(l, { libelle: "Main d’œuvre : Carrelage Morin", quantite: "3", unite: "journée", prixUnitaire: "456.00" });
+  // **Le nom du partenaire ne part pas chez le client** (sa réponse du
+  // 19 novembre 2026 : « le retirer »). La ligne s'imprime sur le PDF et la
+  // page du client ; le partenaire reste dans le calcul, pour lui seul.
+  assert.deepEqual(l, { libelle: "Main d’œuvre", quantite: "3", unite: "journée", prixUnitaire: "456.00" });
+  assert.ok(!l.libelle.includes("Carrelage Morin"), `le nom du partenaire est sur la ligne : « ${l.libelle} »`);
   assert.equal(montantDeLaMainOeuvre(l), "1368.00");
 });
 
@@ -213,10 +217,10 @@ cas("à l'heure ou au forfait, la quantité est celle qu'il tape, au-dessus de z
   assert.equal(quantiteDuPartenaire(aLHeure, 2, 100000), null);
 });
 
-cas("2 jours × 450 € × 1,35 font 1 215 €, sur la ligne qui dit son nom", () => {
+cas("2 jours × 450 € × 1,35 font 1 215 €, sur une ligne qui ne le nomme pas", () => {
   const m = mainOeuvreDUnPartenaire(durand, 2);
   assert.equal(m.montant, "1215.00");
-  assert.equal(m.ligne.libelle, "Main d’œuvre : Élagage Durand");
+  assert.equal(m.ligne.libelle, "Main d’œuvre");
   assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 € × 1,35");
 });
 

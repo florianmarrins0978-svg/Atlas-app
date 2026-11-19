@@ -36880,7 +36880,7 @@ Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nom
 | **la question porte de quoi le montrer** | `QuestionMainOeuvre.jours` et `.partenaires` (les prix de `prixDesPartenaires`, lus comme la feuille du devis les lit). Sa phrase vient de `questionDeLaMainOeuvre`, la même au serveur et à l'écran |
 | **une seule règle pour trois lecteurs** | `mainOeuvreDUnPartenaire` (la ligne, son montant, le calcul en clair) et `quantiteDuPartenaire` (à la journée, les jours du chantier ; sinon ce qu'il tape) dans `src/lib/feuille-main-oeuvre.ts`. La feuille du devis, la carte « Avant de chiffrer » et le serveur (`partenaireDuChoix`) les lisent |
 | **le serveur ne croit pas l'écran** | `propositionAvecMainOeuvre` relit le prix sous son entreprise et rejoue la quantité : une quantité à la journée envoyée par l'écran est remplacée par les jours dictés, un prix d'une autre entreprise ou retiré rend la main d'œuvre « à chiffrer », et la phrase le dit. Le conducteur d'un engin ne se retire pas d'un partenaire : il ne concerne que son équipe |
-| **la ligne dit son nom** | « Main d’œuvre : Élagage Durand », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
+| **la ligne ne dit plus son nom** (révisé le 19 novembre 2026, §591) | « Main d’œuvre », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
 | **la liste ne se recopie pas** | `PastilleMesPartenaires`, `ListeDesPartenaires`, `PartenairePris` quittent `FeuilleMainDoeuvre` pour `src/components/atlas/PartenairesDeLaMainOeuvre.tsx` ; `prixEnMots` et `enUnite` pour la règle pure. Les repères (`mo-partenaires`, `mo-prix-<id>`, `mo-revenir`) restent ceux de la feuille |
 
 **Ce que l'écran montre est ce qui part.** La carte (`MainOeuvreDeLaDictee`) lit son total sur la réponse enregistrée, jamais sur le texte tapé : une quantité qui ne se lit pas ne s'enregistre pas, et le total reste celui de la dernière qui se lisait. La barre de répartition reçoit le total du partenaire ; ses parts d'avant ne font plus le compte, elle les remet à l'échelle à la dizaine (`repartirMainOeuvre`), comme le serveur.
@@ -37675,3 +37675,26 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
 | Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
 
+## §591 : Le nom du partenaire ne part pas chez le client
+
+**Sa réponse du 19 novembre 2026 : « le retirer ».** La ligne d'un partenaire
+pris pour la main d'œuvre s'écrivait « Main d’œuvre : Élagage Durand »
+(`ligneDeSonPartenaire`, `src/lib/feuille-main-oeuvre.ts`, §551). Le libellé
+d'une ligne s'imprime sur le PDF et la page publique : le client lisait le nom
+du sous-traitant. Elle s'écrit désormais « Main d’œuvre », comme celle de son
+équipe.
+
+**Où le nom reste, pour lui seul** : la feuille « Main d'œuvre » et la carte
+« Avant de chiffrer » (la liste de ses partenaires), et l'encadré « Calcul » de
+l'écran Prix (`propositionAvecMainOeuvre` : « Élagage Durand, Démontage sur
+corde : 2 jours × 450 € × 1,35 »). Rien de tout cela ne s'imprime.
+
+**Ce qui ne bouge pas.** La ligne se reconnaît à son drapeau `main_doeuvre`,
+jamais à son texte (`main-doeuvre-devis.ts`) : « dont main d'œuvre HT », la
+répartition et la feuille la retrouvent comme avant. Les lignes déjà écrites
+gardent leur texte : aucune migration ne réécrit un devis, il les corrige à la
+main s'il le veut.
+
+Contrôles : `test-feuille-main-oeuvre` (pur, vu rouge puis vert : la ligne ne
+contient plus le nom), `test-main-oeuvre-dictee-db` et
+`test-feuille-main-oeuvre-e2e` adaptés à la même règle.

@@ -155,7 +155,8 @@ async function main() {
       assert.ok(l, "la ligne du partenaire n'est pas en base");
       assert.deepEqual(
         { libelle: l.libelle, quantite: Number(l.quantite), unite: l.unite, pu: Number(l.prix_unitaire), montant: Number(l.montant) },
-        { libelle: `Main d’œuvre : ${morin}`, quantite: 3, unite: "jour", pu: 456, montant: 1368 }
+        // Le nom du partenaire ne part pas chez le client (19 novembre 2026).
+        { libelle: "Main d’œuvre", quantite: 3, unite: "jour", pu: 456, montant: 1368 }
       );
     });
 

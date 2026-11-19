@@ -40,6 +40,18 @@ dans la maquette* ; le nom du partenaire sur la ligne « Main d'œuvre :
 Élagage Durand », qui partait chez le client, **le retirer** (voir l'entrée
 suivante).
 
+## LE NOM DU PARTENAIRE NE PART PLUS CHEZ LE CLIENT (19 novembre 2026), CODÉ, PAS ENCORE SUR `main`
+
+Sa réponse : **le retirer**. `ligneDeSonPartenaire`
+(`src/lib/feuille-main-oeuvre.ts`) écrivait « Main d’œuvre : Élagage Durand »
+sur la ligne du devis, donc sur le PDF et la page du client. La ligne dit
+désormais « Main d’œuvre » ; le partenaire reste dans l'encadré « Calcul » de
+l'écran Prix, pour lui seul. Les lignes déjà écrites gardent leur texte : il
+les corrige à la main s'il le veut. `ARCHITECTURE.md` §591. Gravité argent (devis) : niveau 3. Joués ici : la
+suite pure (vue rouge puis verte), les types, le style. **Pas joués** : la
+suite base et les deux suites navigateur adaptées, et la batterie avant
+`main`, qui attendent son accord.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 
 Sa demande : *« regarder les fiches de diagnostic végétal qui existent déjà,

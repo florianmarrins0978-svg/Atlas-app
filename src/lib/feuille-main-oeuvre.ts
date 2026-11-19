@@ -128,10 +128,16 @@ export function prixDesPartenaires(
     }));
 }
 
-/** Un partenaire choisi : la ligne dit son nom, son unité, et son prix marge comprise. */
+/**
+ * Un partenaire choisi : la ligne dit son unité et son prix marge comprise,
+ * **jamais son nom**. La ligne s'imprime sur le PDF et la page du client, et
+ * le nom de celui qui fait le travail à sa place ne les regarde pas (sa
+ * réponse du 19 novembre 2026 : « le retirer »). Le partenaire reste écrit
+ * dans le calcul de l'écran Prix, qu'il est seul à lire.
+ */
 export function ligneDeSonPartenaire(p: PrixDePartenaire, quantite: number): LigneDeMainOeuvre {
   return {
-    libelle: `${LIBELLE_LIGNE_MAIN_DOEUVRE} : ${p.societeNom}`,
+    libelle: LIBELLE_LIGNE_MAIN_DOEUVRE,
     quantite: new Decimal(Math.max(0, quantite)).toDecimalPlaces(2).toString(),
     unite: p.unite,
     prixUnitaire: prixPositif(p.venteHt),
