@@ -8,6 +8,9 @@
 // tête de `src/lib/passage-entretien.ts`.
 
 import { createHash, randomBytes } from "node:crypto";
+import { signatureAuDoigtValable } from "@/lib/signature-au-doigt";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
+import { jourIso } from "@/lib/jour";
 import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
@@ -40,6 +43,9 @@ export type Passage = {
   observations: string | null;
   envoyeLe: Date | null;
   jeton: string | null;
+  /** Signée sur place par le client (migration 0183), sinon `null`. */
+  signaturePng: string | null;
+  signeeLe: Date | null;
   lignes: (LignePassage & { id: string })[];
 };
 
@@ -94,6 +100,8 @@ export async function lirePassage(ctx: Ctx, id: string): Promise<Passage | null>
         observations: passagesEntretien.observations,
         envoyeLe: passagesEntretien.envoyeLe,
         jeton: passagesEntretien.jeton,
+        signaturePng: passagesEntretien.signaturePng,
+        signeeLe: passagesEntretien.signeeLe,
         clientNom: clients.nom,
         clientTelephone: clients.telephone,
         clientEmail: clients.email,
@@ -317,9 +325,16 @@ export async function nommerClient(
 /**
  * Fige le rapport et l'horodate.
  *
- * **Ce qui remplace les signatures** (décision du 16 août) : la date, l'heure,
- * et l'empreinte du contenu exact. C'est la même mécanique que l'acceptation
- * d'un devis, et c'est plus solide qu'un trait au doigt.
+ * **La preuve du passage** (décision du 16 août) : la date, l'heure, et
+ * l'empreinte du contenu exact, la même mécanique que l'acceptation d'un devis.
+ *
+ * **ET LA SIGNATURE DU CLIENT, S'IL ÉTAIT LÀ** — sa demande du 17 novembre
+ * 2026, qui revient sur le 16 août : *« si le client est là, ils lui font
+ * signer ; s'il n'est pas là, ils ne lui font pas signer. Il ne faut pas que
+ * ça soit obligatoire pour enregistrer la fiche »*. Absente : la fiche part
+ * comme avant. Présente : elle doit être un vrai trait (la règle commune,
+ * `signature-au-doigt.ts`), elle part avec la fiche, et l'empreinte la scelle
+ * avec le contenu qu'elle a signé.
  *
  * **N'ENVOIE RIEN.** Le message part de SA messagerie, comme le devis et la
  * facture — sa décision du 3 août (`docs/A-FAIRE.md` §5). Cette fonction fige,
@@ -328,6 +343,7 @@ export async function nommerClient(
 export async function figerPassage(
   ctx: Ctx,
   passageId: string,
+  signature: { png: unknown; points: unknown } | null = null,
   maintenant: Date = new Date()
 ): Promise<{ ok: true; empreinte: string; jeton: string } | { ok: false; phrase: string }> {
   const passage = await lirePassage(ctx, passageId);
@@ -335,6 +351,14 @@ export async function figerPassage(
 
   const empechement = empechementEnvoi(passage);
   if (empechement) return { ok: false, phrase: empechement };
+
+  // Un cadre touché mais pas signé (un tap, un trait de deux points) n'est pas
+  // une signature : on ne l'envoie pas en silence, on le dit.
+  const signe = signature !== null;
+  if (signe && !signatureAuDoigtValable(signature.png, signature.points)) {
+    return { ok: false, phrase: "Faites signer le client au doigt, ou effacez le cadre." };
+  }
+  const signaturePng = signe ? (signature.png as string) : null;
 
   // L'empreinte porte ce que le client lira : les prestations faites, le temps,
   // les observations, le jour. Y mettre l'identifiant du passage ne prouverait
@@ -349,6 +373,10 @@ export async function figerPassage(
     minutes: passage.tempsVisible ? passage.minutes : null,
     observations: passage.observations ?? "",
     faites: passage.lignes.filter((l) => l.faite).map((l) => l.libelle).sort(),
+    // Signée, la signature entre dans la preuve : ce trait-là, sur ce
+    // contenu-là. Sans signature, la clé n'existe pas, et l'empreinte d'une
+    // fiche non signée reste calculée comme avant.
+    ...(signaturePng ? { signature: createHash("sha256").update(signaturePng, "utf8").digest("hex") } : {}),
   });
   const empreinte = createHash("sha256").update(contenu, "utf8").digest("hex");
 
@@ -367,6 +395,11 @@ export async function figerPassage(
         // Le nom part avec le rapport : voir la migration 0055. Le relire à la
         // lecture le ferait changer sous les yeux du client.
         clientNomFige: passage.clientNom,
+        // Le nom du signataire se fige avec sa signature : la fiche dit qui a
+        // signé ce jour-là, même si la fiche du client change ensuite.
+        signaturePng,
+        signataire: signaturePng ? avecCivilite(passage.clientNom, passage.clientCivilite as CiviliteClient | null) : null,
+        signeeLe: signaturePng ? maintenant : null,
         updatedAt: maintenant,
       })
       .where(eq(passagesEntretien.id, passageId));
@@ -528,6 +561,11 @@ export type RapportPublic = {
   entrepriseNom: string;
   /** **Ce qui a été FAIT, et rien d'autre** — voir plus bas. */
   faites: { famille: string; libelle: string }[];
+  /**
+   * Signée sur place par le client (migration 0183) : le trait, qui l'a signée,
+   * et le jour. `null` sinon, et rien ne s'affiche : jamais de « Non signé ».
+   */
+  signature: { png: string; signataire: string; jour: string } | null;
 };
 
 /**
@@ -561,6 +599,9 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
         envoyeLe: passagesEntretien.envoyeLe,
         clientNom: passagesEntretien.clientNomFige,
         entrepriseNom: entreprises.nom,
+        signaturePng: passagesEntretien.signaturePng,
+        signataire: passagesEntretien.signataire,
+        signeeLe: passagesEntretien.signeeLe,
       })
       .from(passagesEntretien)
       .innerJoin(entreprises, eq(entreprises.id, passagesEntretien.entrepriseId))
@@ -585,6 +626,10 @@ export async function lireRapportParJeton(jeton: string): Promise<RapportPublic 
       clientNom: p.clientNom ?? null,
       entrepriseNom: p.entrepriseNom,
       faites,
+      signature:
+        p.signaturePng && p.signataire && p.signeeLe
+          ? { png: p.signaturePng, signataire: p.signataire, jour: jourIso(p.signeeLe) }
+          : null,
     };
   });
 }

@@ -37506,7 +37506,7 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | les élisions suivent : « d'Atlas » devient « de Cause », « qu'Atlas » devient « que Cause » | « d'Cause » ne se lit pas |
 | **les noms internes gardent atlas** : rôles `atlas_app` et `atlas_owner`, bases `atlas_test`, variables `ATLAS_*`, repères `data-atlas`, classes `.atlas-*`, dossier `components/atlas`, préfixe `atlas-` des événements d'agenda, clés de rangement | les renommer ne montre rien de plus et casse : ses rendez-vous déjà posés ne seraient plus reconnus (`estEvenementAtlas`), les bases de son espace ne s'ouvriraient plus, huit cents suites perdraient leurs repères |
 | **les conditions générales ne bougent pas** (`src/server/documents-legaux/versions.ts`, `public/conditions-utilisation.html`, `public/confidentialite.html`) | une version publiée ne se modifie jamais : le nom y changera par une version nouvelle, que chaque compte acceptera de nouveau. C'est sa décision (`TODO.md`) |
-| **l'icône reste le « A »** (`public/icone-source.svg`) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
+| **l'icône est le C** de la première planche, son choix du 18 novembre (`public/icone-source.svg`, §586) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
 | les données de test gardent leurs noms d'entreprise (« Atlas SAS », « Jardins Atlas ») | ce sont des clients inventés, pas le nom du produit |
 | les anciennes planches de `appli/` gardent Atlas | elles racontent le chemin ; le site de vente sous le nom Cause est `appli/vente/cause.html` |
 
@@ -37545,9 +37545,107 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | `userID: isoUint8Array.fromUTF8String(utilisateur.id)` | les mêmes octets qu'en 9 : pour le téléphone, c'est le même compte, et une clé refaite remplace la sienne au lieu de s'ajouter |
 | la base ne change pas | la 9 rangeait l'identifiant et la clé publique COSE en base64url ; la 13 rend `credential.id` en base64url et `credential.publicKey` en octets, rangés pareil. Les clés déjà posées s'ouvrent sans conversion |
 | les types viennent de `@simplewebauthn/server` | `@simplewebauthn/types`, qu'on importait sans le déclarer, est abandonné ; il n'arrivait que par la 9 |
-| next-auth déclare la 9 en dépendance « pair » FACULTATIVE | il ne s'en sert que pour son propre fournisseur passkey, que l'application n'emploie pas (`src/auth.ts` dit pourquoi). `npm ls` le signale en profondeur seulement : `npm ls --silent`, que `banc.mjs` interroge quand une construction échoue, rend 0 et ne voit rien (mesuré) |
+| next-auth déclare la 9 en dépendance « pair » FACULTATIVE | il ne s'en sert que pour son propre fournisseur passkey, que l'application n'emploie pas (`src/auth.ts` dit pourquoi). `npm ls` le signale en profondeur seulement : `npm ls --silent`, que `banc.mjs` interroge quand une construction échoue, rend 0 et ne voit rien (mesuré). **Faux, corrigé le jour même** : `npm ci` et `npm install` refusaient d'installer le dépôt (ERESOLVE), la batterie l'ignorait faute de réinstaller. Voir §585 |
 
 `test-face-id-e2e.ts` en porte deux cas : l'appareil retient le compte sous les mêmes octets qu'avant, et une clé fabriquée et rangée comme la 9 la rangeait s'ouvre toujours (après qu'une clé publique fausse, sur la même ligne, a été refusée : le contrôle sait échouer).
 
 **Ce qui ferait changer ce verdict** : une faille dans un paquet que le SERVEUR exécute pour une requête (Next.js, next-auth, `@simplewebauthn/server` avec une attestation lue, `pg`, les fournisseurs d'IA), ou une version corrigée de picomatch. Refaire le tour avec `npm audit --json`, puis `npm ls <paquet>` pour savoir qui l'amène.
 
+## §584 : La signature du client, sur le devis et sur la fiche d'entretien
+
+*18 novembre 2026, ses deux planches du 17 (`appli/soignee/devis-signe-par-le-client.html`, `appli/soignee/fiche-signee-par-le-client.html`), puis « les deux me vont, tu peux coder ».*
+
+| Décision | Pourquoi |
+|---|---|
+| **Une seule règle de ce qui est une signature** : `src/lib/signature-au-doigt.ts` (un vrai PNG `data:`, au moins 8 points, moins de 500 000 caractères) | elle vivait dans `fiche-securite.ts` ; recopiée pour le devis, elle aurait divergé (§3). Chaque papier garde sa phrase de refus |
+| **Une seule toile** : `src/components/atlas/Signature.tsx` (sortie de la fiche de sécurité), et `SignatureDuClient` pour la relire | le client et le patron reconnaissent la même chose d'un écran à l'autre |
+| **La toile est dans une FEUILLE, pas dans la page** (sa planche B du 18 novembre) : « J'accepte ce devis » (ou « le contrat ») ouvre « Votre signature », et c'est le bouton de la feuille qui envoie l'accord | posée dans la page, la toile de 170 px faisait déborder l'écran de 390 × 664 que sa règle du 31 août impose (`test-devis-client-e2e`). Un refus qui n'est pas celui du trait referme la feuille, pour se lire sur la page |
+| **Le contrat d'entretien aussi** (migration 0184, `repondreAuContrat`) | sa question du 18 : « même pour un contrat d'entretien, il y aura la signature ? ». Son PDF se compose à chaque ouverture : la signature s'y pose sans fichier à ranger |
+| **Devis : accepter, c'est signer** — `enregistrerReponse` refuse `signature_manquante` | l'écran éteint le geste, mais la page est publique et se rejoue : la règle vit au dépôt. Un refus et une correction n'en demandent pas. Un accord papier non plus |
+| **Le devis signé est RECOMPOSÉ et rangé à côté** (`envois_devis.pdf_signe_cle`), jamais posé sur celui de l'envoi | le PDF parti est protégé contre la modification (`proteger-pdf.ts`) : rien ne peut s'y écrire, et il doit rester la pièce de référence. Composé une fois (`cleDuDevisSigne`, écriture sur `pdf_signe_cle IS NULL`), juste après l'accord, et rattrapé à la première ouverture si cela a échoué |
+| **Ce que la recomposition ne garantit pas** | l'allure, le logo ou les conditions générales changés entre l'envoi et la signature apparaissent sur l'exemplaire signé. Les lignes, les prix et le client sont figés à l'envoi |
+| **Le lien, l'écran du patron et le dossier servent l'exemplaire signé** quand il existe | c'est celui que le client a vu et téléchargé |
+| **Accord défait** : la signature part dans `acceptations_defaites`, l'envoi perd sa signature et sa clé signée | le lien ne doit plus servir un devis « signé » ; la preuve garde le trait |
+| **Fiche d'entretien : jamais obligatoire**, signée seulement sur place, à l'envoi (`figerPassage(ctx, id, signature)`) | sa demande : « s'il n'est pas là, ils ne lui font pas signer ». Un tap est refusé et dit. La signature entre dans l'empreinte ; sans signature, l'empreinte se calcule comme avant |
+| **Sans signature, rien** : ni cadre vide, ni « Non signé », sur l'écran comme sur le PDF | la règle du 16 août reste vraie |
+| **Ni l'heure, ni « Bon pour accord » sur le retour d'intervention** ; le jour seul partout | sa demande du 18 : « pas besoin de mettre l'heure de la signature ». L'heure reste en base (`responduAt`, `signee_le`) |
+| Moteur PDF : `legendeCadre` et `signature` dans `composerDocument`, la place posée dans `trace.signatures` | une image ne laisse pas de texte : sans sa place, aucun contrôle ne saurait dire qu'elle est DANS le cadre |
+
+Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fiche-signee-pdf` (pures), `test-devis-signe-db`, `test-fiche-signee-db`. Les suites qui acceptaient un devis signent désormais par `scripts/_signature-essai.ts` (base) et `scripts/_signer-au-doigt.ts` (navigateur, le vrai geste).
+
+## §585 : Les dépendances s'installent depuis zéro, et un contrôle le vérifie
+
+*18 novembre 2026. Trouvé en reposant un autre lot sur `main`, vingt minutes après la livraison de Face ID 13.3.3 (§583), batterie de niveau 3 verte.*
+
+**Ce qui était cassé.** `npm ci`, sur une copie propre de `main` (`645630eb`), refusait :
+
+    ERESOLVE could not resolve
+    peerOptional @simplewebauthn/browser@"^9.0.1" from next-auth@5.0.0-beta.32
+
+`npm install` refusait de même. Pour son espace, cela voulait dire au prochain allumage : `npm ci` et `npm install` refusés, « les dépendances n'ont pas suivi le code », et le geste que le démarrage lui donne alors (`rm -rf node_modules && npm ci`) l'aurait laissé SANS dépendances. La CI, qui commence par `npm ci`, ne pouvait plus rien jouer.
+
+**Pourquoi la batterie était verte.** Elle se joue sur un `node_modules` déjà posé, et rien, dans aucune étape, ne réinstalle depuis zéro. Comment celui de la session de Face ID a reçu la 13 malgré le refus (`--force`, `--legacy-peer-deps` ?) n'est pas vérifié d'ici.
+
+| Décision | Pourquoi |
+|---|---|
+| `overrides` dans `package.json`, limité à next-auth : ses deux `@simplewebauthn` suivent ceux de la racine (`$@simplewebauthn/...`) | next-auth ne s'en sert que pour son fournisseur passkey, que l'application n'emploie pas (`src/auth.ts`). Lui dire « prends la 13 de la racine » est vrai ; il n'en exécute rien |
+| pas `--legacy-peer-deps`, ni dans un `.npmrc` | il tairait TOUS les conflits de pairs, y compris le prochain, qui pourrait viser un paquet réellement exécuté |
+| pas de montée de next-auth | `5.0.0-beta.32` est la dernière bêta publiée, et elle déclare toujours la 9 (`npm view next-auth@beta peerDependencies`, mesuré) |
+| le verrou ne bouge pas | npm n'y écrit pas les dérogations ; `npm ci` relit `package.json` et accepte (mesuré : 574 paquets, `@simplewebauthn` 13.3.3 et 13.3.0) |
+| `scripts/test-dependances-installables.ts`, dans `npm test` | il demande à npm de résoudre l'arbre ENTIER, sans réseau ni écriture (`--package-lock-only --dry-run --offline`) : la même résolution que `npm ci`, en une seconde. Rouge sur `645630eb` (il nomme next-auth et la 9), vert avec la dérogation |
+
+**Un `ENOTCACHED` hors ligne n'accuse pas le cache.** Un arbre cohérent se résout depuis le verrou seul, cache vide compris (mesuré). Si npm a dû demander au registre, il cherchait une version que le verrou ne lui donnait pas : le contrôle redemande alors en ligne pour nommer le conflit.
+
+**À retirer** quand next-auth publiera une version qui accepte `@simplewebauthn` 13 : la dérogation deviendra inutile, et ce contrôle le dira si elle devient fausse.
+
+## §586 : L'icône est le C ; la source garde son dessin dans le cercle d'Android, le générateur n'ajoute plus de marge
+
+*18 novembre 2026, son choix : « je prends la C de la première planche » (`appli/icone-de-cause.html`).*
+
+| Décision | Pourquoi |
+|---|---|
+| `public/icone-source.svg` porte le « C » de la serif des devis (un contour relevé par fontkit, aucune police à charger), vert pin sur crème, et le point d'or | c'est le dessin qu'il a choisi, tracé tel quel : `npm run icones` rend exactement la planche |
+| **la source garde tout son dessin dans le cercle central de 80 %** (rayon 204,8 sur 512 ; le point d'or s'arrête à 183) | c'est ce qu'Android garde quand il découpe l'icône en rond. La règle vit dans la source, pas dans le générateur |
+| **le générateur n'ajoute plus de marge** : plus de `icone-maskable-512.png`, le manifeste déclare la 512 pour `any` et pour `maskable` | l'ancienne marge réduisait le motif à 60 % sur un crème écrit en dur (`FOND`) : sur une source déjà dans le cercle, le C perdait la moitié de sa taille, et tout fond d'une autre couleur aurait été cerné de crème |
+| **le générateur fabrique aussi `src/app/favicon.ico`** (16, 32, 48 px, des PNG dans un sommaire .ico écrit à la main, sharp ne sachant pas l'écrire) | l'onglet montrait encore le triangle par défaut de Next.js : aucune icône du manifeste ne le remplaçait |
+| le favicon est cadré sur le carré central (320 sur 512) | à 16 px, la marge du cercle laissait au C huit pixels de haut, un trait gris illisible ; l'onglet ne découpe rien |
+
+**Ce qui n'est pas vérifié** : l'icône sur un vrai iPhone et un vrai Android, une fois l'appli réinstallée sur l'écran d'accueil (un téléphone garde l'ancienne icône tant que le raccourci n'est pas recréé). Regardée ici en carré arrondi, en rond, dans le cercle minimal et à 16 px.
+
+
+## §587 : La mise à jour note son issue elle-même, à l'allumage comme au bouton
+
+*18 novembre 2026, son devis « Main d'œuvre : abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm), taille de photinias », 4 jour/homme à 400 €, une seule case.*
+
+**Ce qui s'est passé.** Ce libellé est la signature exacte de `libelleMainOeuvre`, retirée par §579 le 9 novembre au soir (« Main d'œuvre : » puis les travaux, chacun en minuscule) ; `main` écrit « Main d’œuvre » seule, puis chaque travail à sa grille. Sa fiche le confirme : son espace (empreinte 6cdb1c, celui de la capture) servait `d673dbb`, le 9 novembre à 11 h 36, 86 versions derrière `main`. Il l'a rallumé à 22 h 15 : le quart d'heure suivant servait toujours `d673dbb`, arbre propre, rien de divergent. La mise à jour de l'allumage avait refusé, et **rien ne disait pourquoi** : `demarrer.sh` gardait son issue dans une variable, seul le bouton de Réglages l'écrivait dans `/tmp/atlas-mise-a-jour.txt`, que la fiche lit.
+
+| Décision | Pourquoi |
+|---|---|
+| `mettre-a-jour.sh` écrit lui-même « HH:MM, issue » dans `/tmp/atlas-mise-a-jour.txt`, quel que soit son appelant | l'issue naît là ; deux appelants qui la notent chacun, c'est un appelant qui oublie (le défaut de ce soir) |
+| le corps devient une fonction jouée dans une substitution ; ses `exit` ne quittent que la sous-coquille | toutes les issues passent par la même écriture, sans toucher à aucune de ses prudences |
+| `mettreAJourApplicationAction` ne note plus l'issue que si le script n'a pas pu finir (exception, délai) | sinon deux écrivains pour une ligne |
+| détournable par `ATLAS_ISSUE_MISE_A_JOUR`, que les deux suites qui lancent le script posent | jouées sur son espace, elles réécrivaient le verdict de sa machine avec celui d'un dépôt d'essai |
+| aucune correction de la cause du refus | elle n'est pas connue : rendre bavard d'abord (`AGENTS.md`). Hypothèse dans `TODO.md` |
+
+**Ce que l'écran gagne sans changer de place** : la ligne « Dernier essai : … » de Réglages dit désormais aussi l'essai de l'allumage. Le texte est le même, seule la matière s'élargit.
+
+**Ce qui ne marche qu'une fois arrivé chez lui** : son espace porte encore l'ancien script. Le premier passage sur le code neuf se fait par le bouton « Chercher les dernières corrections » (qui notait déjà son issue), ou par un allumage qui réussit.
+
+`scripts/test-mise-a-jour-espace.ts`, trois cas vus rouges sur le script d'avant : le refus s'écrit avec son heure, une réussite remplace le refus d'avant sans salir l'arbre, et les trois lecteurs visent le même fichier.
+
+## §588 : Ce qu'il a choisi dans sa grille ne s'écrit pas sur la désignation
+
+*18 novembre 2026, sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Ses mots : « abattage entre 10 et 20 mètres, ça ne doit pas figurer sur la désignation. Et même le diamètre ne doit pas figurer. »*
+
+**D'où venait la parenthèse.** `libelleEnrichi` recolle ses réponses d'« Avant de chiffrer » au libellé de la prestation, en base, parce que des moteurs y relisent encore le diamètre (`mesures-arbre.ts`). `libelleClient` retire ensuite du texte client un fragment dont TOUT est déjà en colonne ; il connaissait le diamètre (`caracteristiques`) mais pas le NOM de la technique : la colonne `methode` ne porte qu'une clé, et pour une façon d'abattre qu'il a nommée lui-même (`t_abattage_entre_10_et_20_m`, tronquée, figée à sa création) le nom ne vit que dans ses grilles. La parenthèse restait entière, diamètre compris. Vrai sur `main` aussi, pas seulement sur le code ancien de son espace.
+
+| Décision | Pourquoi |
+|---|---|
+| un fragment qui nomme EN ENTIER la technique de la colonne, et ne dit rien d'autre que des mesures en colonne, s'en va (`seulementDesMesuresConnues`) | c'est la règle du 30 août (*« les caractéristiques techniques servent au moteur et au calcul du prix ; elles ne doivent PAS être répétées dans la description visible »*), étendue à la technique, que la colonne porte depuis le 31 août |
+| nommée en entier, et seulement alors | « en rétention » dicté ne dit pas « démontage avec rétention » : « Érable — démontage en rétention » se rédige toujours « Démontage en rétention d'un érable ». Un fragment qui ajoute autre chose (« côté voisin ») reste entier |
+| le nom vient de SES grilles, au serveur : `listerPrestationsDuDevis`, seule porte des quatre chemins qui écrivent un devis | une clé ne se relit pas en nom sans deviner ; le catalogue d'origine reste le repli |
+| le texte en base garde ses réponses | les moteurs y relisent le diamètre ; le retirer casserait le prix de la case en silence. Seul ce que le client lit change |
+| une technique de base répondue à la question part aussi | même règle pour toutes ; le 30 août, « Démontage en rétention d'un érable » venait d'un tiret dicté, qui ne change pas |
+| **la désignation ne porte aucune parenthèse** ; ce qu'elles disaient reste dans la phrase (« Abattage d'un chêne Quercus robur »), colonnes ou non (`sansParentheses`) | sa réponse du 18 novembre, devant le nom latin que la lecture de la dictée met entre parenthèses : *« il reste, sans les ( ) »*. Enlever deux signes n'efface rien ; quatre anciens contrôles qui attendaient les parenthèses attendent désormais les mêmes mots sans elles |
+
+`test-libelle-client.ts` (six cas, cinq vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).

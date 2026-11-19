@@ -68,7 +68,20 @@ export async function composerRapportEntretienPdf(
       titreNotes: "OBSERVATIONS",
       mentionLegale: () =>
         "Ce document rend compte de l'intervention. Il ne vaut ni devis ni facture, et n'appelle aucun paiement.",
-      cadreSignature: false,
+      // **Le cadre n'existe que signé** — la règle du 16 août, qui reste vraie
+      // depuis le 17 novembre : un rapport sans signature ne doit pas AVOIR
+      // L'AIR incomplet, donc ni cadre vide ni « Non signé ». Signé sur place,
+      // le cadre du devis porte le trait, et la phrase dit qui et quand, sans
+      // l'heure (sa demande du 18 novembre). Pas de « Bon pour accord » : ce
+      // retour ne vaut pas accord.
+      cadreSignature: rapport.signature !== null,
+      legendeCadre: null,
+      signature: rapport.signature
+        ? {
+            png: new Uint8Array(Buffer.from(rapport.signature.png.slice(rapport.signature.png.indexOf(",") + 1), "base64")),
+            phrase: `Signée par ${rapport.signature.signataire}, sur place, le ${jourNumerique(rapport.signature.jour)}.`,
+          }
+        : null,
       blocsTexte,
       sansChiffrage: true,
     }

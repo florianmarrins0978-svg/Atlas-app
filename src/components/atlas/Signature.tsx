@@ -125,3 +125,23 @@ export function pngDeLaSignature(trace: Trace, largeur = 600, hauteur = 260): st
   }
   return cv.toDataURL("image/png");
 }
+
+/**
+ * LA SIGNATURE DONNÉE, telle qu'elle se relit : le trait dans le cadre en
+ * pointillés du PDF, et une phrase qui dit quand. Ses planches du 17 novembre
+ * 2026 : le devis accepté, la fiche d'entretien partie, la page du client.
+ * Une seule façon de la montrer, pour qu'elle se reconnaisse d'un écran à
+ * l'autre (`CLAUDE.md` §3).
+ */
+export function SignatureDuClient({ png, phrase }: { png: string; phrase: string }) {
+  return (
+    <div data-atlas="signature-donnee">
+      <div className="mt-2 rounded-[6px] px-2.5 py-3" style={{ border: `1.5px dashed ${colors.line}` }}>
+        <img src={png} alt="Signature du client" className="mx-auto block h-[70px] w-auto" />
+      </div>
+      <p className="mt-2 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+        {phrase}
+      </p>
+    </div>
+  );
+}

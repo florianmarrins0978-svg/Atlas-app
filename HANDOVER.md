@@ -1,14 +1,28 @@
 # Reprendre le travail
 
+## LA DÉSIGNATION NE PORTE NI SES RÉPONSES À LA GRILLE NI PARENTHÈSES (19 novembre 2026), SUR `main`
+
+Ses réponses « Avant de chiffrer » (façon d'abattre, diamètre) restent écrites dans le libellé en base, parce que les moteurs y relisent le diamètre ; `libelleClient` les retire de ce que le client lit, nom choisi par lui compris (`methodeLibelle`, lu dans ses grilles). Cette écriture puis effacement est une dette : ranger ses réponses dans leurs colonnes seules la supprimerait (proposé le 19 novembre, sans réponse encore). `ARCHITECTURE.md` §588.
+
+## « J'AI ENCORE LE DÉFAUT D'AVANT » : LIRE D'ABORD QUEL CODE SON ESPACE SERT (18 novembre 2026)
+
+Son devis « Main d'œuvre : abattage…, taille… » sur une seule case venait du code du 9 novembre au matin : §579 l'a corrigé le soir même, et son espace servait encore `d673dbb`, son rallumage ne l'ayant pas avancé. Devant un défaut déjà corrigé, la ligne « Code SERVI » de sa fiche (issue n° 47) se compare au commit de la correction (`git merge-base --is-ancestor <correction> <servi>`) AVANT de chercher dans le produit. Depuis §587, la ligne « Dernière m.à.j. » dit pourquoi une mise à jour a refusé, allumage compris. Ce qui reste : `TODO.md`, en tête.
+
+## LA SIGNATURE DU CLIENT, DEVIS, CONTRAT ET FICHE D'ENTRETIEN : SUR `main` (18 novembre 2026)
+
+Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §584, migrations 0182 et 0183. Sa planche B, choisie le 18 : la toile du devis et du contrat d'entretien est dans une feuille, la page tient sur un écran (migration 0184 pour le contrat). Batterie de niveau 3 verte le 18 (605 suites base, 217 navigateur, connexion derrière un proxy), puis `main`. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).
+
 ## L'APPLICATION S'APPELLE CAUSE (17 novembre 2026)
 
 Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, `data-atlas`, `ATLAS_*`, préfixe `atlas-` des rendez-vous) ne se renomment pas : `ARCHITECTURE.md` §581 dit pourquoi.
+
+**L'icône est le C** (18 novembre 2026) : une seule source, `public/icone-source.svg`, dont le dessin doit tenir dans le cercle central de 80 % ; `npm run icones` refait tout, favicon compris (`ARCHITECTURE.md` §586).
 
 **À lire en premier, dans une nouvelle conversation.** Ce fichier suppose que
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-18 · `main` : Face ID passe à `@simplewebauthn` 13.3.3, les clés déjà enregistrées gardées (`ARCHITECTURE.md` §583), batterie verte ; reste à l'essayer sur son téléphone. Avant, le 17 novembre : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-18 · `main` : Face ID passe à `@simplewebauthn` 13.3.3, les clés déjà enregistrées gardées (`ARCHITECTURE.md` §583), batterie verte ; reste à l'essayer sur son téléphone. Son `npm ci` refusait le dépôt : réparé par une dérogation limitée à next-auth, et `test-dependances-installables.ts` refait désormais l'installation depuis zéro dans `npm test` (§585). Avant, le 17 novembre : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). La croix de la carte en mode « ligne » :
 planche choisie le 17 novembre, sur `main` le 18 (le prix du travail à sa

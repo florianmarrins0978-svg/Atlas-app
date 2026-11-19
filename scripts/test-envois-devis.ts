@@ -23,6 +23,7 @@ import {
 } from "../src/lib/disponibilites";
 import { jourLisible } from "../src/lib/jour";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let passed = 0;
 let failed = 0;
@@ -257,7 +258,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: dans(14), contreProposee: false });
@@ -276,13 +277,13 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10), dans(30)], contenuDevis: "d" },
       MAINTENANT
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, MAINTENANT);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, dateRetenue: dans(10) }, MAINTENANT);
     assert.deepStrictEqual(r, { succes: false, motif: "demarrage_non_demande" });
     const chantier = await chantiersRepo.getChantier(ctx, chantierId);
     assert.strictEqual(chantier?.datePlanifiee ?? null, null, "le chantier s'est posé malgré le refus");
 
     // Au-delà des 14 jours, la case n'a pas à être cochée.
-    const loin = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(30) }, MAINTENANT);
+    const loin = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, dateRetenue: dans(30) }, MAINTENANT);
     assert.strictEqual(loin.succes, true, "une date après le délai est refusée sans raison");
   });
 
@@ -295,7 +296,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: dans(30), precision: "plutôt le matin", demarrageAnticipe: true },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, dateRetenue: dans(30), precision: "plutôt le matin", demarrageAnticipe: true },
       MAINTENANT
     );
     assert.strictEqual(r.succes, true);
@@ -319,7 +320,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(10) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -338,7 +339,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(300) },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(300) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -376,7 +377,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) }, MAINTENANT);
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(10) }, MAINTENANT);
     const seconde = await enregistrerReponse(
       envoi.jeton,
       { decision: "refuse" as const },
@@ -394,7 +395,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(10) },
       ajouterJours(MAINTENANT, 60)
     );
     assert.deepStrictEqual(r, { succes: false, motif: "expire" });
@@ -407,7 +408,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true }, MAINTENANT);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true }, MAINTENANT);
     assert.deepStrictEqual(r, { succes: false, motif: "date_manquante" });
   });
 
@@ -519,7 +520,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: DEMAIN },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: DEMAIN },
       MAINTENANT
     );
     assert.strictEqual(r.succes, true, `le client s'est fait refuser : ${JSON.stringify(r)}`);
@@ -587,7 +588,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: DANS_SIX_MOIS },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: DANS_SIX_MOIS },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: DANS_SIX_MOIS, contreProposee: false });
@@ -672,7 +673,7 @@ async function main() {
 
     const refus = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(12) },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(12) },
       MAINTENANT
     );
     assert.strictEqual(refus.succes, false, "une date hors des propositions a été acceptée");
@@ -681,7 +682,7 @@ async function main() {
     // Et la date PROPOSÉE, elle, passe : on n'a pas fermé la porte principale.
     const accord = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(10) },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(10) },
       MAINTENANT
     );
     assert.strictEqual(accord.succes, true, "la date proposée devrait rester acceptable");
@@ -703,7 +704,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(12) },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(12) },
       MAINTENANT
     );
     assert.strictEqual(r.succes, true, "la contre-proposition devrait passer quand elle est autorisée");

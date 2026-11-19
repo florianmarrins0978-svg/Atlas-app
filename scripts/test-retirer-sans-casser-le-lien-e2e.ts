@@ -4,6 +4,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { ADRESSE } from "./_adresse";
+import { accepterEnSignant } from "./_signer-au-doigt";
 
 // **RETIRER UN DEVIS ENVOYÉ DE LA LISTE NE COUPE PAS LE LIEN DU CLIENT.**
 //
@@ -111,7 +112,7 @@ async function main() {
     await dateProposee.check();
     await pageClient.waitForTimeout(400);
     await cocherLaDemandeExpresse(pageClient);
-    await bouton.click();
+    await accepterEnSignant(pageClient);
     let reponse: string | null = null;
     for (let i = 0; i < 30 && reponse !== "acceptee"; i++) {
       const { rows } = await pool.query(

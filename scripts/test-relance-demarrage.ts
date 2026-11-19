@@ -100,6 +100,9 @@ function demarrer(espace: string): string[] {
   // par une suite qui tourne indéfiniment.
   return execFileSync("timeout", ["60", "bash", path.join(espace, ".devcontainer", "demarrer.sh")], {
     encoding: "utf8",
+    // La mise à jour note son issue ; jouée ici, elle réécrirait celle de la
+    // machine qui joue la suite, que lisent sa fiche et son écran Réglages.
+    env: { ...process.env, ATLAS_ISSUE_MISE_A_JOUR: path.join(espace, "..", "issue.txt") },
   })
     .split("\n")
     .filter((l) => l.startsWith("passage:") || l.startsWith("demarrage:"));

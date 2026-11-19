@@ -37,6 +37,7 @@ import { poserALaPlaceDuClient } from "../src/server/repositories/pose-a-sa-plac
 import { notificationsPatron } from "../src/server/repositories/envois-devis";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let reussis = 0;
 let echoues = 0;
@@ -124,7 +125,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       c.jeton,
-      { decision: "accepte", dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, dans(22)] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, dans(22)] },
       MARDI
     );
     assert.equal(r.succes, true, `L'accord a été refusé : ${JSON.stringify(r)}`);
@@ -141,11 +142,11 @@ async function main() {
     const ctx = await contexte(`delai-${Date.now()}@t.test`);
     const c = await devisParti(ctx, "Tonte");
     await poserALaPlaceDuClient(ctx, c.chantierId, DANS_LE_DELAI, { maniere: "lien" }, MARDI);
-    const sans = await enregistrerReponse(c.jeton, { decision: "accepte", dateRetenue: DANS_LE_DELAI }, MARDI);
+    const sans = await enregistrerReponse(c.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: DANS_LE_DELAI }, MARDI);
     assert.deepEqual(sans, { succes: false, motif: "demarrage_non_demande" });
     const avec = await enregistrerReponse(
       c.jeton,
-      { decision: "accepte", dateRetenue: DANS_LE_DELAI, demarrageAnticipe: true },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: DANS_LE_DELAI, demarrageAnticipe: true },
       MARDI
     );
     assert.equal(avec.succes, true);
@@ -233,7 +234,7 @@ async function main() {
     await chantiersRepo.deplanifierChantier(ctx, c.chantierId);
     const lu = await lireParJeton(c.jeton, MARDI);
     assert.equal(lu?.joursFixes, null, "Le lien montre des jours qui ne sont plus posés.");
-    const r = await enregistrerReponse(c.jeton, { decision: "accepte", dateRetenue: PROPOSEE, demarrageAnticipe: true }, MARDI);
+    const r = await enregistrerReponse(c.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: PROPOSEE, demarrageAnticipe: true }, MARDI);
     assert.equal(r.succes, true, "Elle ne peut plus répondre par ses dates proposées.");
   });
 

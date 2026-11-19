@@ -21,6 +21,7 @@ import {
 import { getStatutAffiche, getPlanificationEtat, chantierEnCours, poseSansAccord } from "../src/lib/chantier-etat";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 // Où en est le devis d'un chantier, du point de vue du patron — docs/AGENT.md
 // §2.2. Un chantier dont le devis est parti est BLOQUÉ : ni planifié, ni
@@ -343,7 +344,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(10) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1, "un chantier gagné ne s'apprend pas en ouvrant une fiche");
@@ -364,7 +365,7 @@ async function main() {
     );
     // Le client retient un autre jour libre : l'agenda du patron change sans
     // qu'il ait rien décidé.
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(15) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: dans(15) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1);

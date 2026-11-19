@@ -1,6 +1,6 @@
 import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
 import { TAUX_SANS_TVA, tauxRendus, tauxSousAutoliquidation } from "@/lib/autoliquidation";
-import { estUneEntreprise } from "@/lib/civilite";
+import { avecCivilite, estUneEntreprise } from "@/lib/civilite";
 import { caseParDefaut, laCaseExiste } from "@/lib/services-a-la-personne";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
@@ -859,6 +859,45 @@ async function composerCeDevis(tx: DbOrTx, entrepriseId: string, d: typeof devis
     ),
     habillage
   );
+}
+
+/**
+ * LE DEVIS SIGNÉ DEPUIS SON LIEN — sa planche du 17 novembre 2026, et son
+ * « tu peux coder » du 18.
+ *
+ * **Recomposé, et rangé À CÔTÉ de celui de l'envoi.** Le PDF parti au client
+ * est protégé contre la modification (`proteger-pdf.ts`) : rien ne peut s'y
+ * poser après coup, et c'est voulu. On recompose donc le même devis, par le
+ * même chemin que l'envoi (`donneesPdfDuDevis`, `habillageDuDevis`), avec le
+ * trait du client dans l'encadré. Celui de l'envoi (`pdf_storage_key`) ne
+ * change jamais : il reste la pièce de référence.
+ *
+ * **Ce que la recomposition ne garantit pas, et qui s'écrit :** l'allure, le
+ * logo ou les conditions générales réglés ENTRE l'envoi et la signature
+ * apparaissent sur l'exemplaire signé. Les lignes, les prix, le client et les
+ * conditions du devis, eux, sont figés à l'envoi.
+ */
+export async function composerLeDevisSigne(
+  tx: DbOrTx,
+  entrepriseId: string,
+  devisId: string,
+  signature: { png: Uint8Array; jour: string }
+): Promise<Uint8Array | null> {
+  const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+  // Un brouillon ne s'est jamais présenté au client : il n'a rien pu signer.
+  if (!d || d.statut === "brouillon") return null;
+  const donnees = donneesPdfDuDevis(
+    d,
+    await lignesDuDevis(tx, d.id),
+    await lireAcomptes(tx, d.id),
+    "envoye",
+    await dureeEstimeeDuChantier(tx, d.chantierId)
+  );
+  return genererPdfDevis(donnees, {
+    ...(await habillageDuDevis(tx, entrepriseId, d)),
+    // Le nom tel que l'en-tête du devis l'imprime, civilité comprise.
+    signature: { png: signature.png, nom: avecCivilite(donnees.clientNom, donnees.clientCivilite), jour: signature.jour },
+  });
 }
 
 /**

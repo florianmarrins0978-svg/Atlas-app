@@ -16,6 +16,7 @@ import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { accepterEnSignant } from "./_signer-au-doigt";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -73,7 +74,7 @@ const jetonDevis = (
 ).rows[0].jeton;
 await page.goto(`${BASE}/devis/${jetonDevis}`, { waitUntil: "networkidle" });
 await page.locator('input[name="choixDate"]').first().check();
-await page.click('button:has-text("J\'accepte ce devis")');
+await accepterEnSignant(page);
 await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 30_000 });
 
 // ─── L'écran Facture ────────────────────────────────────────────────────────

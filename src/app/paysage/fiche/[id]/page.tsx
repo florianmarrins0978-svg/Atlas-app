@@ -8,6 +8,7 @@ import { listerClients } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import FicheChantierClient from "./FicheChantierClient";
 import { garderLaPage } from "@/server/garde-page";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de chantier, Cause" };
@@ -61,6 +62,8 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
           observations: passage.observations,
           envoyeLe: passage.envoyeLe ? passage.envoyeLe.toISOString() : null,
           jeton: passage.jeton,
+          signaturePng: passage.signaturePng,
+          signeeLe: passage.signeeLe ? jourIso(passage.signeeLe) : null,
           lignes: passage.lignes,
         }}
         origine={origine}

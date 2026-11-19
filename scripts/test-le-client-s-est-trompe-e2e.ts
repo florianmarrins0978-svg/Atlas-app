@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import type { Browser, Page } from "playwright";
 import { lancerNavigateur, ECRAN_DU_PATRON } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
+import { accepterEnSignant } from "./_signer-au-doigt";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // **« LE CLIENT S'EST TROMPÉ » — son choix 3 du 7 octobre 2026**
@@ -70,7 +71,7 @@ async function leClientAccepte(navigateur: Browser) {
   // Un jour dans ses 14 jours demande sa demande écrite : il la coche, comme lui.
   const demande = page.getByText(/Je demande expressément/);
   if (await demande.count()) await demande.click();
-  await page.getByRole("button", { name: /J'accepte ce devis/ }).click();
+  await accepterEnSignant(page);
   // **Un « Timeout » ne désigne personne** : rouge deux fois à la batterie
   // commune du 6 novembre 2026, vert seul, la suite ne disait pas ce que le
   // client lisait. Ce qu'il voit au moment où « C'est noté » manque se dit

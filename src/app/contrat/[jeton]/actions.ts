@@ -7,6 +7,7 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
 import { adresseClient } from "@/lib/adresse-client";
+import { SIGNEZ_AVANT_D_ACCEPTER_LE_CONTRAT } from "@/lib/signature-au-doigt";
 
 export type EtatReponseContrat =
   | { erreur: string }
@@ -55,13 +56,17 @@ export async function repondreContratAction(
     decision,
     adresseIp: adresseClient(entetes),
     agent: entetes.get("user-agent"),
+    // Le trait et ses points, tels que la toile les a posés : le dépôt juge.
+    signature: { png: formData.get("signaturePng"), points: Number(formData.get("signaturePoints") ?? 0) },
   });
   if (!r.ok) {
     return {
       erreur:
-        r.motif === "deja_repondu"
-          ? "Vous avez déjà répondu à ce contrat."
-          : "Ce lien n'est plus valable. Contactez votre artisan pour en recevoir un nouveau.",
+        r.motif === "signature_manquante"
+          ? SIGNEZ_AVANT_D_ACCEPTER_LE_CONTRAT
+          : r.motif === "deja_repondu"
+            ? "Vous avez déjà répondu à ce contrat."
+            : "Ce lien n'est plus valable. Contactez votre artisan pour en recevoir un nouveau.",
     };
   }
   logger.info(decision === "accepte" ? "Contrat d'entretien accepté par le client" : "Contrat d'entretien refusé par le client");

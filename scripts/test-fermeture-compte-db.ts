@@ -24,6 +24,7 @@ import {
 } from "../src/server/repositories/fermeture-compte";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FERMER SON COMPTE, EN BASE — sous `atlas_app`, donc sous la RLS
@@ -87,7 +88,7 @@ async function remplir(ctx: Ctx) {
   );
   await enregistrerReponse(
     envoi.jeton,
-    { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(ilYA(50), 10)) },
+    { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(ilYA(50), 10)) },
     ilYA(50)
   );
 

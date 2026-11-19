@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { avoirs, devis, factures, passagesEntretien } from "../db/schema";
 import type { Ctx } from "./context";
+import { cleSigneeDuDevis } from "./envois-devis";
 import type { PieceDuDossier } from "@/lib/dossier-du-client";
 
 /**
@@ -9,7 +10,8 @@ import type { PieceDuDossier } from "@/lib/dossier-du-client";
  *
  * **Le fichier figé, jamais un PDF refait.** Un devis envoyé, une facture
  * émise, un avoir sont archivés au moment du départ (`pdfStorageKey`) : c'est
- * ce fichier-là que le client a reçu, et c'est lui qu'on remet. Un fichier
+ * ce fichier-là que le client a reçu, et c'est lui qu'on remet. Un devis signé
+ * depuis son lien se remet signé, rangé à l'accord (`cleSigneeDuDevis`). Un fichier
  * absent reste absent (la route le dit), plutôt qu'être recomposé avec des
  * coordonnées qui ont pu changer depuis.
  *
@@ -60,7 +62,13 @@ export async function sourcesDuDossier(
           .from(passagesEntretien)
           .where(and(inArray(passagesEntretien.id, idsFiches), isNotNull(passagesEntretien.envoyeLe)))
       : [];
-    for (const r of [...d, ...f, ...a]) sources.set(r.id, r.cle ? { cle: r.cle } : null);
+    // Un devis signé par son client se remet SIGNÉ : c'est l'exemplaire qu'il
+    // a téléchargé, encadré rempli (migration 0182).
+    for (const r of d) {
+      const signee = await cleSigneeDuDevis(tx, r.id);
+      sources.set(r.id, (signee ?? r.cle) ? { cle: (signee ?? r.cle) as string } : null);
+    }
+    for (const r of [...f, ...a]) sources.set(r.id, r.cle ? { cle: r.cle } : null);
     for (const r of p) sources.set(r.id, r.jeton ? { jeton: r.jeton } : null);
     return sources;
   });

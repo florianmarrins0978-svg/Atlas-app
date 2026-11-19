@@ -1,5 +1,102 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE (18 novembre 2026)
+
+Sa capture : un devis préparé « sur une ligne » porte déjà sa main d'œuvre
+(2 hommes × 2 jours, 4 jour/homme, 1 600 €). Il ouvre « Main d'œuvre » pour
+ajouter un homme : la feuille repart de sa dictée (2 × 2, « Repris de votre
+dictée ») et **pose une seconde ligne** « Main d’œuvre » 6 jour/homme, 2 400 €.
+Ses mots : *« il me recrée une autre ligne avec de la main d'œuvre, alors que
+sur la première ligne il y a les 1 600 € ; ça devrait juste s'ajouter »*.
+Vrai aussi sur `main`, lu dans le code (pas vu à l'écran ici) :
+`ajouterMainDoeuvreChoisieAction` appelle toujours `ajouterLignePrix`, et
+`donneesDeLaMainOeuvre` ne lit que la dictée, jamais les lignes du devis.
+
+**Sa réponse du 18 novembre** : la feuille **CHANGE la ligne de son équipe**
+(une seule ligne, 3 hommes × 2 jours = 6 jour/homme, 2 400 €), elle n'y ajoute
+pas (10 jour/homme, 4 000 €, écarté : les 4 jours déjà posés compteraient deux
+fois). Puis planche sur le vrai devis (`CLAUDE.md` §3 bis, quinquies), le code
+ensuite.
+Gravité argent : niveau 3. Une main d'œuvre de partenaire garde sa ligne à son
+nom, sauf avis contraire de sa part.
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`, figée
+sur le vrai devis et la vraie feuille (`scripts/planche-figee/`). Aujourd'hui :
+la seconde ligne arrive (6 jour/homme, 2 400 €, à côté des 1 600 €). Proposé :
+« Repris de votre ligne », « Changer la main d’œuvre », et sa ligne passe à
+6 jour/homme, 2 400 €. **Rien dans `src/`.** Proposé aussi, à lui de le dire :
+« Répartis sur les travaux » retire sa ligne et verse le montant dans le prix
+des travaux (sinon les deux compteraient). **À trancher en codant** : une
+ligne dont les jours ne se lisent pas en hommes × jours (5 jour/homme tapés à
+la main) s'ouvre sur quoi.
+
+## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
+
+Son espace 6cdb1c servait `d673dbb` (9 novembre, 11 h 36), 86 versions derrière
+`main` ; rallumé à 22 h 15, il servait encore `d673dbb` au quart d'heure, arbre
+propre, rien de divergent. Son devis du soir en est sorti, avec le défaut que §579
+a corrigé le 9 au soir. Depuis §587, `mettre-a-jour.sh` écrit son issue dans
+`/tmp/atlas-mise-a-jour.txt` : la fiche la publie (« Dernière m.à.j. »), Réglages
+aussi (« Dernier essai »). **Ce qui reste** : une fois ce code chez lui (bouton
+« Chercher les dernières corrections », qui notait déjà son issue), lire la
+raison au premier allumage qui refuse, et corriger CETTE cause.
+
+**Hypothèse, non prouvée (confiance faible)** : à l'allumage, la fiche part
+détachée JUSTE AVANT la mise à jour (`demarrer.sh`, publication « avant les
+étapes qui bloquent ») et `diagnostiquer-espace.mjs` lance son propre
+`git fetch origin main` en même temps que celui de `mettre-a-jour.sh`. Deux
+fetch simultanés : l'un échoue sur « cannot lock ref 'refs/remotes/origin/main':
+is at … but expected … » (reproduit en local avec deux fetch d'un dépôt
+`file://`). Rejoué avec le vrai script contre GitHub, la mise à jour a gagné
+huit fois sur huit : le cas n'est pas tranché. Le refus porterait alors « le
+dépôt distant n'a pas pu être joint ». Ne rien corriger avant de l'avoir lu.
+
+## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
+
+`appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran
+Abonnement (figé avec `scripts/planche-figee/`). Le détail et ce que le code
+devra faire : `docs/abonnement-module-paysage.md`. **Rien dans `src/`.**
+
+**Tranché par lui le 18 novembre** : Artisan est **un seul accès**, salariés
+compris ; le module **Paysage** coûte **6 € HT par mois, 60 € HT à l'année**,
+ouvre les **trois** outils de Paysage (arrosage, diagnostic, fiches de
+chantier) et se vend **avec les trois formules** (sa correction du soir :
+*« ça doit être pour toutes les formules »*), donc Entreprise et Illimité ne
+les comprennent plus ; choisir Artisan avec des salariés déjà invités est
+**refusé** tant qu'il ne les a pas retirés (article 14.6). Le module se règle
+**en haut**, une fois pour les trois (la variante « dans la carte Artisan » est
+tombée avec sa correction). Le même prix pour les trois formules, **confirmé
+le 19 novembre**. **Le 19 novembre aussi** : un plan d'arrosage et un
+diagnostic **offerts une seule fois par entreprise, essai compris**, puis
+Paysage ; planche `appli/soignee/paysage-plan-offert.html` sur la vraie page
+Paysage (ce qui consomme l'offre, et ce qui ne la consomme pas : même
+document). **Le 19 novembre encore** : le bloc dit « Ajoutez les outils de
+paysage », montre un vrai plan, et se choisit en **A, vert profond**
+(conseillé) ou **B, doré** : à trancher par lui. Puis : la version 4 des conditions générales (la version 3 dit
+les salariés jamais comptés et Paysage compris dans Entreprise), et les
+plafonds d'IA avec le module.
+
+**Écart trouvé en chemin, déjà là** : le passage d'Entreprise à Artisan avec
+plusieurs personnes qui facturent n'est refusé nulle part (`placePourUnFabricant`
+ne sert qu'à l'invitation, `membres-entreprise.ts`), contre l'article 14.6. Le
+lot du module le fermera.
+
+## ~~`npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3~~ RÉPARÉ LE 18 NOVEMBRE 2026
+
+**Réparé par un `overrides` limité à next-auth dans `package.json`** (`ARCHITECTURE.md` §585), pas par `.npmrc` `legacy-peer-deps=true`, qui tairait tous les conflits de pairs, le suivant compris. Éprouvé par un `npm ci` sur un dossier vide (574 paquets, `@simplewebauthn` 13), batterie de niveau 3 verte ; `test-dependances-installables.ts` refait la résolution de `npm ci` à chaque `npm test`. Ce qui suit est le constat d'origine.
+
+Vu en rejouant la batterie de la signature : `6ef2ae3` (« Passer Face ID à
+@simplewebauthn 13.3.3 ») déclare `@simplewebauthn/server` et `browser` en 13,
+alors que `next-auth@5.0.0-beta.32` les attend en `^9` (dépendances pairs,
+facultatives). `npm ci` s'arrête alors sur **ERESOLVE**, sur `main` seul, sans
+aucun autre lot (vérifié dans une copie propre de `origin/main`). Ce qui passe :
+`npm ci --legacy-peer-deps`. **Le risque chez lui** : `.devcontainer/demarrer.sh`
+lance `npm ci`, puis `npm install` en repli, qui bute sur le même conflit ; son
+espace peut alors servir l'ancien `node_modules` (9.0.3) sous le code de la 13,
+et Face ID tombe. À trancher dans un lot à part : un `overrides` dans
+`package.json`, ou un `.npmrc` `legacy-peer-deps=true`, éprouvé par un `npm ci`
+sur un dossier vide. Le lot de la signature n'y touche pas.
+
 ## LES FAILLES DES DÉPENDANCES : RIEN D'ATTEIGNABLE, DEUX CHOSES À SURVEILLER (18 novembre 2026)
 
 Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
@@ -10,7 +107,9 @@ Restent deux choses, à faire quand elles se présentent :
   18 NOVEMBRE, sur sa demande** (« occupe-toi de Face ID »), en 13.3.3, le
   navigateur avec (`ARCHITECTURE.md` §583). Batterie de niveau 3 verte sur son
   « oui » (217 suites navigateur sur 217), sur `main` le 18 novembre. Reste à essayer Face ID sur son téléphone, une clé
-  déjà enregistrée ;
+  déjà enregistrée. **Son `npm ci` refusait le dépôt** (next-auth réclame la 9) :
+  réparé le même jour par une dérogation limitée à next-auth, à retirer quand
+  next-auth acceptera la 13 (`ARCHITECTURE.md` §585) ;
 - **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
   prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
 
@@ -19,9 +118,9 @@ Restent deux choses, à faire quand elles se présentent :
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
-- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
+- ~~**l'icône**~~ : **tranché le 18 novembre 2026, le C de la première planche**, installé le jour même (`ARCHITECTURE.md` §586) ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
-## ⏳ UNE PLANCHE À REGARDER : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
+## ✅ LIVRÉ SUR `main` : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
 
 **Sa demande, qui revient sur sa décision du 16 août** (pas de signature sur les
 rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
@@ -41,7 +140,11 @@ signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
 
-## ⏳ UNE PLANCHE À REGARDER : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
+**Approuvée et CODÉE le 18 novembre** (`ARCHITECTURE.md` §584, migration
+0183), sur la branche de session, pas sur `main`. Le jour seul, sans l'heure,
+comme sur le devis. Jouée dans la batterie verte du 18 novembre, puis `main`.
+
+## ✅ LIVRÉE SUR `main` : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
 
 **Sa demande :** *« fais-moi une planche pour la B »*. La toile de 170 px de la
 planche d'avant faisait déborder la page du client, que sa règle du 31 août
@@ -53,7 +156,12 @@ et « J'accepte ce devis », qui refuse tant que rien n'est signé. La page,
 sans toile, mesure 664 px. **Ce qu'il a à dire : B, ou la planche d'avant.**
 Son choix vaudra aussi pour le contrat d'entretien, pas encore codé.
 
-## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
+**Son choix du 18 novembre : la B, « pour tout ».** Codée pour le devis et le
+contrat d'entretien (migration 0184), `ARCHITECTURE.md` §584. La fiche
+d'entretien garde sa toile dans l'écran de l'artisan, comme sa planche validée.
+Batterie verte le 18 novembre, puis `main`.
+
+## ✅ LIVRÉ SUR `main` : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
 **Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
 case où il puisse accoler sa signature, cliquer sur signer, et la signature
@@ -73,6 +181,16 @@ daté et signé avec la mention bon pour accord » (article 1) : le texte est le
 sien, à revoir avec l'accord en ligne. Constat : aujourd'hui, le PDF d'un devis
 accepté en ligne est identique à celui d'avant (encadré vide). Le devis papier
 signé (`accordSurPapier`) ne change pas.
+
+**Approuvée (sans l'heure) et CODÉE le 18 novembre** (`ARCHITECTURE.md` §584,
+migration 0182), sur la branche de session, pas sur `main`. **Une question à
+lui avant la batterie** : sa règle du 31 août veut la page du client sur un
+seul écran de 390 × 664, sans défiler (`test-devis-client-e2e`, « TOUT TIENT
+DANS UN ÉCRAN », déjà sans un pixel de marge) ; la toile de 170 px de la
+planche la fait déborder. Soit la planche l'emporte (la suite s'adapte), soit
+« J'accepte ce devis » ouvre une feuille « Votre signature » par-dessus (la
+page garde sa hauteur). **Tranché le 18 novembre : la feuille (B).** Les 27 suites qui acceptaient un devis signent
+désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 
 ## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)
 
@@ -106,7 +224,9 @@ Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
 (accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
 garde-fou les reconnaît comme préexistants.
 
-## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
+## ~~⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)~~ TRANCHÉ LE 18 NOVEMBRE : LE C DE LA PREMIÈRE PLANCHE (« JE PRENDS LA C DE LA PREMIÈRE PLANCHE »), INSTALLÉ LE 18 NOVEMBRE
+
+**Installé** (`ARCHITECTURE.md` §586) : `public/icone-source.svg` porte le C, `npm run icones` a refait les icônes et le favicon. Les deux défauts notés plus bas pour l'installation (le crème écrit en dur pour Android, le motif réduit à 60 %) ont disparu avec la marge : la source garde elle-même son dessin dans le cercle d'Android. Les dessins (H, I, J) et les lettres D à G sont écartés ; les planches restent, elles racontent le chemin. **Pas vu sur un vrai téléphone** : à regarder une fois l'appli réinstallée sur son écran d'accueil.
 
 **Sa réponse du même jour devant la deuxième planche (les lettres), et elle
 change la demande :** *« Ok, très bien, mais là tu m'as fait un truc hyper

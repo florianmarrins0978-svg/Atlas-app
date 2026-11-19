@@ -139,7 +139,9 @@ export async function supprimerFicheAction(passageId: string): Promise<Resultat>
  */
 export async function envoyerFicheAction(
   passageId: string,
-  canal: "sms" | "email"
+  canal: "sms" | "email",
+  /** Le client était là et a signé : le trait et ses points, jugés par le dépôt. */
+  signature: { png: string; points: number } | null = null
 ): Promise<
   | { ok: true; lien: string; facture: { ok: true; lien: string } | { ok: false; phrase: string } | null }
   | { ok: false; phrase: string }
@@ -147,7 +149,7 @@ export async function envoyerFicheAction(
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "envoyer le retour d'intervention au client");
   await exigerFonction(ctx, "fiche-chantier", "envoyer le retour d'intervention au client");
-  const r = await figerPassage(ctx, passageId);
+  const r = await figerPassage(ctx, passageId, signature);
   if (!r.ok) return { ok: false, phrase: r.phrase };
   revalidatePath("/paysage/fiche");
   return { ok: true, lien: `/entretien/${r.jeton}`, facture: await laFactureQuiPartAvec(ctx, passageId, canal) };

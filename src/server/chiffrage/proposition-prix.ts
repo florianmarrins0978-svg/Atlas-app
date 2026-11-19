@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import type { Ctx } from "../repositories/context";
 import { getChantier } from "../repositories/chantiers";
-import { listerPrestations } from "../repositories/prestations";
+import { listerPrestationsDuDevis } from "../repositories/prestations";
 import { listerMateriel } from "../repositories/materiel";
 import { listerTarifs } from "../repositories/tarifs";
 import { getBrouillon } from "../repositories/brouillons-informations";
@@ -167,7 +167,7 @@ async function propositionDeVente(ctx: Ctx, chantierId: string): Promise<Proposi
   if (!chantier) return null;
 
   const [prestations, materiel, brouillon] = await Promise.all([
-    listerPrestations(ctx, chantierId),
+    listerPrestationsDuDevis(ctx, chantierId),
     listerMateriel(ctx, chantierId),
     getBrouillon(ctx, chantierId),
   ]);
@@ -646,7 +646,7 @@ export async function questionMainOeuvre(
   const chantier = await getChantier(ctx, chantierId);
   if (!chantier) return rien;
   const [prestations, materiel, tarifs, precisions] = await Promise.all([
-    listerPrestations(ctx, chantierId),
+    listerPrestationsDuDevis(ctx, chantierId),
     listerMateriel(ctx, chantierId),
     listerTarifs(ctx),
     listerPrecisions(ctx, chantierId),
@@ -754,7 +754,7 @@ async function propositionAvecMainOeuvre(
   chantierId: string,
   mo: MainOeuvreDictee,
   d: {
-    prestations: Awaited<ReturnType<typeof listerPrestations>>;
+    prestations: Awaited<ReturnType<typeof listerPrestationsDuDevis>>;
     materiel: string[];
     tarifs: TarifDeVente[];
     textesDictee: string[];
@@ -1590,7 +1590,7 @@ async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: Propos
   const [marges, tarifs, prestations, chantier] = await Promise.all([
     lireMarges(ctx),
     listerTarifs(ctx),
-    listerPrestations(ctx, chantierId),
+    listerPrestationsDuDevis(ctx, chantierId),
     getChantier(ctx, chantierId),
   ]);
   // Des hommes dictés font partir l'engin avec son conducteur (« Mains d'œuvre

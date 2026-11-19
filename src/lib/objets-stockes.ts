@@ -173,6 +173,15 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: false,
   },
   {
+    table: "envois_devis",
+    colonne: "pdf_signe_cle",
+    quoi: "l'exemplaire signé en ligne d'un devis",
+    // Rangé AVANT la ligne qui le désigne, dans la même transaction (0182) :
+    // une clé posée sans son fichier est une perte. Nulle, la colonne veut dire
+    // « rien n'est signé, le lien sert le devis de l'envoi ».
+    absenceNormale: false,
+  },
+  {
     table: "avoirs",
     colonne: "pdf_storage_key",
     quoi: "le PDF d'un avoir",

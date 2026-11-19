@@ -78,6 +78,8 @@ export async function defaireLAcceptation(
       accordSurPapier: envoi.accordSurPapier,
       adresseIp: envoi.adresseIp,
       agentUtilisateur: envoi.agentUtilisateur,
+      // Sa signature fait partie de la preuve de l'accord (migration 0182).
+      signaturePng: envoi.signaturePng,
       defaitePar: ctx.utilisateurId,
     });
 
@@ -96,6 +98,11 @@ export async function defaireLAcceptation(
       accordPapierPar: null,
       adresseIp: null,
       agentUtilisateur: null,
+      // **L'exemplaire signé ne se sert plus** : le lien redonnerait sinon un
+      // devis « signé » à un client dont l'accord vient d'être défait. La
+      // signature, elle, reste dans la trace écrite juste au-dessus.
+      signaturePng: null,
+      pdfSigneCle: null,
     };
     await tx
       .update(envoisDevis)

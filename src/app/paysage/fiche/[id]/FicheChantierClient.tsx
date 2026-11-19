@@ -6,7 +6,8 @@ import IconeTrait from "@/components/atlas/IconeTrait";
 import RondDore from "@/components/atlas/RondDore";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { colors, font, libelleCaps, smallCaps, surPlein, texteSituation } from "@/lib/design-tokens";
-import { jourEnTitre, jourLisible } from "@/lib/jour";
+import { jourDeLettre, jourEnTitre, jourIso, jourLisible } from "@/lib/jour";
+import Signature, { pngDeLaSignature, SignatureDuClient, type Trace } from "@/components/atlas/Signature";
 import { TitreAvecRoue } from "@/components/atlas/FiltreDeDate";
 import { parFamilles } from "@/lib/prestations-entretien";
 import { MINUTES_MAX, PAS_MINUTES, constatDesCoches, empechementEnvoi } from "@/lib/passage-entretien";
@@ -56,6 +57,9 @@ export type PassageAffiche = {
   observations: string | null;
   envoyeLe: string | null;
   jeton: string | null;
+  /** Signée sur place (migration 0183) : le trait, et le jour (AAAA-MM-JJ). */
+  signaturePng: string | null;
+  signeeLe: string | null;
   lignes: Ligne[];
 };
 
@@ -106,6 +110,17 @@ export default function FicheChantierClient({
   const [observations, setObservations] = useState(passage.observations ?? "");
   const [envoyeLe, setEnvoyeLe] = useState(passage.envoyeLe);
   const [jeton, setJeton] = useState(passage.jeton);
+  /**
+   * LA SIGNATURE DU CLIENT, S'IL EST LÀ — sa demande du 17 novembre 2026 :
+   * *« si le client est là, ils lui font signer ; s'il n'est pas là, ils ne
+   * lui font pas signer »*. Jamais obligatoire : un cadre vide laisse partir
+   * la fiche comme avant. Le trait vit dans `trace` (la toile se vide quand le
+   * téléphone tourne) ; une fois partie, la fiche montre ce qui a été signé.
+   */
+  const [trace, setTrace] = useState<Trace>([]);
+  const [signature, setSignature] = useState(
+    passage.signaturePng && passage.signeeLe ? { png: passage.signaturePng, jour: passage.signeeLe } : null
+  );
   const [phrase, setPhrase] = useState<string | null>(null);
   // **Un CONSTAT n'est pas un refus, et ne se peint pas en rouge.** « 3 prestations
   // cochées, celles du dernier chantier » est le résultat attendu du geste : le dire en rouge,
@@ -231,11 +246,14 @@ export default function FicheChantierClient({
   useRetourDeMessagerie("/paysage/fiche");
 
   async function envoyer() {
-    const r = await envoyerFicheAction(passage.id, canal);
+    const points = trace.reduce((n, t) => n + t.length, 0);
+    const png = points > 0 ? pngDeLaSignature(trace) : null;
+    const r = await envoyerFicheAction(passage.id, canal, png ? { png, points } : null);
     if (!r.ok) {
       setPhrase(r.phrase);
       return;
     }
+    if (png) setSignature({ png, jour: jourIso(new Date()) });
     const jetonNeuf = r.lien.split("/").pop() ?? null;
     setEnvoyeLe(new Date().toISOString());
     setJeton(jetonNeuf);
@@ -541,6 +559,29 @@ export default function FicheChantierClient({
           style={{ backgroundColor: colors.card, color: colors.ink }}
         />
       </section>
+
+      {/* ─── LA SIGNATURE DU CLIENT ──────────────────────────────────────────
+          Sa planche du 17 novembre 2026 : la toile de la fiche de sécurité,
+          sous les observations, tant que la fiche n'est pas partie. Partie :
+          ce qui a été signé, ou rien du tout, jamais « Non signé ». */}
+      {!parti && (
+        <section className="mx-[26px] mt-[26px]" data-atlas="signature-client">
+          <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
+            Signature du client
+          </h2>
+          <div className="mt-[12px]">
+            <Signature trace={trace} onTrace={setTrace} />
+          </div>
+        </section>
+      )}
+      {parti && signature && (
+        <section className="mx-[26px] mt-[26px]" data-atlas="signature-client">
+          <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
+            Signature du client
+          </h2>
+          <SignatureDuClient png={signature.png} phrase={`Signée sur place, le ${jourDeLettre(signature.jour)}.`} />
+        </section>
+      )}
 
       {/* ─── L'ENVOI ────────────────────────────────────────────────────────── */}
       <section className="mx-[26px] mt-[32px]">

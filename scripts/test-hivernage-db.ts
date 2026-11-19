@@ -20,6 +20,7 @@ import { listerFichesClients } from "../src/server/repositories/fiche-client";
 import { poserLeClientSurLeJour } from "../src/server/repositories/pose-d-un-client";
 import { ceQueLaFicheDit, TRAVAUX_DE_L_HIVERNAGE } from "../src/lib/hivernage";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 // HIVERNER L'ARROSAGE, EN BASE et sous `atlas_app` — sa planche du
 // 5 novembre 2026, « la B » (`appli/soignee/hiverner-l-arrosage.html`).
@@ -109,7 +110,7 @@ async function main() {
     const e = await envoyerContrat(a, r.contrat.id);
     assert.ok(e.ok, "le contrat n'est pas parti");
     assert.equal((await etatHivernageDuClient(a, client.id))?.aUnContrat, false, "un contrat sans réponse ne compte pas");
-    await repondreAuContrat(e.jeton, { decision: "accepte" });
+    await repondreAuContrat(e.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI });
     const etat = await etatHivernageDuClient(a, client.id);
     assert.equal(etat?.aUnContrat, true);
     assert.deepEqual(ceQueLaFicheDit(etat!, "2026-11-05"), { genre: "question-arrosage", pourquoi: "Il a un contrat d’entretien." });

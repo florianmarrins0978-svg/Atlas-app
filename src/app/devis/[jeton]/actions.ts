@@ -1,16 +1,18 @@
 "use server";
 
 import { headers } from "next/headers";
-import { enregistrerReponse } from "@/server/repositories/envois-devis";
+import { deposerLeDevisSigne, enregistrerReponse } from "@/server/repositories/envois-devis";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { seuilsDeLaReponseAuDevis } from "@/lib/seuils-reponse-devis";
 import { adresseClient } from "@/lib/adresse-client";
+import { SIGNEZ_AVANT_D_ACCEPTER } from "@/lib/signature-au-doigt";
 
 export type EtatReponse =
   | { erreur: string }
-  | { succes: string }
+  /** `accepte` : l'écran garde la signature sous ses yeux, et seulement là. */
+  | { succes: string; accepte?: true }
   | undefined;
 
 const MESSAGES: Record<string, string> = {
@@ -35,6 +37,7 @@ const MESSAGES: Record<string, string> = {
   demarrage_non_demande:
     "Cette date tombe dans vos 14 jours de rétractation : cochez la case pour demander que les travaux commencent plus tôt, ou choisissez une date plus lointaine.",
   message_manquant: "Dites en un mot ce qui doit être corrigé : sans cela, votre artisan ne saura pas quoi reprendre.",
+  signature_manquante: SIGNEZ_AVANT_D_ACCEPTER,
 };
 
 export async function repondreAction(
@@ -170,11 +173,27 @@ export async function repondreAction(
     joursRetenus: joursAutres.length > 0 ? joursAutres : undefined,
     precision,
     demarrageAnticipe: formData.get("demarrageAnticipe") === "oui",
+    // Le trait et son nombre de points, tels que la toile les a posés : le
+    // dépôt les juge (`signatureAuDoigtValable`), rien n'est cru ici.
+    signature: {
+      png: formData.get("signaturePng"),
+      points: Number(formData.get("signaturePoints") ?? 0),
+    },
     ...preuve,
   });
 
   if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
 
+  // **L'exemplaire signé se range tout de suite**, pour que « Télécharger mon
+  // devis » le serve dès la page suivante. Un échec ici n'annule pas l'accord :
+  // le PDF se compose alors à la première ouverture (`cleDuDevisSigne`), et
+  // l'échec se journalise, pour qu'on sache pourquoi.
+  try {
+    await deposerLeDevisSigne(jeton);
+  } catch (erreur) {
+    logger.error("Devis signé non composé après l'accord", { erreur: erreur instanceof Error ? erreur.message : String(erreur) });
+  }
+
   logger.info("Devis accepté par le client", { contreProposee: r.contreProposee });
-  return { succes: "C'est noté. Votre artisan est prévenu." };
+  return { succes: "C'est noté. Votre artisan est prévenu.", accepte: true };
 }

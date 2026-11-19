@@ -16,6 +16,7 @@ import {
   validerDatesDuMois,
 } from "../src/server/repositories/dates-du-mois";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 // Les dates du mois d'un contrat, sous `atlas_app` (planche 130, sa demande du
 // 27 septembre 2026). Ce qui est éprouvé :
@@ -85,7 +86,7 @@ async function main() {
   const e = await envoyerContrat(a.ctx, contratId);
   assert.ok(e.ok);
   if (!e.ok) return;
-  await repondreAuContrat(e.jeton, { decision: "accepte" });
+  await repondreAuContrat(e.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI });
   await poserLesPassagesArrives(a.ctx, "2027-04-20");
   const AVRIL = "2027-04-01";
   const MAI = "2027-05-01";

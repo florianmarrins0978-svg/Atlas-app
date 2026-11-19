@@ -1,5 +1,17 @@
 # État du projet
 
+## SA FAÇON D'ABATTRE ET LE DIAMÈTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : SUR `main` (19 novembre 2026)
+
+Sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Le client lit désormais « Abattage d'un chêne Quercus robur » ; la ligne reste chiffrée par sa case, et le texte en base garde ses réponses pour les moteurs. Vrai pour une façon d'abattre qu'il a nommée lui-même (lue dans ses grilles par `listerPrestationsDuDevis`). Batterie : 216 suites navigateur sur 217, la seule rouge (`test-anneau-dictee-e2e`) verte des deux côtés quand elle est rejouée sur la base de `main`, donc étrangère au lot. `ARCHITECTURE.md` §588.
+
+## LA MISE À JOUR DE SON ESPACE DIT POURQUOI ELLE REFUSE, ALLUMAGE COMPRIS (18 novembre 2026), SUR `main`
+
+`mettre-a-jour.sh` note son issue lui-même (`ARCHITECTURE.md` §587) ; avant, seul le bouton de Réglages la notait. Né de son devis du soir, sorti d'un espace resté sur le code du 9 novembre. La cause du refus reste à lire puis à corriger (`TODO.md`). Niveau 2 au vert sur son « oui » (suites du dépôt, 31 suites navigateur sur 31).
+
+## LA SIGNATURE DU CLIENT, DEVIS, CONTRAT ET FICHE D'ENTRETIEN : SUR `main` (18 novembre 2026)
+
+Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'accepte ce devis » (obligatoire) et sa signature remplit l'encadré du devis recomposé, rangé à côté de celui de l'envoi ; la fiche d'entretien se signe sur place, jamais obligatoire. `ARCHITECTURE.md` §584, migrations 0182 et 0183. Sa planche B, choisie le 18 : la toile du devis et du contrat d'entretien est dans une feuille, la page tient sur un écran (migration 0184 pour le contrat). Batterie de niveau 3 verte le 18 (605 suites base, 217 navigateur, connexion derrière un proxy), puis `main`. Les suites qui acceptaient un devis signent maintenant par le vrai geste (`scripts/_signer-au-doigt.ts`).
+
 ## LA FICHE OUVERTE ET COMPOSER MA FICHE (A), ET « VOTRE DICTÉE » ENLEVÉE, SUR `main` (17 novembre 2026)
 
 Un seul lot et une seule batterie (sa demande : *« fusionne le tout et joue qu'une seule batterie »*), niveau 3 : rayon de 14 points d'entrée par `notes-vocales.ts`. La fiche ouverte et Composer en A : `FicheChantierClient.tsx`, `ComposerMaFiche.tsx`, `RondDore` (une `taille`). La case « Votre dictée » quitte la fiche client : une dictée envoyée se refait en redictant, et le client reste intact (`test-anneau-dictee-e2e`). Le détail est dans `TODO.md`.
@@ -7,9 +19,13 @@ Un seul lot et une seule batterie (sa demande : *« fusionne le tout et joue qu'
 ---
 ## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
 
-Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.
+Le texte affiché dit Cause partout ; le code garde atlas. Reste à lui : les conditions générales (version nouvelle). L'icône est le C, choisi le 18 novembre (§586). `ARCHITECTURE.md` §581.
 
-## L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026), EN ATTENTE D'UNE LETTRE ET D'UN FOND
+## L'ICÔNE DE CAUSE : LE C, INSTALLÉ (18 novembre 2026)
+
+Son choix : *« je prends la C de la première planche »* (`appli/icone-de-cause.html`). `public/icone-source.svg` porte le C de la serif des devis et le point d'or ; `npm run icones` en tire les icônes d'iPhone et d'Android, le manifeste, et désormais le favicon de l'onglet (c'était encore le triangle par défaut de Next.js). `ARCHITECTURE.md` §586. Pas vu sur un vrai téléphone.
+
+## L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026), ÉCARTÉE LE 18 NOVEMBRE POUR LE C
 
 Sa réponse devant les lettres : *« un truc hyper basique [...] il faudrait un dessin, une image, quelque chose qui claque »*. `appli/icone-de-cause-3.html` : trois dessins sans lettre, le rouge-gorge (H), le casque (I), la rosace (J), chacun sur fond vert, or ou crème, sur le bureau de téléphone de la planche d'avant. Éprouvée dans Chromium à 390, 360, 320 et 1280 px, chaque geste touché, gardée par `appli/tests/e2e.js` ; **pas regardée sur Safari**. Rien dans `src/`, rien d'installé. La suite : `TODO.md`.
 
@@ -32,7 +48,7 @@ Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son 
 ---
 ## FACE ID PASSE À `@simplewebauthn` 13.3.3, CODÉ (18 novembre 2026), SUR `main` LE 18 NOVEMBRE
 
-Sa demande après le tour des failles des dépendances. `src/server/cle-appareil.ts` suit l'API 13 (`credential` au lieu de `authenticator`, identifiant du compte en octets UTF-8 comme en 9), le navigateur passe `{ optionsJSON }`, les types viennent de `@simplewebauthn/server`. Base inchangée. Types, lint et contrôles purs verts ; `test-face-id-e2e.ts` porte deux cas neufs (le compte retenu sous le même nom qu'en 9, une clé posée avant la 13 qui s'ouvre toujours et une clé fausse qui ne s'ouvre pas) ; batterie de niveau 3 verte sur son « oui », 217 suites navigateur sur 217. Reste à l'essayer sur son téléphone, avec une clé déjà enregistrée. `ARCHITECTURE.md` §583.
+Sa demande après le tour des failles des dépendances. `src/server/cle-appareil.ts` suit l'API 13 (`credential` au lieu de `authenticator`, identifiant du compte en octets UTF-8 comme en 9), le navigateur passe `{ optionsJSON }`, les types viennent de `@simplewebauthn/server`. Base inchangée. Types, lint et contrôles purs verts ; `test-face-id-e2e.ts` porte deux cas neufs (le compte retenu sous le même nom qu'en 9, une clé posée avant la 13 qui s'ouvre toujours et une clé fausse qui ne s'ouvre pas) ; batterie de niveau 3 verte sur son « oui », 217 suites navigateur sur 217. Reste à l'essayer sur son téléphone, avec une clé déjà enregistrée. `ARCHITECTURE.md` §583. **Le même jour, `npm ci` refusait le dépôt** (next-auth réclame la 9) : une dérogation limitée à next-auth le répare, et `test-dependances-installables.ts` le vérifie à chaque `npm test` (§585).
 
 ---
 ## SUR UNE LIGNE, LE PRIX DE CHAQUE TRAVAIL À LA PLACE DE SA CROIX, CODÉ (17 novembre 2026), SUR `main` LE 18 NOVEMBRE

@@ -1,5 +1,7 @@
 import { nomAvecForme } from "@/lib/formes-juridiques";
-import type { CiviliteClient } from "../../lib/civilite";
+import { avecCivilite, type CiviliteClient } from "../../lib/civilite";
+import { signatureAuDoigtValable } from "../../lib/signature-au-doigt";
+import { jourIso as jourDuPatron } from "../../lib/jour";
 import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -312,10 +314,24 @@ export async function lireContratParJeton(jeton: string): Promise<ContratPourCli
  */
 export async function repondreAuContrat(
   jeton: string,
-  reponse: { decision: "accepte" | "refuse"; adresseIp?: string | null; agent?: string | null },
+  reponse: {
+    decision: "accepte" | "refuse";
+    adresseIp?: string | null;
+    agent?: string | null;
+    /** Le trait et ses points, exigés pour accepter (migration 0184), jugés ici. */
+    signature?: { png: unknown; points: unknown } | null;
+  },
   maintenant: Date = new Date()
-): Promise<{ ok: true } | { ok: false; motif: "introuvable" | "deja_repondu" }> {
+): Promise<{ ok: true } | { ok: false; motif: "introuvable" | "deja_repondu" | "signature_manquante" }> {
   if (!jeton) return { ok: false, motif: "introuvable" };
+  // **Accepter, c'est signer**, comme le devis (sa planche B du 18 novembre
+  // 2026) : la page est publique et se rejoue, la règle vit ici. Un refus ne
+  // s'engage à rien et n'en demande pas.
+  const signaturePng =
+    reponse.decision === "accepte" && signatureAuDoigtValable(reponse.signature?.png, reponse.signature?.points)
+      ? (reponse.signature!.png as string)
+      : null;
+
   return db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.jeton_contrat', ${jeton}, true)`);
     const [l] = await tx
@@ -325,6 +341,9 @@ export async function repondreAuContrat(
       .limit(1);
     if (!l) return { ok: false as const, motif: "introuvable" as const };
     if (l.statut !== "envoye") return { ok: false as const, motif: "deja_repondu" as const };
+    // Après le lien et la réponse déjà donnée, comme le devis : un lien mort
+    // se dit mort, même sans trait.
+    if (reponse.decision === "accepte" && !signaturePng) return { ok: false as const, motif: "signature_manquante" as const };
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${l.entrepriseId}, true)`);
     await tx
       .update(contratsEntretien)
@@ -333,6 +352,7 @@ export async function repondreAuContrat(
         reponduLe: maintenant,
         reponseAdresseIp: reponse.adresseIp ?? null,
         reponseAgent: reponse.agent?.slice(0, 500) ?? null,
+        signaturePng,
         updatedAt: maintenant,
       })
       .where(and(eq(contratsEntretien.id, l.id), eq(contratsEntretien.statut, "envoye")));
@@ -428,7 +448,7 @@ async function pdfDuContrat(
     .where(eq(clients.id, l.clientId))
     .limit(1);
   const habillage = await allureDesDocuments(tx, l.entrepriseId);
-  return composerContratPdf(
+  const { pdf } = await composerContratPdf(
     {
       ...identiteDeLEmetteur(e),
       clientNom: client?.nom ?? null,
@@ -443,9 +463,20 @@ async function pdfDuContrat(
       tauxTva: l.tauxTva,
       statut: l.statut,
       dateDuDocument: jourIso(l.envoyeLe ?? maintenant),
+      // Signé sur son lien : le nom tel que l'en-tête l'imprime, le jour de
+      // l'accord à l'heure du patron.
+      signature:
+        l.statut === "accepte" && l.signaturePng && l.reponduLe
+          ? {
+              png: new Uint8Array(Buffer.from(l.signaturePng.slice(l.signaturePng.indexOf(",") + 1), "base64")),
+              nom: avecCivilite(client?.nom, (client?.civilite ?? null) as CiviliteClient | null),
+              jour: jourDuPatron(l.reponduLe),
+            }
+          : null,
     },
     habillage
   );
+  return pdf;
 }
 
 export async function pdfDuContratPourLePatron(ctx: Ctx, id: string, maintenant: Date = new Date()): Promise<Uint8Array | null> {

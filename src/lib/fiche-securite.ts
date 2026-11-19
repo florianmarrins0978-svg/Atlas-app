@@ -52,6 +52,7 @@
  * Les mots ajoutés aux listes de la MSA sont des noms de matériel et de risques
  * communs au métier ; les textes de Kleyk ne sont pas recopiés.
  */
+import { signatureAuDoigtValable } from "./signature-au-doigt";
 import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
 import { dansLaPeriode } from "./periode";
 import { croquisRecu, croquisVide, manquesDuCroquis, type Croquis } from "./croquis-securite";
@@ -948,33 +949,12 @@ export function compteDuBandeau(fiche: { signeeLe: Date | null; transmiseLe: Dat
   return `${Math.min(fiche.etapeVue, NOMBRE_D_ETAPES)} sur ${NOMBRE_D_ETAPES}`;
 }
 
-/** Une signature au doigt compte quand elle a plus de quelques points : un tap n'est pas une signature. */
-export const POINTS_MINIMUM_D_UNE_SIGNATURE = 8;
-
 /**
- * Le trait mesure 600 sur 260 (`pngDeLaSignature`) : même dense, il tient très
- * en dessous. Au-delà, ce n'est pas une signature, c'est un envoi qui remplit
- * la base.
- */
-export const LONGUEUR_MAX_D_UNE_SIGNATURE = 500_000;
-
-const ENTETE_PNG = "data:image/png;base64,";
-/** Les huit octets qui ouvrent tout PNG, écrits en base64. */
-const MAGIE_PNG = "iVBORw0KGgo";
-
-/**
- * **Une signature est un vrai PNG, tracé au doigt** : sinon le PDF de la fiche
- * embarque ce qu'on lui a donné, et une image qui n'en est pas une le fait
- * tomber, pour une fiche que le contrôleur demandera.
+ * **Une signature est un vrai PNG, tracé au doigt** : la règle est commune aux
+ * papiers signés (`signature-au-doigt.ts`), la phrase est celle de la fiche.
  */
 export function refusDeLaSignature(png: unknown, points: unknown): string | null {
-  if (typeof points !== "number" || points < POINTS_MINIMUM_D_UNE_SIGNATURE) return "Signez au doigt avant de signer la fiche.";
-  if (typeof png !== "string" || !png.startsWith(ENTETE_PNG) || png.length > LONGUEUR_MAX_D_UNE_SIGNATURE) {
-    return "Signez au doigt avant de signer la fiche.";
-  }
-  const donnees = png.slice(ENTETE_PNG.length);
-  if (!donnees.startsWith(MAGIE_PNG) || !/^[A-Za-z0-9+/]+={0,2}$/.test(donnees)) return "Signez au doigt avant de signer la fiche.";
-  return null;
+  return signatureAuDoigtValable(png, points) ? null : "Signez au doigt avant de signer la fiche.";
 }
 
 /** Le texte que le PDF (et la liste) écrivent sous une fiche signée. */
