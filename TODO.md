@@ -413,20 +413,22 @@ d'Envoyez joue `nov-film-envoi-signe` (7,3 s, `appli/scripts/film-envoi-signe.cj
 la date, la case des quatorze jours, « J'accepte ce devis », la feuille « Votre
 signature » qui monte, le paraphe qui se trace, « C'est noté » avec la
 signature dans son cadre, puis le devis paraît et la signature tombe dans
-l'encadré « Bon pour accord ». **La signature du devis n'est pas encore dans
-l'appli** : le film anime sa planche B
-(`appli/soignee/devis-signe-dans-une-feuille.html`, en cours de codage par une
-autre session) avec le chantier de Mr. Lemaire, il ne filme pas l'appli. **Il
-est à refaire en filmant l'appli le jour où elle est livrée**, et à revoir si
-la planche change d'ici là. Le paraphe « Lemaire » est de moi. Les phrases du
-chapitre n'ont pas bougé : elles ne parlent pas de signature.
+l'encadré « Bon pour accord ». **Ce film anime la planche B, il ne filme pas
+l'appli** (`appli/soignee/devis-signe-dans-une-feuille.html`, avec le chantier
+de Mr. Lemaire) : quand il a été tourné, la signature n'était pas dans l'appli.
+**Elle y est depuis le soir même** (livrée sur `main` le 18 novembre, plus haut
+dans ce fichier) : **le film est donc à refaire en filmant l'appli**, ce qui
+demande de la lancer ici sur une base d'essai (son oui). Le paraphe « Lemaire »
+est de moi. Les phrases du chapitre n'ont pas bougé : elles ne parlent pas de
+signature.
 
-**Vu en faisant ce film, pour qui code la signature :** sur le PDF du devis, le
-filet qui ferme le corps du document traverse le haut de l'encadré « Bon pour
-accord » (visible sur `appli/vente/images/nov-devis.jpg`, et sur les deux PDF
-de la planche B). Tant que l'encadré est vide, il ne gêne pas ; avec une
-signature dedans, il passe sur son haut. Pas touché ici (le film montre le PDF
-tel qu'il est) : à regarder dans le lot de la signature.
+**Vu en faisant ce film, à regarder sur un devis signé de l'appli :** sur le
+PDF du devis, le filet qui ferme le corps du document traverse le haut de
+l'encadré « Bon pour accord » (visible sur `appli/vente/images/nov-devis.jpg`,
+et sur les deux PDF de la planche B). Tant que l'encadré est vide, il ne gêne
+pas ; avec une signature dedans, il passe sur son haut. Pas touché ici (le film
+montre le PDF tel qu'il était) ; la signature a été livrée depuis, et personne
+n'a regardé ce point sur un PDF signé.
 
 **Le 19 novembre, deux défauts qu'il a vus.** *« Comme si elle freezait une
 demi-seconde »* à l'ouverture : c'était le geste de l'appli (le « + » tourne
