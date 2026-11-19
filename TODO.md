@@ -98,7 +98,9 @@ is at … but expected … » (reproduit en local avec deux fetch d'un dépôt
 huit fois sur huit : le cas n'est pas tranché. Le refus porterait alors « le
 dépôt distant n'a pas pu être joint ». Ne rien corriger avant de l'avoir lu.
 
-## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
+## ⏳ CODÉ, ATTEND SA BATTERIE : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (19 novembre 2026)
+
+**Codé le 19 novembre** sur la branche `claude/happy-cannon-2rci5s` (`ARCHITECTURE.md` §591), sur ses planches choisies. **Niveau 3, batterie NON jouée à sa demande** (« code mais pas de batterie ») : elle attend son « oui », puis `main`. Avant toute vente : la version 4 des conditions générales, sa décision. Ce qui suit est l'historique des décisions.
 
 `appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran
 Abonnement (figé avec `scripts/planche-figee/`). Le détail et ce que le code

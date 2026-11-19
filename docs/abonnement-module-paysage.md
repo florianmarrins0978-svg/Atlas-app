@@ -1,7 +1,8 @@
 # Le module Paysage, et Artisan pour une seule personne
 
-*Demande du 18 novembre 2026. Planche posée sur le vrai écran Abonnement,
-rien n'est codé.*
+*Demande du 18 novembre 2026. **Codé le 19 novembre 2026**, sur la branche
+`claude/happy-cannon-2rci5s` ; batterie non jouée, à sa demande ; pas encore
+sur `main`.*
 
 Planche : `appli/soignee/abonnement-module-paysage.html`
 
@@ -144,3 +145,38 @@ S'il ne se rouvre pas, il aura payé son essai d'un plan perdu.
 |---|---|
 | Les plafonds d'IA (Artisan 10 €, Entreprise 20 €, Illimité 60 € par mois) avec le module, qui lit des photos. Mon avis : les garder, et regarder la consommation réelle, qu'on n'a pas encore | lui |
 | Publier la version 4 des conditions générales | lui |
+
+## Ce qui est codé (19 novembre 2026)
+
+| | Où |
+|---|---|
+| Les outils de paysage en module, le même prix pour les trois formules ; Entreprise et Illimité sans eux | `src/lib/abonnements.ts` (`MODULES`) |
+| Un seul prix chez le prestataire, formule et outils ; les outils relus au retour et au crochet | `src/server/paiement/stripe.ts` |
+| Artisan pour vous seul ; une formule trop petite pour l'équipe refusée avant de payer | `placePourUnAcces`, `equipeTientDansLaFormule` |
+| Le plan et le diagnostic offerts, pris quand le résultat sort ; le plan offert se retouche 24 heures | `offres_prises` (migration 0187), `exigerLArrosage` |
+| L'écran Abonnement de la planche (A, trois lignes, en doré), la page Paysage (« 1 offert », « En option »), l'écran fermé (« Ajouter les outils ») | `BlocDesOutils.tsx`, `paysage/page.tsx`, `FonctionReservee.tsx` |
+| La facture de Cause nomme les outils | `nomDeLAbonnement` |
+
+**Fait autrement que la planche, et pourquoi :**
+
+- **Le résultat d'un diagnostic reste lisible** quand l'offre est prise : la porte
+  fermait tout le dossier, donc aussi le diagnostic offert qu'il venait de
+  recevoir. Elle est désormais sur l'écran qui en commence un.
+- **La photo complémentaire et la relance d'un diagnostic** n'ont plus de garde
+  de formule : elles appartiennent au diagnostic déjà ouvert, et la refuser
+  laissait le diagnostic offert à moitié.
+- **L'aide de l'assistant** disait les salariés au planning « quelle que soit la
+  formule » : c'est faux depuis Artisan seul, elle est corrigée.
+
+**Éprouvé ici :** les règles (`test-abonnements.ts`), un seul prix contre un faux
+prestataire (`test-paiement-stripe.ts`), l'offre en base, prise une seule fois
+même à deux envois (`test-offres-prises-db.ts`), et les écrans regardés à la
+largeur d'un téléphone (Abonnement sans et avec les outils, refus d'un salarié,
+Paysage avant et après l'offre, écrans fermés).
+
+**Pas joué :** la batterie (sa demande), et deux suites base qui vident la base
+(`test-abonnement-db.ts`, `test-essai-lecture-seule-db.ts`), mises à jour.
+
+**Pas vérifiable ici :** un vrai paiement avec les outils, la lecture réelle
+d'un croquis ou d'une plante.
+

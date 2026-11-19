@@ -1,5 +1,9 @@
 # État du projet
 
+## LES OUTILS DE PAYSAGE EN MODULE, ARTISAN POUR UNE SEULE PERSONNE, UN PLAN ET UN DIAGNOSTIC OFFERTS : CODÉ, PAS SUR `main` (19 novembre 2026)
+
+Sur la branche `claude/happy-cannon-2rci5s`, sur ses planches choisies (`appli/soignee/abonnement-module-paysage.html`, « A, trois lignes, en doré » ; `appli/soignee/paysage-plan-offert.html`). Les outils de paysage (arrosage, diagnostic, fiches de chantier) s'ajoutent à n'importe quelle formule pour 6 € HT par mois, 60 € à l'année ; Entreprise et Illimité ne les comprennent plus ; Artisan est un seul accès, salariés compris ; un plan d'arrosage et un diagnostic sont offerts une fois par entreprise, essai compris. Migration 0187 (expand), `ARCHITECTURE.md` §591, `docs/abonnement-module-paysage.md`. **Niveau 3 (argent, migration) : la batterie n'est pas jouée, à sa demande (« code mais pas de batterie »).** Les contrôles purs, le faux prestataire et la suite base des offres sont verts ; les écrans ont été regardés. Restent sa batterie, la version 4 des conditions générales (sa décision), et le premier essai avec une vraie clé de paiement.
+
 ## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
 
 Le PDF du retour d'intervention appelait « Mr. » chaque cliente : la civilité se fige désormais avec le nom à l'envoi (migration 0185, `ARCHITECTURE.md` §589). Un compte créé par l'inscription ne pouvait faire ni devis, ni facture, ni avoir, faute de compteur de numéros : toute entreprise neuve passe par `poserLEntrepriseNeuve`, et la migration 0186 pose le compteur aux comptes déjà inscrits (§590). Une seule batterie pour les deux, sur sa demande, verte.
