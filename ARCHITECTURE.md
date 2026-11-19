@@ -37649,3 +37649,29 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | **la désignation ne porte aucune parenthèse** ; ce qu'elles disaient reste dans la phrase (« Abattage d'un chêne Quercus robur »), colonnes ou non (`sansParentheses`) | sa réponse du 18 novembre, devant le nom latin que la lecture de la dictée met entre parenthèses : *« il reste, sans les ( ) »*. Enlever deux signes n'efface rien ; quatre anciens contrôles qui attendaient les parenthèses attendent désormais les mêmes mots sans elles |
 
 `test-libelle-client.ts` (six cas, cinq vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).
+
+## §589 : Le retour d'intervention fige la civilité du client avec son nom
+
+*19 novembre 2026, sa demande : « il faut corriger ça ».*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Mme Lefèvre recevait un retour d'intervention adressé à « Mr. Lefèvre » | vu sur le vrai PDF le 17 novembre |
+| La racine : à l'envoi, `figerPassage` recopiait le nom (`client_nom`, 0055), jamais la civilité ; `RapportPublic` ne la portait pas, et `avecCivilite` retombait sur sa civilité par défaut | la civilité se fige avec le nom (`client_civilite`, migration 0185), au même instant, pour la même raison : un rapport parti ne change plus |
+| Pourquoi pas la lire en direct sur la fiche du client | le nom est figé pour qu'un rapport parti ne bouge plus ; lire la civilité en direct ferait deux règles pour la même adresse |
+| Les rapports déjà partis | 0185 leur recopie la civilité de leur client, boucle par entreprise sous FORCE RLS (modèle 0037), éprouvée sur une base habitée (`test-migration-0185-base-habitee.ts`, qui sait rougir sans la boucle). Sans client ou sans civilité : NULL, rien ne s'invente |
+| La page du client | inchangée : elle écrit « chez Lefèvre », sans civilité, et personne ne l'a demandé |
+
+`test-rapport-civilite-pdf.ts`, vu rouge sur le code d'avant (« Mr. Lefèvre »).
+
+## §590 : Toute entreprise neuve reçoit la même mise en place, quel que soit son chemin
+
+*19 novembre 2026, sa question : « et les nouveaux comptes ne peuvent pas faire de devis ???? »*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Un compte créé par la porte d'inscription (`creerSonCompte`) tombait sur son premier devis : « Cannot read properties of undefined (reading 'numero') » | vu le 17 novembre sur un compte créé par le vrai parcours, reproduit par `test-compte-neuf-numerote-db.ts` |
+| La racine : deux chemins créent une entreprise, et chacun recopiait sa mise en place ; `creerEntreprise` posait le compteur des numéros, `creerSonCompte` l'oubliait. Les suites passent par le premier : personne ne le voyait | une seule fonction, `poserLEntrepriseNeuve` (propriétaire, compteur, modèle de fiche), appelée par les deux. La recopie de la porte est retirée |
+| Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
+| Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
+

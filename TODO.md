@@ -1,5 +1,34 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
+
+Sa demande : *« regarder les fiches de diagnostic végétal qui existent déjà,
+les améliorer, les rendre plus jolies »*. Ses deux réponses du même jour : on
+pose la planche sur le vrai écran, et elle part de **son ordre du
+22 septembre** (toujours pas codé : l'écran de `main` montre encore
+« Probable · Peuplier » et « Gravité : Vigilance », voir l'entrée de la
+brunissure plus bas).
+
+**La planche** : `appli/soignee/fiche-de-diagnostic.html`. Proposé : la vraie
+page figée (`scripts/planche-figee/`), sa fiche refaite dans la grammaire
+soignée (retour cerné, titre seul, plus de surtitre ni de pastille de
+l'assistant, nom latin en italique, questions en serif 22 px, « Que faire ? »
+encadré d'or, détails derrière une ligne de 64 px, rattachement en 56 px).
+Aujourd'hui : la capture de l'écran réel. Huit chartes. Exemple : la fiche 4
+(peuplier), importée dans la base locale de la session seulement, jamais dans
+`donnees/`. **Rien dans `src/`.**
+
+**À trancher par lui** :
+
+| | |
+|---|---|
+| **les trois notes de l'INRAE** (impact, agressivité, fréquence, sur 3) en jauges sous « Est-ce grave pour l'arbre ? » | la planche les lit dans la phrase `graviteSelonLaSource`. Codées, ce seraient trois champs de plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ; sans note, la ligne disparaît et la phrase reste entière |
+| le code : toute la planche ou une partie | elle s'ajoute au lot du 22 septembre (migration, donc niveau 3) |
+
+**Trouvé en regardant l'écran réel, à corriger en codant la fiche 4** : la
+légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
+(« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
+
 ## ⏳ UNE PLANCHE À REGARDER : « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE (18 novembre 2026)
 
 Sa capture : un devis préparé « sur une ligne » porte déjà sa main d'œuvre
@@ -199,7 +228,7 @@ désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
 l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
 
-1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+1. ~~**Un compte créé par l'inscription ne peut pas faire son premier devis.**~~ **Corrigé le 19 novembre 2026** (`poserLEntrepriseNeuve`, migration 0186), sur sa demande.
    `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
    n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
    `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :
@@ -209,8 +238,9 @@ l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge
    qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
    sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
    facture, qui lit le même compteur.
-2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
-   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+2. ~~**Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.**~~ **Corrigé le 19 novembre 2026** (migration 0185, la civilité
+   figée avec le nom), sur sa demande. `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
    `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
    pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
 
