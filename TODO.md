@@ -75,8 +75,14 @@ chantier) et se vend **avec les trois formules** (sa correction du soir :
 les comprennent plus ; choisir Artisan avec des salariés déjà invités est
 **refusé** tant qu'il ne les a pas retirés (article 14.6). Le module se règle
 **en haut**, une fois pour les trois (la variante « dans la carte Artisan » est
-tombée avec sa correction). **À confirmer par lui** : le même prix pour les
-trois formules. Puis : la version 4 des conditions générales (la version 3 dit
+tombée avec sa correction). Le même prix pour les trois formules, **confirmé
+le 19 novembre**. **Le 19 novembre aussi** : un plan d'arrosage et un
+diagnostic **offerts une seule fois par entreprise, essai compris**, puis
+Paysage ; planche `appli/soignee/paysage-plan-offert.html` sur la vraie page
+Paysage (ce qui consomme l'offre, et ce qui ne la consomme pas : même
+document). **Le 19 novembre encore** : le bloc dit « Ajoutez les outils de
+paysage », montre un vrai plan, et se choisit en **A, vert profond**
+(conseillé) ou **B, doré** : à trancher par lui. Puis : la version 4 des conditions générales (la version 3 dit
 les salariés jamais comptés et Paysage compris dans Entreprise), et les
 plafonds d'IA avec le module.
 
