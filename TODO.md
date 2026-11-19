@@ -1,17 +1,64 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
+
+Sa demande : *« regarder les fiches de diagnostic végétal qui existent déjà,
+les améliorer, les rendre plus jolies »*. Ses deux réponses du même jour : on
+pose la planche sur le vrai écran, et elle part de **son ordre du
+22 septembre** (toujours pas codé : l'écran de `main` montre encore
+« Probable · Peuplier » et « Gravité : Vigilance », voir l'entrée de la
+brunissure plus bas).
+
+**La planche** : `appli/soignee/fiche-de-diagnostic.html`. Proposé : la vraie
+page figée (`scripts/planche-figee/`), sa fiche refaite dans la grammaire
+soignée (retour cerné, titre seul, plus de surtitre ni de pastille de
+l'assistant, nom latin en italique, questions en serif 22 px, « Que faire ? »
+encadré d'or, détails derrière une ligne de 64 px, rattachement en 56 px).
+Aujourd'hui : la capture de l'écran réel. Huit chartes. Exemple : la fiche 4
+(peuplier), importée dans la base locale de la session seulement, jamais dans
+`donnees/`. **Rien dans `src/`.**
+
+**Ses retouches du 19 novembre, portées sur la planche** : les trois notes de
+l'INRAE restent, **en barres seules**, sans « 1 sur 3 » à côté ni la ligne
+« Les notes de l'INRAE » ; **rien sous la photo** : sa légende et son crédit
+(auteur, licence), puis la source, vont **tout en bas de « Voir les détails »,
+sous « Rattacher à un chantier »**. Codées, les notes feront trois champs de
+plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ;
+sans note, la ligne disparaît et la phrase reste entière. Le crédit d'une
+photo libre reste ainsi affiché sur la fiche, une fois les détails ouverts.
+
+**SA RÈGLE DU 19 NOVEMBRE AU SOIR, ET ELLE VAUT POUR TOUTES LES FICHES :**
+*« L'idée c'est de ne pas parler de l'INRAE dans les fiches visibles et on
+peut en parler dans la description. »* Le nom de l'organisme ne s'écrit que
+dans « Voir les détails » (la fiche, la source) ; ce qui se lit sans les ouvrir
+dit les faits sans les attribuer. Portée le soir même sur les quatre
+brouillons (`conduiteRecommandee` du chêne, du hêtre, du frêne et du
+peuplier : « Aucun traitement… » au lieu de « L’INRAE ne donne aucun
+traitement… ») ; les fiches 1 à 3 en base ne le nomment déjà que dans leur
+source. Reste `graviteSelonLaSource` du peuplier, qui ouvre sur « L’INRAE
+donne un impact de 1 sur 3… » : la phrase part du texte le jour où les trois
+notes deviennent trois champs. **À savoir en relisant** : « Aucun traitement »
+dit un peu plus que la source, qui dit seulement n'en donner aucun.
+
+**Encore à trancher par lui** : le code, toute la planche ou une partie. Elle
+s'ajoute au lot du 22 septembre (migration, donc niveau 3).
+
+**Trouvé en regardant l'écran réel, à corriger en codant la fiche 4** : la
+légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
+(« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
+
 ## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : CODÉ, BATTERIE SUR SON « OUI » (19 novembre 2026)
 
 Sa capture du 18 novembre, sa réponse (*« changer ma ligne »*), sa planche
 (`appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`) ; le 19 : *« on a
-déjà fait une planche hier »*, donc codée. `ARCHITECTURE.md` §589, migration
+déjà fait une planche hier »*, donc codée. `ARCHITECTURE.md` §591, migration
 0185. Types, style, `test-feuille-main-oeuvre.ts` (sept cas vus rouges) verts.
 **Pas joué** : `test-main-oeuvre-change-sa-ligne-db.ts`,
 `test-feuille-main-oeuvre-e2e.ts` (son geste, rouge attendu sur `main`), puis la
 batterie (niveau 3 : migration, argent). Tout vide la base d'essai : son « oui »
 d'abord.
 
-## DEUX RENCONTRES DE LA MAIN D'ŒUVRE TROUVÉES EN CODANT §589 (19 novembre 2026)
+## DEUX RENCONTRES DE LA MAIN D'ŒUVRE TROUVÉES EN CODANT §591 (19 novembre 2026)
 
 1. **Répartir une seconde fois AJOUTE** aux parts déjà posées
    (`partsAppliquees` part de la part d'avant) : la même main d'œuvre répartie
@@ -31,7 +78,7 @@ sous deux formes, `libelleClient` les efface (§588). Les colonnes `methode` et
 `caracteristiques` les portent déjà (`structureDepuisPrecisions`), et
 `mesuresResolues` les lit.
 
-**Ordre retenu, le 19 novembre** : après §589. En deux temps :
+**Ordre retenu, le 19 novembre** : après §591. En deux temps :
 1. ne plus les écrire dans le libellé, ses réponses l'emportant dans les
    colonnes. **Une planche d'abord** : aujourd'hui il ne relit ses réponses que
    dans ce libellé (lu dans le code, aucun écran ne montre les colonnes), il
@@ -81,8 +128,10 @@ diagnostic **offerts une seule fois par entreprise, essai compris**, puis
 Paysage ; planche `appli/soignee/paysage-plan-offert.html` sur la vraie page
 Paysage (ce qui consomme l'offre, et ce qui ne la consomme pas : même
 document). **Le 19 novembre encore** : le bloc dit « Ajoutez les outils de
-paysage », montre un vrai plan, et se choisit en **A, vert profond**
-(conseillé) ou **B, doré** : à trancher par lui. Puis : la version 4 des conditions générales (la version 3 dit
+paysage », **sans image** (le plan réduit ne se lisait pas), et se choisit en
+**A, trois lignes** ou **B, trois tuiles**, **vert profond** ou **doré**.
+**Tranché par lui le 19 novembre : A, trois lignes, en doré.** « Dans les trois formules » disparaît : Artisan porte ses
+quatre lignes cochées, Entreprise dit « Tout ce qu'offre Artisan, et : », Illimité « Tout ce qu'offre Entreprise, et : ». Puis : la version 4 des conditions générales (la version 3 dit
 les salariés jamais comptés et Paysage compris dans Entreprise), et les
 plafonds d'IA avec le module.
 
@@ -207,7 +256,7 @@ désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
 l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
 
-1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+1. ~~**Un compte créé par l'inscription ne peut pas faire son premier devis.**~~ **Corrigé le 19 novembre 2026** (`poserLEntrepriseNeuve`, migration 0186), sur sa demande.
    `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
    n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
    `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :
@@ -217,8 +266,9 @@ l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge
    qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
    sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
    facture, qui lit le même compteur.
-2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
-   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+2. ~~**Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.**~~ **Corrigé le 19 novembre 2026** (migration 0185, la civilité
+   figée avec le nom), sur sa demande. `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
    `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
    pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
 

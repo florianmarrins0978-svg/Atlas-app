@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { AttestationLue } from "@/lib/attestation-lue";
-import { db } from "../db/client";
+import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
@@ -68,29 +68,39 @@ export async function creerEntreprise(
       utilisateurId = u.id;
     }
 
-    // Contexte RLS fixé dès maintenant — obligatoire avant toute écriture sur
-    // membres_entreprise / entreprise_compteurs (FORCE ROW LEVEL SECURITY).
-    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entreprise.id}, true)`);
-
-    await tx.insert(membresEntreprise).values({
-      entrepriseId: entreprise.id,
-      utilisateurId,
-      role: "proprietaire",
-    });
-
-    // Provisioning atomique du compteur — ON CONFLICT DO NOTHING pour rester
-    // idempotent si la fonction était rappelée avec la même entreprise (ne devrait
-    // pas arriver en usage normal, mais sans risque de double-provisioning).
-    await tx.insert(entrepriseCompteurs).values({ entrepriseId: entreprise.id }).onConflictDoNothing();
-
-    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
-    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
-    // modifieront s'ils le souhaitent »*. La même écriture que le bouton
-    // « Remettre le modèle Atlas », sur une fiche vide.
-    await remettreLeModeleDans(tx, entreprise.id);
+    await poserLEntrepriseNeuve(tx, entreprise.id, utilisateurId);
 
     return { entreprise, utilisateurId };
   });
+}
+
+/**
+ * CE QU'UNE ENTREPRISE NEUVE DOIT AVOIR POUR TRAVAILLER, quel que soit le
+ * chemin qui la crée : son propriétaire, son compteur de numéros, son modèle
+ * de fiche d'entretien.
+ *
+ * **Une seule fonction, et c'est la correction du 19 novembre 2026.** Les deux
+ * chemins qui créent une entreprise (`creerEntreprise` ci-dessus, pour le jeu
+ * de démonstration et les suites ; `creerSonCompte`, la porte d'inscription)
+ * recopiaient chacun cette mise en place, et la porte avait oublié le
+ * compteur : tout artisan inscrit tombait sur son premier devis, et sur sa
+ * première facture, qui prennent leur numéro dans ce compteur. Ce que l'un
+ * oubliait, personne ne le voyait, puisque les suites passaient par l'autre.
+ *
+ * Le contexte RLS est posé ici, avant toute écriture : `membres_entreprise` et
+ * `entreprise_compteurs` sont sous FORCE ROW LEVEL SECURITY, et une écriture
+ * sans contexte n'y passerait pas, sans un mot.
+ */
+export async function poserLEntrepriseNeuve(tx: DbOrTx, entrepriseId: string, utilisateurId: string): Promise<void> {
+  await tx.execute(sql`SELECT set_config('app.entreprise_id', ${entrepriseId}, true)`);
+  await tx.insert(membresEntreprise).values({ entrepriseId, utilisateurId, role: "proprietaire" });
+  // ON CONFLICT DO NOTHING : rappelée sur la même entreprise, elle ne double rien.
+  await tx.insert(entrepriseCompteurs).values({ entrepriseId }).onConflictDoNothing();
+  // **Le modèle de fiche d'entretien est là d'office** — sa demande du
+  // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
+  // modifieront s'ils le souhaitent »*. La même écriture que le bouton
+  // « Remettre le modèle Atlas », sur une fiche vide.
+  await remettreLeModeleDans(tx, entrepriseId);
 }
 
 /** L'entreprise active, telle que ses écrans de réglages la lisent. */

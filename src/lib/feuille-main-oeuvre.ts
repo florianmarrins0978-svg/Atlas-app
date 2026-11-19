@@ -63,7 +63,7 @@ export type LigneDeMainOeuvre = {
   unite: string;
   /** `null` : rien ne permet de dire un prix, la ligne arrive à chiffrer. */
   prixUnitaire: string | null;
-  /** Les hommes de son équipe (migration 0185) ; absent pour un partenaire. */
+  /** Les hommes de son équipe (migration 0187) ; absent pour un partenaire. */
   hommes?: number;
 };
 
@@ -112,7 +112,7 @@ export function estLaLigneDeSonEquipe(l: { mainDoeuvre?: boolean | null; unite?:
  *
  * **Les jours d'homme de la ligne ne bougent pas.** Les hommes viennent de la
  * ligne quand elle les garde (posée par la feuille ou la dictée, migration
- * 0185), sinon de la dictée, sinon un seul ; on prend le premier qui tombe sur
+ * 0187), sinon de la dictée, sinon un seul ; on prend le premier qui tombe sur
  * un cran du compteur. 5 jour/homme tapés à la main pour 2 hommes dictés se
  * relisent 1 homme × 5 jours : valider sans rien toucher ne change pas son prix.
  *

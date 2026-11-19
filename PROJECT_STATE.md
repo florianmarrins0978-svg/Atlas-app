@@ -2,7 +2,11 @@
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : CODÉE, PAS ENCORE SUR `main` (19 novembre 2026)
 
-Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0185 (les hommes de sa ligne). Sur `claude/sleepy-sagan-gq6c0x` ; suites de base et navigateur, puis batterie, sur son « oui ». `ARCHITECTURE.md` §589.
+Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Sur `claude/sleepy-sagan-gq6c0x` ; suites de base et navigateur, puis batterie, sur son « oui ». `ARCHITECTURE.md` §591.
+
+## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
+
+Le PDF du retour d'intervention appelait « Mr. » chaque cliente : la civilité se fige désormais avec le nom à l'envoi (migration 0185, `ARCHITECTURE.md` §589). Un compte créé par l'inscription ne pouvait faire ni devis, ni facture, ni avoir, faute de compteur de numéros : toute entreprise neuve passe par `poserLEntrepriseNeuve`, et la migration 0186 pose le compteur aux comptes déjà inscrits (§590). Une seule batterie pour les deux, sur sa demande, verte.
 
 ## SA FAÇON D'ABATTRE ET LE DIAMÈTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : SUR `main` (19 novembre 2026)
 

@@ -37650,7 +37650,32 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 
 `test-libelle-client.ts` (six cas, cinq vus rouges avant), `test-cases-reglables-db.ts` (sa façon d'abattre, la question, la réponse, puis la ligne du devis à 1 100 € qui ne dit que « Abattage d'un chêne »).
 
-## §589 : La feuille « Main d'œuvre » change la ligne de son équipe
+## §589 : Le retour d'intervention fige la civilité du client avec son nom
+
+*19 novembre 2026, sa demande : « il faut corriger ça ».*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Mme Lefèvre recevait un retour d'intervention adressé à « Mr. Lefèvre » | vu sur le vrai PDF le 17 novembre |
+| La racine : à l'envoi, `figerPassage` recopiait le nom (`client_nom`, 0055), jamais la civilité ; `RapportPublic` ne la portait pas, et `avecCivilite` retombait sur sa civilité par défaut | la civilité se fige avec le nom (`client_civilite`, migration 0185), au même instant, pour la même raison : un rapport parti ne change plus |
+| Pourquoi pas la lire en direct sur la fiche du client | le nom est figé pour qu'un rapport parti ne bouge plus ; lire la civilité en direct ferait deux règles pour la même adresse |
+| Les rapports déjà partis | 0185 leur recopie la civilité de leur client, boucle par entreprise sous FORCE RLS (modèle 0037), éprouvée sur une base habitée (`test-migration-0185-base-habitee.ts`, qui sait rougir sans la boucle). Sans client ou sans civilité : NULL, rien ne s'invente |
+| La page du client | inchangée : elle écrit « chez Lefèvre », sans civilité, et personne ne l'a demandé |
+
+`test-rapport-civilite-pdf.ts`, vu rouge sur le code d'avant (« Mr. Lefèvre »).
+
+## §590 : Toute entreprise neuve reçoit la même mise en place, quel que soit son chemin
+
+*19 novembre 2026, sa question : « et les nouveaux comptes ne peuvent pas faire de devis ???? »*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Un compte créé par la porte d'inscription (`creerSonCompte`) tombait sur son premier devis : « Cannot read properties of undefined (reading 'numero') » | vu le 17 novembre sur un compte créé par le vrai parcours, reproduit par `test-compte-neuf-numerote-db.ts` |
+| La racine : deux chemins créent une entreprise, et chacun recopiait sa mise en place ; `creerEntreprise` posait le compteur des numéros, `creerSonCompte` l'oubliait. Les suites passent par le premier : personne ne le voyait | une seule fonction, `poserLEntrepriseNeuve` (propriétaire, compteur, modèle de fiche), appelée par les deux. La recopie de la porte est retirée |
+| Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
+| Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
+
+## §591 : La feuille « Main d'œuvre » change la ligne de son équipe
 
 *18 novembre 2026, sa capture : un devis préparé « sur une ligne » portait sa main d'œuvre (2 hommes × 2 jours, 4 jour/homme, 1 600 €) ; « Main d'œuvre » pour ajouter un homme posait une seconde ligne de 2 400 € à côté. Ses mots : « ça devrait juste s'ajouter ». Sa réponse : « changer ma ligne », une seule ligne à 3 hommes × 2 jours. Planche : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`.*
 
@@ -37663,7 +37688,7 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | « Changer la main d’œuvre » change quantité, prix et hommes ; son libellé reste le sien (`poserLaMainDoeuvreDeLaFeuille`) | sa réponse ; 10 jour/homme (ajouter les 6 aux 4) était écarté, les 4 jours compteraient deux fois |
 | un partenaire pose toujours SA ligne, à son nom | sa réponse : *« il faudrait qu'elle se mette sur une autre ligne »* |
 | « Répartis sur les travaux » retire sa ligne dans la même transaction que les parts | répartie, sa main d'œuvre entre dans le prix des travaux ; la ligne laissée à côté la compterait deux fois |
-| `lignes_prix.hommes_main_doeuvre` (migration 0185, expand seul) | 6 jour/homme ne disent pas 3 × 2 ou 2 × 3 ; la feuille se rouvre sur ce qu'il a posé. Sans la colonne (ligne d'avant), les hommes de la dictée, sinon un homme, au premier cran qui garde ses jours d'homme (`equipeDeSaLigne`) |
+| `lignes_prix.hommes_main_doeuvre` (migration 0187, expand seul) | 6 jour/homme ne disent pas 3 × 2 ou 2 × 3 ; la feuille se rouvre sur ce qu'il a posé. Sans la colonne (ligne d'avant), les hommes de la dictée, sinon un homme, au premier cran qui garde ses jours d'homme (`equipeDeSaLigne`) |
 | la préparation du devis écrit aussi ses hommes : ceux qu'elle facture, un engin avec son homme en moins | 2 hommes et une mini pelle font 1 homme × 2 jours sur la ligne (`journeesFacturees`) |
 | les hommes passent par un paramètre que seul le serveur fournit (`modifierLignePrix(…, duServeur)`) | les actions d'édition transmettent `data` tel que la page l'envoie ; la liste de `seulement` ne s'élargit pas |
 

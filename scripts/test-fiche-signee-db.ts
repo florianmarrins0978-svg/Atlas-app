@@ -87,6 +87,9 @@ async function main() {
     if (!r.ok) return;
     const rapport = await lireRapportParJeton(r.jeton);
     assert.deepEqual(rapport!.signature, { png: SIGNATURE_ESSAI.png, signataire: "Mme Lefèvre", jour: "2026-11-17" });
+    // La civilité part avec le nom (migration 0185) : sans elle, le PDF
+    // appelait « Mr. » chaque cliente.
+    assert.equal(rapport!.clientCivilite, "mme", "La civilité n'a pas été figée à l'envoi.");
   });
 
   await cas("C. un tap n'est pas une signature : la fiche ne part pas, et le dit", async () => {

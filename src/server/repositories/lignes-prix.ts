@@ -100,7 +100,7 @@ export async function ajouterLignePrix(
     /** Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173). */
     partAncienne?: string | null;
     partGrille?: string | null;
-    /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
+    /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
     hommesMainDoeuvre?: number | null;
   }
 ) {

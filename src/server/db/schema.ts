@@ -503,6 +503,11 @@ export const passagesEntretien = pgTable(
     observations: text("observations"),
     /** Recopié à l'envoi : un rapport parti ne se renomme plus (migration 0055). */
     clientNomFige: text("client_nom"),
+    /**
+     * Recopiée avec le nom (migration 0185) : sans elle, le PDF appelait
+     * « Mr. » chaque cliente. NULL : un client sans civilité, ou disparu.
+     */
+    clientCiviliteFigee: text("client_civilite", { enum: ["mr", "mme", "entreprise", "public"] }),
     envoyeLe: timestamp("envoye_le", { withTimezone: true }),
     empreinte: char("empreinte", { length: 64 }),
     /** L'adresse publique du rapport. NULL tant qu'il n'est pas parti. */
@@ -1414,7 +1419,7 @@ export const lignesPrix = pgTable(
      */
     joursMainDoeuvre: numeric("jours_main_doeuvre", { precision: 12, scale: 6 }),
     /**
-     * Les hommes de son équipe sur sa ligne de main d'œuvre (migration 0185) :
+     * Les hommes de son équipe sur sa ligne de main d'œuvre (migration 0187) :
      * la feuille se rouvre sur 3 hommes × 2 jours, et non sur 2 × 3, pour les
      * mêmes 6 jour/homme. Nuls sur une ligne d'avant, un partenaire, un travail.
      */

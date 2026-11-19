@@ -2,7 +2,11 @@
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE (19 novembre 2026), PAS ENCORE SUR `main`
 
-Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0185) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §589.
+Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0187) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §591.
+
+## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
+
+Le PDF du retour d'intervention appelait « Mr. » chaque cliente : la civilité se fige désormais avec le nom à l'envoi (migration 0185, `ARCHITECTURE.md` §589). Un compte créé par l'inscription ne pouvait faire ni devis, ni facture, ni avoir, faute de compteur de numéros : toute entreprise neuve passe par `poserLEntrepriseNeuve`, et la migration 0186 pose le compteur aux comptes déjà inscrits (§590). Une seule batterie pour les deux, sur sa demande, verte.
 
 ## LA DÉSIGNATION NE PORTE NI SES RÉPONSES À LA GRILLE NI PARENTHÈSES (19 novembre 2026), SUR `main`
 

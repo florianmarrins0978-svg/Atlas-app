@@ -110,7 +110,7 @@ export type LigneProposee = {
    */
   joursMainDoeuvre?: string;
   /**
-   * Les hommes de son équipe sur la ligne Main d'œuvre (migration 0185) : la
+   * Les hommes de son équipe sur la ligne Main d'œuvre (migration 0187) : la
    * feuille « Main d'œuvre » se rouvre sur eux quand elle change sa ligne.
    * Absents pour un partenaire.
    */

@@ -20,6 +20,7 @@ const BASE: RapportPublic = {
   minutes: 135,
   observations: "La haie côté rue est reprise.",
   clientNom: "Lefèvre",
+  clientCivilite: "mme",
   entrepriseNom: "Perret Paysage",
   faites: [
     { famille: "Pelouse", libelle: "Tonte et ébarbage" },
