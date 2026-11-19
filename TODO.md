@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## IDÉE À DESSINER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
+
+Sa proposition : *« une fois que quelqu'un a photographié un champignon ou une
+maladie, qu'il puisse le rattacher à un chantier ou se créer un dossier avec
+ces maladies. [...] quand il irait dans son dossier, il pourrait regarder : sur
+tel chantier j'avais quoi comme maladie [...] Peut-être qu'il puisse mettre des
+annotations aussi à côté. »* Ce qui existe (vérifié ce soir, `docs/QUESTIONS.md`
+§34) : le rattachement garde les photos et l'assistant le lit, mais **aucun
+écran ne liste les diagnostics passés**, et le chantier n'en montre aucun.
+**Planche d'abord** (`CLAUDE.md` §3 bis), sur les vrais écrans (Diagnostic,
+fiche du chantier). À trancher sur la planche : où vit le dossier (l'écran
+Diagnostic, la fiche du chantier, les deux), un dossier sans chantier (au nom
+d'un client, ou libre), et la note (une par diagnostic, texte ou dictée).
+**Rien n'est codé.**
+
 ## LA FICHE DE DIAGNOSTIC SOIGNÉE : CODÉE LE 19 NOVEMBRE SUR LA BRANCHE, PAS SUR `main` (19 novembre 2026)
 
 **Sa réponse : « oui code la, pas de batterie ».** Codée (`ARCHITECTURE.md`
