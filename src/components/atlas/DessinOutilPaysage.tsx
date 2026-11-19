@@ -10,6 +10,11 @@ import type { ReactNode } from "react";
  */
 export type OutilDessine = "arrosage" | "diagnostic" | "fiche-chantier" | "fiches-securite";
 
+/** Cet outil a-t-il un dessin ? Les absences et les retours n'en ont pas ici. */
+export function estOutilDessine(outil: string): outil is OutilDessine {
+  return outil in TRACES;
+}
+
 const TRACES: Record<OutilDessine, ReactNode> = {
   arrosage: (
     <>

@@ -6,6 +6,7 @@ import { creerChantier, listerChantiers } from "../src/server/repositories/chant
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "../src/server/repositories/abonnements";
 import { LectureSeuleError, withEntreprise } from "../src/server/db/with-entreprise";
 import { ActionRefuseeError, exigerFonction } from "../src/server/garde-action";
+import { prendreLOffre } from "../src/server/repositories/offres";
 import { JOURS_ESSAI, FORMULE_DE_LESSAI, enLectureSeule, etatDeLEssai } from "../src/lib/abonnements";
 import { abonnements, users } from "../src/server/db/schema";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
@@ -152,6 +153,7 @@ async function main() {
   await essai("l'abonnement s'enregistre DEPUIS la lecture seule — sans quoi il paierait sans pouvoir rentrer", async () => {
     await enregistrerLAbonnement(ctx, {
       formule: "artisan",
+      modules: [],
       periodicite: "mensuelle",
       statut: "actif",
       periodeFin: new Date(Date.now() + 30 * 86_400_000),
@@ -171,8 +173,8 @@ async function main() {
 
   console.log("\n=== 4. « Artisan » : la garde tient ce que l'écran montre ===\n");
 
-  await essai("à « Artisan », le paysage, les absences et les retours sont refusés par la garde", async () => {
-    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) {
+  await essai("à « Artisan », les fiches de chantier, les absences et les retours sont refusés par la garde", async () => {
+    for (const f of ["fiche-chantier", "absences", "retours"] as const) {
       await assert.rejects(
         () => exigerFonction(ctx, f, `essai ${f}`),
         (e: unknown) => e instanceof ActionRefuseeError
@@ -180,9 +182,24 @@ async function main() {
     }
   });
 
-  await essai("à « Entreprise », tout passe", async () => {
+  // **Un plan d'arrosage et un diagnostic offerts, une fois** (19 novembre
+  // 2026) : la garde les laisse passer tant que l'offre n'est pas prise, et
+  // les ferme ensuite.
+  await essai("à « Artisan », l'arrosage et le diagnostic passent OFFERTS, puis se ferment une fois pris", async () => {
+    for (const f of ["arrosage", "diagnostic"] as const) {
+      assert.equal(await exigerFonction(ctx, f, `essai ${f}`), "offerte");
+      assert.ok(await prendreLOffre(ctx, f), `l'offre de ${f} ne s'est pas prise`);
+      await assert.rejects(
+        () => exigerFonction(ctx, f, `essai ${f}`),
+        (e: unknown) => e instanceof ActionRefuseeError
+      );
+    }
+  });
+
+  await essai("à « Entreprise » avec les outils de paysage, tout passe, offre prise ou non", async () => {
     await enregistrerLAbonnement(ctx, {
       formule: "entreprise",
+      modules: [],
       periodicite: "mensuelle",
       statut: "actif",
       periodeFin: new Date(Date.now() + 30 * 86_400_000),
@@ -190,7 +207,22 @@ async function main() {
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
     });
-    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) await exigerFonction(ctx, f, "essai");
+    for (const f of ["absences", "retours"] as const) await exigerFonction(ctx, f, "essai");
+    // Sans les outils, Entreprise ne les ouvre plus (18 novembre 2026).
+    await assert.rejects(() => exigerFonction(ctx, "fiche-chantier", "essai"), (e: unknown) => e instanceof ActionRefuseeError);
+    await enregistrerLAbonnement(ctx, {
+      formule: "entreprise",
+      modules: ["paysage"],
+      periodicite: "mensuelle",
+      statut: "actif",
+      periodeFin: new Date(Date.now() + 30 * 86_400_000),
+      annulationDemandee: false,
+      clientPrestataire: "cus_essai",
+      abonnementPrestataire: "sub_essai",
+    });
+    for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) {
+      assert.equal(await exigerFonction(ctx, f, "essai"), "ouverte", f);
+    }
   });
 
   await essai("sans abonnement, tout passe aussi — une fermeture est la conséquence d'une formule choisie", async () => {
@@ -304,6 +336,7 @@ async function main() {
     await creerChantier(ctxResilie, { nom: "Chantier d'avant" });
     await enregistrerLAbonnement(ctxResilie, {
       formule: "entreprise",
+      modules: [],
       periodicite: "annuelle",
       statut: "resilie",
       periodeFin: new Date(Date.now() - 86_400_000),
@@ -325,6 +358,7 @@ async function main() {
   await essai("reprendre un abonnement rouvre l'écriture", async () => {
     await enregistrerLAbonnement(ctxResilie, {
       formule: "artisan",
+      modules: [],
       periodicite: "mensuelle",
       statut: "actif",
       periodeFin: new Date(Date.now() + 30 * 86_400_000),

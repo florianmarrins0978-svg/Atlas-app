@@ -151,13 +151,21 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ou: "« Réglages » dans la barre du bas, puis Abonnement",
     intitule: "Combien de salariés et de personnes on peut ajouter",
     motsCles: ["combien", "salaries", "personnes", "utilisateurs", "comptes", "limite", "maximum", "ajouter"],
+    // **Artisan est pour une seule personne** depuis le 18 novembre 2026 : la
+    // phrase d'avant (« quelle que soit la formule ») est devenue fausse ce
+    // jour-là. Elle se calcule sur les formules, pour ne plus le redevenir.
     geste:
-      "Vos salariés ont accès au planning quelle que soit la formule. Ce qui est compté, ce sont les personnes qui font " +
-      "les devis et les factures : " +
-      FORMULES.map((f) => `${f.nom}, ${f.plafondFabricants === null ? "autant que vous voulez" : f.plafondFabricants}`).join(" ; ") +
+      FORMULES.filter((f) => f.plafondComptes !== null)
+        .map((f) => `${f.nom} est pour vous seul.`)
+        .join(" ") +
+      " Dans les autres formules, vos salariés ont accès au planning sans être comptés. Ce qui est compté, ce sont les " +
+      "personnes qui font les devis et les factures : " +
+      FORMULES.filter((f) => f.plafondComptes === null)
+        .map((f) => `${f.nom}, ${f.plafondFabricants === null ? "autant que vous voulez" : f.plafondFabricants}`)
+        .join(" ; ") +
       ".",
     source: "src/lib/abonnements.ts",
-    preuves: ["Vos salariés ont accès au planning", "plafondFabricants"],
+    preuves: ["Vos salariés ont accès au planning", "plafondFabricants", "plafondComptes"],
   },
   {
     id: "ecrire-a-atlas",

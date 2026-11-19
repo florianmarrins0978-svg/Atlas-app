@@ -4,10 +4,10 @@ import Paquet from "@/components/atlas/reglages/Paquet";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
-import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, compterLEquipe, enregistrerLAbonnement } from "@/server/repositories/abonnements";
 import { lireLaSessionDePaiement, paiementConfigure } from "@/server/paiement/stripe";
 import { retourConfigure } from "@/server/paiement/retour";
-import { etatAffiche, formuleChoisie } from "@/lib/abonnements";
+import { etatAffiche, formuleChoisie, modulesChoisis } from "@/lib/abonnements";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
 import CreditsIA from "./CreditsIA";
@@ -38,7 +38,7 @@ export const dynamic = "force-dynamic";
 export default async function AbonnementPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paiement?: string }>;
+  searchParams: Promise<{ paiement?: string; outils?: string }>;
 }) {
   await garderLaPage();
   const ctx = await getCurrentCtx();
@@ -59,7 +59,7 @@ export default async function AbonnementPage({
     );
   }
 
-  const { paiement } = await searchParams;
+  const { paiement, outils } = await searchParams;
 
   /**
    * ─── LE RETOUR DU PAIEMENT ─────────────────────────────────────────────
@@ -92,6 +92,7 @@ export default async function AbonnementPage({
   const maintenant = new Date();
   const etat = etatAffiche(abonnement, maintenant);
   const credits = await creditsIADeLEntreprise(ctx, maintenant);
+  const equipe = await compterLEquipe(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -109,6 +110,11 @@ export default async function AbonnementPage({
       <AbonnementClient
         formuleActuelle={formuleChoisie(abonnement)}
         periodiciteActuelle={formuleChoisie(abonnement) ? abonnement!.periodicite : null}
+        modulesActuels={modulesChoisis(abonnement)}
+        // Le bouton « Ajouter les outils » d'un outil fermé arrive ici, les
+        // outils déjà ajoutés : il n'a plus qu'à choisir sa formule.
+        outilsDemandes={outils === "paysage"}
+        equipe={equipe}
         annulationDemandee={abonnement?.annulationDemandee ?? false}
         paiementBranche={paiementConfigure() && retourConfigure()}
       />
