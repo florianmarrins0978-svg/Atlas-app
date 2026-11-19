@@ -7,25 +7,26 @@
    et ensuite sa signature vient s'apposer sur le devis. Ça serait bien que
    tu mettes cette animation sur le site. »
 
-   Quand ce film a été fait, la signature du devis était en cours de codage :
-   il n'y avait pas encore d'écran à filmer dans l'appli (elle a été livrée
-   le soir même, et ce film est à refaire en la filmant). La composition (film-envoi-signe.js, qui dit ce qui
-   est vrai et ce qui est du montage) anime donc la planche qu'il a choisie,
-   soignee/devis-signe-dans-une-feuille.html, c'est-à-dire la vraie page du
-   client figée telle que l'appli la peint, avec le chantier de Mr. Lemaire
-   à la place du jeu d'essai. Ce script l'y injecte, la photographie image
-   par image et en tire vente/images/nov-film-envoi-signe.mp4, .webm,
-   -debut.jpg et -fin.jpg (la mécanique commune est dans _pellicule.cjs).
+   La première version animait sa planche : la signature était en cours de
+   codage. Elle a été livrée dans l'appli le soir même, et il a dit oui le
+   19 novembre pour qu'on la filme sur une base d'essai. Ce film est donc
+   fait des écrans de l'appli, figés au tournage dans rushes/envoi-signe/
+   (tournage/tourner-signature.mjs les y range, avec le tracé du paraphe et
+   les deux PDF). Le montage (film-envoi-signe.js) dit ce qui vient de
+   l'appli et ce qui est du montage. Ce script l'injecte dans les rushes, le
+   photographie image par image et en tire vente/images/
+   nov-film-envoi-signe.mp4, .webm, -debut.jpg et -fin.jpg (la mécanique
+   commune est dans _pellicule.cjs).
 
-   Il refuse de filmer dans trois cas, parce que chacun donnerait un film
-   faux sans rien dire :
-     un mot du jeu d'essai n'a pas été trouvé dans la planche (elle a été
-       refigée autrement : il resterait « Mme Lefèvre » quelque part) ;
-     la page ne se superpose plus à la première image du film d'avant, filmé
-       dans l'appli (nov-film-envoi-debut.jpg) : une police absente de ce
-       poste, une mise en page qui a bougé ;
-     le caractère du PDF manque, et la mention « Signé en ligne par » serait
-       composée dans un autre que la ligne qu'elle suit.
+   Il refuse de filmer quand un écran du film ne se superpose pas à la photo
+   prise dans l'appli au même instant du geste :
+     la page du client, avant tout choix (photo-lien.png) ;
+     la feuille « Votre signature » une fois le paraphe tracé
+       (photo-trace.png) : c'est elle qui dit que le trait redessiné est
+       celui de la vraie toile ;
+     l'accord donné, avec la signature enregistrée (photo-accepte.png).
+   Un écart veut dire qu'une police manque sur ce poste, ou que les rushes et
+   le montage ne vont plus ensemble : le film mentirait sans rien dire.
 
    Utilisation, depuis la racine du dépôt :
      node appli/scripts/film-envoi-signe.cjs appli/vente/images
@@ -39,45 +40,27 @@ const fs = require('fs');
 const path = require('path');
 const { tourner, pixels } = require('./_pellicule.cjs');
 
-const L = 390, H = 664, ECHELLE = 3;          // photographié à 1170 × 1992, trois pixels pour un
+const L = 390, H = 664, ECHELLE = 3;          // photographié à 1170 × 1992, trois pixels pour un, comme au tournage
 const IPS = 60;
 // La taille du film d'avant, que la scène attend : 780 × 1328 à soixante
 // images par seconde tient encore dans le niveau 4.1 de H.264.
 const FILM = { l: 780, h: 1328 };
-const FOND_PAGE = [245, 243, 238];
-// Largeur de « Bon pour accord, signature du client » en Liberation Sans, à
-// un corps de 100 : c'est le caractère du PDF.
-const LARGEUR_DU_CARACTERE = 1601;
+// Part des pixels qui peuvent différer d'une photo. La page et l'accord se
+// peignent à l'identique (zéro au tournage) ; sur la feuille signée, le
+// trait est redessiné : son bord peut bouger d'une fraction de pixel.
+const TOLERANCE = { lien: 0.0002, trace: 0.003, accepte: 0.0002 };
 
 const dossier = process.argv[2];
 if (!dossier) { console.error('Usage : node appli/scripts/film-envoi-signe.cjs <dossier des images du site> [--sans-film]'); process.exit(2); }
 const SANS_FILM = process.argv.includes('--sans-film');
 const base = path.join(dossier, 'nov-film-envoi-signe');
-const REFERENCE = path.resolve(__dirname, '../vente/images/nov-film-envoi-debut.jpg');
+const RUSHES = path.resolve(__dirname, 'rushes/envoi-signe');
 
-/** L'encre d'une image : vrai là où le pixel s'écarte du fond de la page. */
-function encre(rvb) {
-  const m = new Uint8Array(rvb.length / 3);
-  for (let i = 0; i < m.length; i++) m[i] = Math.abs(rvb[3 * i] - FOND_PAGE[0]) + Math.abs(rvb[3 * i + 1] - FOND_PAGE[1]) + Math.abs(rvb[3 * i + 2] - FOND_PAGE[2]) > 90 ? 1 : 0;
-  return m;
-}
-
-/**
- * Ce que deux images ont d'encre en commun, bande par bande : le pire
- * compte. Une seule ligne de texte qui a changé de place ou de caractère ne
- * pèse rien sur la page entière, et tout sur sa bande.
- */
-function recouvrement(a, b) {
-  const BANDE = 48;
-  let pire = 1, bandes = 0;
-  for (let y0 = 0; y0 < FILM.h; y0 += BANDE) {
-    let commun = 0, tout = 0;
-    for (let i = y0 * FILM.l, fin = Math.min(FILM.h, y0 + BANDE) * FILM.l; i < fin; i++) { if (a[i] && b[i]) commun++; if (a[i] || b[i]) tout++; }
-    if (tout < 600) continue;                  // une bande sans encre ne dit rien
-    bandes++;
-    pire = Math.min(pire, commun / tout);
-  }
-  return { pire, bandes };
+/** La part des pixels qui s'écartent nettement entre deux images de même taille. */
+function ecart(a, b) {
+  let n = 0;
+  for (let i = 0; i < a.length; i += 3) if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 48) n++;
+  return n / (a.length / 3);
 }
 
 (async () => {
@@ -87,25 +70,24 @@ function recouvrement(a, b) {
   const erreurs = [];
   page.on('pageerror', (e) => erreurs.push(e.message));
   page.on('requestfailed', (r) => erreurs.push('introuvable : ' + r.url()));
-  await page.goto('file://' + path.resolve(__dirname, '../soignee/devis-signe-dans-une-feuille.html'), { waitUntil: 'networkidle' });
+  await page.goto('file://' + path.join(RUSHES, 'etats.html'), { waitUntil: 'networkidle' });
+  await page.addScriptTag({ content: 'window.RUSHES = ' + fs.readFileSync(path.join(RUSHES, 'mesures.json'), 'utf8') + ';' });
   await page.addScriptTag({ path: path.resolve(__dirname, 'film-envoi-signe.js') });
-  await page.waitForFunction(() => window.poser && [...document.images].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 }).catch(() => erreurs.push('le devis (vente/images/nov-devis.jpg) ne s\'est pas chargé'));
+  await page.waitForFunction(() => window.poser && [...document.images].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 }).catch(() => erreurs.push('le montage ne s\'est pas posé, ou une image des rushes ne s\'est pas chargée'));
   await page.evaluate(() => document.fonts.ready);
 
-  // ── Les trois refus ───────────────────────────────────────────────────────
-  const calage = await page.evaluate(() => window.CALAGE || null);
-  if (!calage) erreurs.push('la composition ne s\'est pas posée sur la planche');
-  else {
-    if (calage.manquent.length) erreurs.push('mots du jeu d\'essai introuvables dans la planche : ' + calage.manquent.join(', '));
-    if (Math.abs(calage.largeurDuCaractere - LARGEUR_DU_CARACTERE) > 2) erreurs.push('le caractère du PDF (Liberation Sans) manque ici : la mention ferait ' + calage.largeurDuCaractere.toFixed(0) + ' au lieu de ' + LARGEUR_DU_CARACTERE);
-  }
+  // ── Les refus : chaque écran du film contre sa photo prise dans l'appli ──
   if (!erreurs.length) {
-    await page.evaluate(() => window.poser(0));
-    const ici = encre(pixels(await page.screenshot({ type: 'png' }), FILM.l, FILM.h));
-    const avant = encre(pixels(fs.readFileSync(REFERENCE), FILM.l, FILM.h));
-    const r = recouvrement(ici, avant);
-    console.log('Calage de la page sur la première image du film d\'avant : ' + (r.pire * 100).toFixed(1) + ' % d\'encre en commun dans la bande la moins bonne (' + r.bandes + ' bandes)');
-    if (r.bandes < 8 || r.pire < 0.8) erreurs.push('la page ne se superpose pas à celle de l\'appli : il faut au moins 80 % en commun dans chaque bande');
+    const T = await page.evaluate(() => window.INSTANTS);
+    const instants = { lien: 0, trace: T.signeFin + 0.15, accepte: T.range + 0.7 };
+    for (const nom of Object.keys(instants)) {
+      await page.evaluate((t) => window.poser(t), instants[nom]);
+      const film = pixels(await page.screenshot({ type: 'png' }), L * ECHELLE, H * ECHELLE);
+      const photo = pixels(fs.readFileSync(path.join(RUSHES, 'photo-' + nom + '.png')), L * ECHELLE, H * ECHELLE);
+      const e = ecart(film, photo);
+      console.log('Calage sur la photo de l\'appli, « ' + nom + ' » : ' + (e * 100).toFixed(3) + ' % des pixels diffèrent (au plus ' + (TOLERANCE[nom] * 100).toFixed(2) + ' %)');
+      if (e > TOLERANCE[nom]) erreurs.push('l\'écran « ' + nom + ' » du film ne se superpose pas à sa photo');
+    }
   }
   if (erreurs.length) {
     console.error('REFUS : ' + erreurs.join(' ; '));

@@ -25,12 +25,15 @@
   des films, éprouvée sur son iPhone : la première image posée dessous, le
   film qui ne se montre qu'une fois lancé, la dernière image à la fin.
   L'en-tête de cause.html dit d'où vient chaque texte, chaque capture et
-  chaque film : il reste vrai ici. Cinq écarts, voulus par lui après avoir
+  chaque film : il reste vrai ici. Six écarts, voulus par lui après avoir
   vu la planche : le film de l'équipe n'est plus le sien (voir « LE FILM DE
   L'ÉQUIPE » plus bas), les métiers ont changé d'ordre (voir « POUR TOUS
   LES ARTISANS »), la fiche d'intervention s'anime (voir « LA FICHE
   D'INTERVENTION »), le client signe son devis (voir « LE CLIENT
-  SIGNE »), et le film de l'ouverture est recoupé (voir « DEUX DÉFAUTS »).
+  SIGNE »), le film de l'ouverture est recoupé (voir « DEUX DÉFAUTS »), et
+  les travaux cochés et le retour du soir ont quitté la section « Et
+  aussi » pour la cinématique de la fiche : la section, son titre et ses
+  deux phrases n'y sont plus (voir « LA FICHE D'INTERVENTION »).
 
   L'IDÉE : RIEN NE SE RETAPE, TOUT SE PORTE. C'est la promesse du produit
   (« du devis dicté à la facture, sans rien retaper »), et c'est le geste que
@@ -155,32 +158,54 @@
   et chapitres-6.html gardent l'ancien ordre tant qu'il ne dit pas de le
   reporter.
 
-  LA FICHE D'INTERVENTION, ANIMÉE LE 18 NOVEMBRE. Sa demande, capture de son
-  iPhone à l'appui : « Il faut faire une animation pour cette page aussi !
-  Qu'on voit qu'en un clic on peut avoir l'adresse sur Maps ou Waze. Pour la
-  note tu peux écrire quelque chose comme tu as fait pour le retour du
-  jour. » La capture fixe est devenue un film (images/nov-film-fiche, 8 s) :
-  la case Maps s'assombrit et Maps en sort, l'adresse du chantier déjà posée
-  et l'itinéraire qui se trace ; puis « Appeler le client » ouvre le
-  téléphone, son numéro déjà composé (sa demande du soir : « à la place de
+  LA FICHE D'INTERVENTION, DU TRAJET AU RETOUR DU SOIR. Deux demandes.
+  Le 18 novembre, capture de son iPhone à l'appui : « Il faut faire une
+  animation pour cette page aussi ! Qu'on voit qu'en un clic on peut avoir
+  l'adresse sur Maps ou Waze », puis, le film vu : « à la place de
   l'animation de Waze, fais une animation où on clique pour appeler le
-  client ») ; puis la note s'écrit et « Enregistré. » apparaît dessous.
-  CE QUI EST VRAI : le fond est la capture de la fiche, et la note s'écrit
-  comme l'appli l'écrit (sa police, sa taille, sa place, au pixel d'écran).
+  client. » Le 19, devant les travaux cochés et le retour du soir rangés
+  plus bas, après la facture : « est-ce que les retours du soir, il ne faut
+  pas les mettre sur la même cinématique que Waze, le téléphone, et ensuite
+  on montre les travaux à cocher, et une fois coché, bam, que ça débarque
+  sur le retour du soir. Ça fait peut-être une cinématique de moins. » Il a
+  dit oui à la fusion, et oui pour filmer l'appli d'aujourd'hui sur une base
+  d'essai.
+  La figure joue donc images/nov-film-fiche (11,2 s) : la case Maps
+  s'assombrit et Maps en sort, l'adresse déjà posée et l'itinéraire qui se
+  trace ; « Appeler le client » ouvre le téléphone, son numéro déjà
+  composé ; « Travaux à faire » se déplie, les quatre travaux se cochent,
+  la remarque s'écrit, « Envoyer le retour du jour », « Retour du jour
+  envoyé » ; un fondu, et c'est l'écran du patron : Lemaire, 1 retour, le
+  6 novembre, Lucas, 4 tâches sur 4, à signaler.
+  La section « Et aussi » (« Les travaux cochés », « Le retour du soir ») a
+  quitté la page : Encaissez est suivi de « Vous gardez la main ». La note
+  du jour ne s'écrit plus dans le film.
+  CE QUI VIENT DE L'APPLI : la fiche d'aujourd'hui (les travaux en grand, la
+  quantité à droite, le trait d'avance) et l'écran du patron, figés au
+  tournage tels que l'appli les peint, puis animés par les transitions de
+  l'appli elle-même. Le film se superpose à leurs photos à six étapes, à
+  moins d'un pixel sur dix mille près.
   CE QUI EST DESSINÉ : la carte et l'écran d'appel. L'appli n'a ni carte ni
   téléphone, elle ouvre Google Maps avec l'adresse et le téléphone avec le
   numéro ; ces applis ne se filment pas ici et leurs écrans ne sont pas à
   nous. Ce sont deux schémas, sans logo, qui disent seulement qu'on a quitté
   Cause et que l'adresse, ou le numéro, est arrivée. Rien n'est posé sur
-  l'écran pour montrer le doigt (son refus) : la case touchée s'assombrit. La composition, et tout ce qui la justifie, est dans
-  appli/scripts/film-fiche.html ; film-fiche.cjs en fait le film.
-  cause.html garde la capture fixe. Relu par un second regard, sur des
-  pellicules, quand le second écran était encore celui de Waze : deux
-  corrections (l'écran de l'autre appli naissait à côté de la case touchée,
-  à cheval sur sa voisine ; le second se refermait sans laisser lire ce
-  qu'il disait). Refaites, puis regardées ici image par image sur le film
-  encodé, pas relues une seconde fois par lui. L'écran d'appel, venu après,
-  n'a été regardé qu'ici.
+  l'écran pour montrer le doigt (son refus) : ce qu'on touche s'assombrit.
+  Le montage, et tout ce qui le justifie, est dans
+  appli/scripts/film-fiche.js ; film-fiche.cjs en fait le film, à partir
+  des écrans rangés dans appli/scripts/rushes/fiche/ par
+  appli/scripts/tournage/tourner-fiche.mjs (LISEZ-MOI.md, dans ce dossier,
+  dit comment on tourne dans l'appli).
+  Relu par un second regard sur le film encodé : défilements, coches,
+  appuis, frappe et fondu trouvés bons ; trois réglages pris (le bouton
+  d'envoi reste éteint pendant que les travaux se replient, là où l'appli
+  le rallume 300 ms ; la tenue finale est celle de la dernière image posée
+  par la page ; deux repos raccourcis). Pas relu une seconde fois par lui.
+  SUR TÉLÉPHONE, la figure tient entière entre la barre du haut et le bouton
+  d'essai : ce qui bouge descend dans le cadre pendant onze secondes, et se
+  jouerait sinon sous le bouton.
+  cause.html et chapitres-6.html gardent la capture fixe, le film des
+  travaux et l'image du retour.
 
   LE CLIENT SIGNE, AJOUTÉ LE 18 NOVEMBRE. Sa demande : « ce que reçoit le
   client pour accepter le devis. Maintenant, il y a une nouvelle planche qui
@@ -195,29 +220,26 @@
   cadre, puis le devis paraît et la signature tombe dans l'encadré « Bon
   pour accord », la mention « Signé en ligne par Mr. Lemaire, le
   06/11/2026. » dessous.
-  CE QUI EST VRAI : la page du client et la feuille sont celles de la
-  planche B (soignee/devis-signe-dans-une-feuille.html, la vraie page figée
-  telle que l'appli la peint), avec le chantier de Mr. Lemaire à la place
-  du jeu d'essai. C'est elle qu'il décrit (la signature paraît quand on
-  touche « J'accepte ce devis ») ; son choix entre elle et la planche
-  d'avant n'était pas encore écrit dans le dépôt ce jour-là. L'outil
-  vérifie que la page se superpose à la première image du film d'avant,
-  filmé dans l'appli. Le devis est le vrai PDF du chantier
-  (images/nov-devis.jpg, la feuille qui entre dans le téléphone au début de
-  la scène).
-  CE QUI NE L'ÉTAIT PAS ENCORE CE JOUR-LÀ : la signature du devis était en
-  cours de codage, pas dans l'appli. Elle a été livrée sur main le soir
-  même : ce film, composé sur la planche, est donc à refaire en filmant
-  l'appli.
-  Le paraphe est tracé pour ce film ; la signature et la mention sont posées
-  sur le PDF comme la planche les montre. Le jour où la fonction est
-  livrée, ce film se refait en filmant l'appli.
+  CE QUI VIENT DE L'APPLI, DEPUIS LE 19 NOVEMBRE. La première version
+  animait sa planche : la signature était en cours de codage. Elle a été
+  livrée sur main le soir même, et il a dit oui pour qu'on la filme sur une
+  base d'essai. Le chantier de Mr. Lemaire a été saisi dans l'appli par ses
+  écrans, le devis envoyé, le lien ouvert comme le client l'ouvre ; à chaque
+  étape du vrai geste l'écran a été figé tel que l'appli le peint, et le
+  film se superpose à ces photos au pixel près. Le paraphe a été tracé à la
+  souris sur la vraie toile, point par point ; la signature qui voyage est
+  le PNG que l'appli a enregistré ; le devis est le PDF que le client
+  télécharge, avant puis après son accord, et la dernière image du film est
+  ce PDF signé, tel quel.
   CE QUI EST DU MONTAGE : la feuille monte (dans l'appli elle apparaît d'un
-  coup), et le passage de la page au devis est une image (dans l'appli, le
-  client ouvre son PDF et trouve sa signature dedans). D'un écran à l'autre,
-  un fondu court : glisser, empiler et zoomer ont été écartés par lui. La
-  composition, et tout ce qui la justifie, est dans
-  appli/scripts/film-envoi-signe.js ; film-envoi-signe.cjs en fait le film.
+  coup), la case des quatorze jours prend sa place en glissant, et le
+  passage de la page au devis est une image (dans l'appli, le client touche
+  « Télécharger mon devis » et trouve sa signature dedans). D'un écran à
+  l'autre, un fondu court : glisser, empiler et zoomer ont été écartés par
+  lui. Le montage, et tout ce qui le justifie, est dans
+  appli/scripts/film-envoi-signe.js ; film-envoi-signe.cjs en fait le film,
+  à partir des écrans rangés dans appli/scripts/rushes/envoi-signe/ par
+  appli/scripts/tournage/tourner-signature.mjs.
   Les phrases du chapitre n'ont pas bougé (elles ne parlent pas de
   signature) : c'est à lui de dire s'il veut le mot. cause.html et
   chapitres-6.html gardent le film d'avant.
@@ -247,12 +269,11 @@
   « Un bug sur les retours du soir. L'écran passe de plein écran à un peu
   plus petit quand on reste figé dessus. » C'est dans le film
   (nov-film-travaux) : la carte repliée, sa caméra recule quatorze images
-  sur un écran qui ne bouge plus. PAS CORRIGÉ ICI : les sources de ce
-  montage ne sont pas dans le dépôt, et sa question du même message (fondre
-  le retour du soir dans la cinématique de la fiche) décide de ce que ce
-  film devient. En le cherchant, un défaut de mécanique, corrigé : à la fin
-  d'un film, sa première image repassait le temps d'un rendu (voir
-  « finir », dans le script).
+  sur un écran qui ne bouge plus. Ce film n'est plus sur cette page : les
+  travaux cochés sont dans la cinématique de la fiche, refilmés dans
+  l'appli, sans recul ni zoom sur un écran immobile. En le cherchant, un
+  défaut de mécanique, corrigé : à la fin d'un film, sa première image
+  repassait le temps d'un rendu (voir « finir », dans le script).
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : la planche est à regarder sur
   son iPhone. Ce qui a été écrit pour lui : chaque masque porte son préfixe,
@@ -631,7 +652,7 @@ html.anime .ligne.t-la .total{opacity:1;transition:opacity .3s ease}
 .film{position:relative}
 /* Ce qui s'anime dans la fiche d'intervention : de ses quatre cases au bas
    de sa note. La scène part quand cette zone est entière à l'écran. */
-.film .zone-depart{position:absolute;left:0;right:0;top:15.5%;height:40.5%;pointer-events:none}
+.film .zone-depart{position:absolute;left:0;right:0;top:5%;height:90%;pointer-events:none}
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
@@ -640,8 +661,8 @@ html.anime .ligne.t-la .total{opacity:1;transition:opacity .3s ease}
 .film img.film-fin.vue{opacity:1}
 /* Hors d'un téléphone, le cadre prend la forme du film ; sans mouvement, celle
    de sa capture. */
-html.anime .gros.film,html.anime .pile.film{aspect-ratio:var(--film)}
-html.anime .gros.film img.film-pose,html.anime .pile.film img.film-pose{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+html.anime .gros.film{aspect-ratio:var(--film)}
+html.anime .gros.film img.film-pose{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 @media (min-width:960px){
   .scene-micro{padding:56px 40px}
   .scene-micro .socle{width:320px}
@@ -683,6 +704,12 @@ html.anime .faits.vu svg circle,html.anime .faits.vu svg path{stroke-dashoffset:
 .plans{display:grid;gap:24px;width:100%}
 .plans figure{margin:0}
 .plans .paire{display:grid;gap:24px}
+/* La fiche d'intervention : son film dure onze secondes et ce qui bouge
+   descend dans le cadre (les cases, puis les travaux, la remarque, le
+   retour). La figure tient donc entière à l'écran, entre la barre du haut
+   et le bouton d'essai (72 et 104 px, et un peu d'air) : plus haute, la fin
+   se jouerait sous le bouton. La phrase dessous garde sa largeur. */
+.plans .paire .entiere{width:min(100%,calc((100svh - 190px) * 310 / 537));margin-inline:auto}
 @media (min-width:760px){.plans .paire{grid-template-columns:1fr 1fr;align-items:start}}
 
 /* Encaissez : la facture, et le chiffre de la TVA. */
@@ -719,33 +746,10 @@ html.anime .scene-tva.telephone .appareil{opacity:1;transform:none}
 html.anime .scene-tva.telephone .feuille{opacity:.55}
 .jeton{position:absolute;left:0;top:0;z-index:5;font:400 clamp(46px,12vw,68px)/1 var(--display);color:var(--or-clair);white-space:nowrap;transform-origin:0 0;opacity:0;pointer-events:none;text-shadow:0 14px 34px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
-/* ── Et aussi ─────────────────────────────────────────────────────────── */
-/* Les deux captures n'ont ni la même largeur ni la même hauteur : côte à
-   côte, l'une des cases restait à moitié vide. Elles se suivent donc, dans
-   la colonne des captures, le titre à gauche comme pour les chapitres. */
-.aussi{background:var(--fond)}
-.aussi-grille{display:grid;gap:44px}
-.grille{display:grid;gap:20px}
-.case{border-radius:28px;overflow:hidden;isolation:isolate;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.07),0 30px 60px -48px rgba(var(--ombre),.5);display:flex;flex-direction:column}
-.case h3{font-size:clamp(32px,3vw,38px);padding:30px 28px 8px}
-.case p{padding:0 28px 24px;color:var(--encre-2);font-size:16.5px}
-.case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
-.case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
-/* Les travaux se cochent tout seuls à l'arrivée. La carte tient dans
-   l'écran, pour qu'on voie toutes les coches sans avoir à descendre. Le film
-   peint en sauge, sous la carte repliée, ce qu'elle libère : la case garde
-   sa hauteur, et rien ne saute plus bas. */
-.pile{width:min(100%,calc((100svh - 200px) * 540 / 1030));margin:0 auto}
-.case .cadre .pile img{max-width:none}
-html.anime .pile{overflow:hidden;border-radius:12px}
-html.anime .case .cadre .pile img{border-radius:0;box-shadow:none}
-@media (min-width:960px){
-  .aussi-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
-  .aussi-grille .mot{position:sticky;top:132px}
-  .case .cadre{padding:40px 24px}
-}
-
 /* ── Vous gardez la main ──────────────────────────────────────────────── */
+/* La section qui suit la bande nuit d'Encaissez : c'est elle qui se pose
+   dessus, coins arrondis. */
+.la-main{background:var(--fond)}
 .main-grille{display:grid;gap:44px}
 .deux{display:grid}
 .deux article{padding:30px 0;border-top:1px solid var(--trait)}
@@ -1061,8 +1065,8 @@ html.anime .geant.vu span{transform:none}
             <figure class="gros film" id="scene-equipe" data-film="equipe-fluide" data-vu="0.15" style="--film:692/600"><img class="film-pose" src="images/nov-film-equipe-fluide-fin.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="692" height="600" decoding="async"></figure>
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div></div>
-          <div class="socle" data-t><div class="leve douce">
-            <figure class="gros film" id="scene-fiche" data-film="fiche" data-vu="0.15" style="--film:882/1596"><img class="film-pose" src="images/nov-film-fiche-fin.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note du jour écrite et enregistrée, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="882" height="1596" decoding="async"></figure>
+          <div class="socle entiere" data-t><div class="leve douce">
+            <figure class="gros film" id="scene-fiche" data-film="fiche" data-vu="0.15" style="--film:930/1611"><img class="film-pose" src="images/nov-film-fiche-debut.jpg" alt="Fiche d'intervention du chantier Lemaire : Maps, Waze, Copier l'adresse, Appeler le client, la note du jour, la fiche de sécurité à remplir, les quatre travaux à faire, le devis sans les prix" width="930" height="1611" decoding="async"></figure>
             <p class="sous">Le jour J, tout tient sur la fiche.</p>
           </div></div>
         </div>
@@ -1088,27 +1092,7 @@ html.anime .geant.vu span{transform:none}
   </div>
 </section>
 
-<section class="aussi nappe">
-  <div class="large aussi-grille">
-    <h2 class="mot" data-monte>Et aussi.</h2>
-    <div class="grille">
-      <div class="socle" data-t><article class="case leve douce">
-        <h3>Les travaux cochés</h3>
-        <p>Sur place, tâche par tâche.</p>
-        <div class="defile" id="scene-travaux">
-          <div class="cadre"><div class="pile film" data-film="travaux" style="--film:540/1030"><img class="film-pose" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530" decoding="async"></div></div>
-        </div>
-      </article></div>
-      <div class="socle" data-t><article class="case leve douce">
-        <h3>Le retour du soir</h3>
-        <p>Ce que l'équipe a fait, coché le soir même.</p>
-        <div class="cadre"><img src="images/nov-retour.jpg" alt="Retour d'intervention du chantier Lemaire : quatre tâches faites, et le portail à revoir" width="1038" height="971" decoding="async"></div>
-      </article></div>
-    </div>
-  </div>
-</section>
-
-<section style="padding-top:0">
+<section class="la-main nappe">
   <div class="large main-grille">
     <h2 class="mot" data-monte>Vous gardez la main.</h2>
     <div class="deux">
@@ -1968,16 +1952,15 @@ html.anime .geant.vu span{transform:none}
     await equipe.jouer();
     if (encore()) equipeEnCours = false;
   }, function(){ equipeEnCours = false; equipe.arreter(); });
-  // La fiche d'intervention (sa demande du 18 novembre 2026 : « il faut faire
-  // une animation pour cette page aussi »). Elle est aussi haute qu'un
-  // téléphone : elle part quand ses cases ET sa note sont à l'écran, entre la
-  // barre du haut et le bouton d'essai (sa zone), et s'arrête quand il n'en
-  // reste presque rien. Mesuré avant ce réglage : partie à la moitié visible,
-  // elle écrivait sa note sous le bouton, et s'arrêtait dès qu'on continuait
-  // de descendre. Sur ordinateur elle est à côté de l'équipe : elle attend
-  // alors la fin de son film, pour qu'on ne regarde pas deux écrans à la fois.
-  // Sur téléphone elles sont l'une sous l'autre, et elle n'attend pas : c'est
-  // elle qu'on regarde.
+  // La fiche d'intervention, du trajet au retour du soir (ses demandes du 18
+  // et du 19 novembre 2026). Son film dure onze secondes et ce qui bouge
+  // descend dans le cadre : la figure tient entière à l'écran (.entiere), et
+  // le film part quand elle y est presque toute, entre la barre du haut et le
+  // bouton d'essai (sa zone). Il s'arrête quand il n'en reste presque rien.
+  // Sur ordinateur elle est à côté de l'équipe : elle attend alors la fin de
+  // son film, pour qu'on ne regarde pas deux écrans à la fois. Sur téléphone
+  // elles sont l'une sous l'autre, et elle n'attend pas : c'est elle qu'on
+  // regarde.
   var cadreFiche = document.getElementById("scene-fiche"), zoneFiche = document.createElement("span");
   zoneFiche.className = "zone-depart"; cadreFiche.appendChild(zoneFiche);
   var aCote = function(){ return Math.abs(cadreFiche.getBoundingClientRect().top - document.getElementById("scene-equipe").getBoundingClientRect().top) < 120; };
@@ -2072,20 +2055,7 @@ html.anime .geant.vu span{transform:none}
     await voler([{ opacity: 1, transform: placerJeton(arrivee) }, { opacity: 0, transform: placerJeton(arrivee) }], { duration: 160 });
   }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
 
-  // 5. LES TRAVAUX : à l'arrivée, les tâches se cochent toutes seules, une à
-  // une, la remarque s'écrit, le retour part, et la carte se replie comme dans
-  // l'appli. Sa demande : pas au défilement. Jouée jusqu'au bout, elle reste
-  // sur sa fin ; quittée avant, elle repart du début au retour.
-  var travaux = bobine(un("#scene-travaux .film")), finie = false;
-  scene(document.getElementById("scene-travaux"), 0.4, travaux.preparer, async function(encore){
-    if (finie) return;
-    travaux.remettre();
-    await attendre(400); if (!encore()) return;
-    await travaux.jouer();
-    if (encore()) finie = true;
-  }, function(){ if (!finie) travaux.arreter(); });
-
-  // 6. LES QUESTIONS : la réponse se déplie à sa hauteur et se replie plus
+  // 5. LES QUESTIONS : la réponse se déplie à sa hauteur et se replie plus
   // vite qu'elle ne s'ouvre. Le clavier garde le geste d'origine (Entrée,
   // Espace), et l'état « ouvert » reste celui du navigateur.
   tous(".questions details").forEach(function(d){

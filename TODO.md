@@ -371,8 +371,9 @@ Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »
 
 **La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
 n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
-films (sauf celui de l'équipe, la fiche et la signature du client, voir plus
-bas) : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
+films (sauf celui de l'équipe, la fiche et la signature du client, et la
+section « Et aussi » qui a rejoint la fiche, voir plus bas) : la comparaison ne
+porte que sur le mouvement. Son en-tête dit ce qui
 bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
 un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
 à un tiers de l'écran mais laisse une demi-seconde avant le geste).
@@ -393,83 +394,81 @@ leur rang, et les autres suivent. **Lu ainsi, pas plus :** ni le titre de
 l'ouverture ni l'ordre des sections n'ont bougé. S'il voulait que le SITE
 commence par là, c'est à refaire.
 
-**Le 18 novembre, une seconde demande, faite :** *« Il faut faire une
-animation pour cette page aussi ! Qu'on voit qu'en un clic on peut avoir
-l'adresse sur Maps ou Waze. Pour la note tu peux écrire quelque chose comme tu
-as fait pour le retour du jour. »* La fiche d'intervention est devenue un film
-(`nov-film-fiche`, `appli/scripts/film-fiche.cjs`) : Maps s'ouvre depuis sa
-case avec l'adresse déjà posée, « Appeler le client » ouvre le téléphone avec
-son numéro (à la place de Waze, sa demande du soir), puis la note s'écrit et
-s'enregistre. **La carte et l'écran d'appel sont dessinés**, sans logo : ce ne
-sont pas des captures de Google Maps ni d'un téléphone (l'appli les ouvre, elle
-n'a ni carte ni téléphone à elle). La note écrite est de moi : « Clé du portail chez la voisine.
-Prendre le broyeur. »
+**Le 18 novembre, une seconde demande, puis sa question du 19, faites :**
+*« Il faut faire une animation pour cette page aussi ! Qu'on voit qu'en un clic
+on peut avoir l'adresse sur Maps »*, puis *« à la place de l'animation de Waze,
+fais une animation où on clique pour appeler le client »*, puis, le 19 :
+*« est-ce que les retours du soir, il ne faut pas les mettre sur la même
+cinématique que Waze, le téléphone, et ensuite on montre les travaux à cocher,
+et une fois coché, bam, que ça débarque sur le retour du soir. Ça fait
+peut-être une cinématique de moins. »* **Sa réponse du 19 novembre à mes deux
+questions : « 1 oui et 2 oui »** (oui à la fusion, oui pour lancer l'appli ici
+sur une base d'essai et la filmer).
 
-**Le 18 novembre, une troisième demande, faite :** *« quand il clique sur
-accepter le devis, il y a le petit truc pour signer électroniquement qui
-apparaît. Il signe et ensuite sa signature vient s'apposer sur le devis. Ça
-serait bien que tu mettes cette animation sur le site. »* Le téléphone
-d'Envoyez joue `nov-film-envoi-signe` (7,3 s, `appli/scripts/film-envoi-signe.cjs`) :
-la date, la case des quatorze jours, « J'accepte ce devis », la feuille « Votre
-signature » qui monte, le paraphe qui se trace, « C'est noté » avec la
-signature dans son cadre, puis le devis paraît et la signature tombe dans
-l'encadré « Bon pour accord ». **Ce film anime la planche B, il ne filme pas
-l'appli** (`appli/soignee/devis-signe-dans-une-feuille.html`, avec le chantier
-de Mr. Lemaire) : quand il a été tourné, la signature n'était pas dans l'appli.
-**Elle y est depuis le soir même** (livrée sur `main` le 18 novembre, plus haut
-dans ce fichier) : **le film est donc à refaire en filmant l'appli**, ce qui
-demande de la lancer ici sur une base d'essai (son oui). Le paraphe « Lemaire »
-est de moi. Les phrases du chapitre n'ont pas bougé : elles ne parlent pas de
-signature.
+La fiche d'intervention porte donc toute la cinématique (`nov-film-fiche`,
+11,2 s, `appli/scripts/film-fiche.cjs`) : Maps, l'appel, « Travaux à faire »
+qui se déplie, les quatre travaux cochés, la remarque, « Envoyer le retour du
+jour », « Retour du jour envoyé », puis l'écran du patron (Lemaire, 1 retour,
+6 novembre, Lucas, 4 tâches sur 4). **La section « Et aussi » a quitté la
+page** avec son titre et ses deux phrases (« Sur place, tâche par tâche. », « Ce
+que l'équipe a fait, coché le soir même. ») ; la note du jour ne s'écrit plus.
+**C'est l'appli d'aujourd'hui qui est filmée** (la fiche des travaux refaite le
+6 novembre, l'écran des retours), figée étape par étape sur une base d'essai ;
+**la carte et l'écran d'appel restent dessinés**, sans logo. Sur téléphone la
+figure tient entière entre la barre du haut et le bouton d'essai.
 
-**Vu en faisant ce film, à regarder sur un devis signé de l'appli :** sur le
-PDF du devis, le filet qui ferme le corps du document traverse le haut de
-l'encadré « Bon pour accord » (visible sur `appli/vente/images/nov-devis.jpg`,
-et sur les deux PDF de la planche B). Tant que l'encadré est vide, il ne gêne
-pas ; avec une signature dedans, il passe sur son haut. Pas touché ici (le film
-montre le PDF tel qu'il était) ; la signature a été livrée depuis, et personne
-n'a regardé ce point sur un PDF signé.
+**Le 18 novembre, une troisième demande, faite, et refaite sur l'appli le
+19 :** *« quand il clique sur accepter le devis, il y a le petit truc pour
+signer électroniquement qui apparaît. Il signe et ensuite sa signature vient
+s'apposer sur le devis. »* Le téléphone d'Envoyez joue `nov-film-envoi-signe`
+(7,3 s, `appli/scripts/film-envoi-signe.cjs`). La première version animait sa
+planche ; depuis le 19 novembre **le film est fait des écrans de l'appli** : la
+vraie page du client, la vraie feuille « Votre signature », le paraphe tracé
+sur la vraie toile, « C'est noté » avec la signature enregistrée, puis le PDF
+que le client télécharge, avant et après son accord. Sa dernière image est le
+PDF signé, tel quel. Le paraphe « Lemaire » est de moi. Les phrases du chapitre
+n'ont pas bougé : elles ne parlent pas de signature.
 
-**Le 19 novembre, deux défauts qu'il a vus.** *« Comme si elle freezait une
-demi-seconde »* à l'ouverture : c'était le geste de l'appli (le « + » tourne
-520 ms avant que la fiche monte, son choix du 6 octobre), invisible à la taille
-du site. Le film de cette page est recoupé (`nov-creer-un-devis-vif`,
-`appli/scripts/film-creer-un-devis-vif.sh`) et la caméra suit l'horloge du
-film : **corrigé**. *« L'écran passe de plein écran à un peu plus petit quand
-on reste figé dessus »* sur le retour du soir : c'est dans le film
-(`nov-film-travaux`). La carte repliée, la caméra recule quatorze images sur un
-écran immobile. **Pas corrigé** : ses sources ne sont pas dans le dépôt, et sa
-question ci-dessous décide de ce qu'il devient. Trouvé en cherchant, et
-corrigé : à la fin d'un film, sa première image repassait le temps d'un rendu.
+**Comment on tourne dans l'appli** est écrit dans
+`appli/scripts/tournage/LISEZ-MOI.md` (la base d'essai locale, l'heure du
+récit, les états gardés, les pièges). Les écrans figés sont dans
+`appli/scripts/rushes/`.
 
-**Sa question du même message, EN ATTENTE DE SA RÉPONSE :** *« est-ce que les
-retours du soir, il ne faut pas les mettre sur la même cinématique que Waze, le
-téléphone, et ensuite on montre les travaux à cocher, et une fois coché, bam,
-que ça débarque sur le retour du soir. Ça fait peut-être une cinématique de
-moins. Qu'est-ce que t'en penses ? »* **Mon avis, donné le 19 : oui.** Dans
-l'appli, les travaux et le retour du jour vivent DANS la fiche d'intervention
-(la rangée « Travaux à faire » s'y déplie) : une seule cinématique sur la fiche
-dit « tout tient sur la fiche », et la facture ne vient plus avant le soir. Ce
-que ça coûte : une dizaine de secondes de film ; la note de la fiche ne
-s'écrirait plus (la remarque du retour tient ce rôle) ; la section « Et aussi »
-disparaît. **À savoir avant de le faire :** la fiche travaux a été refaite dans
-l'appli le 6 novembre (la A : le nom en grand, la quantité à droite, « 4
-travaux »), et le film comme la capture de la fiche montrent encore l'ancienne.
-Filmer celle d'aujourd'hui demande de lancer l'appli ici sur une base d'essai
-(serveur, amorçage : son oui), comme l'en-tête de `cause.html` le raconte pour
-les films du 7 novembre. **S'il garde la scène à part** : recouper la fin du
-film des travaux pour que la caméra recule PENDANT que la carte se replie.
+**CE QUE LE TOURNAGE A MONTRÉ DE L'APPLI, À LUI DE DIRE (rien n'est touché
+dans `src/`) :**
+
+| Vu | Où | Ce que le film en fait |
+|---|---|---|
+| Sur le PDF signé, le filet qui ferme le corps du document traverse le haut de l'encadré « Bon pour accord », au-dessus de la signature | `appli/scripts/rushes/envoi-signe/devis-signe.png` | il montre le PDF tel quel |
+| « Envoyer le retour du jour » passe sur deux lignes à la largeur d'un iPhone courant (390 et 402 px ; il tient sur une ligne vers 430) | `src/app/planning/TravauxAFaire.tsx`, le bouton en 17 px sur toute la largeur | il le montre sur deux lignes |
+| Le retour parti, ce bouton redevient vert plein pendant les 300 ms où les travaux se replient | même fichier : `setEnvoi(false)` avant `setOuvert(false)` | il le garde éteint (seul écart avec l'appli dans la fiche) |
+| La feuille « Votre signature » et la case des quatorze jours paraissent d'un coup | `BottomSheet.tsx`, `formulaire.tsx` | la feuille monte, la case glisse (montage, dit dans l'en-tête du film) |
+
+**Le 19 novembre, deux défauts qu'il a vus, corrigés.** *« Comme si elle
+freezait une demi-seconde »* à l'ouverture : c'était le geste de l'appli (le
+« + » tourne 520 ms avant que la fiche monte, son choix du 6 octobre),
+invisible à la taille du site. Le film de cette page est recoupé
+(`nov-creer-un-devis-vif`, `appli/scripts/film-creer-un-devis-vif.sh`) et la
+caméra suit l'horloge du film. *« L'écran passe de plein écran à un peu plus
+petit quand on reste figé dessus »* sur le retour du soir : c'était un recul de
+caméra cuit dans `nov-film-travaux`. Ce film n'est plus sur cette page, et la
+cinématique de la fiche n'a ni recul ni zoom. Trouvé en cherchant, et corrigé :
+à la fin d'un film, sa première image repassait le temps d'un rendu.
 
 **Les deux autres pages** (`cause.html`, `chapitres-6.html`) gardent le film
-d'ouverture d'origine et l'ancienne fin de film : à reporter le jour où il dit
-laquelle reste.
+d'ouverture d'origine, l'ancienne fin de film, la capture fixe de la fiche, le
+film des travaux (avec son recul) et l'image du retour : à reporter le jour où
+il dit laquelle reste.
 
 **Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
 qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
-d'appel dessinés lui conviennent, et la phrase de la note. Si le paraphe et la
-fin du film (la signature qui se pose sur le devis) lui vont, et s'il veut le
-mot « signe » dans la phrase du chapitre Envoyez. Et si l'ordre des métiers doit être
-reporté dans `cause.html` et `chapitres-6.html`, qui gardent l'ancien.
+d'appel dessinés lui conviennent. Si le paraphe et la fin du film (la signature
+qui se pose sur le devis) lui vont, et s'il veut le mot « signe » dans la
+phrase du chapitre Envoyez. Si la phrase sous la fiche (« Le jour J, tout tient
+sur la fiche. ») suffit maintenant que les deux phrases de « Et aussi » sont
+parties. Si « Lucas » lui va comme prénom de celui qui envoie le retour. Et si
+l'ordre des métiers doit être reporté dans `cause.html` et `chapitres-6.html`,
+qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
