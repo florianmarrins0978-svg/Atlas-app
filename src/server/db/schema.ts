@@ -3344,6 +3344,9 @@ export const taxons = pgTable(
     rang: text("rang", { enum: ["genre", "espece", "famille", "groupe"] }).notNull().default("espece"),
     /** Sert au rapprochement quand l'essence exacte n'est pas reconnaissable. */
     port: text("port", { enum: ["feuillu", "conifere", "arbuste", "palmier", "autre"] }),
+    /** « un », « une », « des » : l'écran écrit « Probable sur un peuplier. ».
+     *  Nul = l'écran n'en invente aucun (migration 0187). */
+    article: text("article", { enum: ["un", "une", "des"] }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -3428,6 +3431,16 @@ export const fichesPhyto = pgTable("fiches_phyto", {
   /** « La détection en laboratoire est nécessaire. » Quand c'est rempli,
    *  l'écran le dit et le mot « confirmé » n'apparaît nulle part. */
   methodeConfirmation: text("methode_confirmation"),
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  /** Ce que la SOURCE dit de la gravité, en phrases. `gravite` reste interne. */
+  graviteSelonLaSource: text("gravite_selon_la_source"),
+  /** Les trois notes sur 3 de la source, toutes ou aucune (contrainte en base). */
+  noteImpact: integer("note_impact"),
+  noteAgressivite: integer("note_agressivite"),
+  noteFrequence: integer("note_frequence"),
+  commentCaArrive: text("comment_ca_arrive"),
+  quandCaSeVoit: text("quand_ca_se_voit"),
+  autresEssences: text("autres_essences"),
   /** Le plafond de confiance que la SOURCE autorise. Le moteur ne le dépasse
    *  jamais, quel que soit son score. */
   certitudeMax: text("certitude_max", { enum: ["elevee", "probable", "incertaine"] })

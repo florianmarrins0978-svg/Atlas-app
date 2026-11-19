@@ -215,17 +215,37 @@ async function main() {
     assert.match(reponse.headers()["content-type"] ?? "", /^image\//);
   });
 
-  await cas("le crédit et la licence sont AFFICHÉS sous la photo", async () => {
+  await cas("le crédit et la licence restent sur la fiche, tout en bas des détails", async () => {
     // La plupart des licences libres l'exigent : une photo sous CC-BY sans son
-    // auteur visible est une photo employée hors licence.
-    const legende = page.locator('[data-atlas="diagnostic-photos-reference"] figcaption').first();
-    const texte = await legende.innerText();
-    assert.ok(texte.trim().length > 5, "la légende ne doit pas être vide");
-    assert.match(
-      texte,
-      /,/,
-      "le crédit et la licence doivent être tous deux lisibles, séparés d'une virgule"
+    // auteur est une photo employée hors licence. **Sa demande du 19 novembre
+    // 2026** les a déplacés sous « Rattacher à un chantier » (« c'est quand
+    // même mentionné dans la fiche, mais c'est tout à la fin ») : rien sous la
+    // photo, et le crédit toujours là, détails ouverts.
+    assert.equal(
+      await page.locator('[data-atlas="diagnostic-photos-reference"] figcaption').count(),
+      0,
+      "plus rien ne doit s'écrire sous la photo"
     );
+    await page.locator('[data-atlas="diagnostic-details"] summary').click();
+    const credit = page.locator('[data-atlas="diagnostic-credit-photo"]').first();
+    await credit.waitFor({ state: "visible", timeout: 5000 });
+    const texte = await credit.innerText();
+    assert.match(texte, /, sous licence \S+/, "le crédit et la licence doivent être tous deux lisibles");
+    assert.doesNotMatch(texte, /\.\./, "deux points de suite après la légende");
+    const rattacher = await page.locator('[data-atlas="diagnostic-rattacher"]').boundingBox();
+    const bas = await credit.boundingBox();
+    assert.ok(rattacher && bas && bas.y > rattacher.y, "le crédit doit venir sous « Rattacher à un chantier »");
+    await page.locator('[data-atlas="diagnostic-details"] summary').click();
+  });
+
+  await cas("hors des détails, la fiche ne nomme pas l'INRAE (sa règle du 19 novembre)", async () => {
+    const visible = await page.evaluate(() => {
+      const ecran = document.querySelector('[data-atlas="diagnostic-rendu"]')?.cloneNode(true) as HTMLElement | null;
+      ecran?.querySelector('[data-atlas="diagnostic-details"]')?.remove();
+      return ecran?.innerText ?? "";
+    });
+    assert.ok(visible.length > 50, "rien à lire : l'écran n'est pas posé");
+    assert.doesNotMatch(visible, /INRAE|Ephytia/, "l'organisme est nommé hors des détails");
   });
 
   await cas("la photo est AVANT « Que faire ? » — comparer suppose de voir les deux", async () => {

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 import { rattacherAction } from "../actions";
 
 /**
@@ -36,7 +36,7 @@ export default function RattacherAUnChantier({
 
   if (chantiers.length === 0) {
     return (
-      <p className="text-[12.5px]" style={{ color: colors.muted }}>
+      <p className="text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
         Aucun chantier ouvert : ce diagnostic reste indépendant.
       </p>
     );
@@ -46,7 +46,9 @@ export default function RattacherAUnChantier({
 
   return (
     <div data-atlas="diagnostic-rattacher">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
+      {/* L'allure des pages soignées, sa planche du 19 novembre 2026 : rien
+          sous 13 px, la case et le bouton à 56 px, pour le pouce. */}
+      <p className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>
         Rattacher à un chantier
       </p>
 
@@ -56,8 +58,9 @@ export default function RattacherAUnChantier({
           setChoisi(e.target.value);
           setPhrase(null);
         }}
-        className="mt-[8px] block w-full rounded-[14px] px-[15px] py-3 text-[15px] outline-none"
-        style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
+        aria-label="Chantier"
+        className="mt-2.5 block min-h-[56px] w-full rounded-[14px] px-4 text-[16px] outline-none"
+        style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       >
         <option value="">Aucun</option>
         {chantiers.map((c) => (
@@ -81,14 +84,17 @@ export default function RattacherAUnChantier({
             router.refresh();
           })
         }
-        className="mt-[10px] text-[13px]"
-        style={{ color: enCours || choisi === "" || dejaRattache ? colors.muted : colors.rust }}
+        className="mt-2.5 flex min-h-[56px] w-full items-center justify-center rounded-[14px] text-[17px] font-semibold disabled:opacity-60"
+        style={{
+          color: enCours || choisi === "" || dejaRattache ? colors.inkSoft : colors.ink,
+          boxShadow: `inset 0 0 0 1.5px ${colors.line}`,
+        }}
       >
         {enCours ? "Rattachement…" : dejaRattache ? "Déjà rattaché" : "Rattacher"}
       </button>
 
       {phrase && (
-        <p className="mt-[8px] text-[12.5px]" style={{ color: colors.muted }}>
+        <p className="mt-2 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
           {phrase}
         </p>
       )}

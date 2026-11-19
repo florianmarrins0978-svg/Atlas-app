@@ -979,6 +979,17 @@ export type ResultatFige = {
   informationsRequises: string[];
   /** Ce qui permet de reconnaître ce problème plutôt qu'un autre. Recopié. */
   criteresDiscriminants: string[];
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  //
+  // **Absents des résultats figés avant cette date**, d'où le `?` : un
+  // diagnostic rendu hier ne se réécrit pas (son gel est la règle de 0056), et
+  // un bloc dont la fiche ne disait rien ne s'affiche pas. Ce n'est pas un
+  // défaut à combler : c'est ce qui était vrai ce jour-là.
+  /** Ce que la SOURCE dit de la gravité, en phrases, sous « Est-ce grave pour l'arbre ? ». */
+  graviteSelonLaSource?: string | null;
+  /** Les trois notes sur 3 de la source, en barres. Toutes ou aucune. */
+  notesSource?: NotesSource | null;
+  commentCaArrive?: string | null;
   /** Ce que « Voir les détails » déplie. Rien ici n'est nécessaire pour agir. */
   details: {
     categorie: string;
@@ -990,6 +1001,9 @@ export type ResultatFige = {
     prevention: string | null;
     gestion: string | null;
     traitement: string | null;
+    /** Absents des résultats figés avant le 19 novembre 2026, comme plus haut. */
+    quandCaSeVoit?: string | null;
+    autresEssences?: string | null;
     sources: { organisme: string; titre: string; url: string | null; consulteeLe: string; champs: string[] }[];
     versionFiche: number;
     sourcesAJourLe: string | null;
@@ -1054,6 +1068,92 @@ export const LIBELLE_PARTIE: Record<Partie, string> = {
   houppier: "houppier",
   ensemble: "arbre entier",
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA FICHE EN PHRASES — son ordre du 22 septembre 2026, codé le 19 novembre
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Sa règle du 22 septembre au soir : *« Plus jamais tu mets de point entre le
+// nom et probable ! [...] fais des phrases normales »*. L'écran disait
+// « Probable · Platane » ; il dit « Probable sur un platane. ». Ces trois
+// fonctions composent ces phrases, et rien d'autre : l'écran les affiche.
+
+/** Les trois notes sur 3 que donne la source (impact, agressivité, fréquence). */
+export type NotesSource = { impact: number; agressivite: number; frequence: number };
+
+/** Toutes les trois ou aucune : une jauge sur trois ne se lit pas (migration 0187). */
+export function notesDeLaSource(
+  impact: number | null,
+  agressivite: number | null,
+  frequence: number | null
+): NotesSource | null {
+  if (impact === null || agressivite === null || frequence === null) return null;
+  return { impact, agressivite, frequence };
+}
+
+export const PARTIE_EN_PHRASE: Record<Partie, string> = {
+  feuille: "les feuilles",
+  aiguille: "les aiguilles",
+  rameau: "les rameaux",
+  branche: "les branches",
+  tronc: "le tronc",
+  ecorce: "l’écorce",
+  collet: "le collet",
+  racine: "les racines",
+  fruit: "les fruits",
+  fleur: "les fleurs",
+  bourgeon: "les bourgeons",
+  champignon_sur_bois: "les champignons sur le bois",
+  houppier: "le houppier",
+  ensemble: "l’arbre entier",
+};
+
+/**
+ * « Les feuilles, les rameaux et le houppier. » La dernière se lie par « et »,
+ * jamais par une virgule de plus. Un mot hors du vocabulaire fermé ne
+ * s'affiche pas : il ne devrait pas exister (`verifierVocabulaire`).
+ */
+export function partiesEnPhrase(parties: readonly string[]): string | null {
+  const mots = parties
+    .filter((p): p is Partie => (PARTIES as readonly string[]).includes(p))
+    .map((p) => PARTIE_EN_PHRASE[p]);
+  if (mots.length === 0) return null;
+  const liste = mots.length === 1 ? mots[0] : `${mots.slice(0, -1).join(", ")} et ${mots[mots.length - 1]}`;
+  return `${liste.charAt(0).toUpperCase()}${liste.slice(1)}.`;
+}
+
+/**
+ * « Probable sur un peuplier. » : le degré de sûreté, puis l'essence que la
+ * BASE a reconnue.
+ *
+ * **L'article vient de la base, jamais deviné** (`taxons.article`) : le genre
+ * d'un nom d'essence ne se déduit pas de son orthographe (« un érable », « une
+ * aubépine »). Sans article, l'écran écrit « Probable. » et l'essence sur sa
+ * ligne. Sans essence, « Probable. » seul. Seule la première lettre passe en
+ * minuscule : « sapin de Douglas » garde sa majuscule.
+ */
+export function phrasesDeConfiance(
+  confiance: Confiance,
+  essence: { nom: string; article: "un" | "une" | "des" | null } | null
+): string[] {
+  const mot = LIBELLE_CONFIANCE[confiance];
+  if (!essence) return [`${mot}.`];
+  const nom = `${essence.nom.charAt(0).toLowerCase()}${essence.nom.slice(1)}`;
+  if (!essence.article) return [`${mot}.`, `${essence.nom}.`];
+  return [`${mot} sur ${essence.article} ${nom}.`];
+}
+
+/**
+ * La légende d'une photo de référence, son auteur et sa licence, en une phrase.
+ *
+ * **Trouvé en regardant l'écran réel, le 19 novembre 2026** : une légende qui
+ * finit déjà par un point en recevait un second (« feuille de peuplier.. »).
+ * Les trois premières fiches n'en ont pas, d'où le silence jusque-là.
+ */
+export function legendeDePhoto(legende: string | null, credit: string, licence: string): string {
+  const debut = legende ? `${legende.trim().replace(/\.+$/, "")}. ` : "";
+  return `${debut}${credit.trim().replace(/\.+$/, "")}, sous licence ${licence.trim()}.`;
+}
 
 export const LIBELLE_LOCALISATION: Record<Localisation, string> = {
   face_superieure: "dessus",

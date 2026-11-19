@@ -24,6 +24,7 @@ import {
   classeurDeterministe,
   mentionsDeSecurite,
   LIBELLE_GRAVITE,
+  notesDeLaSource,
   rapprocher,
   type Candidat,
   type ClasseurCandidats,
@@ -218,6 +219,9 @@ export async function composerResultat(candidat: Candidat, confiance: Confiance)
     methodeConfirmation: fiche.methodeConfirmation,
     informationsRequises: fiche.informationsRequises,
     criteresDiscriminants: fiche.criteresDiscriminants,
+    graviteSelonLaSource: fiche.graviteSelonLaSource,
+    notesSource: notesDeLaSource(fiche.noteImpact, fiche.noteAgressivite, fiche.noteFrequence),
+    commentCaArrive: fiche.commentCaArrive,
     mentions: mentionsDeSecurite({
       gravite: fiche.gravite,
       impactMecanique: fiche.impactMecanique,
@@ -237,6 +241,8 @@ export async function composerResultat(candidat: Candidat, confiance: Confiance)
       prevention: fiche.prevention,
       gestion: fiche.gestion,
       traitement: fiche.traitement,
+      quandCaSeVoit: fiche.quandCaSeVoit,
+      autresEssences: fiche.autresEssences,
       sources: sources.map((s) => ({
         organisme: s.organisme,
         titre: s.titre,

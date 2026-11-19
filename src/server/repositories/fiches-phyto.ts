@@ -284,15 +284,22 @@ export async function versionBase(): Promise<string> {
 }
 
 /**
- * Le nom commun d'un taxon reconnu — ce que l'écran écrit à côté du résultat.
+ * Le nom commun d'un taxon reconnu, et son article : l'écran écrit « Probable
+ * sur un peuplier. » (`phrasesDeConfiance`, migration 0187).
  *
  * **C'est le seul nom d'essence qui a le droit d'atteindre l'écran.** Le
  * modèle écrit aussi un `nom_commun`, en texte libre : celui-là reste dans
  * l'observation rangée, jamais affiché (barrière 3, `ARCHITECTURE.md` §135.1).
  */
-export async function lireNomTaxon(taxonId: string): Promise<string | null> {
-  const [ligne] = await db.select({ nom: taxons.nomCommun }).from(taxons).where(eq(taxons.id, taxonId)).limit(1);
-  return ligne?.nom ?? null;
+export async function lireEssence(
+  taxonId: string
+): Promise<{ nom: string; article: "un" | "une" | "des" | null } | null> {
+  const [ligne] = await db
+    .select({ nom: taxons.nomCommun, article: taxons.article })
+    .from(taxons)
+    .where(eq(taxons.id, taxonId))
+    .limit(1);
+  return ligne ?? null;
 }
 
 /**

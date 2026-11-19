@@ -15,6 +15,11 @@ const TRACES = {
   banque: <path d="M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17" />,
   document: <><path d="M6.5 3.5H14l4 4v13H6.5z" /><path d="M14 3.5v4h4M9.5 12.5h5M9.5 16h5" /></>,
   suivant: <path d="M9 5l7 7-7 7" />,
+  // La loupe et la feuille du kit soigné (`appli/soignee/kit.js`), pour le
+  // diagnostic végétal ; le chevron qui déplie « Voir les détails » et se
+  // retourne une fois ouvert (sa planche du 19 novembre 2026).
+  diagnostic: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.3 15.3l5 5M8 12.5c.2-2.8 1.7-4.4 4.6-4.6-.2 2.8-1.7 4.4-4.6 4.6z" /></>,
+  deplier: <path d="M6 9.5l6 6 6-6" />,
   // Redessiné le 6 novembre 2026 (« on dirait pas du tout un sablier ») : le
   // tracé d'avant n'avait que la moitié haute de son côté droit et se lisait
   // comme un Z, jusque sur « Ce lien n'est plus valable » chez ses clients. Le

@@ -1,21 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import IconeTrait from "@/components/atlas/IconeTrait";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireDiagnostic } from "@/server/repositories/diagnostics";
-import { compterFichesServables, lireImagesFiche, lireNomTaxon } from "@/server/repositories/fiches-phyto";
+import { compterFichesServables, lireEssence, lireImagesFiche } from "@/server/repositories/fiches-phyto";
 import { listerChantiers } from "@/server/repositories/chantiers";
 import {
   decrireObservation,
   GESTE_APRES_REFUS,
-  LIBELLE_CONFIANCE,
+  legendeDePhoto,
   MOTIFS_REFUS,
+  partiesEnPhrase,
   phraseFichesConnues,
+  phrasesDeConfiance,
   REFUS_PAR_LA_BIBLIOTHEQUE,
   type LigneVue,
   type Mention,
   type MotifRefus,
+  type NotesSource,
   type Observation,
   type ResultatFige,
 } from "@/lib/diagnostic-vegetal";
@@ -28,7 +32,7 @@ import { garderLaPage } from "@/server/garde-page";
 /**
  * L'écran de résultat — **quatre issues, et pas une de plus**.
  *
- *   `rendu`               le problème, la sûreté et l'essence, la gravité, la conduite
+ *   `rendu`               la fiche, dans son ordre du 22 septembre 2026 (`FicheRendue`)
  *   `complement_demande`  UNE photo de plus, et l'écran dit laquelle — et pourquoi
  *   `inconclusif`         « je ne peux pas confirmer » — vu · pourquoi · le geste
  *   `echoue`              personne n'a regardé — réessayer, ou les réglages
@@ -62,9 +66,9 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
 
   const resultat = diagnostic.resultat as ResultatFige | null;
   const observation = diagnostic.observation as Observation | null;
-  const essenceNom = diagnostic.taxonId ? await lireNomTaxon(diagnostic.taxonId) : null;
+  const essenceDeLaBase = diagnostic.taxonId ? await lireEssence(diagnostic.taxonId) : null;
   const essence = observation?.essence
-    ? { nom: essenceNom, certitude: observation.essence.certitude }
+    ? { nom: essenceDeLaBase?.nom ?? null, certitude: observation.essence.certitude }
     : null;
 
   return (
@@ -77,44 +81,54 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
       }}
     >
       <div className="pb-16" data-atlas="ecran-diagnostic-resultat">
-        <EnTeteEcran
-          surtitre="Diagnostic végétal"
-          titre={titrePour(diagnostic.statut, resultat)}
-          retour={{ href: "/paysage/diagnostic", libelle: "Retour au diagnostic" }}
-        />
-
-        <section className="mx-[26px] mt-[24px]">
-          {diagnostic.statut === "rendu" && resultat ? (
-            <Rendu resultat={resultat} ficheId={diagnostic.ficheId} essenceNom={essenceNom} />
-          ) : diagnostic.statut === "complement_demande" ? (
-            <Complement
-              consigne={diagnostic.complementConsigne}
-              diagnosticId={id}
-              vu={observation ? decrireObservation(observation, essence) : []}
+        {diagnostic.statut === "rendu" && resultat ? (
+          // **La fiche rendue prend l'allure des pages soignées** (sa planche du
+          // 19 novembre 2026, `appli/soignee/fiche-de-diagnostic.html`). Les
+          // trois autres issues gardent la leur : la planche ne les montrait
+          // pas, et rien n'est retouché qui n'a pas été demandé.
+          <FicheRendue
+            resultat={resultat}
+            ficheId={diagnostic.ficheId}
+            essence={essenceDeLaBase}
+            diagnosticId={id}
+            chantierId={diagnostic.chantierId}
+            ctx={ctx}
+          />
+        ) : (
+          <>
+            <EnTeteEcran
+              surtitre="Diagnostic végétal"
+              titre={titrePour(diagnostic.statut)}
+              retour={{ href: "/paysage/diagnostic", libelle: "Retour au diagnostic" }}
             />
-          ) : diagnostic.statut === "inconclusif" ? (
-            <SansConclusion
-              refus={diagnostic.refus}
-              phraseAncienne={diagnostic.panne}
-              vu={observation ? decrireObservation(observation, essence) : []}
-              fichesConnues={await compterFichesServables()}
-            />
-          ) : diagnostic.statut === "echoue" ? (
-            <PersonneNaRegarde panne={diagnostic.panne} diagnosticId={id} />
-          ) : (
-            <EnAnalyse />
-          )}
+            <section className="mx-[26px] mt-[24px]">
+              {diagnostic.statut === "complement_demande" ? (
+                <Complement
+                  consigne={diagnostic.complementConsigne}
+                  diagnosticId={id}
+                  vu={observation ? decrireObservation(observation, essence) : []}
+                />
+              ) : diagnostic.statut === "inconclusif" ? (
+                <SansConclusion
+                  refus={diagnostic.refus}
+                  phraseAncienne={diagnostic.panne}
+                  vu={observation ? decrireObservation(observation, essence) : []}
+                  fichesConnues={await compterFichesServables()}
+                />
+              ) : diagnostic.statut === "echoue" ? (
+                <PersonneNaRegarde panne={diagnostic.panne} diagnosticId={id} />
+              ) : (
+                <EnAnalyse />
+              )}
 
-          {(diagnostic.statut === "rendu" || diagnostic.statut === "inconclusif") && (
-            <div className="mt-[30px]">
-              <Bouton href="/paysage/diagnostic">{diagnostic.statut === "rendu" ? "Nouvelle photo" : "Recommencer"}</Bouton>
-            </div>
-          )}
-
-          {diagnostic.statut === "rendu" && resultat && (
-            <Details resultat={resultat} diagnosticId={id} chantierId={diagnostic.chantierId} ctx={ctx} />
-          )}
-        </section>
+              {diagnostic.statut === "inconclusif" && (
+                <div className="mt-[30px]">
+                  <Bouton href="/paysage/diagnostic">Recommencer</Bouton>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
@@ -128,194 +142,305 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
  * meilleure photo au lieu de sa configuration (`AGENTS.md` — une erreur qui
  * accuse à tort coûte plus cher que pas d'erreur du tout).
  */
-function titrePour(statut: string, resultat: ResultatFige | null): string {
-  if (statut === "rendu" && resultat) return resultat.nom;
+function titrePour(statut: string): string {
   if (statut === "echoue") return "La photo n’a pas été regardée";
   if (statut === "complement_demande") return "Une photo de plus";
   if (statut === "inconclusif") return "Sans conclusion";
   return "Analyse en cours";
 }
 
-// ── L'issue principale : le résultat ────────────────────────────────────────
+// ── L'issue principale : la fiche ────────────────────────────────────────────
 
-async function Rendu({
+/** La voix des intitulés soignés : 13 px, capitales, encre douce. */
+const RUBRIQUE = "text-[13px] font-semibold uppercase tracking-[0.12em]";
+
+/**
+ * La fiche rendue, **dans son ordre du 22 septembre 2026** : le nom, les
+ * parties atteintes, à quoi ça ressemble, est-ce grave pour l'arbre, que faire,
+ * comment le reconnaître, comment ça arrive, comment ça se propage. Tout le
+ * reste va dans « Voir les détails ».
+ *
+ * **Et sa planche du 19 novembre** : la grammaire soignée (retour cerné, titre
+ * seul, ni surtitre ni pastille de l'assistant), le nom latin en italique, les
+ * questions en vrais titres, « Que faire ? » encadré d'or ; rien sous la photo,
+ * sa légende et la source tout en bas des détails ; l'INRAE nommé nulle part
+ * ailleurs (contrôle 10 de `import-fiches-phyto.ts`).
+ *
+ * Un bloc dont la fiche ne dit rien ne s'affiche pas : une donnée manquante
+ * reste manquante. Les fiches d'avant la migration 0187 n'ont donc ni « Est-ce
+ * grave pour l'arbre ? » ni « Comment ça arrive » tant qu'elles ne les ont pas
+ * reçus de leurs sources.
+ */
+async function FicheRendue({
   resultat,
   ficheId,
-  essenceNom,
+  essence,
+  diagnosticId,
+  chantierId,
+  ctx,
 }: {
   resultat: ResultatFige;
   ficheId: string | null;
-  essenceNom: string | null;
+  essence: { nom: string; article: "un" | "une" | "des" | null } | null;
+  diagnosticId: string;
+  chantierId: string | null;
+  ctx: { utilisateurId: string; entrepriseId: string };
 }) {
   // **Les images sont lues EN DIRECT, pas figées dans le résultat.** Le
-  // diagnostic est figé — le nom, la gravité, la conduite, c'est-à-dire ce sur
+  // diagnostic est figé : le nom, la gravité, la conduite, c'est-à-dire ce sur
   // quoi il a agi. La photo de référence, elle, est une aide à l'œil : la geler
   // par identifiant la casserait au premier réimport de la fiche (les images
   // sont remplacées, donc renumérotées), et une image morte est pire qu'une
   // image un peu différente.
   const images = ficheId ? await lireImagesFiche(ficheId) : [];
-  const source = resultat.details.sources[0] ?? null;
+  const parties = partiesEnPhrase(resultat.details.partiesAtteintes);
+  const notes = resultat.notesSource ?? null;
+  const graviteTexte = resultat.graviteSelonLaSource ?? null;
 
   return (
     <div data-atlas="diagnostic-rendu">
-      {/* **La sûreté et l'essence, ensemble, en clair — sa planche du
-          11 septembre 2026.** « Probable · Platane » à la place de « CONFIANCE
-          PROBABLE » en capitales dorées : le premier mot dit ce qu'Atlas pense,
-          le second sur quoi — l'essence est la règle la plus structurante du
-          moteur, et elle n'apparaissait nulle part. Jamais un pourcentage :
-          aucun modèle employé ici ne fournit de probabilité calibrée. */}
-      <p className="text-[17px] leading-[1.4]" style={{ color: colors.ink }} data-atlas="diagnostic-confiance">
-        {LIBELLE_CONFIANCE[resultat.confiance]}
-        {essenceNom && (
-          <>
-            <span style={{ color: colors.muted }}> · </span>
-            {essenceNom}
-          </>
-        )}
-      </p>
-
-      <p className="mt-[12px] text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-        {resultat.explication}
-      </p>
-
-      {/* **La photo de référence est sur l'écran PRINCIPAL, et c'est sa
-          demande du 20 août 2026 :** « il faut absolument mettre des photos,
-          l'utilisateur a besoin de comparer avec une vraie photo qui comporte
-          la maladie ». Comparer suppose de voir les deux ensemble — la reléguer
-          derrière « Voir les détails » aurait vidé le geste de son sens. */}
-      {images.length > 0 && <PhotosDeReference images={images} />}
-
-      {/* **Ce que la source exige pour CONFIRMER, en pleine page.**
-          Sa règle du 20 août 2026 : « si la source scientifique exige une
-          analyse en laboratoire pour confirmer, Atlas ne doit jamais afficher
-          "confirmé" ». Le ranger dans « Voir les détails » aurait laissé croire
-          qu'il n'y en avait pas — et c'est justement l'information qui empêche
-          de traiter un arbre sur la foi d'une photo. */}
-      {resultat.methodeConfirmation && (
-        <div
-          className="mt-[20px] rounded-[4px] px-[14px] py-[12px]"
-          style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-          data-atlas="diagnostic-confirmation"
+      <EnTeteEcran
+        allure="soignee"
+        assistant={false}
+        titre={resultat.nom}
+        retour={{ href: "/paysage/diagnostic", libelle: "Retour au diagnostic" }}
+      />
+      {resultat.nomScientifique && (
+        <p
+          className="px-[22px] pt-2 text-[18px] italic leading-[1.3]"
+          style={{ fontFamily: font.display, color: colors.inkSoft }}
+          data-atlas="diagnostic-nom-scientifique"
         >
-          <p className={libelleCaps} style={{ color: colors.muted }}>
-            Ce qui reste à confirmer
-          </p>
-          <p className="mt-[6px] text-[14px] leading-[1.6]" style={{ color: colors.ink }}>
-            {resultat.methodeConfirmation}
-          </p>
-          {resultat.informationsRequises.length > 0 && (
-            <ul className="mt-[8px] list-disc pl-[18px] text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-              {resultat.informationsRequises.map((info, i) => (
-                <li key={i}>{info}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      <Bloc cle="Gravité" repere="diagnostic-gravite">
-        {resultat.graviteLibelle}
-      </Bloc>
-
-      <Bloc cle="Que faire ?" repere="diagnostic-conduite" fort>
-        {resultat.conduite}
-      </Bloc>
-
-      {/* **La source et sa date, sur l'écran principal.** Un conseil
-          phytosanitaire sans sa source ne vaut rien devant un client — et c'est
-          ce qui distingue Atlas d'un moteur de recherche. Une page d'organisme
-          bouge sans changer d'adresse : la date dit ce qui avait été lu. */}
-      {source && (
-        <p className="mt-[18px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }} data-atlas="diagnostic-source">
-          <span style={{ color: colors.inkSoft }}>{source.organisme}</span>
-          {" · consultée le "}
-          {dateCitee(source.consulteeLe)}
+          {resultat.nomScientifique}
         </p>
       )}
 
-      {/* Les mentions de sécurité viennent du CODE, jamais de la fiche : une
-          règle générale ne doit pas pouvoir manquer parce qu'une fiche est mal
-          remplie — c'est la fiche bâclée qui en a le plus besoin. */}
-      {resultat.mentions.map((mention, i) => (
-        <MentionAffichee key={i} mention={mention} />
-      ))}
-    </div>
-  );
-}
+      <div className="px-[22px]">
+        <section className="mt-6 rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
+          {parties && (
+            <>
+              <p className={RUBRIQUE} style={{ color: colors.inkSoft }}>
+                Parties atteintes
+              </p>
+              <p className="mt-1.5 text-[19px] leading-[1.3]" style={{ fontFamily: font.display }} data-atlas="diagnostic-parties">
+                {parties}
+              </p>
+              <hr className="my-4 h-px border-0" style={{ backgroundColor: colors.line }} />
+            </>
+          )}
+          {/* « Probable sur un peuplier. » : sa règle du 22 septembre, plus de
+              point médian entre le mot et l'essence. Jamais un pourcentage :
+              aucun modèle employé ici ne fournit de probabilité calibrée. */}
+          <div className="flex items-center gap-3 text-[17px] leading-[1.35]" data-atlas="diagnostic-confiance">
+            <span style={{ color: colors.or }}>
+              <IconeTrait nom="diagnostic" taille={24} epaisseur={1.7} />
+            </span>
+            <div>
+              {phrasesDeConfiance(resultat.confiance, essence).map((ligne) => (
+                <p key={ligne}>{ligne}</p>
+              ))}
+            </div>
+          </div>
+        </section>
 
-/**
- * À quoi ça ressemble vraiment.
- *
- * **Le crédit et la licence sont AFFICHÉS, pas rangés dans un coin.** La plupart
- * des licences libres l'exigent — une photo sous CC-BY sans son auteur visible
- * est une photo employée hors licence —, et c'est de toute façon la moindre des
- * choses envers celui qui l'a prise. C'est aussi ce qui permet de vérifier d'un
- * coup d'œil qu'aucune image n'est arrivée là sans qu'on sache d'où.
- */
-function PhotosDeReference({
-  images,
-}: {
-  images: { id: string; legende: string | null; credit: string; licence: string; partie: string | null }[];
-}) {
-  return (
-    <div className="mt-[20px]" data-atlas="diagnostic-photos-reference">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
-        À quoi ça ressemble
-      </p>
-      {/* **Sa règle du 20 août 2026 :** « les photos de référence sont
-          uniquement des indices, jamais une preuve suffisante ». Une image
-          posée sans un mot se lit comme une confirmation — surtout quand elle
-          ressemble à celle qu'on vient de prendre. La phrase est ici, sous le
-          titre, avant qu'on ait comparé. */}
-      <p className="mt-[6px] text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
-        Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.
-      </p>
-      <div className="mt-[10px] flex flex-col gap-[14px]">
-        {images.map((image) => (
-          <figure key={image.id} className="m-0">
-            {/* `img` et non `next/image` : ces photos sortent d'une route
-                authentifiée, et l'optimiseur de Next ne sait pas s'y
-                authentifier. Le poids est borné à l'import (500 Ko), ce qui est
-                la vraie raison pour laquelle on peut s'en passer. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/phyto/image/${image.id}`}
-              alt={image.legende ?? "Photo de référence"}
-              loading="lazy"
-              className="block w-full rounded-[4px]"
-              style={{ border: `1px solid ${colors.line}` }}
-            />
-            <figcaption className="mt-[6px] text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
-              {image.legende && <span style={{ color: colors.inkSoft }}>{image.legende}. </span>}
-              {image.credit}, sous licence {image.licence}.
-            </figcaption>
-          </figure>
+        {/* **La photo de référence est sur l'écran PRINCIPAL**, sa demande du
+            20 août 2026 : « l'utilisateur a besoin de comparer avec une vraie
+            photo qui comporte la maladie ». Et sa phrase du même jour, sous le
+            titre, avant qu'on ait comparé : une image posée sans un mot se lit
+            comme une confirmation. */}
+        {images.length > 0 && (
+          <section className="mt-10" data-atlas="diagnostic-photos-reference">
+            <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              À quoi ça ressemble
+            </h2>
+            <p className="mt-2 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+              Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.
+            </p>
+            {images.map((image) => (
+              // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : ces photos sortent d’une route authentifiée, que l’optimiseur de next/image ne sait pas traverser ; poids borné à l’import (500 Ko)
+              <img
+                key={image.id}
+                src={`/api/phyto/image/${image.id}`}
+                alt={image.legende ?? "Photo de référence"}
+                loading="lazy"
+                className="mt-3.5 block h-auto w-full rounded-[6px]"
+              />
+            ))}
+          </section>
+        )}
+
+        {(notes || graviteTexte) && (
+          <section className="mt-10" data-atlas="diagnostic-gravite">
+            <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              Est-ce grave pour l’arbre ?
+            </h2>
+            {notes && <Jauges notes={notes} />}
+            {graviteTexte && <p className="mt-3 text-[16px] leading-[1.6]">{graviteTexte}</p>}
+          </section>
+        )}
+
+        {/* « Que faire ? » encadré d'or : c'est la réponse qu'on vient chercher.
+            Ce que la source exige pour CONFIRMER y vit aussi, jamais dans les
+            détails : sa règle du 20 août, « si la source exige une analyse en
+            laboratoire, Atlas ne doit jamais afficher "confirmé" ». */}
+        <section
+          className="mt-10 rounded-[6px] p-[18px]"
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${colors.or} 55%, transparent)`,
+          }}
+        >
+          <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+            Que faire ?
+          </h2>
+          <p className="mt-3 text-[17px] leading-[1.55]" data-atlas="diagnostic-conduite">
+            {resultat.conduite}
+          </p>
+          {resultat.methodeConfirmation && (
+            <div data-atlas="diagnostic-confirmation">
+              <hr className="my-4 h-px border-0" style={{ backgroundColor: colors.line }} />
+              <p className={RUBRIQUE} style={{ color: colors.inkSoft }}>
+                Ce qui reste à confirmer
+              </p>
+              <p className="mt-1.5 text-[16px] leading-[1.6]">{resultat.methodeConfirmation}</p>
+              {resultat.informationsRequises.length > 0 && <Puces valeurs={resultat.informationsRequises} />}
+            </div>
+          )}
+        </section>
+
+        {resultat.criteresDiscriminants.length > 0 && (
+          <section className="mt-10" data-atlas="diagnostic-reconnaitre">
+            <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              Comment le reconnaître
+            </h2>
+            <Puces valeurs={resultat.criteresDiscriminants} />
+          </section>
+        )}
+
+        {resultat.commentCaArrive && (
+          <section className="mt-10" data-atlas="diagnostic-comment-ca-arrive">
+            <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              Comment ça arrive
+            </h2>
+            <p className="mt-3 text-[16px] leading-[1.6]">{resultat.commentCaArrive}</p>
+          </section>
+        )}
+
+        {resultat.details.gestion && (
+          <section className="mt-10" data-atlas="diagnostic-propagation">
+            <h2 className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              Comment ça se propage
+            </h2>
+            <p className="mt-3 text-[16px] leading-[1.6]">{resultat.details.gestion}</p>
+          </section>
+        )}
+
+        {/* Les mentions de sécurité viennent du CODE, jamais de la fiche : une
+            règle générale ne doit pas pouvoir manquer parce qu'une fiche est
+            mal remplie. C'est la fiche bâclée qui en a le plus besoin. */}
+        {resultat.mentions.map((mention, i) => (
+          <MentionAffichee key={i} mention={mention} />
         ))}
+
+        <Link
+          href="/paysage/diagnostic"
+          // Le bouton plein des pages soignées : 56 px, coins de 14 px, le vert
+          // « D à plat » de sa décision du 3 septembre (`colors.plein`).
+          className="atlas-plein mt-8 flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-[14px] px-[22px] text-[17px] font-semibold"
+          style={{ backgroundColor: colors.plein, color: surPlein }}
+        >
+          <IconeTrait nom="photo" taille={22} epaisseur={1.7} />
+          Nouvelle photo
+        </Link>
+
+        <DetailsDeLaFiche
+          resultat={resultat}
+          images={images}
+          diagnosticId={diagnosticId}
+          chantierId={chantierId}
+          ctx={ctx}
+        />
       </div>
     </div>
   );
 }
 
+/**
+ * Les trois notes de la source, en barres seules : sa demande du 19 novembre,
+ * « à côté de impact, agressivité, supprime 1 sur 3, laisse juste les trois
+ * petits trucs de couleur ». Le nombre reste dit à qui ne voit pas l'écran.
+ */
+function Jauges({ notes }: { notes: NotesSource }) {
+  const lignes: [string, number][] = [
+    ["Impact", notes.impact],
+    ["Agressivité", notes.agressivite],
+    ["Fréquence", notes.frequence],
+  ];
+  return (
+    <ul className="mt-4 rounded-[6px] px-[18px] py-1" style={{ backgroundColor: colors.card }} data-atlas="diagnostic-jauges">
+      {lignes.map(([nom, note], i) => (
+        <li
+          key={nom}
+          className="flex min-h-[56px] items-center gap-3.5"
+          style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}
+        >
+          <span className="flex-1 text-[16px]">{nom}</span>
+          <span className="flex gap-[5px]" role="img" aria-label={`${note} sur 3`}>
+            {[1, 2, 3].map((rang) => (
+              <i
+                key={rang}
+                className="block h-2 w-[22px] rounded-full"
+                style={{ backgroundColor: rang <= note ? colors.or : colors.line }}
+              />
+            ))}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Une liste à puces d'or, comme sur les pages soignées. */
+function Puces({ valeurs, petite }: { valeurs: string[]; petite?: boolean }) {
+  return (
+    <ul className={petite ? "mt-2" : "mt-3.5"}>
+      {valeurs.map((v, i) => (
+        <li
+          key={i}
+          className={`relative pl-[22px] ${petite ? "text-[15.5px]" : "text-[16px]"} leading-[1.55] ${i > 0 ? "mt-3" : ""}`}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-[2px] top-[0.62em] h-2 w-2 rounded-full"
+            style={{ backgroundColor: colors.or }}
+          />
+          {v}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Une mention de sécurité : un aplat ambré, son pictogramme, la phrase du code. */
 function MentionAffichee({ mention }: { mention: Mention }) {
+  const precision = "note" in mention ? mention.note : mention.reference;
   return (
     <div
-      className="mt-[16px] rounded-[4px] px-4 py-3"
-      style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+      className="mt-8 flex items-start gap-3.5 rounded-[6px] p-[18px]"
+      style={{ backgroundColor: colors.carteAmbreFond }}
       data-atlas={`diagnostic-mention-${mention.type}`}
     >
-      <p className="text-[13px] leading-[1.55]" style={{ color: colors.ink }}>
-        {mention.texte}
-      </p>
-      {"note" in mention && mention.note && (
-        <p className="mt-[6px] text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
-          {mention.note}
-        </p>
-      )}
-      {"reference" in mention && mention.reference && (
-        <p className="mt-[6px] text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
-          {mention.reference}
-        </p>
-      )}
+      <span className="mt-px" style={{ color: colors.carteAmbreTexte }}>
+        <IconeTrait nom="alerte" taille={24} epaisseur={1.7} />
+      </span>
+      <div>
+        <p className="text-[15px] leading-[1.5]">{mention.texte}</p>
+        {precision && (
+          <p className="mt-1.5 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+            {precision}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -476,126 +601,124 @@ function EnAnalyse() {
 
 // ── Les détails, repliés ────────────────────────────────────────────────────
 
-async function Details({
+/**
+ * « Voir les détails » : une ligne de 64 px qu'on touche du pouce, et son
+ * chevron qui se retourne une fois ouverte.
+ *
+ * **Tout en bas, sous « Rattacher à un chantier », sa demande du 19 novembre
+ * 2026** : la légende de la photo, son auteur et sa licence, puis la source
+ * (« comme ça, c'est quand même mentionné dans la fiche, mais c'est tout à la
+ * fin »). Le crédit reste ainsi sur la fiche, ce que la licence d'une photo
+ * libre demande.
+ */
+async function DetailsDeLaFiche({
   resultat,
+  images,
   diagnosticId,
   chantierId,
   ctx,
 }: {
   resultat: ResultatFige;
+  images: { id: string; legende: string | null; credit: string; licence: string }[];
   diagnosticId: string;
   chantierId: string | null;
   ctx: { utilisateurId: string; entrepriseId: string };
 }) {
   const chantiers = await listerChantiers(ctx);
+  const d = resultat.details;
 
   return (
-    <details className="mt-[26px]" data-atlas="diagnostic-details">
-      <summary className="cursor-pointer text-[13px]" style={{ color: colors.rust }}>
+    <details
+      className="group mt-6"
+      style={{ boxShadow: `inset 0 1px 0 ${colors.line}, inset 0 -1px 0 ${colors.line}` }}
+      data-atlas="diagnostic-details"
+    >
+      <summary
+        className="flex min-h-[64px] cursor-pointer list-none items-center justify-between text-[17px] font-semibold [&::-webkit-details-marker]:hidden"
+        style={{ color: colors.rust }}
+      >
         Voir les détails
+        <span className="transition-transform duration-200 group-open:rotate-180" style={{ color: colors.chevron }}>
+          <IconeTrait nom="deplier" taille={22} epaisseur={2} />
+        </span>
       </summary>
 
-      <div className="mt-[16px]">
-        <Ligne cle="Nom scientifique" valeur={resultat.nomScientifique} />
-        <Ligne cle="Agent en cause" valeur={resultat.details.agentCausal} />
-        <Ligne
-          cle="Parties atteintes"
-          valeur={resultat.details.partiesAtteintes.map((p) => p.replace(/_/g, " ")).join(", ") || null}
-        />
-        {/* Les trois listes de la migration 0057 — elle promettait de les
-            afficher, et rien ne les rendait. Recopiées de la source. */}
-        <Liste cle="Ce qui le distingue" valeurs={resultat.criteresDiscriminants} />
-        <Liste cle="Ce qui l’écarte" valeurs={resultat.details.criteresExclusion} />
-        <Liste cle="Ce qui le favorise" valeurs={resultat.details.facteursFavorisants} />
-        <Ligne cle="Prévention" valeur={resultat.details.prevention} />
-        <Ligne cle="Comment ça évolue" valeur={resultat.details.gestion} />
-        {/* Le traitement ne s'affiche QUE ici, et toujours avec ses sources :
+      <div className="pb-6 pt-1">
+        <Detail cle="Agent en cause" valeur={d.agentCausal} />
+        <Detail cle="Quand ça se voit" valeur={d.quandCaSeVoit ?? null} />
+        <Detail cle="Et les autres arbres du jardin ?" valeur={d.autresEssences ?? null} />
+        <DetailListe cle="Ça pourrait aussi être" valeurs={d.criteresExclusion} />
+        <DetailListe cle="Ce qui le favorise" valeurs={d.facteursFavorisants} />
+        <Detail cle="Prévention" valeur={d.prevention} />
+        {/* Le traitement ne s'affiche QUE ici, et toujours avec sa source :
             recommander un produit phytosanitaire engage l'artisan. */}
-        <Ligne cle="Traitement" valeur={resultat.details.traitement} />
-
-        <div
-          className="mt-[18px] border-t pt-[14px]"
-          style={{ borderColor: colors.line }}
-          data-atlas="diagnostic-sources"
-        >
-          <p className={libelleCaps} style={{ color: colors.muted }}>
+        <Detail cle="Traitement" valeur={d.traitement} />
+        <div className="mt-[22px]">
+          <p className={RUBRIQUE} style={{ color: colors.inkSoft }}>
             La fiche
           </p>
-          {resultat.details.sources.length === 0 ? (
-            <p className="mt-[8px] text-[12.5px]" style={{ color: colors.muted }}>
-              Aucune source enregistrée.
-            </p>
-          ) : (
-            <ul className="mt-[8px]">
-              {resultat.details.sources.map((s, i) => (
-                <li key={i} className="mb-[8px] text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-                  {s.organisme}, {s.titre}
-                  <span style={{ color: colors.muted }}>, consultée le {dateCitee(s.consulteeLe)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="mt-[6px] text-[11.5px]" style={{ color: colors.muted }}>
-            Fiche version {resultat.details.versionFiche}
-            {resultat.details.sourcesAJourLe ? `, à jour au ${dateCitee(resultat.details.sourcesAJourLe)}` : ""}
+          <p className="mt-1.5 text-[15.5px] leading-[1.6]">
+            {d.sources.length > 0 ? `${d.sources.map((s) => s.titre).join(". ")}. ` : ""}
+            Fiche version {d.versionFiche}
+            {d.sourcesAJourLe ? `, à jour au ${dateCitee(d.sourcesAJourLe)}` : ""}.
           </p>
         </div>
 
-        <div className="mt-[18px] border-t pt-[14px]" style={{ borderColor: colors.line }}>
+        <div className="mt-[22px] pt-[18px]" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
           <RattacherAUnChantier
             diagnosticId={diagnosticId}
             chantierId={chantierId}
             chantiers={chantiers.map((c) => ({ id: c.id, nom: c.nom }))}
           />
         </div>
+
+        <div
+          className="mt-[22px] space-y-2.5 pt-[18px] text-[13px] leading-[1.5]"
+          style={{ boxShadow: `inset 0 1px 0 ${colors.line}`, color: colors.inkSoft }}
+          data-atlas="diagnostic-sources"
+        >
+          {images.map((image) => (
+            <p key={image.id} data-atlas="diagnostic-credit-photo">
+              {legendeDePhoto(image.legende, image.credit, image.licence)}
+            </p>
+          ))}
+          {d.sources.length === 0 ? (
+            <p>Aucune source enregistrée.</p>
+          ) : (
+            d.sources.map((s, i) => (
+              <p key={i}>
+                Source : {s.organisme}, page consultée le {dateCitee(s.consulteeLe)}.
+              </p>
+            ))
+          )}
+        </div>
       </div>
     </details>
   );
 }
 
-// ── Petites pièces ──────────────────────────────────────────────────────────
-
-function Bloc({ cle, children, repere, fort }: { cle: string; children: React.ReactNode; repere: string; fort?: boolean }) {
-  return (
-    <div className="mt-[20px] border-t pt-[14px]" style={{ borderColor: colors.line }}>
-      <p className={libelleCaps} style={{ color: colors.muted }}>
-        {cle}
-      </p>
-      <p className={`mt-[6px] ${fort ? "text-[17px] leading-[1.5]" : "text-[15px] leading-[1.55]"}`} style={{ color: colors.ink }} data-atlas={repere}>
-        {children}
-      </p>
-    </div>
-  );
-}
-
 /** Un champ absent ne s'affiche pas : une donnée manquante reste manquante. */
-function Ligne({ cle, valeur }: { cle: string; valeur: string | null }) {
+function Detail({ cle, valeur }: { cle: string; valeur: string | null }) {
   if (!valeur) return null;
   return (
-    <div className="mb-[12px]">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
+    <div className="mt-[22px] first:mt-0">
+      <p className={RUBRIQUE} style={{ color: colors.inkSoft }}>
         {cle}
       </p>
-      <p className="mt-[3px] text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
-        {valeur}
-      </p>
+      <p className="mt-1.5 text-[15.5px] leading-[1.6]">{valeur}</p>
     </div>
   );
 }
 
 /** Une liste vide ne s'affiche pas davantage. */
-function Liste({ cle, valeurs }: { cle: string; valeurs: string[] }) {
+function DetailListe({ cle, valeurs }: { cle: string; valeurs: string[] }) {
   if (valeurs.length === 0) return null;
   return (
-    <div className="mb-[12px]">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
+    <div className="mt-[22px] first:mt-0">
+      <p className={RUBRIQUE} style={{ color: colors.inkSoft }}>
         {cle}
       </p>
-      <ul className="mt-[3px] list-disc pl-[18px] text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
-        {valeurs.map((v, i) => (
-          <li key={i}>{v}</li>
-        ))}
-      </ul>
+      <Puces valeurs={valeurs} petite />
     </div>
   );
 }

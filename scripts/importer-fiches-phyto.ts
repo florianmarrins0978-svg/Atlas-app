@@ -252,13 +252,13 @@ async function ecrire(client: PoolClient, lot: LotImporte) {
 
     for (const t of lot.taxons) {
       await client.query(
-        `INSERT INTO taxons (code, nom_scientifique, nom_commun, synonymes, rang, port)
-         VALUES ($1,$2,$3,$4,$5,$6)
+        `INSERT INTO taxons (code, nom_scientifique, nom_commun, synonymes, rang, port, article)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)
          ON CONFLICT (code) DO UPDATE SET
            nom_scientifique = EXCLUDED.nom_scientifique, nom_commun = EXCLUDED.nom_commun,
            synonymes = EXCLUDED.synonymes, rang = EXCLUDED.rang, port = EXCLUDED.port,
-           updated_at = now()`,
-        [t.code, t.nomScientifique, t.nomCommun, t.synonymes, t.rang, t.port]
+           article = EXCLUDED.article, updated_at = now()`,
+        [t.code, t.nomScientifique, t.nomCommun, t.synonymes, t.rang, t.port, t.article]
       );
     }
 
@@ -281,8 +281,10 @@ async function ecrireFiche(client: PoolClient, f: FicheImportee) {
        traitement, niveau_validation, origine, version, sources_a_jour_le,
        criteres_discriminants, criteres_exclusion, facteurs_favorisants,
        informations_requises, methode_confirmation, certitude_max, hotes_non_exhaustifs,
-       controle_integrite_ok, controle_integrite_le
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,false,NULL)
+       controle_integrite_ok, controle_integrite_le,
+       gravite_selon_la_source, note_impact, note_agressivite, note_frequence,
+       comment_ca_arrive, quand_ca_se_voit, autres_essences
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,false,NULL,$35,$36,$37,$38,$39,$40,$41)
      ON CONFLICT (code) DO UPDATE SET
        nom_commun = EXCLUDED.nom_commun, nom_scientifique = EXCLUDED.nom_scientifique,
        categorie = EXCLUDED.categorie, agent_causal = EXCLUDED.agent_causal,
@@ -306,6 +308,10 @@ async function ecrireFiche(client: PoolClient, f: FicheImportee) {
        methode_confirmation = EXCLUDED.methode_confirmation,
        certitude_max = EXCLUDED.certitude_max,
        hotes_non_exhaustifs = EXCLUDED.hotes_non_exhaustifs,
+       gravite_selon_la_source = EXCLUDED.gravite_selon_la_source,
+       note_impact = EXCLUDED.note_impact, note_agressivite = EXCLUDED.note_agressivite,
+       note_frequence = EXCLUDED.note_frequence, comment_ca_arrive = EXCLUDED.comment_ca_arrive,
+       quand_ca_se_voit = EXCLUDED.quand_ca_se_voit, autres_essences = EXCLUDED.autres_essences,
        -- **Toute réécriture ANNULE le contrôle précédent.** Sans cette ligne,
        -- une fiche modifiée garderait le vert obtenu par sa version d'avant :
        -- le contrôle porterait alors sur un texte qui n'est plus servi.
@@ -328,6 +334,8 @@ async function ecrireFiche(client: PoolClient, f: FicheImportee) {
       f.origine, f.version, f.sourcesAJourLe,
       f.criteresDiscriminants, f.criteresExclusion, f.facteursFavorisants,
       f.informationsRequises, f.methodeConfirmation, f.certitudeMax, f.hotesNonExhaustifs,
+      f.graviteSelonLaSource, f.noteImpact, f.noteAgressivite, f.noteFrequence,
+      f.commentCaArrive, f.quandCaSeVoit, f.autresEssences,
     ]
   );
 }
@@ -410,6 +418,13 @@ async function relireFiche(client: PoolClient, code: string): Promise<FicheImpor
     facteursFavorisants: f.facteurs_favorisants,
     informationsRequises: f.informations_requises,
     methodeConfirmation: f.methode_confirmation,
+    graviteSelonLaSource: f.gravite_selon_la_source,
+    noteImpact: f.note_impact,
+    noteAgressivite: f.note_agressivite,
+    noteFrequence: f.note_frequence,
+    commentCaArrive: f.comment_ca_arrive,
+    quandCaSeVoit: f.quand_ca_se_voit,
+    autresEssences: f.autres_essences,
     certitudeMax: f.certitude_max,
     hotesNonExhaustifs: f.hotes_non_exhaustifs,
     niveauValidation: f.niveau_validation,

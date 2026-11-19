@@ -590,6 +590,60 @@ cas("la même fiche, plafonnée à « probable », passe", () => {
   assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
 });
 
+console.log("\n=== Son ordre du 22 septembre : les champs neufs (migration 0187) ===");
+
+cas("une fiche portant les champs neufs passe, et les garde", () => {
+  const brut = lot({
+    taxons: [{ code: "populus", nomCommun: "Peuplier", rang: "genre", port: "feuillu", article: "un" }],
+    fiches: [
+      ficheValide({
+        graviteSelonLaSource: "L’arbre perd une partie de ses feuilles.",
+        noteImpact: 1,
+        noteAgressivite: 2,
+        noteFrequence: 3,
+        commentCaArrive: "Le champignon germe quand l’air est humide.",
+        quandCaSeVoit: "Les taches apparaissent au printemps.",
+        autresEssences: "La page ne nomme aucun autre arbre.",
+      }),
+    ],
+  });
+  const verdict = validerLot(brut, { autoriserFixtures: false });
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+  if (!verdict.ok) return;
+  const f = verdict.lot.fiches[0];
+  assert.equal(f.noteAgressivite, 2);
+  assert.equal(f.commentCaArrive, "Le champignon germe quand l’air est humide.");
+  assert.equal(verdict.lot.taxons[0].article, "un");
+});
+
+cas("une note sur 4 n'existe pas, un article inventé non plus", () => {
+  refus(lot({ fiches: [ficheValide({ noteImpact: 4, noteAgressivite: 1, noteFrequence: 1 })] }), /noteImpact/);
+  refus(lot({ taxons: [{ code: "populus", nomCommun: "Peuplier", article: "le" }] }), /article/);
+});
+
+cas("contrôle 9 : deux notes sans la troisième sont refusées", () => {
+  refus(lot({ fiches: [ficheValide({ noteImpact: 1, noteAgressivite: 2 })] }), /toutes ou aucune/);
+});
+
+cas("contrôle 10 : « L’INRAE ne donne aucun traitement » à l'écran est refusé (sa règle du 19 novembre)", () => {
+  refus(
+    lot({ fiches: [ficheValide({ conduiteRecommandee: "L’INRAE ne donne aucun traitement pour cette maladie." })] }),
+    /conduiteRecommandee.*INRAE/
+  );
+  refus(
+    lot({ fiches: [ficheValide({ criteresDiscriminants: ["Des taches que la page d’Ephytia décrit."] })] }),
+    /criteresDiscriminants.*Ephytia/
+  );
+});
+
+cas("contrôle 10 : les détails, eux, peuvent nommer la source", () => {
+  const verdict = validerLot(
+    lot({ fiches: [ficheValide({ autresEssences: "La page de l’INRAE ne nomme aucun autre arbre." })] }),
+    { autoriserFixtures: false }
+  );
+  assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
+});
+
 console.log("\n=== La conservation des photos : configurable, jamais gravée ===");
 
 cas("les valeurs par défaut : 90 jours libre, jamais purgé si rattaché", () => {

@@ -17,6 +17,7 @@
       "code": "quercus",
       "nomScientifique": "Quercus",
       "nomCommun": "Chêne",
+      "article": "un",
       "synonymes": [
         "chênes",
         "chêne pédonculé",
@@ -30,6 +31,7 @@
       "code": "fagus",
       "nomScientifique": "Fagus",
       "nomCommun": "Hêtre",
+      "article": "un",
       "synonymes": [
         "hêtre commun",
         "fayard"

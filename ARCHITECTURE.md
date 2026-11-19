@@ -37675,3 +37675,19 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
 | Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
 
+
+## §591 : La fiche de diagnostic suit son ordre et l'allure soignée ; l'organisme ne se nomme que dans les détails
+
+*19 novembre 2026, sa planche (`appli/soignee/fiche-de-diagnostic.html`) et son « code la, pas de batterie ».*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Son ordre du 22 septembre n'avait jamais été codé : l'écran montrait « Probable · Platane », « Gravité : Vigilance » et la source sous « Que faire ? » | la fiche rendue suit son ordre : le nom (latin en italique dessous), les parties atteintes, la phrase de confiance, la photo, est-ce grave pour l'arbre, que faire, comment le reconnaître, comment ça arrive, comment ça se propage ; le reste dans « Voir les détails » |
+| « Probable sur un peuplier. » demande le genre du nom d'essence, qui ne se devine pas | `taxons.article` (un, une, des), écrit dans la fiche ; sans article, « Probable. » et l'essence sur sa ligne (`phrasesDeConfiance`) |
+| « Gravité : Vigilance » ne disait rien ; ce que la source dit, oui | `gravite_selon_la_source` en phrases, et les trois notes sur 3 de la source en barres seules (sa demande : « laisse juste les trois petits trucs de couleur ») ; toutes ou aucune, en base (`fiches_phyto_notes_source_ck`) comme à l'import (contrôle 9). `gravite` reste interne : il pèse sur la mention de stabilité |
+| Sa règle du même soir : « ne pas parler de l'INRAE dans les fiches visibles, on peut en parler dans la description » | contrôle 10 de l'import : `champsVisibles` (ce que l'écran montre sans ouvrir les détails) ne nomme ni INRAE ni Ephytia ; la source et le crédit de la photo vivent tout en bas des détails, sous le rattachement |
+| La légende d'une photo qui finit par un point en recevait un second | `legendeDePhoto`, vu à l'écran réel le 19 novembre |
+| Les résultats déjà figés n'ont pas ces champs | ils restent figés (0056) : les champs neufs sont facultatifs dans `ResultatFige`, et un bloc sans donnée ne s'affiche pas |
+| Les trois autres issues (une photo de plus, sans conclusion, personne n'a regardé) | inchangées : la planche ne les montrait pas |
+
+Migration 0187, expand seul (colonnes NULL, aucune ligne réécrite). Les fiches 1 à 3 gardent ces colonnes vides jusqu'à les recevoir de leurs sources ; elles ont reçu leur article. Suites pures : `test-diagnostic-vegetal.ts` (les phrases, la légende), `test-import-fiches-phyto.ts` (champs neufs, contrôles 9 et 10). `test-diagnostic-ecrans-e2e.ts` adaptée (le crédit en bas des détails, l'organisme absent hors détails), **non jouée** : il a demandé de ne lancer aucune batterie.

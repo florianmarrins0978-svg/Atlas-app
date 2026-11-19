@@ -3615,6 +3615,7 @@ Le détail et les partis pris : `ARCHITECTURE.md` §142.
 | Moteur déterministe : rapprochement, arbitrage, confiance | **fait**, éprouvé sans base ni réseau |
 | Observation par un modèle de vision, vocabulaire fermé | **fait** — l'appel réel **non vérifié** ici, faute de clé |
 | Écrans : prise de photo, résultat, relance, refus | **faits** |
+| **La fiche rendue dans son ordre du 22 septembre, allure soignée** (§591, migration 0187) | **codée le 19 novembre 2026 sur la branche**, batterie à jouer sur son oui, pas sur `main` |
 | Retrait des métadonnées EXIF (JPEG/PNG/WebP) | **fait**, éprouvé sur l'octet |
 | Conservation configurable + purge planifiée | **fait** |
 | Rattachement facultatif à un chantier | **fait** |

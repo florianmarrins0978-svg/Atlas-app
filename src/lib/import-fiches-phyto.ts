@@ -87,6 +87,9 @@ export const TaxonSchema = z.object({
   synonymes: z.array(z.string().min(2)).default([]),
   rang: z.enum(["genre", "espece", "famille", "groupe"]).default("espece"),
   port: z.enum(PORTS).nullable().default(null),
+  /** « un », « une », « des » : l'écran écrit « Probable sur un peuplier. ».
+   *  Le genre d'un nom d'essence ne se devine pas (migration 0187). */
+  article: z.enum(["un", "une", "des"]).nullable().default(null),
 });
 export type TaxonImporte = z.infer<typeof TaxonSchema>;
 
@@ -156,6 +159,18 @@ export const FicheSchema = z.object({
   informationsRequises: z.array(z.string().min(5)).default([]),
   /** « La détection en laboratoire est nécessaire. » Recopié de la source. */
   methodeConfirmation: z.string().min(5).nullable().default(null),
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  /** Ce que la SOURCE dit de la gravité, en phrases. Sa question : « Gravité
+   *  vigilance, ça veut rien dire ? Que dit l'INRAE ? ». `gravite` reste interne. */
+  graviteSelonLaSource: z.string().min(10).nullable().default(null),
+  /** Les trois notes sur 3 que donne la source, en barres à l'écran. Toutes ou
+   *  aucune : contrôle 9 ci-dessous, et contrainte en base. */
+  noteImpact: z.number().int().min(1).max(3).nullable().default(null),
+  noteAgressivite: z.number().int().min(1).max(3).nullable().default(null),
+  noteFrequence: z.number().int().min(1).max(3).nullable().default(null),
+  commentCaArrive: z.string().min(10).nullable().default(null),
+  quandCaSeVoit: z.string().min(10).nullable().default(null),
+  autresEssences: z.string().min(10).nullable().default(null),
   /**
    * Le plafond de confiance que la source autorise.
    *
@@ -482,6 +497,28 @@ export function validerLot(
       }
     }
 
+    // ── 9. Les trois notes de la source vont ensemble ──────────────────────
+    //
+    // Une jauge sur trois ne se lit pas : l'écran montrerait « Impact » seul,
+    // et l'on croirait que la source n'a pas noté le reste. La base le refuse
+    // aussi (`fiches_phyto_notes_source_ck`) ; ici, le refus dit lequel manque.
+    const notes = [fiche.noteImpact, fiche.noteAgressivite, fiche.noteFrequence];
+    if (notes.some((n) => n !== null) && notes.some((n) => n === null)) {
+      problemes.push(ici("les trois notes (`noteImpact`, `noteAgressivite`, `noteFrequence`) vont ensemble : toutes ou aucune"));
+    }
+
+    // ── 10. L'organisme ne se nomme que dans les détails ───────────────────
+    //
+    // **Sa règle du 19 novembre 2026, devant « L’INRAE ne donne aucun
+    // traitement » :** *« l'idée c'est de ne pas parler de l'INRAE dans les
+    // fiches visibles, et on peut en parler dans la description »*. Ce qui se
+    // lit sans ouvrir « Voir les détails » dit les faits sans les attribuer ;
+    // la source, elle, reste en bas des détails.
+    for (const [champ, valeur] of champsVisibles(fiche)) {
+      const nom = ORGANISMES_TUS.find((o) => valeur.includes(o));
+      if (nom) problemes.push(ici(`\`${champ}\` nomme « ${nom} » : hors des détails, la fiche ne nomme pas sa source`));
+    }
+
     // Une fiche dont la photo ne peut rien prouver n'a pas à être servable :
     // elle occuperait le classement sans jamais pouvoir conclure.
     if (fiche.diagnosticPhoto === "impossible" && fiche.niveauValidation === "validee") {
@@ -493,6 +530,37 @@ export function validerLot(
 
   if (problemes.length > 0) return { ok: false, problemes, avertissements };
   return { ok: true, lot, avertissements };
+}
+
+/** Les organismes qu'une fiche ne nomme pas hors de ses détails (contrôle 10). */
+export const ORGANISMES_TUS = ["INRAE", "Ephytia"] as const;
+
+/**
+ * Ce que l'écran de résultat montre SANS ouvrir « Voir les détails », dans son
+ * ordre du 22 septembre 2026. La liste vit ici et non dans l'écran : c'est le
+ * contrôle 10 qui en a besoin, et un champ qui monte un jour à l'écran doit
+ * monter ici aussi.
+ */
+export function champsVisibles(fiche: FicheImportee): [string, string][] {
+  const textes: [string, string | null][] = [
+    ["nomCommun", fiche.nomCommun],
+    ["nomScientifique", fiche.nomScientifique],
+    ["graviteSelonLaSource", fiche.graviteSelonLaSource],
+    ["conduiteRecommandee", fiche.conduiteRecommandee],
+    ["methodeConfirmation", fiche.methodeConfirmation],
+    ["commentCaArrive", fiche.commentCaArrive],
+    ["gestion", fiche.gestion],
+    ["impactMecaniqueNote", fiche.impactMecaniqueNote],
+    ["risqueHumainAnimalNote", fiche.risqueHumainAnimalNote],
+  ];
+  const listes: [string, string[]][] = [
+    ["criteresDiscriminants", fiche.criteresDiscriminants],
+    ["informationsRequises", fiche.informationsRequises],
+  ];
+  return [
+    ...textes.filter((t): t is [string, string] => t[1] !== null),
+    ...listes.flatMap(([champ, valeurs]) => valeurs.map((v): [string, string] => [champ, v])),
+  ];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -589,6 +657,13 @@ const CHAMPS_SCALAIRES = [
   "gestion",
   "traitement",
   "methodeConfirmation",
+  "graviteSelonLaSource",
+  "noteImpact",
+  "noteAgressivite",
+  "noteFrequence",
+  "commentCaArrive",
+  "quandCaSeVoit",
+  "autresEssences",
   "certitudeMax",
   "hotesNonExhaustifs",
   "origine",

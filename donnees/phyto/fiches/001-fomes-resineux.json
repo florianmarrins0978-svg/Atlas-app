@@ -18,6 +18,7 @@
       "code": "picea-abies",
       "nomScientifique": "Picea abies",
       "nomCommun": "Épicéa commun",
+      "article": "un",
       "synonymes": [
         "épicéa"
       ],
@@ -28,6 +29,7 @@
       "code": "picea-sitchensis",
       "nomScientifique": "Picea sitchensis",
       "nomCommun": "Épicéa de Sitka",
+      "article": "un",
       "synonymes": [],
       "rang": "espece",
       "port": "conifere"
@@ -36,6 +38,7 @@
       "code": "pinus-pinaster",
       "nomScientifique": "Pinus pinaster",
       "nomCommun": "Pin maritime",
+      "article": "un",
       "synonymes": [],
       "rang": "espece",
       "port": "conifere"
@@ -44,6 +47,7 @@
       "code": "pseudotsuga-menziesii",
       "nomScientifique": "Pseudotsuga menziesii",
       "nomCommun": "Douglas",
+      "article": "un",
       "synonymes": [
         "sapin de Douglas"
       ],
@@ -54,6 +58,7 @@
       "code": "abies-alba",
       "nomScientifique": "Abies alba",
       "nomCommun": "Sapin pectiné",
+      "article": "un",
       "synonymes": [],
       "rang": "espece",
       "port": "conifere"
@@ -62,6 +67,7 @@
       "code": "abies-grandis",
       "nomScientifique": "Abies grandis",
       "nomCommun": "Sapin de Vancouver",
+      "article": "un",
       "synonymes": [
         "sapin grandissime"
       ],
@@ -72,6 +78,7 @@
       "code": "pinus-strobus",
       "nomScientifique": "Pinus strobus",
       "nomCommun": "Pin weymouth",
+      "article": "un",
       "synonymes": [],
       "rang": "espece",
       "port": "conifere"
@@ -80,6 +87,7 @@
       "code": "larix",
       "nomScientifique": "Larix",
       "nomCommun": "Mélèze",
+      "article": "un",
       "synonymes": [],
       "rang": "genre",
       "port": "conifere"
@@ -88,6 +96,7 @@
       "code": "pinus",
       "nomScientifique": "Pinus",
       "nomCommun": "Pin",
+      "article": "un",
       "synonymes": [
         "pins"
       ],

@@ -23,6 +23,10 @@ import {
   phraseFichesConnues,
   REFUS_PAR_LA_BIBLIOTHEQUE,
   type MotifRefus,
+  legendeDePhoto,
+  notesDeLaSource,
+  partiesEnPhrase,
+  phrasesDeConfiance,
 } from "../src/lib/diagnostic-vegetal";
 
 /**
@@ -674,6 +678,45 @@ cas("le compte des fiches s'écrit au singulier comme au pluriel", () => {
   assert.equal(phraseFichesConnues(1), "Cause connaît 1 problème pour l’instant.");
   assert.equal(phraseFichesConnues(3), "Cause connaît 3 problèmes pour l’instant.");
   assert.ok(REFUS_PAR_LA_BIBLIOTHEQUE.includes("aucune_piste"));
+});
+
+console.log("\n=== La fiche en phrases : son ordre du 22 septembre, codé le 19 novembre ===");
+
+cas("« Probable sur un peuplier. » : plus de point médian entre le mot et l'essence", () => {
+  assert.deepEqual(phrasesDeConfiance("probable", { nom: "Peuplier", article: "un" }), ["Probable sur un peuplier."]);
+  assert.deepEqual(phrasesDeConfiance("elevee", { nom: "Aubépine", article: "une" }), ["Très probable sur une aubépine."]);
+  for (const ligne of phrasesDeConfiance("probable", { nom: "Platane", article: "un" })) {
+    assert.doesNotMatch(ligne, /·/, "le point médian est revenu");
+  }
+});
+
+cas("seule la première lettre de l'essence passe en minuscule", () => {
+  assert.deepEqual(phrasesDeConfiance("probable", { nom: "Sapin de Douglas", article: "un" }), ["Probable sur un sapin de Douglas."]);
+});
+
+cas("sans article en base, aucun n'est deviné ; sans essence, le mot seul", () => {
+  assert.deepEqual(phrasesDeConfiance("probable", { nom: "Platane", article: null }), ["Probable.", "Platane."]);
+  assert.deepEqual(phrasesDeConfiance("incertaine", null), ["Incertain."]);
+});
+
+cas("les parties atteintes se lisent en phrase, la dernière liée par « et »", () => {
+  assert.equal(partiesEnPhrase(["feuille", "rameau", "houppier"]), "Les feuilles, les rameaux et le houppier.");
+  assert.equal(partiesEnPhrase(["ecorce"]), "L’écorce.");
+  assert.equal(partiesEnPhrase([]), null, "aucune partie : aucun bloc");
+  assert.equal(partiesEnPhrase(["mot_inconnu"]), null, "un mot hors du vocabulaire fermé ne s'affiche pas");
+});
+
+cas("une légende qui finit par un point n'en reçoit pas un second (vu à l'écran le 19 novembre)", () => {
+  const phrase = legendeDePhoto("Petites taches brunes sur une feuille de peuplier.", "Photo de Manfred Mielke", "CC BY 3.0 US");
+  assert.equal(phrase, "Petites taches brunes sur une feuille de peuplier. Photo de Manfred Mielke, sous licence CC BY 3.0 US.");
+  assert.doesNotMatch(phrase, /\.\./, "deux points de suite");
+  assert.equal(legendeDePhoto(null, "Clemson University", "domaine public"), "Clemson University, sous licence domaine public.");
+});
+
+cas("les trois notes de la source vont ensemble, ou ne s'affichent pas", () => {
+  assert.deepEqual(notesDeLaSource(1, 2, 3), { impact: 1, agressivite: 2, frequence: 3 });
+  assert.equal(notesDeLaSource(1, null, 3), null);
+  assert.equal(notesDeLaSource(null, null, null), null);
 });
 
 console.log(
