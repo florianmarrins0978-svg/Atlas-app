@@ -27,6 +27,19 @@ plus par fiche (`fiches_phyto`, expand, nullable), recopiés de la source ;
 sans note, la ligne disparaît et la phrase reste entière. Le crédit d'une
 photo libre reste ainsi affiché sur la fiche, une fois les détails ouverts.
 
+**SA RÈGLE DU 19 NOVEMBRE AU SOIR, ET ELLE VAUT POUR TOUTES LES FICHES :**
+*« L'idée c'est de ne pas parler de l'INRAE dans les fiches visibles et on
+peut en parler dans la description. »* Le nom de l'organisme ne s'écrit que
+dans « Voir les détails » (la fiche, la source) ; ce qui se lit sans les ouvrir
+dit les faits sans les attribuer. Portée le soir même sur les quatre
+brouillons (`conduiteRecommandee` du chêne, du hêtre, du frêne et du
+peuplier : « Aucun traitement… » au lieu de « L’INRAE ne donne aucun
+traitement… ») ; les fiches 1 à 3 en base ne le nomment déjà que dans leur
+source. Reste `graviteSelonLaSource` du peuplier, qui ouvre sur « L’INRAE
+donne un impact de 1 sur 3… » : la phrase part du texte le jour où les trois
+notes deviennent trois champs. **À savoir en relisant** : « Aucun traitement »
+dit un peu plus que la source, qui dit seulement n'en donner aucun.
+
 **Encore à trancher par lui** : le code, toute la planche ou une partie. Elle
 s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 
