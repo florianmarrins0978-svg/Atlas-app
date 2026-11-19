@@ -1,5 +1,9 @@
 # État du projet
 
+## SA FAÇON D'ABATTRE ET LE DIAMÈTRE HORS DE LA DÉSIGNATION, SANS PARENTHÈSES : SUR `main` (19 novembre 2026)
+
+Sa capture : « Abattage d'un chêne (Quercus robur) (abattage entre 10 et 20 m, ø 80 cm) ». Le client lit désormais « Abattage d'un chêne Quercus robur » ; la ligne reste chiffrée par sa case, et le texte en base garde ses réponses pour les moteurs. Vrai pour une façon d'abattre qu'il a nommée lui-même (lue dans ses grilles par `listerPrestationsDuDevis`). Batterie : 216 suites navigateur sur 217, la seule rouge (`test-anneau-dictee-e2e`) verte des deux côtés quand elle est rejouée sur la base de `main`, donc étrangère au lot. `ARCHITECTURE.md` §588.
+
 ## LA MISE À JOUR DE SON ESPACE DIT POURQUOI ELLE REFUSE, ALLUMAGE COMPRIS (18 novembre 2026), SUR `main`
 
 `mettre-a-jour.sh` note son issue lui-même (`ARCHITECTURE.md` §587) ; avant, seul le bouton de Réglages la notait. Né de son devis du soir, sorti d'un espace resté sur le code du 9 novembre. La cause du refus reste à lire puis à corriger (`TODO.md`). Niveau 2 au vert sur son « oui » (suites du dépôt, 31 suites navigateur sur 31).

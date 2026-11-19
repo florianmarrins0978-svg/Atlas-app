@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LA DÉSIGNATION NE PORTE NI SES RÉPONSES À LA GRILLE NI PARENTHÈSES (19 novembre 2026), SUR `main`
+
+Ses réponses « Avant de chiffrer » (façon d'abattre, diamètre) restent écrites dans le libellé en base, parce que les moteurs y relisent le diamètre ; `libelleClient` les retire de ce que le client lit, nom choisi par lui compris (`methodeLibelle`, lu dans ses grilles). Cette écriture puis effacement est une dette : ranger ses réponses dans leurs colonnes seules la supprimerait (proposé le 19 novembre, sans réponse encore). `ARCHITECTURE.md` §588.
+
 ## « J'AI ENCORE LE DÉFAUT D'AVANT » : LIRE D'ABORD QUEL CODE SON ESPACE SERT (18 novembre 2026)
 
 Son devis « Main d'œuvre : abattage…, taille… » sur une seule case venait du code du 9 novembre au matin : §579 l'a corrigé le soir même, et son espace servait encore `d673dbb`, son rallumage ne l'ayant pas avancé. Devant un défaut déjà corrigé, la ligne « Code SERVI » de sa fiche (issue n° 47) se compare au commit de la correction (`git merge-base --is-ancestor <correction> <servi>`) AVANT de chercher dans le produit. Depuis §587, la ligne « Dernière m.à.j. » dit pourquoi une mise à jour a refusé, allumage compris. Ce qui reste : `TODO.md`, en tête.
