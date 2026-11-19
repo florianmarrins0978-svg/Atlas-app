@@ -680,11 +680,16 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // l'envoi y montre le client qui signe (18 novembre 2026), et l'autre page
   // garde les siens. Un film renommé d'un seul côté ferait chercher un cadre
   // qui n'existe pas : le contrôle le dit au lieu de s'y casser.
+  //
+  // Le dernier mot de chaque page dit si, le film fini, il doit rester sous
+  // sa dernière image (voir plus bas, « reste sous sa dernière image ») : la
+  // planche en mouvement le tient depuis le 19 novembre 2026. L'autre page,
+  // qu'il a demandé de ne pas toucher, garde l'ancienne mécanique.
   const FILMS = ['micro', 'envoi', 'mois', 'equipe', 'travaux'];
   const EN_MOUVEMENT = { equipe: 'equipe-fluide', envoi: 'envoi-signe' };
   const PAGES_DE_VENTE = [
-    ['chapitres-6.html', 'vente', FILMS],
-    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => EN_MOUVEMENT[f] || f).concat('fiche')],
+    ['chapitres-6.html', 'vente', FILMS, false],
+    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => EN_MOUVEMENT[f] || f).concat('fiche'), true],
   ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -714,7 +719,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // (« nov-film- » + data-film) : aucun grep ne dit qu'un fichier manque, et
   // un film absent laisserait un téléphone figé sur sa première image. On
   // les regarde donc jouer, un par un, comme lui en descendant.
-  for (const [fichier, nomPage, films] of PAGES_DE_VENTE) {
+  //
+  // Le film fini, sa dernière image se pose par-dessus : s'il se cache au
+  // même instant, le navigateur, qui n'a encore jamais peint cette image, met
+  // un rendu à la décoder, et l'on revoit un éclair de la PREMIÈRE image du
+  // film (vu le 19 novembre 2026 à la fin des travaux : la liste décochée
+  // qui repasse). Le film reste donc dessous, sur sa dernière image.
+  for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
     await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
@@ -729,12 +740,67 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const etat = await page.evaluate((n) => {
         const c = document.querySelector('[data-film="' + n + '"]'), v = c.querySelector('video');
         const vu = (s) => { const i = c.querySelector(s); return !!(i && i.complete && i.naturalWidth); };
-        return { erreur: v && v.error && v.error.code, joue: v && v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, debut: vu('.film-debut'), fin: vu('.film-fin') };
+        return { erreur: v && v.error && v.error.code, joue: v && v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, debut: vu('.film-debut'), fin: vu('.film-fin'), dessous: v ? getComputedStyle(v).opacity : null };
       }, nom);
       ok(nomPage + ' : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
       ok(nomPage + ' : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
+      if (resteDessous) ok(nomPage + ' : le film ' + nom + ' reste sous sa dernière image', etat.dessous === '1', JSON.stringify(etat));
     }
     await cFi.close();
+  }
+
+  // ── Le site de vente en mouvement : l'ouverture ne se fige pas ───────────
+  //
+  // Sa remarque du 19 novembre 2026 : « quand on clique sur créer le devis et
+  // que la fiche client apparaît [...] comme si elle freezait une
+  // demi-seconde ». Dans l'appli, le « + » tourne 520 ms avant que la fiche
+  // monte : son choix, et à la taille d'un vrai téléphone on le voit. Sur le
+  // site il mesure dix pixels, et une demi-seconde où rien d'autre ne bouge
+  // se lit comme une panne. Le film de cette page est donc recoupé
+  // (scripts/film-creer-un-devis-vif.sh). On le feuillette image par image :
+  // du début à la première image où la fiche monte, moins de 0,3 s. Puis on
+  // le regarde jouer dans la page, au premier défilement, comme lui.
+  {
+    const cOu = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
+    const page = await cOu.newPage();
+    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'networkidle' });
+    const film = await page.evaluate(async () => {
+      const source = document.querySelector('#scene-creer video').currentSrc;
+      if (!source) return { erreur: 'le film de l\'ouverture n\'a pas de source lisible' };
+      const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = source;
+      const pret = await new Promise((r) => { v.addEventListener('loadeddata', () => r(true), { once: true }); v.addEventListener('error', () => r(false), { once: true }); });
+      if (!pret) return { erreur: 'film illisible : ' + source };
+      const k = document.createElement('canvas'); k.width = 195; k.height = 332;
+      const x = k.getContext('2d', { willReadFrequently: true });
+      // Un pas deux fois plus fin que le film : aucune image n'échappe.
+      let avant = null, monte = null, pire = 0;
+      for (let t = 0; t < v.duration - 0.005; t += 0.02) {
+        v.currentTime = t; await new Promise((r) => v.addEventListener('seeked', r, { once: true }));
+        x.drawImage(v, 0, 0, 195, 332);
+        const d = x.getImageData(0, 0, 195, 332).data;
+        if (avant) {
+          let somme = 0; for (let i = 0; i < d.length; i += 4) somme += Math.abs(d[i] - avant[i]) + Math.abs(d[i + 1] - avant[i + 1]) + Math.abs(d[i + 2] - avant[i + 2]);
+          const bouge = somme / (d.length / 4) / 3; pire = Math.max(pire, bouge);
+          // Le « + » qui tourne déplace moins d'un demi-niveau en moyenne ;
+          // la fiche qui monte, plus de dix.
+          if (monte === null && bouge > 2) monte = +t.toFixed(2);
+        }
+        avant = d;
+      }
+      return { source: source.split('/').pop(), duree: +v.duration.toFixed(2), monte, pire: +pire.toFixed(1) };
+    });
+    ok('ouverture en mouvement : la fiche monte moins de 0,3 s après l\'appui', !film.erreur && film.monte !== null && film.monte <= 0.3, JSON.stringify(film));
+    // Le premier défilement lance la scène, une fois le téléphone posé.
+    await page.waitForTimeout(3200);
+    await page.evaluate(() => { const r = document.querySelector('#scene-creer').getBoundingClientRect(); scrollTo(0, Math.max(40, scrollY + r.top - 120)); });
+    const fini = await page.waitForFunction(() => document.querySelector('#scene-creer .film-fin').classList.contains('vue'), null, { timeout: 12000 }).then(() => true, () => false);
+    const etatOu = await page.evaluate(() => {
+      const v = document.querySelector('#scene-creer video');
+      return { erreur: v.error && v.error.code, joue: v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, dessous: getComputedStyle(v).opacity, source: v.currentSrc.split('/').pop() };
+    });
+    ok('ouverture en mouvement : le film se joue jusqu\'au bout au premier défilement', fini && !etatOu.erreur && etatOu.joue > 0.95, JSON.stringify(etatOu));
+    ok('ouverture en mouvement : le film reste sous sa dernière image', etatOu.dessous === '1', JSON.stringify(etatOu));
+    await cOu.close();
   }
 
   // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────

@@ -7,8 +7,9 @@
    et ensuite sa signature vient s'apposer sur le devis. Ça serait bien que
    tu mettes cette animation sur le site. »
 
-   La signature du devis est en cours de codage : il n'y a pas encore d'écran
-   à filmer dans l'appli. La composition (film-envoi-signe.js, qui dit ce qui
+   Quand ce film a été fait, la signature du devis était en cours de codage :
+   il n'y avait pas encore d'écran à filmer dans l'appli (elle a été livrée
+   le soir même, et ce film est à refaire en la filmant). La composition (film-envoi-signe.js, qui dit ce qui
    est vrai et ce qui est du montage) anime donc la planche qu'il a choisie,
    soignee/devis-signe-dans-une-feuille.html, c'est-à-dire la vraie page du
    client figée telle que l'appli la peint, avec le chantier de Mr. Lemaire
