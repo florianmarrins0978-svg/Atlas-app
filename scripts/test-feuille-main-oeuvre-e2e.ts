@@ -163,7 +163,8 @@ async function main() {
       await ouvrir();
       assert.equal(await texte('[data-atlas="mo-hommes"]'), "3", "rouverte, la feuille ne repart pas de ses 3 hommes");
       assert.equal(await texte('[data-atlas="mo-duree"]'), "2 jours");
-      await page.getByRole("button", { name: "Annuler" }).click();
+      // `exact` : le tiroir des retraits, fermé, porte aussi un « Annuler ».
+      await page.getByRole("button", { name: "Annuler", exact: true }).click();
       assert.equal(await page.locator('[data-atlas="croix-ligne"]').count(), aLEcran, "l'écran a gardé une ligne en trop");
     });
 
