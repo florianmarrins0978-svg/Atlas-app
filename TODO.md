@@ -36,7 +36,7 @@ bactérien du frêne (1). Retirées parce qu'elles trompaient : framboises et
 rosier (pourriture grise des résineux), pommier (chancre du hêtre), tilleul
 (cécidomyies), « Corineo » sans nom d'organisme. Pourquoi aucune photo de
 l'INRAE : ses figures portent « © INRAE » ; seule son autorisation écrite les
-ouvrirait. **Reste à faire** : les confusions entre fiches proches (vides) ; le défaut espèce et genre ci-dessous,
+ouvrirait. **Sa règle du même soir** : le problème de près (feuille, aiguille, écorce, champignon), jamais l'arbre entier ni un peuplement quand la maladie se voit sur la feuille ; douze vues d'arbre retirées, et la feuille de chêne rouge d'Amérique de l'anthracnose du chêne (sa page nommait le champignon du hêtre). **Reste à faire** : les confusions entre fiches proches (vides) ; le défaut espèce et genre ci-dessous,
 que les nouvelles essences d'espèce rendent plus pressant. Règles
 ajoutées en écrivant : aucun conseil déduit d'un fait (« Que faire ? » ne dit
 que ce que la page conseille), l'INRAE seulement dans les détails, espace

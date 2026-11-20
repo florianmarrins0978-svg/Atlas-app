@@ -181,14 +181,6 @@
       "hotesNonExhaustifs": false,
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Septoria%20leaf%20spot%20and%20canker4212089.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-houppier.jpg",
-          "licence": "CC BY 3.0",
-          "credit": "Photo du Minnesota Department of Natural Resources (FIA), Bugwood.org, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Des peupliers atteints, dans le Minnesota (États-Unis) : le feuillage brunit et se dégarnit."
-        },
-        {
           "url": "https://www.forestryimages.org/browse/image/4212088",
           "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-feuille.jpg",
           "licence": "CC BY 3.0 US",

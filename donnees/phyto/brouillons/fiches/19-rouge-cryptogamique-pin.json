@@ -182,14 +182,6 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lophodermium%20seditosum.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-houppier.jpg",
-          "licence": "CC BY 3.0 US",
-          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Jeune pin aux aiguilles brunies, surtout dans le bas de l’arbre."
-        },
-        {
           "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lophodermium%2010702.JPG?width=1200",
           "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-rameau.jpg",
           "licence": "CC0",
