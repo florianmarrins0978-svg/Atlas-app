@@ -28,6 +28,8 @@
      node appli/scripts/film-outils.cjs appli/vente/images --seulement diagnostic
      node appli/scripts/film-outils.cjs <dossier> --apercu
        (une photo par quart de seconde, sans film, pour régler le récit)
+     node appli/scripts/film-outils.cjs appli/vente/images --images
+       (seulement les deux images du chapitre du plan, sans film)
 
    Il faut Playwright et ffmpeg (libx264, libvpx-vp9). Le navigateur est
    celui du poste (scripts/_navigateur.mjs), ou PLAYWRIGHT_EXECUTABLE_PATH.
@@ -54,6 +56,7 @@ const JOUR = new Date('2026-11-20T17:36:00+01:00');
 const dossier = process.argv[2];
 if (!dossier) { console.error('Usage : node appli/scripts/film-outils.cjs <dossier des images du site> [--seulement <outil>] [--apercu]'); process.exit(2); }
 const APERCU = process.argv.includes('--apercu');
+const IMAGES_SEULES = process.argv.includes('--images');
 const seul = process.argv.indexOf('--seulement') > 0 ? process.argv[process.argv.indexOf('--seulement') + 1] : null;
 
 // ── Ce qui se pose dans la page avant l'appli ──────────────────────────────
@@ -145,6 +148,8 @@ async function plateau(navigateur, demo) {
   const image = async () => {
     await page.clock.runFor(PAS);
     await page.evaluate(() => window.__film.synchro());
+    // Hors d'un film (les images du chapitre), le temps avance sans photo.
+    if (!nomDuFilm) return;
     rang++;
     if (APERCU) {
       if (rang % 15 === 1) await page.screenshot({ path: path.join(dossier, nomDuFilm + '-' + String(rang).padStart(4, '0') + '.png'), scale: 'css' });
@@ -214,6 +219,24 @@ async function plateau(navigateur, demo) {
       if (valeur === null) throw new Error('aucune option « ' + contient + ' » dans ' + sel);
       await page.selectOption(sel, valeur);
     },
+    /**
+     * Une photo fixe d'une part de l'écran, à trois pixels pour un : de
+     * l'élément, haut et bas étendus de « marge », jusqu'au bas de « jusqua »
+     * s'il est donné. L'élément est d'abord amené en haut de l'écran.
+     */
+    async photographier(fichier, sel, { jusqua, marge = 0 } = {}) {
+      const cadre = await page.evaluate(([sel, jusqua, marge]) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 70);
+        const r = el.getBoundingClientRect(), bas = jusqua ? el.querySelector(jusqua).getBoundingClientRect().bottom + marge : r.bottom;
+        return { x: r.left, y: r.top, width: r.width, height: bas - r.top };
+      }, [sel, jusqua, marge]);
+      if (!cadre) throw new Error('introuvable dans ' + demo.page + ' : ' + sel);
+      await page.evaluate(() => window.__film.synchro());
+      await page.screenshot({ path: path.join(dossier, fichier), type: 'jpeg', quality: 88, clip: cadre });
+      console.log(fichier + ' : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
+    },
     /** La photo que donnera le prochain appareil photo ouvert par l'appli. */
     photo(fichier, nom) {
       page.once('filechooser', (choix) => choix.setFiles({ name: nom, mimeType: 'image/jpeg', buffer: fs.readFileSync(path.join(APPLI, fichier)) }));
@@ -229,6 +252,37 @@ const OBSERVATIONS = 'textarea[placeholder^="Ce que le client"]';
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
+    // Les deux images du chapitre, prises dans l'état où les films laissent
+    // le jardin : la pelouse en Ø32, sur un réseau de 8 turbines à
+    // recouvrement complet. Sa demande du 20 novembre au soir, devant la
+    // carte en Ø25 (4 turbines sur un seul bord) : « les recouvrements ils
+    // sont pas à 100 % ». La nourrice suit le plan : deux voies.
+    // Rend aussi la place de « 20 m » sur la carte, où la cote du croquis se
+    // pose (CIBLE_COTE dans vente/outils.html).
+    async images(p) {
+      await p.amener('[data-atlas="carte-reseau"]', {}, 120, 0.2);
+      await p.toucher('[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"] button', { texte: '32' });
+      await p.pendant(1.5);
+      await p.photographier('outils-plan-reseau.jpg', '[data-atlas="carte-reseau"]');
+      const cible = await p.page.evaluate(() => {
+        const carte = document.querySelector('[data-atlas="carte-reseau"]'), zone = carte.querySelector('[data-atlas="zone-du-reseau"]');
+        const marche = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT);
+        for (let n = marche.nextNode(); n; n = marche.nextNode()) {
+          const i = n.textContent.indexOf('20 m');
+          if (i < 0) continue;
+          const plage = document.createRange(); plage.setStart(n, i); plage.setEnd(n, i + 4);
+          const m = plage.getBoundingClientRect(), c = carte.getBoundingClientRect();
+          return { x: ((m.left + m.width / 2 - c.left) / c.width).toFixed(4), y: ((m.top + m.height / 2 - c.top) / c.height).toFixed(4), l: (m.width / c.width).toFixed(4) };
+        }
+        return null;
+      });
+      console.log('CIBLE_COTE = ' + JSON.stringify(cible));
+      // La nourrice de deux voies est plus haute que ce qui reste entre le
+      // sommaire et la barre du bas : un écran plus haut la photographie
+      // entière, la barre posée plus bas qu'elle.
+      await p.page.setViewportSize({ width: ECRAN.l, height: 1200 });
+      await p.photographier('outils-nourrice.jpg', '[data-atlas="nourrice-eclatee"] > div', { jusqua: ':scope > div', marge: 14 });
+    },
     async jouer(p) {
       // 25 ou 32 : en Ø32, la pelouse tient sur un réseau de moins.
       await p.film('outils-tuyau', async () => {
@@ -364,6 +418,12 @@ const RECITS = {
   const navigateur = await chromium.launch(exe ? { executablePath: exe } : {});
   for (const [nom, recit] of Object.entries(RECITS)) {
     if (seul && seul !== nom) continue;
+    if (recit.images) {
+      const p = await plateau(navigateur, recit);
+      await recit.images(p);
+      await p.fermer();
+    }
+    if (IMAGES_SEULES) continue;
     const p = await plateau(navigateur, recit);
     if (p.erreurs.length) throw new Error(nom + ' ne s\'ouvre pas : ' + p.erreurs.join(' ; '));
     await recit.jouer(p);

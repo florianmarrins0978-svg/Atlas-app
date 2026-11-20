@@ -43,7 +43,11 @@
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
     · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
       dans la démonstration (voir « DE BOUT EN BOUT » plus bas), sur le même
-      jardin qu'elle ; ici la carte du réseau 1 et la nourrice éclatée ;
+      jardin qu'elle, la pelouse en Ø32 : la carte du réseau 1 et la nourrice
+      éclatée de deux voies (en Ø25, 4 turbines sur un seul bord ne
+      recouvraient pas toute la pelouse ; sa remarque du 20 novembre au
+      soir). Elles sortent de film-outils.cjs --images, qui rend aussi la
+      place de « 20 m » sur la carte (CIBLE_COTE) ;
     · nov-film-outils-* : les films de la démonstration (même endroit) ;
     · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
       peint aujourd'hui (onglet « Aujourd'hui » de
@@ -560,7 +564,7 @@ html.anime .geant.vu span{transform:none}
       <p class="rassure">6 € HT par mois. Un plan d'arrosage et un diagnostic offerts pour essayer.</p>
     </div>
     <div class="scene plateau socle" id="plateau" data-t aria-hidden="true">
-      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1176"></figure></div></div>
+      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1374"></figure></div></div>
       <div class="pose pose-cr"><div class="entre entre-cr"><figure class="feuille"><img src="images/outils-compte-rendu-carte.jpg" alt="" width="700" height="1366"></figure></div></div>
       <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="" width="1170" height="1992"></div></div></div></div>
     </div>
@@ -616,10 +620,10 @@ html.anime .geant.vu span{transform:none}
             </g>
           </svg>
         </figure>
-        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, la pelouse de 20 m sur 8 m, 4 turbines 3504 buse 1,0 de portée 6,1 m, et 24 m de PEHD Ø25" width="1038" height="1176" decoding="async"></figure></div></div>
+        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1 en Ø32, la pelouse de 20 m sur 8 m, 8 turbines 3504 buse 1,5 de portée 6,5 m qui se recouvrent, et 48 m de PEHD Ø32" width="1038" height="1374" decoding="async"></figure></div></div>
         <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">20 m</span></span>
       </div>
-      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1379" decoding="async"></figure>
+      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de deux voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, une voie pour la pelouse et une pour le goutte-à-goutte, chaque pièce numérotée" width="1038" height="1653" decoding="async"></figure>
       <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
     </div>
   </div>
@@ -1073,12 +1077,12 @@ html.anime .geant.vu span{transform:none}
   // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 20 m » s'éclaire,
   // quitte le croquis, vole jusqu'à « 20 m sur 8 m » de la carte du réseau
   // et s'y pose au pixel près (mesuré sur le rendu de la démonstration :
-  // 27,0 % de la largeur de la carte, 19,5 % de sa hauteur, le mot faisant
+  // 27,0 % de la largeur de la carte, 26,6 % de sa hauteur, le mot faisant
   // 9,7 % de sa largeur), puis s'efface sur le chiffre de l'appli. La carte
   // s'écrit alors.
   var sceneCroquis = document.getElementById("scene-croquis"), croquis = un(".croquis", sceneCroquis);
   var carteReseau = document.getElementById("carte-reseau"), porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
-  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.1946, l:.0970 };
+  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.2662, l:.0970 };
   var vols = [];
   var voler = function(el, cles, options){ var a = el.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
   var place = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };

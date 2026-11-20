@@ -683,7 +683,10 @@ compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
 d'avant : relancer, dans cet ordre,
 `npx tsx appli/scripts/demo-outils/construire.ts` puis
 `node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
-l'encodage ; `--apercu <dossier>` pour régler un récit en une minute).
+l'encodage ; `--apercu <dossier>` pour régler un récit en une minute ;
+`--images` pour les deux images du chapitre du plan seules, la carte en Ø32
+et la nourrice de deux voies, sa remarque du même soir sur les
+recouvrements).
 Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
 vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
 changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche
