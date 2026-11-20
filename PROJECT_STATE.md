@@ -1,8 +1,8 @@
 # État du projet
 
-## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : CODÉE, PAS ENCORE SUR `main` (19 novembre 2026)
+## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
-Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Sur `claude/sleepy-sagan-gq6c0x` ; suites de base et navigateur, puis batterie, sur son « oui ». `ARCHITECTURE.md` §591.
+Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.
 
 ## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
 

@@ -1,6 +1,6 @@
 # Reprendre le travail
 
-## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE (19 novembre 2026), PAS ENCORE SUR `main`
+## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE SUR `main` (20 novembre 2026)
 
 Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0187) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §591.
 

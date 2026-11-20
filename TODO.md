@@ -87,16 +87,26 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
 
-## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : CODÉ, BATTERIE SUR SON « OUI » (19 novembre 2026)
+## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Sa capture du 18 novembre, sa réponse (*« changer ma ligne »*), sa planche
 (`appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`) ; le 19 : *« on a
 déjà fait une planche hier »*, donc codée. `ARCHITECTURE.md` §591, migration
-0185. Types, style, `test-feuille-main-oeuvre.ts` (sept cas vus rouges) verts.
-**Pas joué** : `test-main-oeuvre-change-sa-ligne-db.ts`,
-`test-feuille-main-oeuvre-e2e.ts` (son geste, rouge attendu sur `main`), puis la
-batterie (niveau 3 : migration, argent). Tout vide la base d'essai : son « oui »
-d'abord.
+0187 (renumérotée : `main` avait pris 0185 et 0186 entre-temps). Batterie :
+611/611 suites de base, 216/217 navigateur ; la rouge,
+`test-tva-virement-de-la-banque-e2e`, rejouée verte sur `main` puis sur le lot.
+
+**Une batterie perdue en route, à connaître** : la première est tombée à
+41/217 parce que Redis s'est arrêté pendant la mesure (cause non trouvée) ; le
+serveur compte alors les connexions en mémoire, hors d'atteinte du nettoyage
+entre suites, et le compte de démonstration se bloque au bout de cinq. Le
+signe : « Redis n'était pas là au départ » dans
+`test-connexion-service-en-panne-e2e`, et des `waitForURL` sur `/` partout.
+
+**Hypothèse non éprouvée sur la rouge** : elle a tourné vers minuit, et la suite
+range son virement à `CURRENT_DATE` de PostgreSQL (UTC) ; à l'heure où Paris a
+déjà changé de jour, les deux dates diffèrent. À vérifier si elle retombe à la
+même heure (confiance moyenne).
 
 ## DEUX RENCONTRES DE LA MAIN D'ŒUVRE TROUVÉES EN CODANT §591 (19 novembre 2026)
 
