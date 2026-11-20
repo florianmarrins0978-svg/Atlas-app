@@ -1,5 +1,42 @@
 # Prochaines tâches
 
+## 🔨 LA VISITE GUIDÉE DU SITE : EN COURS (20 novembre 2026)
+
+Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
+écrans, avec des données toutes factices. **Tranché le 20 novembre : la
+voie B** (les vrais écrans figés par `scripts/planche-figee/`, enchaînés
+avec une bulle de guide, sur le site statique). La voie A (une porte
+ouverte au public dans l'appli qui tourne) est écartée : un visiteur
+modifierait ce que voit le suivant, un devis ou un SMS partirait pour de
+vrai, chaque dictée coûterait de l'IA.
+
+**Son parcours, dans cet ordre (ses mots du 20 novembre) :**
+
+1. l'accueil, puis Vos clients ;
+2. Créer un devis : la civilité touchée (Entreprise, Mairie, retour à
+   Monsieur Madame), puis nom, prénom et le reste qui se remplissent ;
+3. Dicter : le devis s'ouvre déjà rempli ;
+4. Aperçu PDF, puis choisir la date : « toutes les vraies étapes » ;
+5. le planning, le chantier posé ; un jour touché, le chantier, les
+   salariés ajoutés, puis en descendant la fiche client ;
+6. Terminés : la facture, son envoi, **ce que le client reçoit**, le
+   client qui paie ;
+7. Ma TVA : toute la page ; la TVA ajoutée ; un ticket de carburant
+   scanné qui s'ajoute ; les chiffres de gauche touchés, qui montrent le
+   relevé et chaque taux ;
+8. la banque connectée, les tickets, le document comptable ;
+9. le paiement du client vu par la banque : la notification sur
+   l'accueil, et de là le check up qui valide le paiement pour le
+   document comptable ;
+10. **la fin : Réglages laissé ouvert**, chaque rubrique se touche
+    librement ; **et la page Vos idées, montrée à coup sûr** (« hyper
+    important »).
+
+Dans la visite, la dictée et le scan du ticket ne lisent rien : l'écran
+suivant s'ouvre déjà rempli, tel que l'appli le peint sur la base de
+démonstration. Planche d'abord dans `appli/`, rien dans `src/` ; le branchement
+sur `appli/vente/` après son choix.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
 
 Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
