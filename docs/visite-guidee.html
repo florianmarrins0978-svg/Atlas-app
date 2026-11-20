@@ -77,7 +77,7 @@
 </tr>
 <tr>
 <td>Le devis</td>
-<td>le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, les totaux, l'aperçu PDF</td>
+<td>le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, <strong>les boutons à essayer librement</strong> (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, le retour au devis, Choisir la date</td>
 </tr>
 <tr>
 <td>La date</td>
@@ -171,10 +171,42 @@
 <p>Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite : un devis signé, un chantier passé le 10 novembre, un retour d'intervention, une facture envoyée et ouverte, encore due.</p>
 <p><strong>Ce que l'appli ne fait pas, et que la visite ne montre donc pas :</strong> les retours d'intervention ne sont pas sur la fiche du client. Ils vivent dans Terminés, « Retours d'intervention », rangés client par client. La visite les montre là. Les mettre aussi sur la fiche demanderait un changement de l'appli, à décider.</p>
 <p><strong>Corrigé en route, dans la base d'essai seulement :</strong> le jeu de démonstration écrivait la civilité dans le nom (« Mme Costa »), et le devis repris imprimait « Mme Mme Costa ». Un client créé dans l'appli garde sa civilité à part (vérifié sur M. Lefèvre). Un client dont le nom porterait déjà « Mme » ou « M. », importé par exemple, aurait le même doublon : pas vérifié chez toi.</p>
+<h2 id="tes-remarques-du-20-novembre-au-soir">Tes remarques du 20 novembre au soir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Remarque</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>La bulle cachait les champs qui s'écrivent</td>
+<td>elle se retire pendant l'écriture, et revient une fois tout écrit</td>
+</tr>
+<tr>
+<td>Un carré autour de la note vocale, qui est ronde</td>
+<td>le doigt prend la forme du bouton : rond pour un rond</td>
+</tr>
+<tr>
+<td>Les boutons du devis à essayer</td>
+<td>Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille, et son bouton pose sur le devis ce que l'appli y pose. « Retour » revient au devis</td>
+</tr>
+<tr>
+<td>Montrer la note vocale en haut à droite</td>
+<td>une étape la montre, puis l'écoute</td>
+</tr>
+<tr>
+<td>Le PDF flou</td>
+<td><strong>corrigé à la racine</strong> : la page se peignait à la densité d'un vieil écran. Elle est figée à la densité d'un téléphone récent (trois fois plus de points)</td>
+</tr>
+<tr>
+<td>Après l'aperçu : retour, puis Choisir la date</td>
+<td>fait dans cet ordre</td>
+</tr>
+</tbody></table></div>
+<p>Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : la visite le dit, et c'est le bouton du bas qui pose.</p>
 <h2 id="ce-qui-reste-ouvert-et-cest-à-toi-de-trancher">Ce qui reste ouvert, et c'est à toi de trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>La longueur</strong> : 56 étapes, environ six minutes. On peut en retirer.</li>
+<li><strong>La longueur</strong> : 59 étapes, environ six minutes. On peut en retirer.</li>
 <li><strong>Les retours d'intervention sur la fiche du client</strong> : aujourd'hui ils sont dans Terminés seulement.</li>
 <li><strong>Le bouton sur le site</strong> : où le poser sur <code>appli/vente/</code>.</li>
 <li><strong>Dans l'appli elle-même</strong>, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de <code>src/</code>, il attend ton « oui ».</li>
@@ -182,7 +214,7 @@
 <h2 id="pour-la-refaire-quand-un-écran-change">Pour la refaire quand un écran change</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>scripts/planche-figee/visite-guidee/tout.sh</code> rejoue tout le parcours dans l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de démonstration neuve, donc ton accord.</p>
-<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 56 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
+<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 59 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
 </main>
 </body>
 </html>

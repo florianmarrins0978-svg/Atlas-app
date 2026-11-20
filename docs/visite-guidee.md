@@ -15,7 +15,7 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 |---|---|
 | La fiche d'un client | Vos clients, la fiche de Mme Costa : ses devis, ses factures (ouverte, due), son dernier devis repris, + 10 % sur les prix |
 | Le client | l'accueil, Créer un devis, Entreprise, Public, retour à Mr, les champs qui s'écrivent seuls |
-| Le devis | le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, les totaux, l'aperçu PDF |
+| Le devis | le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, **les boutons à essayer librement** (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, le retour au devis, Choisir la date |
 | La date | deux dates proposées, le devis envoyé |
 | Chez le client | sa page, la date qu'il choisit, sa signature au doigt |
 | Le planning | le 25, la journée, Paul et Kévin ajoutés, la fiche d'intervention |
@@ -58,9 +58,22 @@ Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite :
 
 **Corrigé en route, dans la base d'essai seulement :** le jeu de démonstration écrivait la civilité dans le nom (« Mme Costa »), et le devis repris imprimait « Mme Mme Costa ». Un client créé dans l'appli garde sa civilité à part (vérifié sur M. Lefèvre). Un client dont le nom porterait déjà « Mme » ou « M. », importé par exemple, aurait le même doublon : pas vérifié chez toi.
 
+## Tes remarques du 20 novembre au soir
+
+| Remarque | Ce qui a été fait |
+|---|---|
+| La bulle cachait les champs qui s'écrivent | elle se retire pendant l'écriture, et revient une fois tout écrit |
+| Un carré autour de la note vocale, qui est ronde | le doigt prend la forme du bouton : rond pour un rond |
+| Les boutons du devis à essayer | Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille, et son bouton pose sur le devis ce que l'appli y pose. « Retour » revient au devis |
+| Montrer la note vocale en haut à droite | une étape la montre, puis l'écoute |
+| Le PDF flou | **corrigé à la racine** : la page se peignait à la densité d'un vieil écran. Elle est figée à la densité d'un téléphone récent (trois fois plus de points) |
+| Après l'aperçu : retour, puis Choisir la date | fait dans cet ordre |
+
+Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : la visite le dit, et c'est le bouton du bas qui pose.
+
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 56 étapes, environ six minutes. On peut en retirer.
+1. **La longueur** : 59 étapes, environ six minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
@@ -71,4 +84,4 @@ Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite :
 l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de
 démonstration neuve, donc ton accord.
 
-**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 56 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
+**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 59 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
