@@ -73,6 +73,29 @@ export async function chiffrerLesAjouts(
 }
 
 /**
+ * **Le fournisseur d'une ligne ajoutée au micro, relu par le serveur** (sa
+ * planche du 19 novembre 2026, `appli/devis-fournisseur-pour-vous-seul.html`).
+ *
+ * L'écran renvoie la ligne cochée avec son prix, jamais avec son fournisseur :
+ * une mention écrite par le navigateur pourrait nommer n'importe qui. Le
+ * serveur repasse donc la même règle (`prixDUneLigneDictee`) et ne retient le
+ * prix d'achat que s'il donne exactement ce prix et cette quantité. Sinon,
+ * rien : une ligne sans mention vaut mieux qu'une mention fausse.
+ */
+export async function achatQuiChiffreLAjout(
+  ctx: Ctx,
+  ajout: { libelle: string; quantite: string; unite: string | null; prixUnitaire: string }
+): Promise<string | null> {
+  const [tarifs, achats, marges] = await Promise.all([listerTarifs(ctx), prixAchatCandidats(ctx), lireMarges(ctx)]);
+  if (achats.length === 0) return null;
+  const deVente = tarifs.map((t) => ({ tarifId: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }));
+  const q = Number(ajout.quantite);
+  const p = prixDUneLigneDictee(ajout.libelle, Number.isFinite(q) && q > 0 ? q : 1, { tarifs: deVente, achats, marges }, ajout.unite);
+  const memePrix = Number(p.prixUnitaire) === Number(ajout.prixUnitaire) && Number(p.quantite) === Number(ajout.quantite);
+  return p.origine === "achat" && memePrix ? (p.achatRetenu ?? null) : null;
+}
+
+/**
  * D'où vient le prix de la ligne, dit en quelques mots sous elle : son tarif
  * nommé (« votre tarif « Évacuation » »), sinon sa grille.
  */

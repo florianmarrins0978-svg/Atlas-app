@@ -162,30 +162,23 @@ async function main() {
     // tout » sinon. Les deux mènent au devis — on vise donc le geste, pas le mot.
     await page.locator("button", { hasText: /^Continuer/ }).first().click();
 
-    // --- Et sa réponse se retrouve sur la fiche du chantier -----------------
+    // --- Et sa réponse se relit sous le travail du devis --------------------
     //
-    // **Sur la prestation, pas sur la ligne du devis** — et c'est délibéré, pas
-    // un pis-aller mal assumé. La ligne du devis porte l'intitulé du tarif
-    // appliqué ; le montant, lui, ne peut pas encore dépendre de la technique,
-    // faute de mémoire reliant les deux (`docs/EXEMPLE-DICTEE.md` §9c : « tant
-    // que la mémoire est vide, aucun multiplicateur ne s'applique »). Affirmer
-    // ici que le devis en porte la trace ferait passer au vert une promesse que
-    // le produit ne tient pas.
+    // **Sous le travail, pour lui seul** (sa planche du 20 novembre 2026,
+    // `ARCHITECTURE.md` §597). Elle se lisait collée au nom de la prestation,
+    // sur Informations, un écran qu'il n'ouvre jamais ; depuis §598, plus rien
+    // ne s'écrit dans le nom. Ce que cette suite défend ne change pas : la
+    // réponse qu'il vient de donner se voit là où il lit son devis.
     await page.waitForURL(`**/chantiers/${chantierId}/devis-complet`, { timeout: 60000 });
-    await page.goto(`${BASE}/chantiers/${chantierId}/informations`, { waitUntil: "networkidle" });
-    // Les prestations y sont des champs de saisie : `innerText` ne rend PAS
-    // leur valeur, et une assertion sur le texte de la page passerait au rouge
-    // en accusant le produit d'un tort qui n'est qu'un mauvais sélecteur.
-    const champs = await page.locator("input").evaluateAll((els) =>
-      els.map((e) => (e as HTMLInputElement).value).join(" | ")
-    );
-    const fiche = `${await page.locator("body").innerText()} ${champs}`;
+    const sous = page.locator('[data-atlas="reponses-grille"]');
+    await sous.first().waitFor({ timeout: 30000 });
+    const reponses = (await sous.allInnerTexts()).join(" | ");
     assert.match(
-      fiche,
+      reponses,
       /démontage avec rétention/i,
-      "La technique qu'il vient d'indiquer n'apparaît nulle part : la question a été posée pour rien."
+      `La technique qu'il vient d'indiquer n'apparaît nulle part : la question a été posée pour rien. Sous le travail : « ${reponses} »`
     );
-    assert.match(fiche, /70\s*cm/, "Le diamètre n'apparaît pas sur la fiche du chantier.");
+    assert.match(reponses, /⌀\s*70\s*cm/, `Le diamètre n'apparaît pas sous le travail : « ${reponses} »`);
 
     // --- Et elle est conservée ----------------------------------------------
     const gardees = await precisionsEnregistrees(chantierId);

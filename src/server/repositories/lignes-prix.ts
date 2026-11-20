@@ -98,6 +98,8 @@ type OptionsDeLigneNeuve = {
     partGrille?: string | null;
     /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
     hommesMainDoeuvre?: number | null;
+    /** Le prix d'achat qui la chiffre, en mots (migration 0188), pour lui seul : le serveur seul le pose. */
+    achatRetenu?: string | null;
 };
 
 export async function ajouterLignePrix(
@@ -154,6 +156,7 @@ async function insererLigne(
       partAncienne: options?.partAncienne ?? null,
       partGrille: options?.partGrille ?? null,
       hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
+      achatRetenu: options?.achatRetenu ?? null,
       ordre: existantes.length,
     })
     .returning();
@@ -177,8 +180,23 @@ type DonneesDeLigne = {
     tauxTva?: string | null;
 };
 
-export async function modifierLignePrix(ctx: Ctx, id: string, data: DonneesDeLigne) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => reecrireLigne(tx, id, data));
+/**
+ * Ce que seul le serveur pose, jamais l'écran : les actions d'édition passent
+ * `data` tel que la page l'envoie, et ce qui n'est pas dans la liste de
+ * `seulement` ne doit pas pouvoir s'y glisser.
+ */
+type DuServeur = {
+  /** Les hommes de son équipe, recalculés par la feuille (`poserLaLigneDeSonEquipe`). */
+  hommesMainDoeuvre?: number | null;
+  /**
+   * Le prix d'achat qui chiffre la ligne, en mots (migration 0188), posé
+   * par le seul choix d'un prix d'achat (`choisirUnPrixDAchatAction`).
+   */
+  achatRetenu?: string | null;
+};
+
+export async function modifierLignePrix(ctx: Ctx, id: string, data: DonneesDeLigne, duServeur?: DuServeur) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => reecrireLigne(tx, id, data, duServeur));
 }
 
 /**
@@ -189,13 +207,7 @@ async function reecrireLigne(
   tx: DbOrTx,
   id: string,
   data: DonneesDeLigne,
-  /**
-   * Ce que seul le serveur pose, jamais l'écran : les actions d'édition passent
-   * `data` tel que la page l'envoie, et ce qui n'est pas dans la liste de
-   * `seulement` ne doit pas pouvoir s'y glisser. Les hommes de son équipe
-   * viennent de la feuille, recalculés (`poserLaLigneDeSonEquipe`).
-   */
-  duServeur?: { hommesMainDoeuvre?: number | null }
+  duServeur?: DuServeur
 ) {
   exigerNombresDeLigne(data.montant, data.quantite, data.prixUnitaire);
   // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
@@ -215,6 +227,7 @@ async function reecrireLigne(
     prixGrille?: null;
     partAncienne?: null;
     partGrille?: null;
+    achatRetenu?: null;
   } = seulement(data, [
     "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
   ]);
@@ -292,11 +305,25 @@ async function reecrireLigne(
     patch.partAncienne = null;
     patch.partGrille = null;
   }
+  // **UN PRIX RETAPÉ À LA MAIN FAIT TOMBER LE FOURNISSEUR ÉCRIT SOUS LA
+  // LIGNE** (migration 0188) : « Matériaux Garnier, 8,90 € HT le sac » sous
+  // un prix qu'il a changé dirait d'où vient un chiffre qui n'en vient plus.
+  // En valeur, comme la reprise : l'écran renvoie le prix à chaque champ
+  // quitté, et une description retouchée ne change pas le prix.
+  if (
+    duServeur?.achatRetenu === undefined &&
+    avant?.achatRetenu != null &&
+    patch.prixUnitaire !== undefined &&
+    !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+  ) {
+    patch.achatRetenu = null;
+  }
   const [row] = await tx
     .update(lignesPrix)
     .set({
       ...patch,
       ...(duServeur?.hommesMainDoeuvre !== undefined ? { hommesMainDoeuvre: duServeur.hommesMainDoeuvre } : {}),
+      ...(duServeur?.achatRetenu !== undefined ? { achatRetenu: duServeur.achatRetenu } : {}),
       updatedAt: new Date(),
     })
     .where(eq(lignesPrix.id, id))
@@ -847,7 +874,7 @@ export type TravailSansSaPart = { id: string; prixUnitaire: string; montant: str
 
 /**
  * **La main d'œuvre de son équipe n'a qu'UNE forme par TVA : sa ligne, ou ses
- * parts dans les travaux** (`ARCHITECTURE.md` §592). Répartie, elle n'a plus de
+ * parts dans les travaux** (`ARCHITECTURE.md` §596). Répartie, elle n'a plus de
  * ligne, et la feuille rouverte ne la voyait plus : la répartir encore
  * l'ajoutait à la première, la reposer sur une ligne la laissait aussi dans
  * les travaux. Deux fois la même main d'œuvre, sur un devis qui part.

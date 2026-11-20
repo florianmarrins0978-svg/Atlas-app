@@ -1,4 +1,4 @@
--- Ses réponses à la grille quittent le nom du travail (`ARCHITECTURE.md` §594).
+-- Ses réponses à la grille quittent le nom du travail (`ARCHITECTURE.md` §598).
 --
 -- **Son « ok » du 20 novembre 2026**, après sa question : *« on a empilé des
 -- règles sur des règles »*. Jusque-là, ses réponses d'« Avant de chiffrer »
@@ -27,7 +27,7 @@
 -- `prestations` et `precisions_chantier` sont sous FORCE ROW LEVEL SECURITY, et
 -- le rôle qui migre n'a pas BYPASSRLS : sans contexte, l'UPDATE ne toucherait
 -- rien, sans un mot. On boucle par entreprise (modèle 0037), et l'on compte.
--- Éprouvée sur une base habitée : `scripts/test-migration-0188-base-habitee.ts`.
+-- Éprouvée sur une base habitée : `scripts/test-migration-0190-base-habitee.ts`.
 
 DO $$
 DECLARE

@@ -66,7 +66,7 @@ export async function ligneDuChoix(ctx: Ctx, choix: ChoixDeMainOeuvre): Promise<
  * 18 novembre 2026, *« changer ma ligne »*.
  *
  * **Son équipe a UNE main d'œuvre par TVA**, sur sa ligne ou dans le prix des
- * travaux (`ARCHITECTURE.md` §592). Quand l'écran a trouvé sa ligne
+ * travaux (`ARCHITECTURE.md` §596). Quand l'écran a trouvé sa ligne
  * (`saLigne`), la feuille la CHANGE : 3 hommes × 2 jours font 6 jour/homme et
  * 2 400 €, pas une seconde ligne à côté des 1 600 €. Sans elle, la ligne
  * s'ajoute. Et la part que son équipe avait dans les travaux de cette TVA

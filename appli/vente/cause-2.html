@@ -278,7 +278,7 @@
   LES OUTILS DE PAYSAGE, LE 20 NOVEMBRE. Sa demande : « rajouter
   l'abonnement de 6 € pour les outils », et que cet abonnement soit « une
   porte » vers une page qui les montre. Sous les trois formules, la carte
-  « Les outils de paysage » (+6 € HT par mois, 60 € à l'année, la même
+  « Les outils de paysage » (+6 € HT par mois, 72 € à l'année, la même
   bascule) ; la carte entière ouvre outils.html. Ses trois lignes et son
   doré sont ceux du bloc qu'il a choisi le 19 novembre sur l'écran
   Abonnement (docs/abonnement-module-paysage.md). L'accroche d'Entreprise
@@ -1240,7 +1240,7 @@ html.anime .geant.vu span{transform:none}
         <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
       </article>
     </div>
-    <article class="option-outils" data-vu="0.15" data-mois="6" data-an="60">
+    <article class="option-outils" data-vu="0.15" data-mois="6" data-an="72">
       <a class="couvre" href="outils.html" tabindex="-1" aria-hidden="true"></a>
       <div class="option-tete">
         <h3>Les outils de paysage</h3>
@@ -1393,8 +1393,9 @@ html.anime .geant.vu span{transform:none}
   // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts). Le
   // fond vert glisse d'un choix à l'autre, et chaque prix sort par le haut
   // pendant que le nouveau monte.
-  // Les outils de paysage suivent la même bascule : 6 € HT par mois, 60 € à
-  // l'année (docs/abonnement-module-paysage.md).
+  // Les outils de paysage suivent la même bascule : 6 € HT par mois, 72 € à
+  // l'année, sans mois offerts (sa décision du 20 novembre 2026,
+  // docs/abonnement-module-paysage.md).
   var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), formules = tous(".formule, .option-outils");
   var curseur = document.createElement("span"); curseur.className = "curseur"; curseur.setAttribute("aria-hidden", "true");
   bascule.insertBefore(curseur, bascule.firstChild); bascule.classList.add("glisse");
@@ -1405,8 +1406,11 @@ html.anime .geant.vu span{transform:none}
   var ecrirePrix = function(f, p){
     un(".montant", f).textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
     un(".rythme", f).textContent = p === "an" ? "HT par an" : "HT par mois";
-    var auMois = Number(f.getAttribute("data-an")) / 12;
-    un(".offert", f).textContent = p === "an" ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
+    // Les deux mois offerts se lisent dans les prix, ils ne s'écrivent pas :
+    // une carte dont l'année vaut douze mois (les outils, sa décision du
+    // 20 novembre 2026) n'en annonce aucun.
+    var an = Number(f.getAttribute("data-an")), auMois = an / 12, offre = an < 12 * Number(f.getAttribute("data-mois"));
+    un(".offert", f).textContent = p === "an" && offre ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
   };
   // Le prix juste s'écrit tout de suite ; le mouvement n'est qu'un habit.
   // Ce qui s'en va est une copie posée au même endroit, hors du flux : un

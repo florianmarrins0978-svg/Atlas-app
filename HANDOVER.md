@@ -2,11 +2,11 @@
 
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE N'A QU'UNE FORME PAR TVA (20 novembre 2026), PAS ENCORE SUR `main`
 
-La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Reste : la feuille rouverte après « Répartis » (planche, `TODO.md`). `ARCHITECTURE.md` §592.
+La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Reste : la feuille rouverte après « Répartis » (planche, `TODO.md`). `ARCHITECTURE.md` §596.
 
 ## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL (20 novembre 2026), PAS ENCORE SUR `main`
 
-`reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Plus rien ne s'écrit dans le libellé (`libelleEnrichi` est parti), 0188 nettoie ceux d'avant ; `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` restent jusqu'à ce que 0188 soit passée chez lui. `ARCHITECTURE.md` §593 et §594.
+`reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Plus rien ne s'écrit dans le libellé (`libelleEnrichi` est parti), 0190 nettoie ceux d'avant ; `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` restent jusqu'à ce que 0190 soit passée chez lui. `ARCHITECTURE.md` §597 et §598.
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE SUR `main` (20 novembre 2026)
 

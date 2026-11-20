@@ -298,12 +298,12 @@ export async function enregistrerPrecisionsEtReprendre(
  * Range ses réponses dans les CASES des prestations déjà enregistrées : la
  * technique dans `methode`, les mesures dans `caracteristiques`.
  *
- * **Plus rien ne s'écrit dans le libellé** (`ARCHITECTURE.md` §594, son « ok »
+ * **Plus rien ne s'écrit dans le libellé** (`ARCHITECTURE.md` §598, son « ok »
  * du 20 novembre 2026). Jusque-là, ses réponses y étaient aussi collées entre
  * parenthèses, puis reconnues, puis effacées de la désignation : trois règles
  * pour un texte que personne ne lisait plus, et la parenthèse du 18 novembre
  * sur sa désignation. Le prix lit les cases et ses réponses enregistrées
- * (`mesuresResolues`), le devis les redit sous le travail (§593).
+ * (`mesuresResolues`), le devis les redit sous le travail (§597).
  *
  * Le rapprochement se fait sur le **libellé au moment de la question**, pas sur
  * le rang : une relecture de la dictée peut réordonner les lignes, et un report

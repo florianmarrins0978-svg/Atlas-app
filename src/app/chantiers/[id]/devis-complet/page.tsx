@@ -3,7 +3,8 @@ import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { estProprietaire } from "@/server/autorisation";
+import { getRole } from "@/server/autorisation";
+import { peutGererDevis } from "@/lib/acces-roles";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
@@ -11,6 +12,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { liensDesLignesDuChantier, listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { listerPrestationsDuDevis } from "@/server/repositories/prestations";
 import { reponsesSousLesLignes } from "@/lib/reponses-sous-le-travail";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getAcomptesDevis } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
@@ -105,6 +107,21 @@ export default async function DevisCompletPage({
   // client n'a rien reçu (`unLienExistePourLeDevis`).
   const lienParti = devisRow.statut === "envoye" ? await unLienExistePourLeDevis(ctx, devisRow.id) : false;
 
+  // **Ses prix d'achat, sous la ligne qu'il tape** (sa planche du 20 novembre
+  // 2026, `appli/le-prix-d-une-piece.html`). À qui rédige le devis, et à lui
+  // seul : sa réponse du 20 novembre, *« le commercial, c'est celui qui va
+  // rédiger les devis, forcément il doit pouvoir le voir »*. Un compte qui ne
+  // rédige pas ne les reçoit pas, ni la mention du fournisseur sous une ligne.
+  const role = await getRole(ctx);
+  const redige = role !== null && peutGererDevis(role);
+  const proprietaire = role === "proprietaire";
+  const prixDAchat = redige
+    ? await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]).then(([candidats, marges]) => ({
+        candidats: candidats.filter((c) => c.rubrique === "fournisseur"),
+        marges,
+      }))
+    : null;
+
   const aPreparer = devisAPreparer({
     aUneNoteVocale: note !== null,
     nombreDeLignes: lignes.length,
@@ -159,7 +176,7 @@ export default async function DevisCompletPage({
         // dans ses `useState` (la même raison que la facture, `page.tsx`).
         key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
-        emetteurModifiable={await estProprietaire(ctx)}
+        emetteurModifiable={proprietaire}
         // Une seule fois par compte, sa décision du 4 novembre 2026 (0163).
         aideNoteAMontrer={await aideNoteDevisAMontrer(ctx.utilisateurId)}
         sousTraitance={chantier.autoliquidation}
@@ -241,7 +258,9 @@ export default async function DevisCompletPage({
           partGrille: l.partGrille,
           hommesMainDoeuvre: l.hommesMainDoeuvre,
           reponses: reponses[l.id] ?? [],
+          achatRetenu: redige ? l.achatRetenu : null,
         }))}
+        prixDAchat={prixDAchat}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
         titre={devisRow.titre}

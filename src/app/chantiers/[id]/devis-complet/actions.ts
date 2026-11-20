@@ -8,6 +8,8 @@ import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
 import { exigerProprietaire } from "@/server/autorisation";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
+import { achatRetenuEnMots, prixDepuisAchat } from "@/lib/prix-achat";
 import { seulement } from "@/lib/champs-permis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import {
@@ -40,7 +42,7 @@ import { ligneDuChoix, poserLaMainDoeuvreDeLaFeuille } from "@/server/chiffrage/
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
-import { chiffrerLesAjouts } from "@/server/chiffrage/ajouts-dictes";
+import { achatQuiChiffreLAjout, chiffrerLesAjouts } from "@/server/chiffrage/ajouts-dictes";
 import type { Changement } from "@/lib/retouches-devis";
 import type { CiviliteClient } from "@/lib/civilite";
 import { tauxTvaValide } from "@/lib/reduction-devis";
@@ -169,6 +171,58 @@ export async function majLigneAction(
   return ligne;
 }
 
+/**
+ * Un prix d'achat touché sous la ligne : son prix × sa marge, et le
+ * fournisseur écrit sous la ligne pour lui seul (sa planche du 20 novembre
+ * 2026, `appli/le-prix-d-une-piece.html`).
+ *
+ * **L'écran n'envoie que l'identifiant du prix** : le prix, la marge et la
+ * phrase se relisent ici, sous son entreprise. Une page ouverte depuis la
+ * veille ne pose pas un prix qui a changé, et rien d'écrit par le navigateur
+ * n'arrive dans la mention.
+ *
+ * **Qui rédige le devis les voit et les pose** (sa réponse du 20 novembre
+ * 2026 : *« le commercial, c'est celui qui va rédiger les devis »*) : la
+ * garde est celle du devis, `exigerGestionDevis`.
+ */
+export async function choisirUnPrixDAchatAction(
+  id: string,
+  prixAchatId: string
+): Promise<
+  | {
+      ok: true;
+      ligne: { prixUnitaire: string; unite: string | null; montant: string; aChiffrer: boolean | null; achatRetenu: string | null };
+    }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "chiffrer une ligne depuis un prix d'achat");
+  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
+  const prix = candidats.find((c) => c.id === prixAchatId && c.rubrique === "fournisseur");
+  if (!prix) return { ok: false, raison: "Ce prix d’achat n’existe plus. Rechargez l’écran." };
+  const calcul = prixDepuisAchat(prix, 1, marges);
+  if (calcul.venteHt === null) return { ok: false, raison: "Votre marge sur le matériel est à donner, dans Ce que je paie." };
+  const ligne = await modifierLignePrix(
+    ctx,
+    id,
+    { prixUnitaire: calcul.venteHt, unite: prix.unite },
+    { achatRetenu: achatRetenuEnMots(prix) }
+  );
+  if (!ligne) return { ok: false, raison: "Cette ligne n’est plus sur le devis. Rechargez l’écran." };
+  // Le prix choisi est le sien, comme un prix tapé : l'agent l'apprend pareil.
+  await retenirLecon(ctx, id);
+  return {
+    ok: true,
+    ligne: {
+      prixUnitaire: ligne.prixUnitaire,
+      unite: ligne.unite,
+      montant: ligne.montant,
+      aChiffrer: ligne.aChiffrer,
+      achatRetenu: ligne.achatRetenu,
+    },
+  };
+}
+
 export async function ajouterLigneAction(chantierId: string, tauxTva?: string | null) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter une ligne au devis");
@@ -195,7 +249,7 @@ export async function ajouterMainDoeuvreChoisieAction(
   choix: ChoixDeMainOeuvre,
   /** La ligne de son équipe que la feuille change (sa planche du 18 novembre 2026) ; `null` : elle s'ajoute. */
   saLigne: string | null = null,
-  /** Les travaux de cette TVA, d'où la part de son équipe sort (`ARCHITECTURE.md` §592). */
+  /** Les travaux de cette TVA, d'où la part de son équipe sort (`ARCHITECTURE.md` §596). */
   sesTravaux: readonly string[] = []
 ): ReturnType<typeof poserLaMainDoeuvreDeLaFeuille> {
   const ctx = await getCurrentCtx();
@@ -228,7 +282,7 @@ export async function repartirMainDoeuvreAction(
   parts: Record<string, number>,
   /** La ligne de son équipe que la répartition remplace (sa planche du 18 novembre 2026). */
   saLigne: string | null = null,
-  /** Les travaux de cette TVA, d'où la part que son équipe y avait sort d'abord (`ARCHITECTURE.md` §592). */
+  /** Les travaux de cette TVA, d'où la part que son équipe y avait sort d'abord (`ARCHITECTURE.md` §596). */
   sesTravaux: readonly string[] = []
 ): ReturnType<typeof poserLesPartsDeMainDoeuvre> {
   const ctx = await getCurrentCtx();
@@ -305,7 +359,8 @@ export async function deplacerLigneVersTvaAction(
   await exigerGestionDevis(ctx, "déplacer une ligne du devis");
   const propre = tauxTvaValide(taux);
   if (propre === null) return null;
-  return deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
+  const ligne = await deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
+  return ligne;
 }
 
 /** La catégorie disparaît, ses lignes reviennent au taux du devis. */
@@ -430,6 +485,9 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
           // mètres linéaires » écrit sans elle donnerait une ligne « 20 × … »
           // qui ne dit pas vingt de quoi — et c'est le client qui la lit.
           unite: c.unite ?? undefined,
+          // Le fournisseur sous la ligne, pour lui seul : relu par le serveur,
+          // jamais pris de l'écran (`achatQuiChiffreLAjout`).
+          achatRetenu: c.prixUnitaire === null ? null : await achatQuiChiffreLAjout(ctx, { libelle: c.libelle, quantite, unite: c.unite, prixUnitaire: prix }),
         });
         break;
       }
@@ -452,6 +510,10 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
       montant: l.montant,
+      // L'écran se recale sur ce que rend cette action : sans la mention, le
+      // fournisseur choisi disparaîtrait de sous sa ligne. L'action est gardée
+      // par `exigerGestionDevis` : qui la joue rédige le devis.
+      achatRetenu: l.achatRetenu,
       // **« À CHIFFRER » REPARTAIT AVEC LES LIGNES, ET IL NE PARTAIT PAS.**
       // Trouvé le 11 septembre 2026 en branchant le champ du prix sur ce
       // drapeau : l'écran se recale ENTIÈREMENT sur ce que rend cette action,

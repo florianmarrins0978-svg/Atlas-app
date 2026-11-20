@@ -92,7 +92,11 @@ cas("un partenaire : son prix multiplié par la marge de la main d'œuvre", () =
   assert.equal(p.marge, "1.20");
   assert.equal(p.margePropre, false);
   const l = ligneDeSonPartenaire(p, 3);
-  assert.deepEqual(l, { libelle: "Main d’œuvre : Carrelage Morin", quantite: "3", unite: "journée", prixUnitaire: "456.00" });
+  // **Le nom du partenaire ne part pas chez le client** (sa réponse du
+  // 19 novembre 2026 : « le retirer »). La ligne s'imprime sur le PDF et la
+  // page du client ; le partenaire reste dans le calcul, pour lui seul.
+  assert.deepEqual(l, { libelle: "Main d’œuvre", quantite: "3", unite: "journée", prixUnitaire: "456.00" });
+  assert.ok(!l.libelle.includes("Carrelage Morin"), `le nom du partenaire est sur la ligne : « ${l.libelle} »`);
   assert.equal(montantDeLaMainOeuvre(l), "1368.00");
 });
 
@@ -218,14 +222,25 @@ cas("à l'heure ou au forfait, la quantité est celle qu'il tape, au-dessus de z
   assert.equal(quantiteDuPartenaire(aLHeure, 2, 100000), null);
 });
 
-cas("2 jours × 450 € × 1,35 font 1 215 €, sur la ligne qui dit son nom", () => {
+cas("2 jours × 450 €, plus 35 %, font 1 215 €, sur une ligne qui ne le nomme pas", () => {
   const m = mainOeuvreDUnPartenaire(durand, 2);
   assert.equal(m.montant, "1215.00");
-  assert.equal(m.ligne.libelle, "Main d’œuvre : Élagage Durand");
-  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 € × 1,35");
+  assert.equal(m.ligne.libelle, "Main d’œuvre");
+  // La marge se dit en pour cent depuis sa planche B du 20 novembre 2026.
+  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 €, plus 35 %");
 });
 
-cas("sans marge sur la main d'œuvre, la main d'œuvre arrive à chiffrer, et la phrase le dit", () => {
+cas("0 % sur un partenaire : son prix tel quel, et la phrase dit « sans marge »", () => {
+  const [tel] = prixDesPartenaires(
+    [candidat({ id: "d4", nom: "Démontage sur corde", unite: "journée", prixHt: "450", societeNom: "Élagage Durand", margePropre: "1.00" })],
+    { materiel: null, mainOeuvre: "1.20" }
+  );
+  const m = mainOeuvreDUnPartenaire(tel, 2);
+  assert.equal(m.montant, "900.00");
+  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 €, sans marge");
+});
+
+cas("une marge à donner sur la main d'œuvre : la main d'œuvre arrive à chiffrer, et la phrase le dit", () => {
   const [sansMarge] = prixDesPartenaires(
     [candidat({ id: "d3", nom: "Élagage", unite: "heure", prixHt: "60", societeNom: "Élagage Durand", margePropre: null })],
     { materiel: null, mainOeuvre: null }
@@ -304,7 +319,7 @@ cas("la ligne de son équipe dit ses hommes, celle d'un partenaire n'en a pas", 
   assert.equal(ligneDeSonPartenaire(prixDesPartenaires([candidat({})], { materiel: null, mainOeuvre: "1.20" })[0], 2).hommes, undefined);
 });
 
-// **Une seule forme par TVA** (`ARCHITECTURE.md` §592) : la part de son équipe
+// **Une seule forme par TVA** (`ARCHITECTURE.md` §596) : la part de son équipe
 // sort d'un travail quand elle change de forme, celle d'un partenaire reste.
 cas("sa part, posée puis retirée, rend le travail à son prix d'avant, au centime", () => {
   // 150 € sur 7 m² à 18 € : 149,99 € posés (le prix n'a que deux décimales).

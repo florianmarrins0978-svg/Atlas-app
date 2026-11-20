@@ -91,7 +91,9 @@ export async function exporterClient(
         chantier,
         prestations: pres,
         materiel: mat,
-        lignesPrix: prix,
+        // Le prix d'achat qui a chiffré une ligne est au patron, pas à son
+        // client (migration 0188) : il ne part pas dans l'export de ses données.
+        lignesPrix: prix.map((l) => ({ ...l, achatRetenu: null })),
         notesVocales: notes,
         photos: phot,
         devis: dev,

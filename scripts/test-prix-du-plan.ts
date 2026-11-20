@@ -72,6 +72,15 @@ test("un prix au mètre ne vaut que pour une longueur, et une couronne n'est pas
   assert.deepEqual(lesPrixDe(prixDesFournisseurs(pieces, auMetre, fournisseurs)[0]), {});
 });
 
+test("un tube vendu « au ml » vaut comme « au m » : c'est le même mètre linéaire", () => {
+  // Sa demande du 20 novembre 2026 : « ml » s'ajoute aux unités des pièces, à
+  // côté de « m ». Le plan doit retrouver le prix du tube dans les deux cas.
+  const enMl = [achat("a", "pehd ø25", null, "0.85", "ml")];
+  assert.deepEqual(lesPrixDe(prixDesFournisseurs(pieces, enMl, fournisseurs)[0]), { pe25: 0.85 });
+  const turbineEnMl = [achat("a", "Turbine 3504", "RA3504", "12.00", "ml")];
+  assert.deepEqual(lesPrixDe(prixDesFournisseurs(pieces, turbineEnMl, fournisseurs)[0]), {});
+});
+
 test("la liste le compte : 13 × 12,40 + 83 × 0,80 chez Aqua Plus, la pièce sans prix à part", () => {
   const table = lesPrixDe(prixDesFournisseurs(pieces, achats, fournisseurs)[0]);
   const groupes = [{ titre: "Réseau 1", lignes: Object.fromEntries(pieces.map((p) => [p.ref, { nom: p.nom, q: p.q, u: p.u }])), retirees: {}, barrees: {} }];

@@ -140,6 +140,7 @@ export async function appliquerPropositionPrix(
       partMainDoeuvre: proposee.partMainDoeuvre,
       joursMainDoeuvre: proposee.joursMainDoeuvre,
       hommesMainDoeuvre: proposee.hommesMainDoeuvre,
+      achatRetenu: proposee.achatRetenu,
     });
 
     // **On note quelles prestations cette ligne vend.** Sans ce lien, une ligne

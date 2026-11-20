@@ -8,6 +8,7 @@ import RepartirLaMainOeuvre from "./RepartirLaMainOeuvre";
 import { ListeDesPartenaires, PartenairePris, PastilleMesPartenaires } from "./PartenairesDeLaMainOeuvre";
 import { colors, font, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
+import { margeEnMots } from "@/lib/prix-achat";
 import {
   DUREES_MAIN_OEUVRE,
   aLaJournee,
@@ -152,7 +153,7 @@ function Contenu({ donnees, saLigne, sesParts, repartition, onValider, onFermer 
   const travaux = repartition?.travaux ?? [];
   // Sa ligne d'abord : ce qu'il a déjà posé sur la pièce, puis la dictée.
   // Sa ligne d'abord, puis ses parts dans les travaux : ce qu'il a déjà posé
-  // sur la pièce, sous l'une ou l'autre forme (`ARCHITECTURE.md` §592).
+  // sur la pièce, sous l'une ou l'autre forme (`ARCHITECTURE.md` §596).
   const [deSesParts] = useState(() =>
     !saLigne && sesParts && sesParts.length > 0 ? equipeDeSesParts(sesParts, { hommes: donnees.hommes }) : null
   );
@@ -313,7 +314,7 @@ function Contenu({ donnees, saLigne, sesParts, repartition, onValider, onFermer 
           ) : (
             <Rang titre="Votre marge" sous={qui.margePropre ? "La sienne, sur sa fiche" : "Main d’œuvre, sur leur prix"}>
               <span className="text-[19px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                {qui.marge === null ? "aucune" : `× ${virgule(Number(qui.marge).toFixed(2))}`}
+                {qui.marge === null ? "à donner" : margeEnMots(qui.marge)}
               </span>
             </Rang>
           )}

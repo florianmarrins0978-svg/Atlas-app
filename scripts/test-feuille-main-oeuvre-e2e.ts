@@ -175,20 +175,21 @@ async function main() {
       const liste = await texte('[data-atlas="mo-liste"]');
       assert.ok(liste.includes(morin) && liste.includes(durand), `ses partenaires manquent :\n${liste}`);
       assert.ok(liste.includes("380 € la journée") && liste.includes("60 € l’heure"), `ses prix manquent :\n${liste}`);
-      assert.ok(liste.includes("× 1,35"), "la marge propre de Durand n'est pas dite");
+      assert.ok(liste.includes("35 %"), "la marge propre de Durand n'est pas dite");
     });
 
-    await cas("un partenaire à la journée : son prix × la marge lue en base, la ligne dit son nom", async () => {
+    await cas("un partenaire à la journée : son prix × la marge lue en base, la ligne ne le nomme pas", async () => {
       await page.click(`[data-atlas="mo-prix-${prixFaience}"]`);
       await regler("mo-duree", "3 jours");
-      assert.equal(await texte('[data-atlas="mo-calcul"]'), "3 jours × 380 € × 1,20");
+      assert.equal(await texte('[data-atlas="mo-calcul"]'), "3 jours × 380 €, plus 20 %");
       assert.match(await texte('[data-atlas="mo-total"]'), /^1 368,00 €/);
       await page.click('[data-atlas="mo-valider"]');
       const l = (await quandIlYEnA(2))[1];
       assert.ok(l, "la ligne du partenaire n'est pas en base");
       assert.deepEqual(
         { libelle: l.libelle, quantite: Number(l.quantite), unite: l.unite, pu: Number(l.prix_unitaire), montant: Number(l.montant) },
-        { libelle: `Main d’œuvre : ${morin}`, quantite: 3, unite: "jour", pu: 456, montant: 1368 }
+        // Le nom du partenaire ne part pas chez le client (19 novembre 2026).
+        { libelle: "Main d’œuvre", quantite: 3, unite: "jour", pu: 456, montant: 1368 }
       );
     });
 
@@ -197,7 +198,7 @@ async function main() {
       await page.click('[data-atlas="mo-partenaires"]');
       await page.click(`[data-atlas="mo-prix-${prixElagage}"]`);
       await page.fill('[data-atlas="mo-quantite"]', "6,5");
-      assert.equal(await texte('[data-atlas="mo-calcul"]'), "6,5 heures × 60 € × 1,35");
+      assert.equal(await texte('[data-atlas="mo-calcul"]'), "6,5 heures × 60 €, plus 35 %");
       assert.match(await texte('[data-atlas="mo-total"]'), /^526,50 €/);
       await page.click('[data-atlas="mo-valider"]');
       const l = (await quandIlYEnA(3))[2];
@@ -323,7 +324,7 @@ async function main() {
       assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "280", "« dont » ne compte pas la main d'œuvre répartie");
     });
 
-    // **Répartie, sa main d'œuvre n'a plus de ligne** (`ARCHITECTURE.md` §592) :
+    // **Répartie, sa main d'œuvre n'a plus de ligne** (`ARCHITECTURE.md` §596) :
     // la feuille rouverte ne la voyait plus, et la reposer l'ajoutait à la
     // première. Son geste, par l'écran : c'est lui qui désigne les travaux.
     const ecrite = async () =>

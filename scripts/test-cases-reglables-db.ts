@@ -295,7 +295,7 @@ async function main() {
       { sujet: diametre!.id, libellePrestation: diametre!.libellePrestation, valeur: "80", lisible: precisionLisible(diametre!, "80") },
     ]);
 
-    // **Ses réponses ne s'écrivent plus dans le nom du travail** (§594) : elles
+    // **Ses réponses ne s'écrivent plus dans le nom du travail** (§598) : elles
     // vivent dans leurs cases, et c'est de là que la ligne ci-dessous tire ses
     // 1 100 €. Le nom reste celui qu'il a dicté.
     const [prestation] = await prestationsRepo.listerPrestations(D, c.id);

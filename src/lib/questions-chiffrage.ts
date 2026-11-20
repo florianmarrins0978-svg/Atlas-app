@@ -479,8 +479,8 @@ export function mesureLisible(sujet: string, valeur: string, unite: string | nul
 /**
  * Comment commence un libellé auquel ses réponses étaient collées, jusqu'au
  * 20 novembre 2026 : « base (précisions) », et avant le 28 octobre
- * « base — précisions ». Plus rien ne les écrit (`ARCHITECTURE.md` §594) ; la
- * migration 0188 les rend à leur nom, et ceci part avec la dernière base qui
+ * « base — précisions ». Plus rien ne les écrit (`ARCHITECTURE.md` §598) ; la
+ * migration 0190 les rend à leur nom, et ceci part avec la dernière base qui
  * en porte : un rejeu qui ne les reconnaîtrait plus créerait un second arbre.
  */
 export function debutsDUnLibelleEnrichi(libelle: string): string[] {

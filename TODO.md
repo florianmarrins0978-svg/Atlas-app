@@ -16,6 +16,14 @@ lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite q
 rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
 montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
 
+## LE PRIX D'UNE PIÈCE : CODÉ LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« 4e planche parfait tu peux coder tout, pas de batterie »*.
+Codé sur la branche de session (`ARCHITECTURE.md` §593, migration 0188),
+parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
+20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
+612). Ce qui suit est la planche telle qu'elle a été posée.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
 Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
@@ -81,7 +89,17 @@ Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
 disponible ici » est retiré du ticket lu. Et partout, l'exemple
 « 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
 
-**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+**Sa demande du soir, faite** : entrer dans la fiche d'un client. Mme Costa a
+une histoire jouée avant la visite (`histoire.mjs`) : devis signé, retour
+d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
+« Dernier devis » avec « + 10 % ». **Les retours d'intervention ne sont pas sur
+la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y
+mettre serait un changement de `src/`, à lui de dire.
+
+**Sa capture du 20 au soir** : la bulle cachait les champs qui s'écrivent. Elle
+se retire pendant l'écriture et revient une fois tout écrit.
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (56,
 c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
 qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
 exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
@@ -112,7 +130,12 @@ pour lui seul (la planche du 19 novembre). Toucher cette mention rouvre le
 choix. **Une seule règle de rapprochement pour la dictée et la saisie**
 (`CLAUDE.md` §3) : la proposer telle quelle, jamais une seconde.
 
-## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
+## SANS MARGE : LA B, EN POUR CENT, CODÉE LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« la 3e planche je choisis la B en % »*. Codé avec le prix d'une
+pièce (`ARCHITECTURE.md` §593), même lot, même batterie. Ce qui
+suit est la planche telle qu'elle a été posée.
+
 
 Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
 d'un fournisseur, il faut qu'il puisse le faire »*. Aujourd'hui la marge est
@@ -136,7 +159,11 @@ au prix d'achat, sans rien dire, chez l'artisan qui a simplement oublié de la
 remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
 `ligneDeMarge`, `phraseDeLaMargePropre`, et la marge propre de chaque fiche).
 
-## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
+## LE FOURNISSEUR DEPUIS SON DEVIS : LES DEUX PLANCHES CODÉES (19 et 20 novembre 2026)
+
+**CODÉES LE 20 novembre 2026** (`ARCHITECTURE.md` §594, §595 ; migrations 0188, 0189), sur `main` le 20 novembre 2026, batterie jouée (`test-achat-retenu-db` et `test-devis-prix-achat-db` compris).
+
+**L'écran Prix montre le calcul (« Acheté 24,00 € chez Point P ») au commercial aussi : voulu.** Sa réponse du 20 novembre 2026 : *« le compte commercial, qu'il a accès au prix, ça a du sens »*. Ne pas le retirer.
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
 que c'est un fournisseur, me crée le dossier avec son nom, son mail, son
@@ -175,6 +202,19 @@ imprimée). Gravité argent : niveau 3.
 dans la maquette* ; le nom du partenaire sur la ligne « Main d'œuvre :
 Élagage Durand », qui partait chez le client, **le retirer** (voir l'entrée
 suivante).
+
+## LE NOM DU PARTENAIRE NE PART PLUS CHEZ LE CLIENT (19 novembre 2026), CODÉ, SUR `main`
+
+Sa réponse : **le retirer**. `ligneDeSonPartenaire`
+(`src/lib/feuille-main-oeuvre.ts`) écrivait « Main d’œuvre : Élagage Durand »
+sur la ligne du devis, donc sur le PDF et la page du client. La ligne dit
+désormais « Main d’œuvre » ; le partenaire reste dans l'encadré « Calcul » de
+l'écran Prix, pour lui seul. Les lignes déjà écrites gardent leur texte : il
+les corrige à la main s'il le veut. `ARCHITECTURE.md` §592. Gravité argent (devis) : niveau 3. Joués ici : la
+suite pure (vue rouge puis verte), les types, le style. **Pas joués** : la
+suite base et les deux suites navigateur adaptées (et `test-main-oeuvre-change-sa-ligne-db`,
+arrivée de `main` le 20 novembre, qui reconnaît désormais la ligne du
+partenaire à son unité), et la batterie avant `main`, qui attendent son accord.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 
@@ -226,7 +266,7 @@ légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 ## LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » : CHOISIE ET CODÉE, SUITES SUR SON « OUI » (20 novembre 2026)
 
 **Son « code ça » du 20 novembre**, sans batterie. Codée sur la branche du lot
-§592 (même sujet), `ARCHITECTURE.md` §592. Joués : types, style, gardes,
+§596 (même sujet), `ARCHITECTURE.md` §596. Joués : types, style, gardes,
 `test-feuille-main-oeuvre.ts` (ses parts redisent son équipe, l'arrondi au
 centime, le partenaire). **Pas joué** : `test-feuille-main-oeuvre-e2e.ts`, qui
 porte maintenant son geste (rouvrir sur « Répartis », la changer, la reposer en
@@ -280,7 +320,7 @@ même heure (confiance moyenne).
 
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : CODÉ, BATTERIE SUR SON « OUI » (20 novembre 2026)
 
-Son « oui corrige les 2 défauts » du 20. `ARCHITECTURE.md` §592. Répartir une
+Son « oui corrige les 2 défauts » du 20. `ARCHITECTURE.md` §596. Répartir une
 seconde fois remplace, reposer en ligne fait sortir ses parts, la ligne
 renommée reste un doublon. **Le relevé du 19 se trompait sur le second** :
 rejouer la préparation garde déjà sa ligne changée ; le vrai trou était la
@@ -321,20 +361,20 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-l
 ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
 que sur le devis. Puis son « oui » à la ligne sous le travail.
 
-**Temps 1 codé le 20 novembre** (`ARCHITECTURE.md` §593) : la ligne sous le
+**Temps 1 codé le 20 novembre** (`ARCHITECTURE.md` §597) : la ligne sous le
 travail, lue dans les cases. Joués : types, style, gardes,
 `test-reponses-sous-le-travail.ts`. **Pas joués** : `test-cases-reglables-db.ts`
 (son chêne, sous `atlas_app`), l'écran regardé, puis le contrôle de son niveau ;
 il a refusé la batterie le 20 (*« Aucune batterie !!! »*), le lot attend donc
 hors de `main`.
 
-**Temps 2 codé le même jour** (son « ok tu peux le faire », §594) : plus rien ne
-s'écrit dans le nom, la migration 0188 rend leur nom aux travaux d'avant.
-Éprouvée sur base habitée (`test-migration-0188-base-habitee.ts`, vert). **Pas
+**Temps 2 codé le même jour** (son « ok tu peux le faire », §598) : plus rien ne
+s'écrit dans le nom, la migration 0190 rend leur nom aux travaux d'avant.
+Éprouvée sur base habitée (`test-migration-0190-base-habitee.ts`, vert). **Pas
 joués** : `test-cases-reglables-db.ts` (le prix du chêne sans le texte),
 `test-questions-chiffrage-db` et voisines, le contrôle du niveau 3. **Reste,
 plus tard** : retirer `debutsDUnLibelleEnrichi` et l'effacement de
-`libelleClient` une fois 0188 passée sur SA base (contract).
+`libelleClient` une fois 0190 passée sur SA base (contract).
 
 **Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
 la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
@@ -717,6 +757,16 @@ sa planche du 18 novembre.
 - les trois scènes des chapitres sont des captures animées ; les trois
   outils de bout en bout, plus bas, sont des films de l'appli.
 
+**Le prix des outils à l'année, sa correction du 20 novembre au soir** :
+*« il n'y a pas 2 mois offerts. C'est 6 euros par mois sur 12 mois »*, donc
+72 € HT à l'année. Le site le dit (`cause-2.html`, `outils.html`) et
+`docs/abonnement-module-paysage.md` aussi. **Pas encore refaite** : la
+planche de l'écran Abonnement (`appli/soignee/abonnement-module-paysage.html`),
+dont les vues à l'année comptent encore +60 € (Entreprise avec les outils :
+650 € au lieu de 662 €, « Vous gagnez 130 € » au lieu de 118 €). Elle est
+figée sur la vraie page : à refigerer avec le bon prix, ou à corriger en
+codant le module.
+
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
 
 **Le soir même, les trois outils de bout en bout, EN FILMS.** Ses demandes :
@@ -725,14 +775,24 @@ fournisseur), puis *« pareil avec les autres outils »*. Une première version
 les donnait à toucher dans le téléphone ; sa correction : *« Je veux pas que
 ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il regardait un
 film. »* Chaque outil est donc une suite de scènes qui se jouent seules au
-défilement (onze films, `appli/vente/images/nov-film-outils-*`), tournées par
+défilement (douze films, `appli/vente/images/nov-film-outils-*`), tournées par
 `appli/scripts/film-outils.cjs` dans les démonstrations (les vrais écrans,
 compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
 **Quand un de ces écrans change dans l'appli**, le site montre une version
 d'avant : relancer, dans cet ordre,
 `npx tsx appli/scripts/demo-outils/construire.ts` puis
 `node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
-l'encodage ; `--apercu <dossier>` pour régler un récit en une minute).
+l'encodage ; `--apercu <dossier>` pour régler un récit en une minute ;
+`--images` pour les deux images du chapitre du plan seules : les deux
+réseaux de la pelouse face à face, en Ø25, et la nourrice de trois voies,
+ses deux remarques du même soir sur les recouvrements).
+**Le diagnostic du site montre la fiche du peuplier SOIGNÉE**, celle de sa
+planche (`appli/soignee/fiche-de-diagnostic.html`, vue Proposé), sa demande
+du même soir. Elle n'est pas encore dans l'appli : une autre session la code
+(`claude/vigilant-ramanujan-kxr0np` au 20 novembre). **Quand elle sera sur
+`main`**, le film pourra la prendre dans la démonstration au lieu de la
+planche, à condition d'y mettre la fiche du peuplier (elle n'est que dans une
+base locale, pas dans `donnees/phyto/`).
 Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
 vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
 changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche
