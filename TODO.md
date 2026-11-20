@@ -65,7 +65,7 @@ remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
 
 **CODÉES LE 20 novembre 2026** (`ARCHITECTURE.md` §594, §595 ; migrations 0188, 0189), pas encore sur `main` : batterie à jouer sur son « oui ». À faire ensuite : jouer `test-achat-retenu-db` et `test-devis-prix-achat-db` (écrits, jamais joués).
 
-**Trouvé en codant, pas corrigé (hors lot)** : l'écran Prix d'un chantier montre la proposition et son calcul (« Acheté 24,00 € chez Point P ») à tout compte qui l'ouvre, commercial compris, alors que ses prix d'achat sont au patron seul ailleurs. À trancher avec lui.
+**L'écran Prix montre le calcul (« Acheté 24,00 € chez Point P ») au commercial aussi : voulu.** Sa réponse du 20 novembre 2026 : *« le compte commercial, qu'il a accès au prix, ça a du sens »*. Ne pas le retirer.
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
 que c'est un fournisseur, me crée le dossier avec son nom, son mail, son
