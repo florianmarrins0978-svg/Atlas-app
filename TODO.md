@@ -1,5 +1,93 @@
 # Prochaines tâches
 
+## ⚠️ ARROSAGE : « LES PIÈCES DES RÉSEAUX » DIT PEHD Ø25 APRÈS LE CHOIX DU Ø32 (vu le 20 novembre 2026, non corrigé)
+
+Vu en filmant le plan pour le site (`appli/scripts/film-outils.cjs`). Sur le
+jardin de la démonstration, toucher « 32 » sur la carte du réseau 1 le passe
+bien en Ø32 : la carte le dit, et la liste compte « 48 m PEHD Ø32 ». Mais la
+section « Les pièces des réseaux » écrit toujours **« PEHD Ø25, 48 m »** sous
+le titre du réseau : le libellé est écrit en dur dans
+`src/app/paysage/arrosage/PiecesDuReseau.tsx` (`<span>PEHD Ø25, {r.metres}</span>`),
+alors que la pièce dessinée à côté (`r.pe`) est la bonne. La commande au
+fournisseur part juste ; l'écran, lui, dit deux diamètres pour le même tuyau.
+
+**À corriger sur son oui** (c'est `src/`, l'arrosage, donc une batterie) :
+lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite qui
+rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
+montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
+
+## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
+
+Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
+écrans, avec des données toutes factices. **Tranché le 20 novembre : la
+voie B** (les vrais écrans figés par `scripts/planche-figee/`, enchaînés
+avec une bulle de guide, sur le site statique). La voie A (une porte
+ouverte au public dans l'appli qui tourne) est écartée : un visiteur
+modifierait ce que voit le suivant, un devis ou un SMS partirait pour de
+vrai, chaque dictée coûterait de l'IA.
+
+**Son parcours, dans cet ordre (ses mots du 20 novembre) :**
+
+1. l'accueil, puis Vos clients ;
+2. Créer un devis : la civilité touchée (Entreprise, Mairie, retour à
+   Monsieur Madame), puis nom, prénom et le reste qui se remplissent ;
+3. Dicter : le devis s'ouvre déjà rempli ;
+4. Aperçu PDF, puis choisir la date : « toutes les vraies étapes » ;
+5. le planning, le chantier posé ; un jour touché, le chantier, les
+   salariés ajoutés, puis en descendant la fiche client ;
+6. Terminés : la facture, son envoi, **ce que le client reçoit**, le
+   client qui paie ;
+7. Ma TVA : toute la page ; la TVA ajoutée ; un ticket de carburant
+   scanné qui s'ajoute ; les chiffres de gauche touchés, qui montrent le
+   relevé et chaque taux ;
+8. la banque connectée, les tickets, le document comptable ;
+9. le paiement du client vu par la banque : la notification sur
+   l'accueil, et de là le check up qui valide le paiement pour le
+   document comptable ;
+10. **la fin : Réglages laissé ouvert**, chaque rubrique se touche
+    librement ; **et la page Vos idées, montrée à coup sûr** (« hyper
+    important »).
+
+Dans la visite, la dictée et le scan du ticket ne lisent rien : l'écran
+suivant s'ouvre déjà rempli, tel que l'appli le peint sur la base de
+démonstration. Planche d'abord dans `appli/`, rien dans `src/` ; le branchement
+sur `appli/vente/` après son choix.
+
+**Sa consigne du même soir : uniquement des données inventées**, *« qu'on ne
+nous attaque pas pour avoir diffusé des données de quelqu'un »*. Numéros de la
+tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
+`example.com`, station, pépinière, banque et signature inventées.
+
+**La planche : `appli/visite-guidee.html`**, faite (49 étapes, puis les
+dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
+l'appli bâtie, joué pour de vrai sur la base de démonstration
+(`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
+dossier du comptable). Retour : `docs/visite-guidee.md`.
+
+**Ce qui a été fait autrement que sa liste, et pourquoi :**
+- **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
+  et le planning : sans cela le chantier n'a pas de date, et c'est le vrai
+  chemin ;
+- **la notification du virement vient juste après le paiement du client**, avant
+  Ma TVA : c'est elle qui fait entrer la facture dans la TVA. Le check up reste
+  dans Pour mon comptable, où il vit ;
+- **« Avant de chiffrer »** s'ajoute après la dictée : c'est ce que l'appli
+  demande quand la longueur de la haie manque ;
+- **le chantier est passé au 18 novembre** par la base avant Terminés : Terminés
+  ne montre qu'un chantier dont la date est passée.
+
+**Retouches de la planche** (ce poste n'a pas de clé d'IA, son espace si) :
+Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
+disponible ici » est retiré du ticket lu. Et partout, l'exemple
+« 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
+qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
+exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
+`FactureClient.tsx`) ; ce numéro peut appartenir à quelqu'un, le passer en
+06 39 98 00 00 serait plus sûr.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
 
 Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
@@ -135,6 +223,33 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
 
+## ⏳ UNE PLANCHE À REGARDER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
+
+Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repartait de
+la dictée (ici 1 homme, 1 journée), sur « Sur une ligne », avec « Ajouter la
+main d’œuvre ». Sur `main`, l'appui ajoute une ligne et les travaux gardent
+leur part : la main d'œuvre compte deux fois. La correction de l'argent
+(`ARCHITECTURE.md` §592 : poser son équipe fait sortir sa part des travaux)
+est codée sur `claude/sleepy-sagan-gq6c0x`, pas encore sur `main` ; l'écran,
+lui, ne dit toujours rien. Son « ok » du 20 pour la planche, figée sur son
+vrai devis (deux travaux, 2 hommes × 2 jours × 280 € répartis), rien dans
+`src/` :
+https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html
+
+| Tranché pour la planche | Pourquoi |
+|---|---|
+| hommes et durée « Repris de vos travaux » (leurs jours d'homme, 4 ici, en 2 × 2) | le pendant de « Repris de votre ligne » qu'il a validé le 18 |
+| « Répartis sur les travaux » déjà choisi, ses parts actuelles dans la barre (560 € et 560 €) | c'est la forme où elle est ; repartir « Sur une ligne » la déplacerait sans qu'il l'ait demandé |
+| « Changer la main d’œuvre », dans les deux modes | les mots de sa planche du 18 : elle change la sienne, elle ne s'ajoute pas |
+| « Sur une ligne » montre les travaux à leur prix SANS elle (750 € et 180 €) | c'est ce qu'ils deviendront, §592 |
+| un homme de plus puis « Changer » : 1 680 € à la place des 1 120 €, dans les travaux | rien ne compte deux fois |
+
+**Ce que coûtera le code, une fois choisi** : la feuille doit recevoir les
+travaux de la TVA avec leur part et leurs jours d'homme (`partDeSonEquipe`,
+§592), en tirer hommes et durée comme `equipeDeSaLigne` le fait d'une ligne,
+et ouvrir « Répartis » sur leurs parts. Après §592 sur `main` ; argent,
+niveau 3.
+
 ## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Sa capture du 18 novembre, sa réponse (*« changer ma ligne »*), sa planche
@@ -166,15 +281,6 @@ ligne renommée. Joués : types, style, gardes, `test-feuille-main-oeuvre.ts`,
 `test-proposition-au-detail.ts`, `test-main-oeuvre-change-sa-ligne-db.ts`
 (quatre vus rouges). **Pas joués** : `test-feuille-main-oeuvre-e2e.ts` (ses
 deux gestes par l'écran) et la batterie (niveau 3 : argent), sur son « oui ».
-
-## ⏳ À DESSINER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
-
-Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repart de
-la dictée, pas de ses parts, et « Ajouter la main d’œuvre » la CHANGE sans le
-dire (ses parts sortent des travaux, §592). L'argent est juste, l'écran ne
-l'est pas tout à fait. Une planche d'abord : ce que la feuille montre quand sa
-main d'œuvre est dans les travaux (hommes et jours repris de leurs jours
-d'homme ? « Répartis » déjà choisi ?).
 
 ## ⏳ UNE PLANCHE À REGARDER : SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
 
@@ -586,10 +692,36 @@ sa planche du 18 novembre.
 - la fiche du diagnostic montrée est celle de `main`, qui porte encore
   « Probable · Peuplier » (l'entrée de la fiche de diagnostic, plus haut) : à
   refaire quand l'écran aura changé ;
-- les trois scènes sont des captures animées, pas des films de l'appli : les
-  filmer demande le serveur de l'appli, donc son oui.
+- les trois scènes des chapitres sont des captures animées ; les trois
+  outils de bout en bout, plus bas, sont des films de l'appli.
 
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
+
+**Le soir même, les trois outils de bout en bout, EN FILMS.** Ses demandes :
+toute la page du plan (25 ou 32, n'importe quelle pièce, la liste, l'envoi au
+fournisseur), puis *« pareil avec les autres outils »*. Une première version
+les donnait à toucher dans le téléphone ; sa correction : *« Je veux pas que
+ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il regardait un
+film. »* Chaque outil est donc une suite de scènes qui se jouent seules au
+défilement (onze films, `appli/vente/images/nov-film-outils-*`), tournées par
+`appli/scripts/film-outils.cjs` dans les démonstrations (les vrais écrans,
+compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
+**Quand un de ces écrans change dans l'appli**, le site montre une version
+d'avant : relancer, dans cet ordre,
+`npx tsx appli/scripts/demo-outils/construire.ts` puis
+`node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
+l'encodage ; `--apercu <dossier>` pour régler un récit en une minute).
+Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
+vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
+changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche
+du platane de `donnees/phyto/` affiche des tirets dans l'appli (« INRAE —
+Ephytia », le titre de sa source, le crédit de sa photo), contraires à sa règle
+du 22 septembre ; la démonstration les change en virgules à la construction,
+la donnée et l'écran de `main` les gardent. Les films du diagnostic montrent
+encore deux points médians de l'écran de `main` (« forêts) · consultée le… »
+sous Que faire, « Fiche version 1 · à jour au… » dans les détails) : ils
+partent avec l'entrée de la fiche de diagnostic, plus haut, et les films se
+retournent alors.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 

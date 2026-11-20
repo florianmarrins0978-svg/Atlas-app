@@ -41,11 +41,10 @@
   pression se compte au dernier arroseur ; la liste part au fournisseur.
 
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
-    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan
-      (LePlanDuJardin), rendu par scripts/capture-plan-arrosage.ts avec la
-      feuille de style de l'appli et le calcul réel, sur le jardin de la
-      planche du 18 octobre (deux pelouses, un massif en goutte-à-goutte, un
-      couloir de tuyères) ; ici la carte du réseau 1 et la nourrice éclatée ;
+    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
+      dans la démonstration (voir « DE BOUT EN BOUT » plus bas), sur le même
+      jardin qu'elle ; ici la carte du réseau 1 et la nourrice éclatée ;
+    · nov-film-outils-* : les films de la démonstration (même endroit) ;
     · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
       peint aujourd'hui (onglet « Aujourd'hui » de
       appli/soignee/fiche-de-diagnostic.html, figé par scripts/planche-figee/).
@@ -62,14 +61,15 @@
     · outils-feuille : la photo de référence de la fiche du peuplier, de
       Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia
       Commons, sous licence CC BY 3.0 US ; recadrée, son crédit sous la scène.
-  Le croquis est un dessin, celui de appli/soignee/arrosage.html (le même
-  jardin) : c'est la feuille de papier de l'artisan, pas un écran de l'appli.
+  Le croquis est un dessin du jardin de la démonstration, au trait de celui
+  de appli/soignee/arrosage.html : c'est la feuille de papier de l'artisan,
+  pas un écran de l'appli.
 
   CE QUI BOUGE, et pourquoi. Le geste du site, « rien ne se retape, tout se
   porte », répété une fois par outil :
     · le plan d'arrosage : un trait d'or balaie le croquis (la lecture, comme
-      dans l'appli), « 12 m » quitte le croquis et se pose sur « 12 m sur
-      12 m » de la carte du réseau, qui s'écrit alors de haut en bas ;
+      dans l'appli), la carte du réseau sort, « 20 m » quitte le croquis et se
+      pose sur « 20 m sur 8 m », et la carte s'écrit de haut en bas ;
     · le diagnostic : le trait d'or balaie la photo, la photo recule, et la
       fiche arrive un peu grande et se pose, comme Ma TVA dans Encaissez ;
     · les fiches de chantier : le compte rendu sort de derrière le téléphone
@@ -78,6 +78,52 @@
   sur le papier et sur la photo, jamais sur un écran. Sans script, ou pour
   qui a demandé moins de mouvement, chaque scène montre son état le plus
   parlant, immobile.
+
+  DE BOUT EN BOUT, LE 20 NOVEMBRE AU SOIR. Sa demande, la page vue : après
+  la nourrice, un exemple à deux réseaux (« un réseau pour le gazon avec
+  4 arroseurs [Rain Bird], et un réseau de goutte à goutte »), et « toute la
+  page » : 25 ou 32 qui change les réseaux, n'importe quelle pièce à changer
+  ou supprimer, la liste, l'envoi au fournisseur ; puis « pareil avec les
+  autres outils ». Une première version les donnait à TOUCHER, dans un
+  téléphone qui portait l'appli. Sa correction, le soir même : « Je veux pas
+  que ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il
+  regardait un film. Comme on a fait sur le site internet normal. »
+  Chaque outil est donc une suite de scènes filmées, une par geste, qui se
+  jouent seules quand on arrive dessus et se rejouent quand on y revient
+  (onze films, images/nov-film-outils-*). Ce qu'ils filment est le VRAI
+  écran de l'appli, pas une copie : vente/demo/*.html, compilés depuis src/
+  par appli/scripts/demo-outils/construire.ts (mêmes composants, même
+  calcul, même feuille de style), la base remplacée par
+  appli/scripts/demo-outils/bouchons/<outil>.ts. Le tournage
+  (appli/scripts/film-outils.cjs) y fait les gestes avec un vrai appui,
+  image par image : rien n'est dessiné sur l'écran, c'est l'appli qui
+  répond.
+  LE JARDIN : une pelouse de 20 m sur 8 m et un massif en goutte-à-goutte,
+  cherché avec le vrai calcul parmi des centaines. Une pelouse à 4 turbines
+  sur un seul réseau passe déjà en Ø25 : le 32 n'y change rien, et l'appli
+  le dit. Celle-ci donne en Ø25 deux réseaux de 4 turbines 3504 et le
+  goutte-à-goutte, et en Ø32 une ligne de 8 turbines : « un réseau de
+  moins ». « 3005 » n'existe pas dans son catalogue ; la 3504 est la turbine
+  Rain Bird que le calcul choisit. Le croquis, la carte du réseau et la
+  nourrice du chapitre sont ceux de ce même jardin.
+  LE DIAGNOSTIC ET LA FICHE lisent la base (ce sont des écrans « serveur ») :
+  demo-outils/routeur.tsx les rend dans le navigateur.
+    · le diagnostic : la fiche de l'anthracnose du platane, l'une des trois
+      fiches publiables de donnees/phyto/ (celle du peuplier, montrée plus
+      haut, n'est que dans une base locale), lue par la fonction de l'import
+      et composée par le vrai moteur (composerResultat). La photo est donnée
+      à l'appareil photo que l'appli ouvre ; l'IA n'est pas dans la
+      démonstration, et seule cette photo-là reçoit une réponse. L'essence
+      n'est pas donnée : l'écran dit « Probable » seul, sans le point que
+      main met encore devant l'essence. Sous « Que faire », la source porte
+      encore un point médian (« forêts) · consultée ») : c'est l'écran de
+      main, noté dans TODO.md, pas retouché ici ;
+    · les fiches : le modèle fourni par l'appli, deux clients d'exemple, un
+      compte rendu déjà envoyé chez M. Bernard ; le nommer sur une fiche
+      neuve recoche ses cases de la dernière fois (cocherCommeLaDerniereFois).
+      Le dernier film est le retour d'intervention tel qu'il le lit.
+  Les films sont datés du vendredi 20 novembre 2026, 17 h 36 : l'heure
+  s'écrit sur la fiche envoyée, et ne change plus d'un tournage à l'autre.
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : à regarder sur son iPhone.
 -->
@@ -355,6 +401,45 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 .duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
 @media (min-width:960px){.scene-fiche{padding:56px 40px 44px}.scene-croquis{padding:36px 30px 40px}}
 
+/* ── De bout en bout : le vrai écran de l'appli, filmé ───────────────────── */
+/* Sa correction du 20 novembre 2026 au soir, devant des démonstrations à
+   toucher : « comme s'il regardait un film ». Chaque geste est un film de la
+   démonstration (vente/demo/, les vrais écrans compilés depuis src/), tourné
+   par appli/scripts/film-outils.cjs, et se joue seul quand on arrive dessus,
+   comme les scènes de cause-2.html. Le texte dit le geste, le téléphone le
+   montre ; l'un sous l'autre sur téléphone, côte à côte sur ordinateur. */
+.film-tete .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.nuit .film-tete .chapo{color:var(--sur-nuit-2)}
+.plans{list-style:none;margin:48px 0 0;padding:0;display:grid;gap:56px}
+.plan{display:grid;gap:22px;min-width:0}
+.plan-texte{display:grid;gap:6px;max-width:24em}
+.plan-texte b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display);font-weight:400}
+.plan-texte span{color:var(--encre-2);font-size:16.5px}
+.nuit .plan-texte span{color:var(--sur-nuit-2)}
+.scene-plan{display:flex;justify-content:center;padding:22px 18px}
+.scene-plan .appareil{width:min(64vw,290px)}
+/* Le film d'un écran : sa première image dessous avant qu'il parte, sa
+   dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
+.film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.film img.film-debut{z-index:1}
+.film video{z-index:2;opacity:0}
+.film video.joue{opacity:1}
+.film img.film-fin{z-index:3;opacity:0}
+.film img.film-fin.vue{opacity:1}
+/* Sur ordinateur, le cadre sable épouse le téléphone : étiré sur sa colonne,
+   il changeait de largeur d'une rangée à l'autre. */
+@media (min-width:960px){
+  .plans{gap:88px}
+  .plan{grid-template-columns:minmax(0,1fr) auto;column-gap:96px;align-items:center}
+  .plan:nth-child(even){grid-template-columns:auto minmax(0,1fr)}
+  .plan:nth-child(even) .plan-texte{order:2}
+  .plan-texte{gap:10px}
+  .plan-texte b{font-size:clamp(30px,3vw,42px)}
+  .plan-texte span{font-size:18px}
+  .scene-plan{padding:44px 64px}
+  .scene-plan .appareil{width:320px}
+}
+
 /* ── Le prix : une carte, la bascule mois ou année ─────────────────────── */
 .prix-tete{text-align:center}
 .prix-tete .mot{font-size:clamp(64px,15vw,112px)}
@@ -475,7 +560,7 @@ html.anime .geant.vu span{transform:none}
       <p class="rassure">6 € HT par mois. Un plan d'arrosage et un diagnostic offerts pour essayer.</p>
     </div>
     <div class="scene plateau socle" id="plateau" data-t aria-hidden="true">
-      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1137"></figure></div></div>
+      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1176"></figure></div></div>
       <div class="pose pose-cr"><div class="entre entre-cr"><figure class="feuille"><img src="images/outils-compte-rendu-carte.jpg" alt="" width="700" height="1366"></figure></div></div>
       <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="" width="1170" height="1992"></div></div></div></div>
     </div>
@@ -495,7 +580,7 @@ html.anime .geant.vu span{transform:none}
     </div>
     <div class="chap-visuel">
       <div class="scene scene-croquis" id="scene-croquis">
-        <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : deux pelouses de 12 m sur 12 m et de 8 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 2,40 m, un couloir de 10 m sur 2 m, la nourrice et le compteur">
+        <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : une pelouse de 20 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 1,20 m, la nourrice et le compteur">
           <svg viewBox="0 0 372 212" aria-hidden="true">
             <defs>
               <filter id="trait-crayon" x="-2%" y="-2%" width="104%" height="104%">
@@ -508,47 +593,62 @@ html.anime .geant.vu span{transform:none}
             </defs>
             <rect width="372" height="212" fill="#fbf8ef"/>
             <rect width="372" height="212" fill="url(#quadrillage)"/>
-            <rect class="eclat" x="63" y="13" width="34" height="14.5" rx="3" fill="rgba(240,180,60,.42)"/>
+            <rect class="eclat" x="142" y="13.5" width="34" height="14.5" rx="3" fill="rgba(240,180,60,.42)"/>
             <g fill="none" stroke="var(--crayon)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" filter="url(#trait-crayon)">
-              <path d="M26.5 35.2 C62 33.8 101 35.9 134.3 34.6 C133.6 70 134.8 106 133.8 142.4 C99 143.2 61 141.6 26 142.6 C27 106 25.6 70 26.5 35.2 Z"/>
-              <path d="M152.4 34.8 C176 33.9 201 35.4 224.2 34.4 C223.6 58 224.6 83 223.8 106.4 C200 107.1 175 105.8 151.8 106.6 C152.6 83 151.6 58 152.4 34.8 Z"/>
-              <path d="M152.2 124.4 C212 123.2 271 125.3 332.4 123.9 C332.8 131 331.8 139 332.3 145.9 C272 146.7 211 144.9 151.9 146.2 C152.5 139 151.7 131 152.2 124.4 Z"/>
-              <path d="M26.3 160.6 C56 159.6 86 161.2 116.4 160.2 C116.9 166 115.9 172 116.2 178.4 C86 179.1 56 177.7 25.9 178.6 C26.5 172 25.8 166 26.3 160.6 Z"/>
-              <path d="M137.6 85.2 L148.8 85 L148.9 91.8 L137.4 92 Z" fill="var(--crayon)"/>
-              <path d="M166 111.4 C160 106 155 100 149.6 94.6 M150 99.8 L149.4 94.4 L154.6 94.8"/>
-              <circle cx="143.2" cy="178.6" r="5.4"/>
-              <circle cx="143.2" cy="178.6" r="1.2" fill="var(--crayon)"/>
-              <path d="M32 28.4 L128 28.4 M32 26 L32 31 M128 26 L128 31"/>
-              <path d="M19.6 41 L19.6 136 M17 41 L22.2 41 M17 136 L22.2 136"/>
-              <path d="M157 28.4 L219 28.4 M157 26 L157 31 M219 26 L219 31"/>
-              <path d="M230.8 40 L230.8 101 M228.2 40 L233.4 40 M228.2 101 L233.4 101"/>
-              <path d="M157 153.4 L327 153.4 M157 151 L157 156 M327 151 L327 156"/>
-              <path d="M30 186.4 L112 186.4 M30 184 L30 189 M112 184 L112 189"/>
+              <path d="M34.5 40.2 C100 39 200 41 284.3 39.6 C283.6 75 284.8 110 283.8 140.4 C200 141.2 100 139.6 34 140.6 C35 105 33.6 72 34.5 40.2 Z"/>
+              <path d="M34.2 152.4 C120 151.2 200 153.3 284.4 151.9 C284.8 157 283.8 163 284.3 167.9 C200 168.7 120 166.9 33.9 168.2 C34.5 163 33.7 157 34.2 152.4 Z"/>
+              <path d="M288.6 85.2 L298.8 85 L298.9 95.8 L288.4 96 Z" fill="var(--crayon)"/>
+              <circle cx="336" cy="159" r="5.4"/>
+              <circle cx="336" cy="159" r="1.2" fill="var(--crayon)"/>
+              <path d="M40 30.4 L278 30.4 M40 28 L40 33 M278 28 L278 33"/>
+              <path d="M22.6 46 L22.6 134 M20 46 L25.2 46 M20 134 L25.2 134"/>
+              <path d="M40 180.4 L278 180.4 M40 178 L40 183 M278 178 L278 183"/>
             </g>
             <g fill="var(--crayon)" font-family="'Bradley Hand', 'Segoe Print', 'Marker Felt', 'Comic Sans MS', cursive" text-anchor="middle">
-              <text x="80" y="93" font-size="15">pelouse</text>
-              <text x="188" y="75" font-size="14">pelouse</text>
-              <text x="242" y="139.4" font-size="12.5">massif  GAG</text>
-              <text x="71" y="173.8" font-size="11.5">couloir</text>
-              <text id="cote-depart" x="80" y="24.2" font-size="12.5">12 m</text>
-              <text x="13" y="92" font-size="12.5" transform="rotate(-90 13 92)">12 m</text>
-              <text x="188" y="24.2" font-size="12.5">8 m</text>
-              <text x="245" y="74" font-size="12.5">8 m</text>
-              <text x="242" y="167" font-size="12.5">20 m</text>
-              <text x="352" y="139" font-size="12">2,40</text>
-              <text x="71" y="200" font-size="12">10 m</text>
-              <text x="13" y="173" font-size="12">2 m</text>
-              <text x="190" y="120.6" font-size="12.5">nourrice</text>
-              <text x="183" y="183" font-size="12.5">compteur</text>
+              <text x="159" y="96" font-size="15">pelouse</text>
+              <text x="159" y="164" font-size="11.5">massif  GAG</text>
+              <text id="cote-depart" x="159" y="25" font-size="12.5">20 m</text>
+              <text x="15" y="90" font-size="12.5" transform="rotate(-90 15 90)">8 m</text>
+              <text x="159" y="194" font-size="12">20 m</text>
+              <text x="305" y="164" font-size="11.5">1,20</text>
+              <text x="325" y="80" font-size="12.5">nourrice</text>
+              <text x="336" y="182" font-size="12.5">compteur</text>
             </g>
           </svg>
         </figure>
-        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, pelouse arrière de 12 m sur 12 m, 8 turbines 3504 buse 0,75 de portée 5,1 m, et 42 m de PEHD Ø25" width="1038" height="1137" decoding="async"></figure></div></div>
-        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">12 m</span></span>
+        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, la pelouse de 20 m sur 8 m, 4 turbines 3504 buse 1,0 de portée 6,1 m, et 24 m de PEHD Ø25" width="1038" height="1176" decoding="async"></figure></div></div>
+        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">20 m</span></span>
       </div>
-      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de quatre voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1185" decoding="async"></figure>
+      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1379" decoding="async"></figure>
       <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
     </div>
+  </div>
+</section>
+
+<section class="en-film papier" id="film-arrosage">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>Le plan, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, sur ce jardin.</p>
+    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>25 ou 32.</b><span>En Ø32, la pelouse tient sur un réseau de moins.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-tuyau"><img class="film-pose" src="images/nov-film-outils-tuyau-fin.jpg" alt="Le plan dans Cause : réseau 1 passé en Ø32, avec la phrase « En Ø32 : 8 arroseurs sur ce réseau au lieu de 4, un réseau de moins. » et 2 réseaux, 48 m de tranchée" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une pièce de la nourrice.</b><span>La changer, ou la supprimer.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La nourrice de deux voies, pièce par pièce, après l’appui sur l’électrovanne Rain Bird 100 DV 1 pouce MM 9V : Changer, Supprimer, Garder" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Les turbines.</b><span>Une seule, ou les huit d’un coup.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 : huit turbines 3504, chaque maillon de la chaîne dessiné, du té taraudé à la turbine" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Au fournisseur.</b><span>Tout est additionné, pièce par pièce. Le message part tel quel, ou retouché.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-liste"><img class="film-pose" src="images/nov-film-outils-liste-fin.jpg" alt="La feuille « Au fournisseur » : Bonjour, voici ma commande pour un chantier d’arrosage, 8 m de PEHD Ø32, puis chaque pièce avec sa référence" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -570,6 +670,29 @@ html.anime .geant.vu span{transform:none}
       </div>
       <p class="credit">Photo de Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia Commons, sous licence CC BY 3.0 US, recadrée.</p>
     </div>
+  </div>
+</section>
+
+<section class="en-film nuit" id="film-diagnostic">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>Le diagnostic, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, sur une feuille de platane.</p>
+    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>Une photo.</b><span>Cause la compare aux fiches, et répond.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="Le diagnostic dans Cause : Anthracnose du platane, probable, une maladie fongique du platane, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Que faire.</b><span>La gravité pour l’arbre, la conduite à tenir, et d’où elle vient.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-conduite"><img class="film-pose" src="images/nov-film-outils-conduite-fin.jpg" alt="Gravité : faible. Que faire : surveiller l’évolution ; le dégât est spectaculaire mais rarement grave, et sa source, l’INRAE" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Chez quel client.</b><span>Le diagnostic rejoint son chantier.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-rattacher"><img class="film-pose" src="images/nov-film-outils-rattacher-fin.jpg" alt="Les détails du diagnostic, puis « Rattacher à un chantier » : Bernard, déjà rattaché" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -595,6 +718,33 @@ html.anime .geant.vu span{transform:none}
         <p class="duo-legende"><span>Votre fiche.</span><span>Ce que reçoit M. Bernard.</span></p>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="en-film" id="film-fiches" style="background:var(--fond)">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>La fiche, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, chez M. Bernard.</p>
+    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>Votre liste.</b><span>Vos prestations, rangées par famille, une fois pour toutes.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-composer"><img class="film-pose" src="images/nov-film-outils-composer-fin.jpg" alt="Composer ma fiche dans Cause : la famille Massifs et ses cinq prestations, puis Propreté" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une fiche pour M. Bernard.</b><span>Ses cases de la dernière fois, déjà cochées.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-bernard"><img class="film-pose" src="images/nov-film-outils-bernard-fin.jpg" alt="Une fiche de chantier pour Bernard : 5 prestations cochées, celles du dernier chantier, envoyée par SMS" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une remarque, et c’est envoyé.</b><span>Par SMS, le compte rendu prêt à partir.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-envoyer"><img class="film-pose" src="images/nov-film-outils-envoyer-fin.jpg" alt="La fiche de Bernard, avec la remarque « La haie du fond sera taillée la semaine prochaine. », envoyée le 20 novembre 2026 à 17:36" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Chez M. Bernard.</b><span>Ce qu’il lit sur son téléphone, sans rien installer.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-client"><img class="film-pose" src="images/nov-film-outils-client-fin.jpg" alt="Le retour d’intervention que lit Bernard : les Jardins de Valmorin, le vendredi 20 novembre 2026, cinq travaux faits et la remarque" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -920,14 +1070,15 @@ html.anime .geant.vu span{transform:none}
     ouverture.addEventListener("pointerleave", function(){ viser(0, 0); });
   }
 
-  // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 12 m » s'éclaire,
-  // quitte le croquis, vole jusqu'à « 12 m sur 12 m » de la carte du réseau
-  // et s'y pose au pixel près (mesuré sur le rendu : 38,8 % de la largeur de
-  // la carte, 20,0 % de sa hauteur, le mot faisant 9,0 % de sa largeur),
-  // puis s'efface sur le chiffre de l'appli. La carte s'écrit alors.
+  // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 20 m » s'éclaire,
+  // quitte le croquis, vole jusqu'à « 20 m sur 8 m » de la carte du réseau
+  // et s'y pose au pixel près (mesuré sur le rendu de la démonstration :
+  // 27,0 % de la largeur de la carte, 19,5 % de sa hauteur, le mot faisant
+  // 9,7 % de sa largeur), puis s'efface sur le chiffre de l'appli. La carte
+  // s'écrit alors.
   var sceneCroquis = document.getElementById("scene-croquis"), croquis = un(".croquis", sceneCroquis);
   var carteReseau = document.getElementById("carte-reseau"), porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
-  var depart = document.getElementById("cote-depart"), CIBLE_12 = { x:.3881, y:.1998, l:.0900 };
+  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.1946, l:.0970 };
   var vols = [];
   var voler = function(el, cles, options){ var a = el.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
   var place = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
@@ -950,8 +1101,8 @@ html.anime .geant.vu span{transform:none}
     var L = porte.offsetWidth, H = porte.offsetHeight;
     var de = { e: d.width / (L * .78) };
     de.x = d.left - s.left + d.width / 2 - L * de.e / 2; de.y = d.top - s.top + d.height / 2 - H * de.e / 2;
-    var vers = { e: (CIBLE_12.l * c.width) / (L * .78) };
-    vers.x = c.left - s.left + CIBLE_12.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_12.y * c.height - H * vers.e / 2;
+    var vers = { e: (CIBLE_COTE.l * c.width) / (L * .78) };
+    vers.x = c.left - s.left + CIBLE_COTE.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_COTE.y * c.height - H * vers.e / 2;
     var haut = { x: de.x + (vers.x - de.x) * .45, y: Math.min(de.y, vers.y) - 26, e: Math.max(de.e, vers.e) * 1.5 };
     voler(fondPorte, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1150, easing: "linear" });
     await voler(porte, [
@@ -986,6 +1137,53 @@ html.anime .geant.vu span{transform:none}
     duo.classList.remove("envoye");
     await attendre(900); if (!encore()) return;
     duo.classList.add("envoye");
+  });
+
+  // DE BOUT EN BOUT. Chaque geste est un film de l'appli, qui se joue seul
+  // quand son téléphone est au tiers à l'écran, et se rejoue quand on y
+  // revient. Rien ne se charge avant l'approche : un film prépare ses images
+  // à 900 px de l'écran, ou en arrivant, si l'on arrive d'un coup. Un film
+  // refusé (économie d'énergie) ou introuvable montre sa dernière image.
+  // C'est la mécanique de cause-2.html, recopiée.
+  var bobine = function(cadre){
+    var nom = "images/nov-film-" + cadre.dataset.film, video = null, fin = null, quand = null, casse = false;
+    var rendre = function(){ if (quand){ var q = quand; quand = null; q(); } };
+    // La dernière image se pose PAR-DESSUS le film, qui reste dessous, arrêté
+    // sur sa dernière image : caché au même instant, il laissait voir un
+    // éclair de sa première (cause-2.html, 19 novembre 2026).
+    var finir = function(){ fin.classList.add("vue"); rendre(); };
+    return {
+      preparer: function(){
+        var debut = new Image(); debut.src = nom + "-debut.jpg"; debut.alt = ""; debut.decoding = "async"; debut.className = "film-debut";
+        video = document.createElement("video"); video.muted = true; video.playsInline = true; video.setAttribute("muted", ""); video.setAttribute("playsinline", ""); video.preload = "auto";
+        ["mp4", "webm"].forEach(function(t){ var so = document.createElement("source"); so.src = nom + "." + t; so.type = "video/" + t; video.appendChild(so); });
+        video.lastChild.addEventListener("error", function(){ casse = true; finir(); });
+        fin = new Image(); fin.src = nom + "-fin.jpg"; fin.alt = ""; fin.decoding = "async"; fin.className = "film-fin";
+        video.addEventListener("playing", function(){ video.classList.add("joue"); });
+        video.addEventListener("ended", finir);
+        cadre.append(debut, video, fin);
+      },
+      remettre: function(){ rendre(); video.pause(); video.classList.remove("joue"); if (!casse) fin.classList.remove("vue"); video.currentTime = 0; },
+      jouer: function(){
+        this.remettre();
+        if (casse) return Promise.resolve();
+        // Une lecture coupée par la sortie de l'écran n'est pas un refus.
+        return new Promise(function(r){ quand = r; var p = video.play(); if (p && p.catch) p.catch(function(e){ if (!e || e.name !== "AbortError") finir(); }); });
+      },
+      arreter: function(){ rendre(); if (video) video.pause(); }
+    };
+  };
+  tous(".en-film .film").forEach(function(cadre){
+    var film = bobine(cadre), pret = false;
+    var preparer = function(){ if (!pret){ pret = true; film.preparer(); } };
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting) preparer(); }, {rootMargin:"900px 0px"}).observe(cadre);
+    // Le film commence par un temps immobile : avec ce court délai, le
+    // premier geste vient une demi-seconde après l'arrivée.
+    scene(cadre, 0.35, async function(encore){
+      preparer(); film.remettre();
+      await attendre(150); if (!encore()) return;
+      film.jouer();
+    }, film.arreter);
   });
 
   window.causePret = true;

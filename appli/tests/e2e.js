@@ -781,7 +781,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // un rendu à la décoder, et l'on revoit un éclair de la PREMIÈRE image du
   // film (vu le 19 novembre 2026 à la fin des travaux : la liste décochée
   // qui repasse). Le film reste donc dessous, sur sa dernière image.
-  for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE) {
+  //
+  // La page des outils (20 novembre 2026) montre chaque outil de bout en
+  // bout en onze films de l'appli, tournés dans ses démonstrations par
+  // appli/scripts/film-outils.cjs (sa correction : « comme s'il regardait un
+  // film »). Ils passent le même contrôle.
+  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-conduite', 'outils-rattacher', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
+  for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE.concat([['outils.html', 'vente, les outils', FILMS_DES_OUTILS, true]])) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
     await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
