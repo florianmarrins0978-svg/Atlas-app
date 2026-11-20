@@ -2,15 +2,14 @@
  * Next.js, sans Next.js : ce dont les écrans ont besoin pour se dessiner dans
  * une page publiée. Un lien vers un écran que la démonstration connaît y
  * mène (routeur.tsx) ; un lien vers un autre écran ne quitte pas la
- * démonstration, et la page du site dit en une ligne, à côté du téléphone, ce
- * qu'il ouvre dans l'appli (sa règle du 8 novembre 2026 : aucun geste muet).
+ * démonstration. Le site la montre en films (appli/scripts/film-outils.cjs),
+ * et aucun film ne touche un tel lien.
  */
 import type { AnchorHTMLAttributes, ImgHTMLAttributes, ReactNode } from "react";
 import { cheminCourant, connait, naviguer } from "./routeur";
 
-function aller(cible: string, nom: string) {
+function aller(cible: string) {
   if (connait(cible)) naviguer(cible);
-  else window.parent.postMessage({ lien: cible, nom }, "*");
 }
 
 export default function Link({ href, children, ...reste }: Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & { href: string | { pathname?: string }; children?: ReactNode; prefetch?: boolean; replace?: boolean; scroll?: boolean }) {
@@ -25,7 +24,7 @@ export default function Link({ href, children, ...reste }: Omit<AnchorHTMLAttrib
       onClick={(e) => {
         e.preventDefault();
         reste.onClick?.(e);
-        aller(cible, e.currentTarget.textContent?.trim() || e.currentTarget.getAttribute("aria-label") || "");
+        aller(cible);
       }}
     >
       {children}
@@ -44,8 +43,8 @@ export function usePathname() {
 }
 export function useRouter() {
   return {
-    push: (c: string) => aller(c, ""),
-    replace: (c: string) => aller(c, ""),
+    push: (c: string) => aller(c),
+    replace: (c: string) => aller(c),
     back: () => {},
     forward: () => {},
     // Les données ont pu changer (un diagnostic rattaché) : l'écran se relit.
@@ -57,6 +56,6 @@ export function useSearchParams() {
   return new URLSearchParams();
 }
 export function redirect(c: string) {
-  aller(c, "");
+  aller(c);
 }
 export function notFound() {}

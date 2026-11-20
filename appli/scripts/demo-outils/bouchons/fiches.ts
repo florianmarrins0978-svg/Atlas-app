@@ -195,7 +195,7 @@ export const { bouchon, constante } = fabrique({
       const f = trouver(String(id));
       return f ? passage(f) : null;
     },
-    // « dernier » : le guide de la page montre le compte rendu qu'on vient
+    // « dernier » : le tournage montre le compte rendu qu'on vient
     // d'envoyer, sans connaître son jeton.
     lireRapportParJeton: async (jeton) => {
       const f = jeton === "dernier"
@@ -215,10 +215,9 @@ export const { bouchon, constante } = fabrique({
       };
     },
   },
-  // L'envoi ouvre SA messagerie, le message prêt : ici la page le dit.
+  // L'envoi ouvrirait SA messagerie, le message prêt : la démonstration n'en
+  // a pas, et l'écran dit déjà « Envoyé le … ».
   "src/lib/ouvrir-messagerie.ts": {
-    ouvrirAdresse: ((adresse: string) => {
-      window.parent.postMessage({ lien: adresse, nom: "votre messagerie s’ouvre, le compte rendu prêt à partir" }, "*");
-    }) as unknown as Action,
+    ouvrirAdresse: (() => undefined) as unknown as Action,
   },
 } satisfies Record<string, Record<string, Action>>);
