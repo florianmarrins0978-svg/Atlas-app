@@ -786,7 +786,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // bout en douze films de l'appli, tournés dans ses démonstrations par
   // appli/scripts/film-outils.cjs (sa correction : « comme s'il regardait un
   // film »). Ils passent le même contrôle.
-  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-conduite', 'outils-rattacher', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
+  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-gravite', 'outils-details', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
   for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE.concat([['outils.html', 'vente, les outils', FILMS_DES_OUTILS, true]])) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();

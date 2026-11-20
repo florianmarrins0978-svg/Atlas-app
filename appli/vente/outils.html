@@ -49,11 +49,12 @@
       soir). Elles sortent de film-outils.cjs --images, qui rend aussi la
       place de « 20 m » sur la carte (CIBLE_COTE) ;
     · nov-film-outils-* : les films de la démonstration (même endroit) ;
-    · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
-      peint aujourd'hui (onglet « Aujourd'hui » de
-      appli/soignee/fiche-de-diagnostic.html, figé par scripts/planche-figee/).
-      Elle porte encore « Probable · Peuplier » : c'est l'écran de main
-      (TODO.md, la fiche de diagnostic), il n'est pas retouché ici ;
+    · outils-diagnostic et outils-fiche-a-lire-* : la fiche du peuplier
+      soignée, vue Proposé de appli/soignee/fiche-de-diagnostic.html (la
+      vraie page figée, sa fiche refaite), sa demande du 20 novembre au
+      soir : « c'est cette fiche-là que je veux ». Une autre session la code ;
+      tant qu'elle n'est pas sur main, le site montre l'écran qui vient, pas
+      celui d'aujourd'hui. Prises par film-outils.cjs --images ;
     · outils-fiche : la fiche du jour, onglet « Aujourd'hui, en cours » de
       appli/fiche-de-chantier-ouverte-soignee.html, figée de même. Ses
       données d'essai ont été alignées sur le compte rendu ci-dessous (M.
@@ -112,16 +113,15 @@
   nourrice du chapitre sont ceux de ce même jardin.
   LE DIAGNOSTIC ET LA FICHE lisent la base (ce sont des écrans « serveur ») :
   demo-outils/routeur.tsx les rend dans le navigateur.
-    · le diagnostic : la fiche de l'anthracnose du platane, l'une des trois
-      fiches publiables de donnees/phyto/ (celle du peuplier, montrée plus
-      haut, n'est que dans une base locale), lue par la fonction de l'import
-      et composée par le vrai moteur (composerResultat). La photo est donnée
-      à l'appareil photo que l'appli ouvre ; l'IA n'est pas dans la
-      démonstration, et seule cette photo-là reçoit une réponse. L'essence
-      n'est pas donnée : l'écran dit « Probable » seul, sans le point que
-      main met encore devant l'essence. Sous « Que faire », la source porte
-      encore un point médian (« forêts) · consultée ») : c'est l'écran de
-      main, noté dans TODO.md, pas retouché ici ;
+    · le diagnostic : la photo se prend dans la démonstration (le vrai
+      écran), puis le film coupe, pendant l'analyse, sur la fiche du
+      peuplier soignée de sa planche (appli/soignee/fiche-de-diagnostic.html,
+      vue Proposé), qu'il a demandée le 20 novembre au soir : « utilise que
+      la brunissure des feuilles de peuplier en exemple », « c'est cette
+      fiche-là ». La démonstration n'a que la fiche publiable du platane, que
+      le film ne montre plus. La fiche défile lentement (« qu'on ait un petit
+      peu le temps de lire »), et trois captures fixes la donnent à lire
+      sous les films (« ou même tu peux mettre à côté des captures figées ») ;
     · les fiches : le modèle fourni par l'appli, deux clients d'exemple, un
       compte rendu déjà envoyé chez M. Bernard ; le nommer sur une fiche
       neuve recoche ses cases de la dernière fois (cocherCommeLaDerniereFois).
@@ -424,6 +424,19 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 .scene-plan .appareil{width:min(64vw,290px)}
 /* Le film d'un écran : sa première image dessous avant qu'il parte, sa
    dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
+/* « La fiche, à lire » : trois captures fixes, sa proposition du 20 novembre
+   (« ou même tu peux mettre à côté des captures figées »), pour lire sans
+   que rien ne bouge. Elles défilent d'un doigt sur téléphone. */
+.a-lire{margin-top:64px}
+.captures{list-style:none;margin:22px -16px 0;padding:0 16px 8px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.captures::-webkit-scrollbar{display:none}
+.captures li{flex:none;scroll-snap-align:center}
+.captures .appareil{width:min(62vw,260px)}
+@media (min-width:960px){
+  .a-lire{margin-top:96px}
+  .captures{margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;overflow:visible;justify-items:center}
+  .captures .appareil{width:min(100%,300px)}
+}
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
@@ -566,7 +579,7 @@ html.anime .geant.vu span{transform:none}
     <div class="scene plateau socle" id="plateau" data-t aria-hidden="true">
       <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1374"></figure></div></div>
       <div class="pose pose-cr"><div class="entre entre-cr"><figure class="feuille"><img src="images/outils-compte-rendu-carte.jpg" alt="" width="700" height="1366"></figure></div></div>
-      <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="" width="1170" height="1992"></div></div></div></div>
+      <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du diagnostic dans Cause : brunissure des feuilles de peuplier, Drepanopeziza brunnea, probable sur un peuplier" width="1170" height="1992"></div></div></div></div>
     </div>
   </div>
 </section>
@@ -685,22 +698,30 @@ html.anime .geant.vu span{transform:none}
   <div class="large">
     <div class="film-tete">
       <h2 class="mot" data-monte>Le diagnostic, de bout en bout<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, sur une feuille de platane.</p>
+      <p class="chapo">Une feuille de peuplier, et la fiche qui répond.</p>
     </div>
     <ol class="plans">
       <li class="plan">
-        <div class="plan-texte"><b>Une photo.</b><span>Cause la compare aux fiches, et répond.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="Le diagnostic dans Cause : Anthracnose du platane, probable, une maladie fongique du platane, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><b>Une photo.</b><span>Cause la compare à ses fiches, et répond.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="La fiche de Cause qui répond à la photo : brunissure des feuilles de peuplier, Drepanopeziza brunnea, probable sur un peuplier, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Que faire.</b><span>La gravité pour l’arbre, la conduite à tenir, et d’où elle vient.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-conduite"><img class="film-pose" src="images/nov-film-outils-conduite-fin.jpg" alt="Gravité : faible. Que faire : surveiller l’évolution ; le dégât est spectaculaire mais rarement grave, et sa source, l’INRAE" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><b>Est-ce grave, et que faire.</b><span>Ce que la maladie fait à l’arbre, puis la conduite à tenir.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-gravite"><img class="film-pose" src="images/nov-film-outils-gravite-fin.jpg" alt="La fiche du peuplier : Que faire ? Aucun traitement ni aucune méthode de lutte, surveillez l’arbre d’une année sur l’autre" width="1170" height="1992" decoding="async"></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Chez quel client.</b><span>Le diagnostic rejoint son chantier.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-rattacher"><img class="film-pose" src="images/nov-film-outils-rattacher-fin.jpg" alt="Les détails du diagnostic, puis « Rattacher à un chantier » : Bernard, déjà rattaché" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><b>Les détails.</b><span>Comment la reconnaître, comment elle arrive, et tout le reste de la fiche.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-details"><img class="film-pose" src="images/nov-film-outils-details-fin.jpg" alt="Les détails de la fiche du peuplier, ouverts : l’agent en cause, quand ça se voit, et les autres arbres du jardin" width="1170" height="1992" decoding="async"></div></div></div>
       </li>
     </ol>
+    <div class="a-lire">
+      <p class="plan-texte"><b>La fiche, à lire.</b></p>
+      <ul class="captures">
+        <li><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du peuplier dans Cause : brunissure des feuilles de peuplier, Drepanopeziza brunnea, les feuilles, les rameaux et le houppier, probable sur un peuplier" width="1170" height="1992" loading="lazy" decoding="async"></div></div></li>
+        <li><div class="appareil"><div class="ecran"><img src="images/outils-fiche-a-lire-gravite.jpg" alt="Est-ce grave pour l’arbre ? Impact faible, agressivité moyenne, fréquence forte, et ce que la maladie fait à l’arbre" width="1170" height="1992" loading="lazy" decoding="async"></div></div></li>
+        <li><div class="appareil"><div class="ecran"><img src="images/outils-fiche-a-lire-que-faire.jpg" alt="Que faire ? Aucun traitement ni méthode de lutte, surveiller l’arbre, puis comment la reconnaître" width="1170" height="1992" loading="lazy" decoding="async"></div></div></li>
+      </ul>
+    </div>
   </div>
 </section>
 

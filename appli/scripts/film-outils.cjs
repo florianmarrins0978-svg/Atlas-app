@@ -171,20 +171,27 @@ async function plateau(navigateur, demo) {
     if (!fichier.startsWith(APPLI) || !fs.existsSync(fichier)) return route.fulfill({ status: 404, body: 'introuvable' });
     return route.fulfill({ path: fichier });
   });
-  const page = await contexte.newPage();
   const erreurs = [];
-  page.on('pageerror', (e) => erreurs.push(e.message));
-  page.on('requestfailed', (r) => erreurs.push('introuvable : ' + r.url()));
-  page.on('response', (r) => { if (r.status() >= 400) erreurs.push(r.status() + ' : ' + r.url()); });
-  await page.addInitScript(dansLaPage);
-  await page.clock.install({ time: JOUR });
-  await page.goto(ORIGINE + '/vente/demo/' + demo.page, { waitUntil: 'networkidle' });
-  await page.waitForSelector(demo.pret, { timeout: 15000 });
-  await page.evaluate(() => document.fonts.ready);
-  // Que l'écran se pose avant de figer le temps : une animation d'arrivée
-  // commencée maintenant repartirait de zéro au premier recalage.
-  await page.waitForTimeout(1500);
-  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+  // Une page du plateau, au temps figé. « style » s'ajoute à la sienne : il
+  // cache ce qui, dans une planche, n'est pas l'écran de l'appli.
+  const ouvrir = async (adresse, pret, style) => {
+    const page = await contexte.newPage();
+    page.on('pageerror', (e) => erreurs.push(e.message));
+    page.on('requestfailed', (r) => erreurs.push('introuvable : ' + r.url()));
+    page.on('response', (r) => { if (r.status() >= 400) erreurs.push(r.status() + ' : ' + r.url()); });
+    await page.addInitScript(dansLaPage);
+    if (style) await page.addInitScript((css) => document.addEventListener('DOMContentLoaded', () => { const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }), style);
+    await page.clock.install({ time: JOUR });
+    await page.goto(ORIGINE + adresse, { waitUntil: 'networkidle' });
+    await page.waitForSelector(pret, { timeout: 15000 });
+    await page.evaluate(() => document.fonts.ready);
+    // Que l'écran se pose avant de figer le temps : une animation d'arrivée
+    // commencée maintenant repartirait de zéro au premier recalage.
+    await page.waitForTimeout(1500);
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+    return page;
+  };
+  let page = await ouvrir('/vente/demo/' + demo.page, demo.pret);
 
   let bobine = null, rang = 0, nomDuFilm = '', horloge = 0;
   // La caméra : le centre de ce qu'on photographie (en pixels d'écran) et
@@ -244,7 +251,16 @@ async function plateau(navigateur, demo) {
     return el;
   };
   return {
-    page, erreurs, pendant,
+    get page() { return page; },
+    erreurs, pendant,
+    /**
+     * La suite du film se tourne sur une autre page, d'une coupe : un écran
+     * qui n'existe pas encore dans l'appli et que sa planche pose sur la
+     * vraie page (la fiche de diagnostic soignée).
+     */
+    async passerA(adresse, pret, style) {
+      page = await ouvrir(adresse, pret, style);
+    },
     async film(nom, jouer) {
       nomDuFilm = 'nov-film-' + nom;
       rang = 0;
@@ -347,6 +363,12 @@ async function plateau(navigateur, demo) {
       await page.screenshot({ path: path.join(dossier, fichier), type: 'jpeg', quality: 88, clip: cadre });
       console.log(fichier + ' : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
     },
+    /** Une photo fixe de l'écran entier, à trois pixels pour un. */
+    async photographierEcran(fichier) {
+      await page.evaluate(() => window.__film.synchro());
+      await page.screenshot({ path: path.join(dossier, fichier), type: 'jpeg', quality: 88 });
+      console.log(fichier + ' : l\'écran');
+    },
     /** La photo que donnera le prochain appareil photo ouvert par l'appli. */
     photo(fichier, nom) {
       page.once('filechooser', (choix) => choix.setFiles({ name: nom, mimeType: 'image/jpeg', buffer: fs.readFileSync(path.join(APPLI, fichier)) }));
@@ -367,6 +389,11 @@ const EZ_FLO = 'EZ FLO+ 1" MM solénoïde 9V';
 // deux se coupait au bord du cadre. C'est aussi ce que font les films de
 // cause-2.html, qui ne s'approchent que d'un dixième.
 const ZOOM = 1.12;
+// La fiche de diagnostic soignée, sur sa planche : l'écran de l'appli seul,
+// sans le titre ni les notes de la planche.
+const FICHE_SOIGNEE = '/soignee/fiche-de-diagnostic.html';
+const PRET_FICHE = '[data-atlas="ecran-diagnostic-resultat"]';
+const CACHER_LA_PLANCHE = '.planche-tete,.planche-notes,.planche-dit{display:none!important}';
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
@@ -490,41 +517,57 @@ const RECITS = {
   },
   diagnostic: {
     page: 'diagnostic.html', pret: '[data-atlas="prendre-photo-diagnostic"]',
+    // Sa demande du 20 novembre au soir : « Pour le diagnostic végétal,
+    // utilise que la brunissure des feuilles de peuplier en exemple », sur
+    // la fiche de sa planche soignée (appli/soignee/fiche-de-diagnostic.html,
+    // vue Proposé), qu'une autre session code. La démonstration de l'appli
+    // n'a que la fiche du platane : le film y prend la photo, coupe pendant
+    // l'analyse, et la réponse est la fiche du peuplier telle que la planche
+    // la pose sur la vraie page. « Et pareil, tu vas trop vite. Fais défiler
+    // doucement, qu'on ait un petit peu le temps de lire. Ou même tu peux
+    // mettre à côté des captures figées » : les trois captures de « La
+    // fiche, à lire » (images, plus bas).
+    async images(p) {
+      await p.passerA(FICHE_SOIGNEE, PRET_FICHE, CACHER_LA_PLANCHE);
+      await p.photographierEcran('outils-diagnostic.jpg');
+      await p.placer('h2', { contient: 'Est-ce grave' }, 90);
+      await p.photographierEcran('outils-fiche-a-lire-gravite.jpg');
+      await p.placer('h2', { contient: 'Que faire' }, 90);
+      await p.photographierEcran('outils-fiche-a-lire-que-faire.jpg');
+    },
     async jouer(p) {
       // Une photo, et la réponse.
       await p.film('outils-photo', async () => {
         await p.pendant(1.0);
         await p.cadrer({ sel: '[data-atlas="prendre-photo-diagnostic"]', z: ZOOM, dy: -60 }, 1.1);
         await p.pendant(1.0);
-        p.photo('diagnostic-anthracnose-platane-feuille.jpg', 'platane-exemple.jpg');
+        // Le nom que la démonstration attend : la photo, elle, est la feuille
+        // du peuplier. La réponse de la démonstration (le platane) n'est pas
+        // filmée.
+        p.photo('diagnostic-brunissure-peuplier-feuille.jpg', 'platane-exemple.jpg');
         await p.toucher('[data-atlas="prendre-photo-diagnostic"]');
-        await p.pendant(2.0);
-        await p.cadrer({ sel: '[data-atlas="diagnostic-rendu"]', z: ZOOM, dy: 40 }, 1.1);
-        await p.pendant(3.0);
-      });
-      // Que faire, et est-ce grave.
-      await p.cadrer({ sel: '[data-atlas="diagnostic-rendu"]', z: ZOOM, dy: 40 }, 0);
-      await p.film('outils-conduite', async () => {
-        await p.pendant(1.0);
-        await p.amener('[data-atlas="diagnostic-gravite"]', {}, 120, 2.6);
-        await p.cadrer({ sel: '[data-atlas="diagnostic-conduite"]', z: ZOOM, dy: -20 }, 1.0);
-        await p.pendant(3.6);
-      });
-      // Le diagnostic rejoint le chantier du client.
-      await p.film('outils-rattacher', async () => {
-        await p.pendant(1.0);
-        await p.amener('[data-atlas="diagnostic-details"]', {}, 300, 1.6);
-        await p.cadrer({ sel: '[data-atlas="diagnostic-details"] summary', z: ZOOM }, 0.9);
-        await p.pendant(0.6);
-        await p.toucher('[data-atlas="diagnostic-details"] summary');
-        await p.pendant(1.0);
-        await p.cadrer({ z: ZOOM, sel: '[data-atlas="diagnostic-details"] summary', dy: 160 }, 0.8);
-        await p.amener('[data-atlas="diagnostic-rattacher"]', {}, 300, 2.0);
-        await p.cadrer({ sel: '[data-atlas="diagnostic-rattacher"]', z: ZOOM }, 1.0);
-        await p.pendant(0.8);
-        await p.choisir('[data-atlas="diagnostic-rattacher"] select', 'Bernard');
         await p.pendant(1.4);
-        await p.toucher('[data-atlas="diagnostic-rattacher"] button', { texte: 'Rattacher' });
+        await p.passerA(FICHE_SOIGNEE, PRET_FICHE, CACHER_LA_PLANCHE);
+        await p.pendant(2.8);
+        await p.amener('h2', { contient: 'À quoi ça ressemble' }, 80, 3.0);
+        await p.pendant(2.8);
+      });
+      // Est-ce grave, et que faire : lu lentement.
+      await p.placer('h2', { contient: 'Est-ce grave' }, 90);
+      await p.film('outils-gravite', async () => {
+        await p.pendant(3.4);
+        await p.amener('h2', { contient: 'Que faire' }, 90, 3.4);
+        await p.pendant(4.0);
+      });
+      // Les détails : comment le reconnaître, puis « Voir les détails ».
+      await p.placer('h2', { contient: 'Comment le reconnaître' }, 90);
+      await p.film('outils-details', async () => {
+        await p.pendant(2.8);
+        await p.amener('summary', { contient: 'Voir les détails' }, 330, 3.4);
+        await p.pendant(0.6);
+        await p.toucher('summary', { contient: 'Voir les détails' });
+        await p.pendant(1.2);
+        await p.defiler(360, 3.4);
         await p.pendant(3.0);
       });
     },
