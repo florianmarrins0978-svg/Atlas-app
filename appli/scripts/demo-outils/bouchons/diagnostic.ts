@@ -30,7 +30,7 @@ const CHANTIERS = [
 
 export const { bouchon, constante } = fabrique({
   "src/app/paysage/diagnostic/actions.ts": {
-    // La photo de la démonstration, déposée par le guide de la page, rend la
+    // La photo de la démonstration, donnée par le tournage à l'appareil, rend la
     // fiche. Une autre photo demanderait l'IA, qui n'est pas sur le site :
     // l'écran le dit, au lieu de rendre le platane pour n'importe quoi.
     analyserPhotoAction: async (donnees) => {

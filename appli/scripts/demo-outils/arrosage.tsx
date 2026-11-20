@@ -1,9 +1,10 @@
 /**
- * LE PLAN D'ARROSAGE, POUR DE VRAI, DANS LE TÉLÉPHONE DU SITE.
+ * LE PLAN D'ARROSAGE, POUR DE VRAI, SANS SERVEUR : LE PLATEAU DE SES FILMS.
  *
- * Sa demande du 20 novembre 2026 : « leur montrer toute la page », que l'on
- * puisse toucher 25 ou 32, la nourrice, n'importe quelle pièce pour la changer
- * ou la supprimer, puis la liste et l'envoi au fournisseur.
+ * Sa demande du 20 novembre 2026 : « leur montrer toute la page », 25 ou 32,
+ * la nourrice, n'importe quelle pièce pour la changer ou la supprimer, puis la
+ * liste et l'envoi au fournisseur. Le site le montre en films, tournés ici par
+ * appli/scripts/film-outils.cjs.
  *
  * L'écran est monté exactement comme src/app/paysage/arrosage/page.tsx le
  * monte, dans le cadre de l'appli (CadreApplication, sa barre d'onglets) :
@@ -15,7 +16,6 @@ import { createRoot } from "react-dom/client";
 import CadreApplication from "@/components/atlas/CadreApplication";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import ArrosageClient from "@/app/paysage/arrosage/ArrosageClient";
-import { ecouterLaPage } from "./pilote";
 
 function Ecran() {
   return (
@@ -37,5 +37,3 @@ const envoyer = () => {
   formulaire.requestSubmit();
 };
 requestAnimationFrame(envoyer);
-
-ecouterLaPage('[data-atlas="plan-arrosage"]');

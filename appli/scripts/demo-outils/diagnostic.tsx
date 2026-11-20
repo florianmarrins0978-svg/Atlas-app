@@ -1,5 +1,5 @@
 /**
- * LE DIAGNOSTIC VÉGÉTAL, POUR DE VRAI, DANS LE TÉLÉPHONE DU SITE.
+ * LE DIAGNOSTIC VÉGÉTAL, POUR DE VRAI, SANS SERVEUR : LE PLATEAU DE SES FILMS.
  *
  * Sa demande du 20 novembre 2026 : « pareil avec les autres outils » que pour
  * le plan d'arrosage. Les deux écrans de l'outil, montés comme l'appli les
@@ -13,7 +13,6 @@ import CadreApplication from "@/components/atlas/CadreApplication";
 import DiagnosticPage from "@/app/paysage/diagnostic/page";
 import ResultatPage from "@/app/paysage/diagnostic/[id]/page";
 import { Routeur } from "./routeur";
-import { ecouterLaPage } from "./pilote";
 
 const ROUTES = [
   { motif: /^\/paysage\/diagnostic$/, ecran: () => <DiagnosticPage /> },
@@ -23,5 +22,3 @@ const ROUTES = [
 createRoot(document.getElementById("racine")!).render(
   <Routeur routes={ROUTES} depart="/paysage/diagnostic" cadre={(vue) => <CadreApplication role="proprietaire">{vue}</CadreApplication>} />
 );
-
-ecouterLaPage('[data-atlas="ecran-diagnostic"], [data-atlas="ecran-diagnostic-resultat"]');
