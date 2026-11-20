@@ -1,5 +1,45 @@
 # Prochaines tâches
 
+## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
+
+Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
+que c'est un fournisseur, me crée le dossier avec son nom, son mail, son
+numéro, et surtout enregistre les produits et les prix ; quand je dicte un
+devis, elle va les rechercher et me met le prix »*.
+
+**Ce qui existait déjà, vérifié dans le code** : Réglages, Ce que je paie
+(`src/app/reglages/fournisseurs/`). Le dépôt d'un devis ou d'une facture
+(photo, PDF, Excel) dans la fiche d'une société, la lecture par l'IA
+(`lire-devis-fournisseur.ts` : désignation, référence, unité, prix HT,
+remise), les lignes cochées qui deviennent ses prix d'achat, et le devis
+dicté qui les reprend après ses tarifs de vente, **multipliés par sa marge**
+(`prixDUneLigneDictee`, `src/lib/prix-achat.ts`). Le nom du fournisseur ne
+s'écrit que dans l'encadré « Calcul » de l'écran Prix du chantier, jamais
+sur la ligne, le PDF ni la page du client (lu dans le code ; la planche 2
+montre le vrai PDF).
+
+**Ce qui manquait, et ce que proposent les planches** (figées sur ses vrais
+écrans, rien dans `src/`) :
+
+| Planche | Proposé |
+|---|---|
+| `appli/fournisseur-depuis-son-devis.html` | sous « Ajouter », « Prendre un devis en photo » et « PDF, photo ou Excel » sans choisir la société. La lecture rend aussi son nom, son mail et son téléphone. Nouveau : « Nouveau fournisseur » prérempli (Nom, Adresse mail, Téléphone), « Créer et ajouter ces 3 prix ». Déjà chez lui : sa vraie fiche, « Reconnu sur le devis », « Ce n'est pas lui », le téléphone qui manquait « Lu sur le devis » |
+| `appli/devis-fournisseur-pour-vous-seul.html` | sous une ligne chiffrée depuis un prix d'achat, « Pépinières du Val, 9,80 € HT le sac », à l'écran seulement. « Chez le client » montre le vrai PDF du même devis, sans eux |
+
+**Ce que coûtera le code, une fois choisi** : une colonne `telephone` sur
+`societes_achat` (expand, nullable) ; la consigne de lecture rend aussi
+l'en-tête (nom, mail, téléphone), sans rien deviner ; le rapprochement d'un
+nom lu avec ses sociétés se fait sur le nom normalisé et se dit à l'écran
+(« Ce n'est pas lui ») ; pour la planche 2, la ligne du devis doit retenir le
+prix d'achat qui l'a chiffrée (une colonne de plus sur `lignes_prix`, jamais
+imprimée). Gravité argent : niveau 3.
+
+**Ses trois réponses du 19 novembre** : la démo lancée ici pour figer les
+écrans, *oui* ; le nom du fournisseur sous la ligne pour lui seul, *oui,
+dans la maquette* ; le nom du partenaire sur la ligne « Main d'œuvre :
+Élagage Durand », qui partait chez le client, **le retirer** (voir l'entrée
+suivante).
+
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 
 Sa demande : *« regarder les fiches de diagnostic végétal qui existent déjà,
