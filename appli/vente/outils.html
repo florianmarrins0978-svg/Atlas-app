@@ -448,7 +448,10 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
   .guide button[aria-pressed="true"]{background:var(--sable);color:var(--encre)}
   .recommencer{margin:18px 0 0}
 }
-/* Sur le vert nuit (le diagnostic), le guide prend les couleurs de la bande. */
+/* Sur le vert nuit (le diagnostic), la phrase et le guide prennent les
+   couleurs de la bande : « .essai .chapo », écrite plus haut pour le clair,
+   l'emportait sur « .nuit .chapo » et posait du gris sombre sur du vert nuit. */
+.essai.nuit .chapo{color:var(--sur-nuit-2)}
 .nuit .guide button{background:rgba(243,239,227,.06);color:var(--sur-nuit);box-shadow:inset 0 0 0 1px var(--trait-nuit)}
 .nuit .guide button:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sur-nuit) 40%,transparent)}
 .nuit .guide button[aria-pressed="true"]{background:var(--or-clair);color:var(--nuit);box-shadow:none}
