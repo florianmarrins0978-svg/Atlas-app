@@ -426,11 +426,17 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 .film video.joue{opacity:1}
 .film img.film-fin{z-index:3;opacity:0}
 .film img.film-fin.vue{opacity:1}
+/* Sur ordinateur, le cadre sable épouse le téléphone : étiré sur sa colonne,
+   il changeait de largeur d'une rangée à l'autre. */
 @media (min-width:960px){
   .plans{gap:88px}
-  .plan{grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:76px;align-items:center}
+  .plan{grid-template-columns:minmax(0,1fr) auto;column-gap:96px;align-items:center}
+  .plan:nth-child(even){grid-template-columns:auto minmax(0,1fr)}
   .plan:nth-child(even) .plan-texte{order:2}
-  .scene-plan{padding:48px 40px}
+  .plan-texte{gap:10px}
+  .plan-texte b{font-size:clamp(30px,3vw,42px)}
+  .plan-texte span{font-size:18px}
+  .scene-plan{padding:44px 64px}
   .scene-plan .appareil{width:320px}
 }
 
