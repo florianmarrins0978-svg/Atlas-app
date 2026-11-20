@@ -718,6 +718,119 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cVe.close();
   }
 
+  // ── Le site de vente : la porte des outils de paysage ───────────────────
+  //
+  // Sa demande du 20 novembre 2026 : « qu'on puisse cliquer sur l'abonnement
+  // de 6 € pour les outils, et que ça soit une porte » vers une page qui les
+  // montre. La carte « Les outils de paysage », sous les trois formules de
+  // cause-2.html, s'ouvre donc d'un doigt posé n'importe où sur elle, pas
+  // seulement sur son bouton : on la touche au milieu de sa liste. Puis la
+  // page derrière la porte : chacune de ses images est là (leurs noms ne se
+  // composent pas, mais une image absente laisserait un téléphone vide), et
+  // son bouton d'essai, caché au bas, ne dépasse pas (le défaut du
+  // 7 novembre, vu plus haut).
+  {
+    const cPo = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cPo.route((url) => url.pathname.endsWith('/vente/outils.html'), async (route) => {
+      const r = await route.fetch();
+      route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
+    });
+    const page = await cPo.newPage();
+    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'domcontentloaded' });
+    const carte = page.locator('.option-outils');
+    await carte.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1600);
+    const prix = await page.evaluate(() => { const c = document.querySelector('.option-outils'); return c && c.querySelector('.montant').textContent + ' ' + c.querySelector('.rythme').textContent; });
+    ok('vente, en mouvement : la carte des outils dit 6 € HT par mois', prix === '6 € HT par mois', prix);
+    // Sur un téléphone la carte est plus haute que l'écran : on amène la
+    // ligne touchée à l'écran, sans quoi le doigt tombe hors de la page.
+    await page.locator('.outils-liste li').nth(1).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const ligne = await page.locator('.outils-liste li').nth(1).boundingBox();
+    if (ligne) {
+      await Promise.all([page.waitForURL(/\/vente\/outils\.html$/, { timeout: 8000 }).catch(() => {}), page.mouse.click(ligne.x + ligne.width / 2, ligne.y + ligne.height / 2)]);
+    }
+    ok('vente, en mouvement : toucher la carte des outils ouvre leur page', /\/vente\/outils\.html$/.test(page.url()), page.url());
+    if (!/\/vente\/outils\.html$/.test(page.url())) await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
+    const images = await page.evaluate(() => Array.from(document.images).filter((i) => !(i.complete && i.naturalWidth)).map((i) => i.getAttribute('src')));
+    ok('vente, les outils : chaque image de la page est là', images.length === 0, images.join(', '));
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(1200);
+    const pouce = await page.evaluate(() => {
+      const el = document.getElementById('pouce'), r = el.getBoundingClientRect();
+      return { cache: !el.classList.contains('vu'), haut: r.top, ecran: innerHeight, visible: getComputedStyle(el).visibility };
+    });
+    ok('vente, les outils : au bas de la page, le bouton d\'essai est caché', pouce.cache);
+    ok('vente, les outils : caché, il ne dépasse pas du bas de l\'écran',
+       pouce.visible === 'hidden' || pouce.haut >= pouce.ecran,
+       'il dépasse de ' + Math.round(pouce.ecran - pouce.haut) + ' px');
+    await cPo.close();
+  }
+
+  // ── La page des outils : le vrai plan d'arrosage, à essayer ─────────────
+  //
+  // Sa demande du 20 novembre 2026 : « leur montrer toute la page », que l'on
+  // puisse toucher 25 ou 32, une pièce, la liste, l'envoi au fournisseur. Le
+  // téléphone porte le vrai écran de l'appli, compilé dans vente/demo/ par
+  // appli/scripts/demo-outils/construire.ts. On le regarde se charger, puis
+  // on touche deux étapes du guide et l'on vérifie que c'est l'APPLI qui a
+  // répondu : en Ø32 la pelouse passe sur un seul réseau (trois cartes de
+  // réseau deviennent deux), et l'envoi ouvre la feuille « Au fournisseur ».
+  // Une démonstration reconstruite sur un écran qui aurait changé, ou un
+  // fichier oublié dans vente/demo/, rougit ici.
+  {
+    const cDe = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cDe.newPage();
+    await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => { const el = document.querySelector('#essai-arrosage .essai-visuel'); scrollTo(0, el.getBoundingClientRect().top + scrollY - 70); });
+    const pret = await page.waitForFunction(() => document.querySelector('#demo-arrosage.pret'), null, { timeout: 30000 }).then(() => true, () => false);
+    ok('vente, les outils : le plan d\'arrosage se charge dans le téléphone', pret);
+    if (pret) {
+      const cadre = page.frameLocator('#demo-arrosage iframe');
+      const avant = await cadre.locator('[data-atlas="carte-reseau"]').count();
+      await page.locator('#essai-arrosage .guide button[data-etape="tuyau"]').click();
+      const apres = await page.waitForFunction(() => {
+        const f = document.querySelector('#demo-arrosage iframe');
+        return f && f.contentDocument && f.contentDocument.querySelectorAll('[data-atlas="carte-reseau"]').length === 2;
+      }, null, { timeout: 8000 }).then(() => 2, async () => cadre.locator('[data-atlas="carte-reseau"]').count());
+      ok('vente, les outils : en Ø32, la pelouse passe sur un seul réseau', avant === 3 && apres === 2, avant + ' réseaux, puis ' + apres);
+      await page.locator('#essai-arrosage .guide button[data-etape="fournisseur"]').click();
+      const feuille = await page.waitForFunction(() => {
+        const f = document.querySelector('#demo-arrosage iframe'), d = f && f.contentDocument && f.contentDocument.querySelector('[role="dialog"]');
+        return d && /Au fournisseur/.test(d.textContent) ? d.textContent : false;
+      }, null, { timeout: 8000 }).then(() => true, () => false);
+      ok('vente, les outils : l\'envoi ouvre la feuille « Au fournisseur »', feuille);
+    }
+    await cDe.close();
+  }
+
+  // Les deux autres outils, même principe (sa demande du même soir :
+  // « pareil avec les autres outils »). On touche une étape du guide et l'on
+  // attend que l'APPLI réponde dans le téléphone : la photo d'exemple rend la
+  // fiche de l'anthracnose du platane ; nommer M. Bernard sur une fiche neuve
+  // recoche les cases de son dernier compte rendu (la reprise de l'appli).
+  for (const [section, demo, etape, attendu, nom] of [
+    ['#essai-diagnostic', 'demo-diagnostic', 'photo', 'Anthracnose du platane', 'la photo rend la fiche du platane'],
+    ['#essai-fiches', 'demo-fiches', 'bernard', 'celles du dernier chantier', 'M. Bernard nommé, ses cases de la dernière fois reviennent'],
+  ]) {
+    const cAu = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cAu.newPage();
+    await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate((s) => { const el = document.querySelector(s + ' .essai-visuel'); scrollTo(0, el.getBoundingClientRect().top + scrollY - 70); }, section);
+    const pret = await page.waitForFunction((d) => document.querySelector('#' + d + '.pret'), demo, { timeout: 30000 }).then(() => true, () => false);
+    ok('vente, les outils : ' + demo + ' se charge dans le téléphone', pret);
+    if (pret) {
+      await page.locator(section + ' .guide button[data-etape="' + etape + '"]').evaluate((b) => b.click());
+      const vu = await page.waitForFunction(([d, t]) => {
+        const f = document.querySelector('#' + d + ' iframe');
+        return f && f.contentDocument && f.contentDocument.body.textContent.includes(t);
+      }, [demo, attendu], { timeout: 15000 }).then(() => true, () => false);
+      ok('vente, les outils : ' + nom, vu);
+    }
+    await cAu.close();
+  }
+
   // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
   //
   // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés

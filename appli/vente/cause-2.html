@@ -275,6 +275,17 @@
   défaut de mécanique, corrigé : à la fin d'un film, sa première image
   repassait le temps d'un rendu (voir « finir », dans le script).
 
+  LES OUTILS DE PAYSAGE, LE 20 NOVEMBRE. Sa demande : « rajouter
+  l'abonnement de 6 € pour les outils », et que cet abonnement soit « une
+  porte » vers une page qui les montre. Sous les trois formules, la carte
+  « Les outils de paysage » (+6 € HT par mois, 60 € à l'année, la même
+  bascule) ; la carte entière ouvre outils.html. Ses trois lignes et son
+  doré sont ceux du bloc qu'il a choisi le 19 novembre sur l'écran
+  Abonnement (docs/abonnement-module-paysage.md). L'accroche d'Entreprise
+  disait « Tout Cause » : les outils étant en plus, elle dit « Jusqu'à cinq
+  personnes qui facturent. ». Rien d'autre n'a bougé dans les cartes, et ce
+  qui reste à trancher est dans TODO.md.
+
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : la planche est à regarder sur
   son iPhone. Ce qui a été écrit pour lui : chaque masque porte son préfixe,
   les cadres arrondis qui contiennent un film sont isolés, et rien ne dépend
@@ -838,6 +849,51 @@ html.anime .formule.reine.vu::after{background-position:-50% 0;transition:backgr
 .formule .bouton{width:100%}
 .essai-note{margin-top:28px;text-align:center;color:var(--encre-2);font-size:16px}
 
+/* Les outils de paysage : le module à 6 € HT par mois, le même pour les
+   trois formules (ses décisions du 18 et du 19 novembre 2026,
+   docs/abonnement-module-paysage.md). Doré, comme il l'a choisi pour le bloc
+   de l'écran Abonnement (« A, trois lignes, en doré »), et les trois lignes
+   portent les mots de ce bloc. Sa demande du 20 novembre : « qu'on puisse
+   cliquer sur l'abonnement de 6 € pour les outils, et que ça soit une porte »
+   vers une page qui les montre. Toute la carte est donc la porte : un lien la
+   couvre, et son bouton est le même lien pour le clavier et la lecture.
+   Le fond est un sable éclairci : sur le sable plein, l'or des petites lignes
+   tombait sous le contraste qu'exige un texte de 14 px. */
+.option-outils{position:relative;margin-top:22px;display:grid;gap:24px;padding:34px 26px 28px;border-radius:28px;background:radial-gradient(90% 110% at 100% 0%,rgba(240,180,60,.2),transparent 62%),color-mix(in srgb,var(--sable) 52%,var(--papier));box-shadow:0 0 0 1.5px color-mix(in srgb,var(--or-clair) 72%,transparent);transition:box-shadow .35s var(--sortie),transform .35s var(--sortie)}
+.option-outils .couvre{position:absolute;inset:0;z-index:1;border-radius:inherit}
+.option-outils > :not(.couvre){position:relative;z-index:2;pointer-events:none}
+.option-outils .bouton{pointer-events:auto;width:100%}
+@media (hover:hover){.option-outils:hover{transform:translateY(-3px);box-shadow:0 0 0 1.5px var(--or-clair),0 30px 60px -36px rgba(var(--ombre),.55)}}
+.option-outils h3{font-size:clamp(38px,4vw,44px);line-height:1}
+.option-outils .prix{position:relative;margin-top:16px;font:400 60px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.option-outils .prix .plus{color:var(--or)}
+.option-outils .prix .montant{display:inline-block}
+.option-outils .prix .cache{position:relative;display:inline-block;overflow:hidden;vertical-align:bottom;white-space:nowrap}
+.option-outils .prix .sortant{white-space:nowrap}
+.option-outils .prix small{display:inline-block;font:400 16px/1 var(--texte);color:var(--encre-2);letter-spacing:0}
+.option-outils .offert{margin-top:6px;font-size:14px;color:var(--or);min-height:1.55em}
+.option-outils .pour-qui{margin-top:6px;font-size:16px;color:var(--encre-2)}
+.outils-liste{list-style:none;margin:0;padding:0;display:grid}
+.outils-liste li{display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:16px;row-gap:2px;align-items:center;padding:15px 0;border-top:1px solid color-mix(in srgb,var(--or) 22%,transparent)}
+.outils-liste li:last-child{border-bottom:1px solid color-mix(in srgb,var(--or) 22%,transparent)}
+.outils-liste .tuile{grid-row:1 / span 2;align-self:start;width:48px;height:48px;border-radius:14px;background:var(--papier);display:grid;place-items:center;box-shadow:0 0 0 1px rgba(var(--ombre),.06),0 8px 16px -12px rgba(var(--ombre),.5)}
+.outils-liste svg{width:24px;height:24px;fill:none;stroke:var(--or);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.outils-liste b{font:400 clamp(24px,2.4vw,28px)/1.1 var(--display)}
+.outils-liste .dit{color:var(--encre-2);font-size:16px;line-height:1.45}
+/* La carte se relève comme les formules, puis ses trois outils arrivent
+   l'un après l'autre. */
+html.anime .option-outils{opacity:0;transform:perspective(1200px) translateY(48px) rotateX(9deg);transform-origin:50% 100%;transition:opacity .6s ease,transform 1.15s var(--sortie),box-shadow .35s var(--sortie)}
+html.anime .option-outils.vu{opacity:1;transform:none}
+@media (hover:hover){html.anime .option-outils.vu:hover{transform:translateY(-3px)}}
+html.anime .outils-liste li{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .9s var(--sortie);transition-delay:calc(var(--i,0) * 110ms + 380ms)}
+html.anime .option-outils.vu .outils-liste li{opacity:1;transform:none}
+@media (min-width:960px){
+  .option-outils{grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr);grid-template-areas:"tete liste" "action liste";column-gap:64px;row-gap:28px;padding:44px 48px 40px}
+  .option-tete{grid-area:tete}
+  .outils-liste{grid-area:liste;align-self:center}
+  .option-outils .action{grid-area:action;align-self:end}
+}
+
 /* ── Les questions ────────────────────────────────────────────────────── */
 .questions-grille{display:grid;gap:40px}
 .questions details{border-top:1px solid var(--trait)}
@@ -1150,7 +1206,7 @@ html.anime .geant.vu span{transform:none}
       </article>
       <article class="formule mise" data-vu="0.1" data-mois="59" data-an="590">
         <h3>Entreprise</h3>
-        <p class="accroche">Tout Cause, jusqu'à cinq personnes qui facturent.</p>
+        <p class="accroche">Jusqu'à cinq personnes qui facturent.</p>
         <p class="prix"><span class="montant">59 €</span> <small class="rythme">HT par mois</small></p>
         <p class="offert"></p>
         <ul>
@@ -1184,6 +1240,22 @@ html.anime .geant.vu span{transform:none}
         <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
       </article>
     </div>
+    <article class="option-outils" data-vu="0.15" data-mois="6" data-an="60">
+      <a class="couvre" href="outils.html" tabindex="-1" aria-hidden="true"></a>
+      <div class="option-tete">
+        <h3>Les outils de paysage</h3>
+        <p class="prix"><span class="plus">+</span><span class="montant">6 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <p class="pour-qui">Avec Artisan, Entreprise ou Illimité.</p>
+        <p class="pour-qui">Un plan d'arrosage et un diagnostic offerts pour essayer.</p>
+      </div>
+      <ul class="outils-liste">
+        <li><span class="tuile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5C12 2.5 4.8 10.3 4.8 14.9a7.2 7.2 0 0 0 14.4 0C19.2 10.3 12 2.5 12 2.5z"/><path d="M8.7 15.3a3.3 3.3 0 0 0 3.3 3.3"/></svg></span><b>Le plan d'arrosage</b><span class="dit">Photographiez le croquis du jardin, et le plan sort avec sa liste de pièces.</span></li>
+        <li><span class="tuile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19c0-8 5-14 15-15-0.5 4-1.6 7-3.3 9.2"/><path d="M4 19c2.5-4 5.5-7 9-9.5"/><circle cx="15.5" cy="16.5" r="3"/><path d="M17.7 18.7L20.5 21.5"/></svg></span><b>Le diagnostic végétal</b><span class="dit">Photographiez une plante malade, et sachez quoi faire.</span></li>
+        <li><span class="tuile" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 12.5l2 2 4-4.5"/><path d="M8.5 18h7"/></svg></span><b>Les fiches de chantier</b><span class="dit">Cochez ce qui a été fait pendant l'entretien, puis envoyez la fiche au client.</span></li>
+      </ul>
+      <div class="action"><a class="bouton or" href="outils.html">Découvrir les outils</a></div>
+    </article>
     <p class="essai-note">L'essai ouvre tout, sans carte bancaire. Vous choisissez votre formule après.</p>
   </div>
 </section>
@@ -1321,7 +1393,9 @@ html.anime .geant.vu span{transform:none}
   // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts). Le
   // fond vert glisse d'un choix à l'autre, et chaque prix sort par le haut
   // pendant que le nouveau monte.
-  var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), formules = tous(".formule");
+  // Les outils de paysage suivent la même bascule : 6 € HT par mois, 60 € à
+  // l'année (docs/abonnement-module-paysage.md).
+  var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), formules = tous(".formule, .option-outils");
   var curseur = document.createElement("span"); curseur.className = "curseur"; curseur.setAttribute("aria-hidden", "true");
   bascule.insertBefore(curseur, bascule.firstChild); bascule.classList.add("glisse");
   var placerCurseur = function(){
@@ -1548,7 +1622,7 @@ html.anime .geant.vu span{transform:none}
   new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); setTimeout(function(){ barrees = true; repondre(); }, 1050); } }, {rootMargin:"0px 0px " + (grand ? "-8%" : sousLePouce) + " 0px", threshold:0.6}).observe(corvees);
   new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); reponseVue = true; repondre(); } }, {rootMargin:"0px 0px " + sousLePouce + " 0px", threshold:0.3}).observe(reponse);
   // Le rang de chacun dans sa liste, pour qu'ils se suivent.
-  tous(".liste-metiers, .faits, .gestes, .corvees, .formules").forEach(function(liste){
+  tous(".liste-metiers, .faits, .gestes, .corvees, .formules, .outils-liste").forEach(function(liste){
     Array.prototype.forEach.call(liste.children, function(li, n){ li.style.setProperty("--i", n); });
   });
 

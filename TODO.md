@@ -9,6 +9,79 @@ batterie (niveau 3 : migration, devis), puis `main`, avec son accord ;
 `test-achat-retenu-db` est écrit et pas encore joué. Ce qui suit est la
 planche telle qu'elle a été posée.
 
+## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
+
+Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
+écrans, avec des données toutes factices. **Tranché le 20 novembre : la
+voie B** (les vrais écrans figés par `scripts/planche-figee/`, enchaînés
+avec une bulle de guide, sur le site statique). La voie A (une porte
+ouverte au public dans l'appli qui tourne) est écartée : un visiteur
+modifierait ce que voit le suivant, un devis ou un SMS partirait pour de
+vrai, chaque dictée coûterait de l'IA.
+
+**Son parcours, dans cet ordre (ses mots du 20 novembre) :**
+
+1. l'accueil, puis Vos clients ;
+2. Créer un devis : la civilité touchée (Entreprise, Mairie, retour à
+   Monsieur Madame), puis nom, prénom et le reste qui se remplissent ;
+3. Dicter : le devis s'ouvre déjà rempli ;
+4. Aperçu PDF, puis choisir la date : « toutes les vraies étapes » ;
+5. le planning, le chantier posé ; un jour touché, le chantier, les
+   salariés ajoutés, puis en descendant la fiche client ;
+6. Terminés : la facture, son envoi, **ce que le client reçoit**, le
+   client qui paie ;
+7. Ma TVA : toute la page ; la TVA ajoutée ; un ticket de carburant
+   scanné qui s'ajoute ; les chiffres de gauche touchés, qui montrent le
+   relevé et chaque taux ;
+8. la banque connectée, les tickets, le document comptable ;
+9. le paiement du client vu par la banque : la notification sur
+   l'accueil, et de là le check up qui valide le paiement pour le
+   document comptable ;
+10. **la fin : Réglages laissé ouvert**, chaque rubrique se touche
+    librement ; **et la page Vos idées, montrée à coup sûr** (« hyper
+    important »).
+
+Dans la visite, la dictée et le scan du ticket ne lisent rien : l'écran
+suivant s'ouvre déjà rempli, tel que l'appli le peint sur la base de
+démonstration. Planche d'abord dans `appli/`, rien dans `src/` ; le branchement
+sur `appli/vente/` après son choix.
+
+**Sa consigne du même soir : uniquement des données inventées**, *« qu'on ne
+nous attaque pas pour avoir diffusé des données de quelqu'un »*. Numéros de la
+tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
+`example.com`, station, pépinière, banque et signature inventées.
+
+**La planche : `appli/visite-guidee.html`**, faite (49 étapes, puis les
+dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
+l'appli bâtie, joué pour de vrai sur la base de démonstration
+(`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
+dossier du comptable). Retour : `docs/visite-guidee.md`.
+
+**Ce qui a été fait autrement que sa liste, et pourquoi :**
+- **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
+  et le planning : sans cela le chantier n'a pas de date, et c'est le vrai
+  chemin ;
+- **la notification du virement vient juste après le paiement du client**, avant
+  Ma TVA : c'est elle qui fait entrer la facture dans la TVA. Le check up reste
+  dans Pour mon comptable, où il vit ;
+- **« Avant de chiffrer »** s'ajoute après la dictée : c'est ce que l'appli
+  demande quand la longueur de la haie manque ;
+- **le chantier est passé au 18 novembre** par la base avant Terminés : Terminés
+  ne montre qu'un chantier dont la date est passée.
+
+**Retouches de la planche** (ce poste n'a pas de clé d'IA, son espace si) :
+Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
+disponible ici » est retiré du ticket lu. Et partout, l'exemple
+« 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
+qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
+exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
+`FactureClient.tsx`) ; ce numéro peut appartenir à quelqu'un, le passer en
+06 39 98 00 00 serait plus sûr.
+
+## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
 
 Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
 lui facture ; et, sur un devis tapé à la main, voir sous la ligne (pour lui
@@ -197,7 +270,7 @@ même heure (confiance moyenne).
 Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
 son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
 
-## RANGER SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -214,6 +287,28 @@ sous deux formes, `libelleClient` les efface (§588). Les colonnes `methode` et
 2. une fois les libellés d'avant convertis (migration de données, base habitée,
    FORCE RLS), retirer `debutsDUnLibelleEnrichi` et l'effacement de
    `libelleClient`.
+
+**La planche du temps 1, le 20 novembre** (son « oui » : *« fait la planche pour
+ranger les réponse à la grille »*), figée sur ses vrais écrans, rien dans
+`src/` :
+https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-le-travail.html
+
+| Écran | Aujourd'hui (regardé, son chêne rejoué) | Proposé |
+|---|---|---|
+| le devis | « Abattage d'un chêne Quercus robur », sans rien d'autre depuis §588 | dessous, discret, « Abattage entre 10 et 20 m, ⌀ 80 cm », pour lui seul, comme le fournisseur de `appli/devis-fournisseur-pour-vous-seul.html` ; « Chez le client » montre le vrai PDF, sans elles |
+| Informations | le champ de la prestation porte tout, coupé à « (Quercus robur) (ab » | le champ garde « Abattage d'un chêne (Quercus robur) », ses réponses passent sous la rangée |
+
+**Sa réponse du 20 novembre, sur Informations** : *« la page information, je n'y
+ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
+que sur le devis. Reste à savoir si la ligne sous le travail lui convient.
+
+**Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
+la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
+`listerPrestationsDuDevis` le fait déjà pour §588) ; rien ne s'imprime ni ne
+part chez le client. Puis `libelleEnrichi` n'écrit plus dans le libellé, une
+fois éprouvé que le prix de la case se trouve sans le texte : `mesuresResolues`
+lit déjà les colonnes, `mesures-arbre.ts` relit encore le texte. Argent :
+niveau 3.
 
 ## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
 
@@ -549,6 +644,63 @@ recopient les feuilles de style de l'appli, où dorment d'autres verts qui ne
 peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
 texte des cartes vertes).
 
+
+## ⏳ UNE PLANCHE À REGARDER : LES OUTILS DE PAYSAGE SUR LE SITE (20 novembre 2026)
+
+Sa demande, depuis son téléphone, devant `appli/vente/cause-2.html` : *« il
+faudrait rajouter l'abonnement de 6 € pour les outils [...] qu'on puisse
+cliquer sur l'abonnement de 6 € pour les outils, et que ça soit une porte pour
+ensuite arriver sur une autre page qu'on ferait défiler, où on nous montrerait
+un petit peu les outils »* : le plan d'arrosage, le diagnostic végétal, les
+fiches de fin de passage, dans la DA du site.
+
+**Fait, rien dans `src/` :** dans les prix de `cause-2.html`, sous les trois
+formules, la carte dorée « Les outils de paysage » (+6 € HT par mois, 60 € à
+l'année avec la bascule, les trois lignes de son bloc du 19 novembre) ; la
+carte entière ouvre `appli/vente/outils.html`, la page qui montre les trois
+outils. Les écrans sont ceux de l'appli d'aujourd'hui (écrans figés et rendu
+réel du plan, la source de chacun dans l'en-tête de la page) ; le croquis est
+un dessin. « Fiche de fin de passage » y porte le nom de l'outil dans l'appli,
+« Les fiches de chantier » : c'est son compte rendu que reçoit le client.
+`appli/tests/e2e.js` touche la carte au milieu de sa liste et regarde chaque
+image de la page (vu rouge en retirant le lien et une image).
+
+**Changé à côté, et dit :** l'accroche d'Entreprise disait « Tout Cause,
+jusqu'à cinq personnes qui facturent ». Les outils étant en plus, elle dit
+« Jusqu'à cinq personnes qui facturent. », la première moitié de la phrase de
+sa planche du 18 novembre.
+
+**À trancher par lui, non touché :**
+- la carte Artisan coche encore « Vos salariés ont accès au planning », et la
+  ligne au-dessus des prix dit « Vos salariés ne comptent jamais » : depuis
+  le 18 novembre, Artisan est un seul accès, salariés compris ;
+- « L'essai ouvre tout » sous les prix : depuis le 19 novembre, le plan
+  d'arrosage et le diagnostic sont offerts une fois, essai compris (la carte
+  des outils le dit déjà) ;
+- la fiche du diagnostic montrée est celle de `main`, qui porte encore
+  « Probable · Peuplier » (l'entrée de la fiche de diagnostic, plus haut) : à
+  refaire quand l'écran aura changé ;
+- les trois scènes sont des captures animées, pas des films de l'appli : les
+  filmer demande le serveur de l'appli, donc son oui.
+
+`cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
+
+**Le soir même, « Essayez le plan » (sa demande : toute la page, cliquable) :**
+le vrai écran du plan tourne dans le téléphone, compilé depuis `src/` par
+`appli/scripts/demo-outils/construire.ts`. **À relancer quand l'écran du plan
+change dans l'appli**, sans quoi le site montre une version d'avant. Le jardin
+(pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change vraiment les
+réseaux : sa pelouse à 4 turbines sur un seul réseau n'en changeait pas.
+**Fait le même soir, sa demande : « pareil avec les autres outils »** :
+« Essayez le diagnostic » (la fiche du platane, publiable, composée par le
+vrai moteur) et « Essayez la fiche » (M. Bernard, ses cases reprises, l'envoi,
+le retour chez le client). Les trois démonstrations se reconstruisent par
+`npx tsx appli/scripts/demo-outils/construire.ts`, **à relancer dès qu'un de
+ces écrans change dans l'appli**. **Vu en le faisant, non corrigé (hors
+périmètre)** : la fiche du platane de `donnees/phyto/` affiche des tirets
+dans l'appli (« INRAE — Ephytia », le titre de sa source, le crédit de sa
+photo), contraires à sa règle du 22 septembre ; la démonstration les change
+en virgules à la construction, la donnée et l'écran de `main` les gardent.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
