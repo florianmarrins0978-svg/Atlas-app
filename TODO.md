@@ -9,6 +9,17 @@ elle n'ira jamais dans l'appli »*. Les 55 pages maladies de la rubrique Forêts
 d'Ephytia (champignons des feuilles, du tronc et des branches, des racines,
 des vaisseaux) sont lues ; les fiches sont écrites au nouveau modèle (§592).
 
+**Ses avis, fiche par fiche (sa demande du 20 novembre au soir)** : sous chaque fiche
+de la page privée, « Valider » ou « À corriger » et un message. Ils vivent dans la
+base de la page (collection `avis`, un document par code de fiche : `statut`
+`validee` ou `a_corriger`, `message`, `le`), que l'on relit avec l'outil
+`ArtifactData` ; la page prévient aussi la session par un commentaire envoyé à
+Claude quand la plateforme le permet. **Une fiche validée se code aussitôt, SANS
+batterie** (sa règle) : le brouillon passe dans `donnees/phyto/fiches/`, ses photos
+dans `donnees/phyto/images/`, sur la branche. Une fiche « à corriger » se corrige
+dans son brouillon, puis la page se republie. Avant de republier la page, rien à
+recopier : les avis restent dans sa base.
+
 **Où il vérifie : une page PRIVÉE** (https://claude.ai/artifact/8PX6o5pUoNqJg9syfyrB78),
 et non une planche dans `appli/` : les mentions légales d'Ephytia interdisent
 de recopier ses pages, et `appli/` est publié sur un site public. La capture
