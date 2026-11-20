@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL (20 novembre 2026), PAS ENCORE SUR `main`
+
+`reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Le second temps (plus rien dans le libellé) reste à faire. `ARCHITECTURE.md` §593.
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE SUR `main` (20 novembre 2026)
 
 Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0187) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §591.

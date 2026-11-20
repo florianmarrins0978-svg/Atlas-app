@@ -49,6 +49,7 @@ import {
 import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
 import FeuilleDuTaux from "@/components/atlas/FeuilleDuTaux";
 import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
+import ReponsesSousLeTravail from "@/components/atlas/ReponsesSousLeTravail";
 import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
 import { estLaLigneDeSonEquipe, type ChoixDeMainOeuvre, type DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
@@ -153,8 +154,10 @@ type Ligne = {
   /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
-  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
+  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
   hommesMainDoeuvre?: number | null;
+  /** Ses réponses à la grille, sous le travail, pour lui seul (sa planche du 20 novembre 2026). */
+  reponses?: string[];
 };
 
 /**
@@ -1586,6 +1589,7 @@ export default function DevisCompletClient(props: Props) {
                 className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
                 style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
               />
+              <ReponsesSousLeTravail reponses={l.reponses ?? []} />
               {/* **La croix au-dessus de la colonne des chiffres, montée au
                   haut de la ligne** : sa réponse « D » du 16 octobre 2026
                   (`appli/devis-croix-plus-a-droite.html`), après *« il arrive

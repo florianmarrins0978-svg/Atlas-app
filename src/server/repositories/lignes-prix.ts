@@ -15,6 +15,7 @@ import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { nombreDeLigneAdmis } from "../../lib/montant-ecrivable";
 import { estLaLigneDeSonEquipe, partsAppliquees, type TravailRepris } from "../../lib/feuille-main-oeuvre";
 import { ActionRefuseeError } from "../garde-action";
+import type { LienDeLaLigne } from "../../lib/reponses-sous-le-travail";
 
 /** Refuse avant toute écriture un nombre qu'aucun écran n'envoie (`nombreDeLigneAdmis`). */
 function exigerNombresDeLigne(...nombres: (string | undefined)[]): void {
@@ -418,6 +419,25 @@ export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) 
       )
       .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
       .orderBy(_asc(lignesPrixPrestations.ordre))
+  );
+}
+
+/**
+ * Les liens des lignes de ce chantier aux prestations qu'elles vendent, dans
+ * l'ordre du devis : de quoi dire ses réponses à la grille sous chaque
+ * travail (`reponses-sous-le-travail.ts`, sa planche du 20 novembre 2026).
+ */
+export async function liensDesLignesDuChantier(ctx: Ctx, chantierId: string): Promise<LienDeLaLigne[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ lignePrixId: lignesPrixPrestations.lignePrixId, prestationId: lignesPrixPrestations.prestationId })
+      .from(lignesPrixPrestations)
+      .innerJoin(
+        lignesPrix,
+        and(eq(lignesPrixPrestations.lignePrixId, lignesPrix.id), eq(lignesPrixPrestations.entrepriseId, lignesPrix.entrepriseId))
+      )
+      .where(eq(lignesPrix.chantierId, chantierId))
+      .orderBy(_asc(lignesPrix.ordre), _asc(lignesPrixPrestations.ordre))
   );
 }
 

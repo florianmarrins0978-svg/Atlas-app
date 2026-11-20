@@ -37695,3 +37695,22 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce que ce lot ne règle pas, et que le relevé a trouvé** : répartir une seconde fois AJOUTE aux parts posées (`partsAppliquees` part de la part d'avant) ; et préparer le devis à nouveau repart de la dictée (2 hommes), pas de la ligne qu'il a changée. Les deux sont dans `TODO.md`.
 
 `test-feuille-main-oeuvre.ts` (sept cas, vus rouges avant), `test-main-oeuvre-change-sa-ligne-db.ts` (sa dictée, « Changer », le partenaire, les refus, « Répartis »), `test-feuille-main-oeuvre-e2e.ts` (son geste : rouvrir, un homme de plus, une seule ligne).
+
+## §593 : Ses réponses à la grille reviennent sous le travail du devis, pour lui seul
+
+*20 novembre 2026, sa planche (`appli/soignee/devis-reponses-sous-le-travail.html`) et son « oui » ; sur Informations, sa réponse : « la page information, je n'y ai jamais accès ».*
+
+Depuis §588, ce qu'il a choisi dans sa grille ne s'écrit plus sur la désignation, et il ne le relisait plus nulle part. Premier temps du rangement qu'il a demandé (*« on a empilé des règles sur des règles »*).
+
+| Décision | Pourquoi |
+|---|---|
+| lues dans leurs CASES (`methode` nommée dans SA grille, `caracteristiques`), jamais dans le libellé (`reponsesDuTravail`) | le second temps pourra cesser d'écrire ses réponses dans le libellé sans que cette ligne change |
+| la même phrase que le libellé enrichi d'hier (`mesureLisible`, sortie de `precisionLisibleParId`) | une seconde écriture de « ⌀ 80 cm » finirait par dire autre chose |
+| une phrase par travail que la ligne vend (`lignes_prix_prestations`, `liensDesLignesDuChantier`), sans doublon | trois chênes abattus pareil n'en font qu'une |
+| la longueur d'une haie ne s'y redit pas | c'est la quantité de sa ligne |
+| sous la description, discrète ; le toucher dit « Pour vous seul : ni le PDF, ni le client ne le voient. » (`ReponsesSousLeTravail`) | la planche ; une phrase permanente sous chaque travail serait du bruit (sa règle du moins de mots) |
+| Informations ne change pas | il n'y va jamais |
+
+**Ce qui reste, le second temps** : `libelleEnrichi` n'écrit plus dans le libellé une fois éprouvé que le prix de la case se trouve sans le texte (`mesures-arbre.ts` le relit encore), puis les libellés d'avant se convertissent (base habitée, FORCE RLS) et `debutsDUnLibelleEnrichi` part. `TODO.md`.
+
+`test-reponses-sous-le-travail.ts` (cinq cas purs), `test-cases-reglables-db.ts` (son chêne : la ligne à 1 100 € dit « Abattage entre 10 et 20 m, ⌀ 80 cm » dessous).

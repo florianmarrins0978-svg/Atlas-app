@@ -1,5 +1,9 @@
 # État du projet
 
+## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL DU DEVIS : CODÉES, PAS ENCORE SUR `main` (20 novembre 2026)
+
+« Abattage entre 10 et 20 m, ⌀ 80 cm » sous la description, lu dans les cases, pour lui seul. Suite base, écran et contrôle de niveau sur son « oui ». `ARCHITECTURE.md` §593.
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.

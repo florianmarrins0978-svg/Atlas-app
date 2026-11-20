@@ -457,7 +457,16 @@ function precisionLisibleParId(
   // sujets par leur fin (`.diametre`, `.hauteur`) ; une liste de préfixes tenue
   // ici en parallèle laissait `dessouchage.diametre` sortir sans son ⌀ le jour
   // où il est né — et `mesures-arbre.ts` n'y aurait plus retrouvé le nombre.
-  const sujet = id.split("#")[0];
+  return mesureLisible(id.split("#")[0], valeur, unite);
+}
+
+/**
+ * Une mesure dite comme il la lit, « ⌀ 80 cm », « 12 m de haut », « fût de
+ * 10 m ». La même phrase pour le libellé de la prestation et pour ses réponses
+ * sous le travail du devis (`reponses-sous-le-travail.ts`) : deux écritures
+ * finiraient par ne plus dire la même chose.
+ */
+export function mesureLisible(sujet: string, valeur: string, unite: string | null): string {
   if (sujet.endsWith(".diametre")) {
     return `⌀ ${valeur} ${unite ?? ""}`.trim();
   }

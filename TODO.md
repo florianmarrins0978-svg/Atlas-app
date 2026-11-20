@@ -167,7 +167,7 @@ même heure (confiance moyenne).
 Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
 son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
 
-## ⏳ UNE PLANCHE À REGARDER : SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
+## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : TEMPS 1 CODÉ, SUITES SUR SON « OUI » (20 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -197,7 +197,15 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-l
 
 **Sa réponse du 20 novembre, sur Informations** : *« la page information, je n'y
 ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
-que sur le devis. Reste à savoir si la ligne sous le travail lui convient.
+que sur le devis. Puis son « oui » à la ligne sous le travail.
+
+**Temps 1 codé le 20 novembre** (`ARCHITECTURE.md` §593) : la ligne sous le
+travail, lue dans les cases. Joués : types, style, gardes,
+`test-reponses-sous-le-travail.ts`. **Pas joués** : `test-cases-reglables-db.ts`
+(son chêne, sous `atlas_app`), l'écran regardé, puis le contrôle de son niveau ;
+il a refusé la batterie le 20 (*« Aucune batterie !!! »*), le lot attend donc
+hors de `main`. **Temps 2 à faire** : `libelleEnrichi` n'écrit plus dans le
+libellé, une fois éprouvé que le prix de la case se trouve sans le texte.
 
 **Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
 la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
