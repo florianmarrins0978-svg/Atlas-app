@@ -193,18 +193,28 @@ const SCRIPT = `
     }
     return null;
   };
+  const estRond = (el) => { const r = el.getBoundingClientRect(); const b = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0; return r.width > 0 && Math.abs(r.width - r.height) < 6 && b >= r.width / 2 - 2; };
+  const formeDe = (c) => {
+    if (estRond(c)) return c;
+    const a = c.getBoundingClientRect().width * c.getBoundingClientRect().height;
+    const ronds = [...c.querySelectorAll("*")].filter((x) => estRond(x) && x.getBoundingClientRect().width * x.getBoundingClientRect().height > a * 0.4);
+    return ronds.sort((x, y) => y.getBoundingClientRect().width - x.getBoundingClientRect().width)[0] || c;
+  };
   const poserDoigt = () => {
     const e = C.etapes[rang];
     const c = libre ? cibleDe(C.etapes.at(-1).cible) : cibleDe(e.cible);
     if (!c) { doigt.style.opacity = 0; guide.className = "v-guide en-bas"; return null; }
     const r = c.getBoundingClientRect();
     if (r.top < 90 || r.bottom > innerHeight - 220) c.scrollIntoView({ block: "center", behavior: "instant" });
-    const q = c.getBoundingClientRect();
+    // Le doigt épouse la FORME du geste : un bouton qui porte un rond (la note
+    // vocale) se cerne d'un rond, pas du carré de son libellé (sa capture du 20 novembre).
+    const forme = formeDe(c);
+    const q = forme.getBoundingClientRect();
     doigt.style.opacity = 1;
     const gauche = Math.max(2, q.left - 4), droite = Math.min(document.documentElement.clientWidth - 2, q.right + 4);
     doigt.style.left = gauche + "px"; doigt.style.top = q.top - 4 + "px";
     doigt.style.width = droite - gauche + "px"; doigt.style.height = q.height + 8 + "px";
-    doigt.style.borderRadius = Math.min(999, Math.max(12, parseFloat(getComputedStyle(c).borderRadius) || 12)) + "px";
+    doigt.style.borderRadius = estRond(forme) ? "999px" : Math.min(999, Math.max(12, parseFloat(getComputedStyle(forme).borderRadius) || 12)) + "px";
     // Le guide ne cache jamais ce qu'il montre : on calcule où il tomberait en haut et en bas.
     const h = guide.offsetHeight, basHaut = 12 + h, hautBas = innerHeight - 84 - h;
     const couvreHaut = q.top < basHaut, couvreBas = q.bottom > hautBas;
@@ -287,7 +297,7 @@ const SCRIPT = `
   }, true);
   addEventListener("resize", () => poserDoigt());
   let posant = false;
-  addEventListener("scroll", () => { if (posant || doigt.style.opacity !== "1") return; posant = true; requestAnimationFrame(() => { posant = false; const e = C.etapes[rang]; const c = cibleDe(libre ? C.etapes.at(-1).cible : e.cible); if (!c) return; const q = c.getBoundingClientRect(); doigt.style.top = q.top - 4 + "px"; doigt.style.left = Math.max(2, q.left - 4) + "px"; }); }, { passive: true });
+  addEventListener("scroll", () => { if (posant || doigt.style.opacity !== "1") return; posant = true; requestAnimationFrame(() => { posant = false; const e = C.etapes[rang]; const c = cibleDe(libre ? C.etapes.at(-1).cible : e.cible); if (!c) return; const q = formeDe(c).getBoundingClientRect(); doigt.style.top = q.top - 4 + "px"; doigt.style.left = Math.max(2, q.left - 4) + "px"; }); }, { passive: true });
   document.addEventListener("scroll", () => {}, true);
   montrer(C.etapes[0].etat); dire();
 })();
