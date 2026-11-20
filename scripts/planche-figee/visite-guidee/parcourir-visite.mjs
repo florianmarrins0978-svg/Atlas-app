@@ -35,6 +35,20 @@ for (let k = 0; k < 60; k++) {
   await page.screenshot({ path: `${sortie}/${String(++i).padStart(2, "0")}-${etat.ecran}.png` });
   console.log(i, etat.ecran, "«", etat.titre, "»", etat.doigt ? "doigt" : "", etat.bouton, etat.large > 0 ? `DÉBORDE ${etat.large}` : "");
   if (etat.bouton === "Recommencer") break;
+  // Le doigt suit sa cible quand la feuille du calendrier défile (sa capture du
+  // 20 novembre : il restait en l'air). Ce contrôle a rougi contre l'ancienne version.
+  if (etat.titre === "Vos dates") {
+    const ecart = () => page.evaluate(() => {
+      const d = document.querySelector(".v-doigt").getBoundingClientRect();
+      const t = [...document.querySelectorAll('.visite-ecran:not([hidden]) button[aria-label^="25 novembre"]')].find((b) => b.getBoundingClientRect().width > 0).getBoundingClientRect();
+      return Math.round(Math.abs(d.top + 4 - t.top));
+    });
+    await page.evaluate(() => { const f = [...document.querySelectorAll(".visite-ecran:not([hidden]) *")].find((e) => e.scrollHeight > e.clientHeight + 20 && /auto|scroll/.test(getComputedStyle(e).overflowY)); if (f) f.scrollTop += 180; window.scrollBy(0, 120); });
+    await page.waitForTimeout(400);
+    const e = await ecart();
+    console.log("   le doigt après défilement :", e <= 2 ? "sur sa cible" : `DÉCROCHÉ DE ${e} px`);
+    await page.evaluate(() => window.scrollTo(0, 0));
+  }
   // L'étape des essais : chaque bouton du devis s'ouvre, se pose, et l'on revient.
   if (etat.titre === "À vous d'essayer") {
     for (const ouvre of ['[data-atlas="poser-prix-accorde"]', '[data-atlas="poser-main-doeuvre"]', '[data-atlas="ajouter-acompte"]', 'button:has-text("+ Ajouter une TVA")', 'button:has-text("+ Ajouter une ligne")']) {
