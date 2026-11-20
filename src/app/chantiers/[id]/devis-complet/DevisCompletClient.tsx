@@ -178,8 +178,8 @@ const CLE_REDUCTION = "prix-accorde-au-client";
 type Props = {
   /**
    * Ses prix d'achat chez ses fournisseurs, et ses marges : la liste sous la
-   * ligne qu'il tape (`PrixDAchatDeLaLigne`). `null` pour un autre compte que
-   * le patron : ses prix d'achat ne se consultent pas d'ailleurs.
+   * ligne qu'il tape (`PrixDAchatDeLaLigne`). `null` pour un compte qui ne
+   * rédige pas les devis (`peutGererDevis`).
    */
   prixDAchat?: { candidats: PrixAchatCandidat[]; marges: { materiel: string | null; mainOeuvre: string | null } } | null;
   chantierId: string;

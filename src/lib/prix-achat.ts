@@ -141,16 +141,6 @@ export function achatRetenuEnMots(c: { societeNom: string; prixHt: string; unite
   return `${c.societeNom}, ${prixDAchatEnMots(c)}`;
 }
 
-/**
- * Une ligne de devis telle qu'une action la rend au navigateur : sans le prix
- * d'achat qui l'a chiffrée (migration 0188). Ses prix d'achat sont au patron
- * seul ; une action d'édition sert aussi le commercial, et ce qu'elle rend
- * se lit dans la réponse, même si l'écran ne l'affiche pas.
- */
-export function sansAchatRetenu<T extends { achatRetenu: string | null }>(ligne: T): T {
-  return { ...ligne, achatRetenu: null };
-}
-
 /** La marge qui vaut chez une société : la sienne, sinon la générale de sa rubrique. */
 export function margeQuiVaut(propre: string | null, generale: string | null): string | null {
   return propre ?? generale;

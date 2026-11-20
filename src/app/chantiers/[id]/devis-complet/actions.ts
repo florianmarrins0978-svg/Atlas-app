@@ -7,9 +7,9 @@ import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
-import { estProprietaire, exigerProprietaire } from "@/server/autorisation";
+import { exigerProprietaire } from "@/server/autorisation";
 import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
-import { achatRetenuEnMots, prixDepuisAchat, sansAchatRetenu } from "@/lib/prix-achat";
+import { achatRetenuEnMots, prixDepuisAchat } from "@/lib/prix-achat";
 import { seulement } from "@/lib/champs-permis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import {
@@ -168,7 +168,7 @@ export async function majLigneAction(
     }
   }
 
-  return ligne ? sansAchatRetenu(ligne) : ligne;
+  return ligne;
 }
 
 /**
@@ -181,8 +181,9 @@ export async function majLigneAction(
  * veille ne pose pas un prix qui a changé, et rien d'écrit par le navigateur
  * n'arrive dans la mention.
  *
- * **Ses prix d'achat sont à lui seul**, comme l'écran Ce que je paie : le
- * commercial qui tape un devis ne les voit pas, et ne peut pas les poser.
+ * **Qui rédige le devis les voit et les pose** (sa réponse du 20 novembre
+ * 2026 : *« le commercial, c'est celui qui va rédiger les devis »*) : la
+ * garde est celle du devis, `exigerGestionDevis`.
  */
 export async function choisirUnPrixDAchatAction(
   id: string,
@@ -196,7 +197,6 @@ export async function choisirUnPrixDAchatAction(
 > {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "chiffrer une ligne depuis un prix d'achat");
-  if (!(await estProprietaire(ctx))) return { ok: false, raison: "Les prix d’achat ne se consultent pas depuis ce compte." };
   const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
   const prix = candidats.find((c) => c.id === prixAchatId && c.rubrique === "fournisseur");
   if (!prix) return { ok: false, raison: "Ce prix d’achat n’existe plus. Rechargez l’écran." };
@@ -334,7 +334,7 @@ export async function deplacerLigneVersTvaAction(
   const propre = tauxTvaValide(taux);
   if (propre === null) return null;
   const ligne = await deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
-  return ligne ? sansAchatRetenu(ligne) : ligne;
+  return ligne;
 }
 
 /** La catégorie disparaît, ses lignes reviennent au taux du devis. */
@@ -469,7 +469,6 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
   }
 
   const lignes = await listerLignesPrix(ctx, chantierId);
-  const proprietaire = await estProprietaire(ctx);
   // **Le prix accordé repart avec les lignes, et ce n'est pas une commodité.**
   // Il ne vit sur AUCUNE ligne : c'est l'en-tête du devis qui le porte. Rendre
   // les seules lignes laissait donc l'écran avec l'ancien pourcentage sous les
@@ -486,8 +485,9 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
       prixUnitaire: l.prixUnitaire,
       montant: l.montant,
       // L'écran se recale sur ce que rend cette action : sans la mention, le
-      // fournisseur choisi disparaîtrait de sous sa ligne. Au patron seul.
-      achatRetenu: proprietaire ? l.achatRetenu : null,
+      // fournisseur choisi disparaîtrait de sous sa ligne. L'action est gardée
+      // par `exigerGestionDevis` : qui la joue rédige le devis.
+      achatRetenu: l.achatRetenu,
       // **« À CHIFFRER » REPARTAIT AVEC LES LIGNES, ET IL NE PARTAIT PAS.**
       // Trouvé le 11 septembre 2026 en branchant le champ du prix sur ce
       // drapeau : l'écran se recale ENTIÈREMENT sur ce que rend cette action,

@@ -3,7 +3,8 @@ import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { estProprietaire } from "@/server/autorisation";
+import { getRole } from "@/server/autorisation";
+import { peutGererDevis } from "@/lib/acces-roles";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
@@ -100,11 +101,14 @@ export default async function DevisCompletPage({
   const lienParti = devisRow.statut === "envoye" ? await unLienExistePourLeDevis(ctx, devisRow.id) : false;
 
   // **Ses prix d'achat, sous la ligne qu'il tape** (sa planche du 20 novembre
-  // 2026, `appli/le-prix-d-une-piece.html`). À lui seul, comme l'écran Ce que
-  // je paie : pour un autre compte, ils ne quittent pas le serveur, et la
-  // mention du fournisseur sous une ligne non plus.
-  const proprietaire = await estProprietaire(ctx);
-  const prixDAchat = proprietaire
+  // 2026, `appli/le-prix-d-une-piece.html`). À qui rédige le devis, et à lui
+  // seul : sa réponse du 20 novembre, *« le commercial, c'est celui qui va
+  // rédiger les devis, forcément il doit pouvoir le voir »*. Un compte qui ne
+  // rédige pas ne les reçoit pas, ni la mention du fournisseur sous une ligne.
+  const role = await getRole(ctx);
+  const redige = role !== null && peutGererDevis(role);
+  const proprietaire = role === "proprietaire";
+  const prixDAchat = redige
     ? await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]).then(([candidats, marges]) => ({
         candidats: candidats.filter((c) => c.rubrique === "fournisseur"),
         marges,
@@ -245,7 +249,7 @@ export default async function DevisCompletPage({
           partAncienne: l.partAncienne,
           partGrille: l.partGrille,
           hommesMainDoeuvre: l.hommesMainDoeuvre,
-          achatRetenu: proprietaire ? l.achatRetenu : null,
+          achatRetenu: redige ? l.achatRetenu : null,
         }))}
         prixDAchat={prixDAchat}
         tauxTva={devisRow.tauxTva}

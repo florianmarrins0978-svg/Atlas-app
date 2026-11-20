@@ -37753,10 +37753,10 @@ premier : une seule règle). Un appui pose le prix × sa marge
 identifiant), et le fournisseur reste écrit sous la ligne
 (`lignes_prix.achat_retenu`, migration 0188, expand seul).
 
-| Pour lui seul | Comment |
+| Pour qui rédige le devis | Comment |
 |---|---|
-| ses prix d'achat | la page ne les passe qu'au patron (`estProprietaire`), comme l'écran Ce que je paie ; l'action refuse les autres comptes |
-| la mention sous la ligne | jamais dans la photographie du devis (`devis.ts` recopie ses champs un à un) ; retirée de l'export des données d'un client (`donnees-client.ts`) et de ce que rendent les actions d'édition (`sansAchatRetenu`), qui servent aussi le commercial |
+| ses prix d'achat | la page ne les passe qu'aux comptes qui rédigent les devis (`peutGererDevis` : patron, commercial, facturation), et toutes les actions du devis sont gardées par `exigerGestionDevis` ; d'abord réservés au patron, élargis le 20 novembre 2026 sur sa réponse : *« le commercial, c'est celui qui va rédiger les devis, forcément il doit pouvoir le voir »* |
+| la mention sous la ligne | jamais dans la photographie du devis (`devis.ts` recopie ses champs un à un) ; retirée de l'export des données d'un client (`donnees-client.ts`) |
 | la mention tombe | dès qu'un prix est retapé, en valeur (`modifierLignePrix`, comme la reprise) ; l'écran fait de même, comparé au prix que l'achat a posé |
 
 **Trouvé en codant : l'emballage ne dit pas ce qu'on achète.** « Sac de
@@ -37819,13 +37819,13 @@ démonstration, réponse de lecture simulée : 15 vérifications (création,
 téléphone refusé puis corrigé sur la fiche, rangement chez un autre).
 Batterie pas jouée.
 
-## §595 : Le fournisseur reste écrit sous une ligne dictée, pour lui seul
+## §595 : Le fournisseur reste écrit sous une ligne dictée, pour qui rédige le devis
 
 *20 novembre 2026, sa réponse « 2, tu peux la coder aussi » sur
 `appli/devis-fournisseur-pour-vous-seul.html`.*
 
 Une ligne que le devis DICTÉ chiffre par un prix d'achat × sa marge garde le
-fournisseur sous elle (« Matériaux Garnier, 9,40 € HT le sac »), dans la même
+fournisseur sous elle (« Matériaux Garnier, 9,40 € HT le sac »), visible de qui rédige le devis (§593), dans la même
 colonne que le devis tapé à la main (`lignes_prix.achat_retenu`, migration
 0188, §593). « Chez le client » de la planche est l'aperçu PDF qui existait :
 le PDF ne la porte pas (`devis.ts` recopie ses champs un à un).

@@ -19,7 +19,6 @@ import {
   messagesAssistant,
   piecesImportees,
 } from "../db/schema";
-import { sansAchatRetenu } from "@/lib/prix-achat";
 import type { Ctx } from "./context";
 import { genererJeton } from "./envois-devis";
 import { CONSERVATION_LEGALE, motifConservation } from "../retention";
@@ -94,7 +93,7 @@ export async function exporterClient(
         materiel: mat,
         // Le prix d'achat qui a chiffré une ligne est au patron, pas à son
         // client (migration 0188) : il ne part pas dans l'export de ses données.
-        lignesPrix: prix.map((l) => sansAchatRetenu(l)),
+        lignesPrix: prix.map((l) => ({ ...l, achatRetenu: null })),
         notesVocales: notes,
         photos: phot,
         devis: dev,

@@ -19,9 +19,10 @@ const PROPOSES_AU_PLUS = 4;
  * | le choix | le prix × sa marge se pose, et le fournisseur reste écrit sous la ligne |
  * | la mention | touchée, elle rouvre la liste pour changer de fournisseur ; elle tombe dès qu'il retape le prix |
  *
- * **Pour lui seul** : la page ne passe ses prix d'achat qu'au patron, et la
- * mention ne descend jamais sur le devis du client (`devis.ts` recopie ses
- * champs un à un).
+ * **Pour qui rédige le devis, jamais pour le client** : la page ne passe ses
+ * prix d'achat qu'aux comptes qui rédigent (`peutGererDevis` ; sa réponse du
+ * 20 novembre 2026 pour le commercial), et la mention ne descend jamais sur
+ * le devis du client (`devis.ts` recopie ses champs un à un).
  */
 export default function PrixDAchatDeLaLigne({
   libelle,
