@@ -28,15 +28,20 @@ import {
   lignesAMontrer,
   lireAdresseMail,
   lireMarge,
+  lireTelephone,
+  margeEnPourcent,
   margeQuiVaut,
   phraseDeLaMargePropre,
+  prixDAchatEnMots,
   resumeDeLaSociete,
   societesAMontrer,
   type RubriqueAchat,
 } from "@/lib/prix-achat";
-import { detailDeLaLigneLue, rapprocherDuPrix, type LigneDevisLue, type PrixConnu } from "@/lib/devis-fournisseur-lu";
+import { detailDeLaLigneLue, rapprocherDuPrix, type DevisLu, type EmetteurLu, type LigneDevisLue, type PrixConnu } from "@/lib/devis-fournisseur-lu";
 import {
   accepterLignesDuDevisAction,
+  lireUnDevisSansSocieteAction,
+  rangerLeDevisLuAction,
   ajouterPrixAction,
   creerSocieteAction,
   deposerDevisRecuAction,
@@ -45,6 +50,7 @@ import {
   reglerMargeSocieteAction,
   retirerPrixAction,
 } from "./actions";
+import type { SocieteProposee } from "./actions";
 import Picto from "@/components/atlas/reglages/Picto";
 
 export type SocieteVue = {
@@ -52,6 +58,8 @@ export type SocieteVue = {
   nom: string;
   marge: string | null;
   email: string | null;
+  /** Migration 0189 : tapé, ou lu sur son devis. */
+  telephone: string | null;
   prix: { id: string; nom: string; reference: string | null; unite: string; prixHt: string; prixAvant: string | null; source: string }[];
   devis: Recu[];
   /** Les factures reçues, sa planche du 23 octobre 2026 (`appli/fournisseur-factures.html`, B). */
@@ -71,8 +79,6 @@ type Recu = {
 
 type Marges = { materiel: string | null; mainOeuvre: string | null };
 type Partie = "prix" | "devis" | "factures" | "demandes";
-
-const virgule = (m: string | null) => (m === null ? "" : m.replace(".", ","));
 
 /** Ce qui a été tapé, surligné comme dans la liste des clients. */
 function Surligne({ texte, saisie }: { texte: string; saisie: string }) {
@@ -175,13 +181,14 @@ function BandeDeMarge({
           <label htmlFor={id} className="text-[16px] font-semibold leading-[1.3]" style={{ color: colors.ink }}>
             {libelle}
           </label>
+          {/* **La marge se tape en pour cent** (sa planche B du 20 novembre 2026,
+              `appli/sans-marge-sur-les-pieces.html`) : « 30 % » comme il le dit,
+              « 0 % » pour vendre au prix du fournisseur. Le « × » d'avant
+              demandait un coefficient que personne ne dit. */}
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="text-[22px] leading-none" style={{ fontFamily: font.display, color: colors.inkSoft }}>
-              ×
-            </span>
             <input
               id={id}
-              inputMode="decimal"
+              inputMode="numeric"
               autoComplete="off"
               value={valeur}
               onChange={(e) => onChange(e.target.value)}
@@ -200,6 +207,9 @@ function BandeDeMarge({
                 outlineColor: colors.or,
               }}
             />
+            <span aria-hidden className="text-[20px] leading-none" style={{ fontFamily: font.display, color: colors.inkSoft }}>
+              %
+            </span>
           </span>
           {alerte && (
             <p className="col-span-2 mt-1.5 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas={alerteAtlas}>
@@ -290,10 +300,49 @@ export default function FournisseursPartenaires({
   const [nouveau, setNouveau] = useState("");
   const [refus, setRefus] = useState<string | null>(null);
   const [margeTapee, setMargeTapee] = useState<Record<"materiel" | "mainOeuvre", string>>({
-    materiel: virgule(marges.materiel),
-    mainOeuvre: virgule(marges.mainOeuvre),
+    materiel: margeEnPourcent(marges.materiel),
+    mainOeuvre: margeEnPourcent(marges.mainOeuvre),
   });
   const [ouverte, setOuverte] = useState<string | null>(null);
+  // Une fiche ouverte depuis une pièce cherchée s'ouvre sur cette pièce (sa
+  // planche du 20 novembre 2026, « sa fiche s'ouvre sur ses terreaux »).
+  const [rechercheDeLaFiche, setRechercheDeLaFiche] = useState("");
+  // Un devis déposé depuis la liste, sans choisir la société (sa planche du
+  // 19 novembre 2026) : lu, puis rangé sur son appui dans la feuille.
+  const [lectureEnCours, demarrerLecture] = useTransition();
+  const [devisLu, setDevisLu] = useState<{ fichier: File; resultat: ResultatDeLecture } | null>(null);
+  const appareil = useRef<HTMLInputElement>(null);
+  const fichiers = useRef<HTMLInputElement>(null);
+
+  const lireLeDevis = (f: File | undefined) => {
+    if (!f) return;
+    const donnees = new FormData();
+    donnees.set("fichier", f);
+    donnees.set("rubrique", rubrique);
+    demarrerLecture(async () => {
+      const r = await lireUnDevisSansSocieteAction(donnees);
+      if (!r.ok) {
+        setRefus(r.raison);
+        return;
+      }
+      setRefus(null);
+      setDevisLu({ fichier: f, resultat: r });
+    });
+  };
+  const champDuDevis = (ref: React.RefObject<HTMLInputElement | null>, accept: string, capture?: "environment") => (
+    <input
+      ref={ref}
+      type="file"
+      accept={accept}
+      capture={capture}
+      className="hidden"
+      onChange={(e) => {
+        const f = e.target.files?.[0];
+        e.target.value = "";
+        lireLeDevis(f);
+      }}
+    />
+  );
 
   const societes = rubrique === "fournisseur" ? fournisseurs : partenaires;
   const laquelle = rubrique === "fournisseur" ? "materiel" : "mainOeuvre";
@@ -375,7 +424,7 @@ export default function FournisseursPartenaires({
           <ChampRecherche
             valeur={saisie}
             onChange={setSaisie}
-            placeholder={rubrique === "fournisseur" ? "Chercher un fournisseur" : "Chercher un partenaire"}
+            placeholder={rubrique === "fournisseur" ? "Chercher un fournisseur ou une pièce" : "Chercher un partenaire ou une prestation"}
             ariaLabel="Chercher"
             dataAtlas="chercher-societe"
           />
@@ -406,11 +455,18 @@ export default function FournisseursPartenaires({
               ligne={(s) => {
                 const aussi = ceQuiLaTrouve(s, saisie);
                 const aDonner = margeQuiVaut(s.marge, generale) === null;
+                // **Une pièce trouvée se dit avec son prix** (sa planche du
+                // 20 novembre 2026, `appli/le-prix-d-une-piece.html`) : « pour
+                // voir à combien déjà on lui facture », sans ouvrir la fiche.
+                const prixDe = (t: string) => s.prix.find((p) => p.nom === t);
                 return (
                   <button
                     type="button"
                     data-atlas="societe"
-                    onClick={() => setOuverte(s.id)}
+                    onClick={() => {
+                      setOuverte(s.id);
+                      setRechercheDeLaFiche(aussi.some((t) => prixDe(t)) ? saisie : "");
+                    }}
                     className="flex min-h-[76px] w-full items-center gap-3 pb-3 pt-2.5 text-left"
                   >
                     {/* Ses initiales, comme un client : on reconnaît la société avant de lire son nom. */}
@@ -430,12 +486,23 @@ export default function FournisseursPartenaires({
                       </span>
                       <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                         {aussi.length > 0
-                          ? aussi.map((t, i) => (
-                              <span key={i}>
-                                {i > 0 && ", "}
-                                <Surligne texte={t} saisie={saisie} />
-                              </span>
-                            ))
+                          ? aussi.map((t, i) => {
+                              const prix = prixDe(t);
+                              return (
+                                <span key={i}>
+                                  {i > 0 && ", "}
+                                  <Surligne texte={t} saisie={saisie} />
+                                  {prix && (
+                                    <>
+                                      {", "}
+                                      <span className="whitespace-nowrap" data-atlas="prix-de-la-piece">
+                                        {prixDAchatEnMots(prix)}
+                                      </span>
+                                    </>
+                                  )}
+                                </span>
+                              );
+                            })
                           : resumeDeLaSociete({ prix: s.prix.length, devis: s.devis.length, demandes: s.demandes.length })}
                       </span>
                       {/* Sa marge en pastille dorée ; celle qui manque en ambre, ce qui reste à faire. */}
@@ -475,16 +542,73 @@ export default function FournisseursPartenaires({
         </button>
       </div>
 
+      {/* **Un devis pris en photo sans choisir le fournisseur** (sa planche du
+          19 novembre 2026, `appli/fournisseur-depuis-son-devis.html`) : Cause
+          lit qui l'a émis, et propose sa fiche, ou reconnaît la sienne. Sous
+          « Ajouter », rien d'autre ne bouge. */}
+      {champDuDevis(appareil, "image/jpeg,image/png", "environment")}
+      {champDuDevis(fichiers, "application/pdf,image/jpeg,image/png,.csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+      {lectureEnCours ? (
+        <p className="mx-[2px] mt-3.5 flex items-center gap-2.5 text-[15px]" style={{ color: colors.inkSoft }} data-atlas="lecture-devis-liste">
+          <span style={{ color: colors.or }}>
+            <PointsQuiSoufflent />
+          </span>
+          Cause lit le devis
+        </p>
+      ) : (
+        <div className="mt-3.5 flex flex-col gap-2.5">
+          <button
+            type="button"
+            disabled={enCours}
+            onClick={() => appareil.current?.click()}
+            data-atlas="photo-devis-liste"
+            className={boutonPlein}
+            style={stylePlein}
+          >
+            <Picto nom="photo" />
+            Prendre un devis en photo
+          </button>
+          <button
+            type="button"
+            disabled={enCours}
+            onClick={() => fichiers.current?.click()}
+            data-atlas="fichier-devis-liste"
+            className={`w-full ${boutonCreux}`}
+            style={styleCreux}
+          >
+            <Picto nom="document" />
+            PDF, photo ou Excel
+          </button>
+        </div>
+      )}
+
       {refus && (
         <p className="mx-[2px] mt-2 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas="refus-fournisseurs">
           {refus}
         </p>
       )}
 
+      {devisLu && (
+        <RangerLeDevisLu
+          key={devisLu.fichier.name + devisLu.fichier.size}
+          fichier={devisLu.fichier}
+          resultat={devisLu.resultat}
+          rubrique={rubrique}
+          onFermer={() => setDevisLu(null)}
+          onRange={(societeId) => {
+            setDevisLu(null);
+            setRechercheDeLaFiche("");
+            setOuverte(societeId);
+            router.refresh();
+          }}
+        />
+      )}
+
       {fiche && (
         <Fiche
           key={fiche.id}
           societe={fiche}
+          rechercheDeDepart={rechercheDeLaFiche}
           rubrique={rubrique}
           generale={generale}
           mois={mois}
@@ -521,12 +645,15 @@ function PastilleDeMarge({ aDonner, children }: { aDonner: boolean; children: Re
  */
 function Fiche({
   societe,
+  rechercheDeDepart,
   rubrique,
   generale,
   mois,
   onFermer,
 }: {
   societe: SocieteVue;
+  /** Ce qu'il cherchait quand la pièce l'a menée ici : la fiche s'ouvre dessus. */
+  rechercheDeDepart: string;
   rubrique: RubriqueAchat;
   generale: string | null;
   mois: string;
@@ -538,12 +665,14 @@ function Fiche({
   // ce temps n'affiche pas « Atlas lit le devis », et l'inverse non plus.
   const [lectureEnCours, demarrerLecture] = useTransition();
   const [partie, setPartie] = useState<Partie>("prix");
-  const [saisie, setSaisie] = useState("");
+  const [saisie, setSaisie] = useState(rechercheDeDepart);
   const [periode, setPeriode] = useState(mois);
-  const [margeTapee, setMargeTapee] = useState(virgule(societe.marge));
+  const [margeTapee, setMargeTapee] = useState(margeEnPourcent(societe.marge));
   const [alerteMarge, setAlerteMarge] = useState<string | null>(null);
   const [adresse, setAdresse] = useState(societe.email ?? "");
   const [alerteAdresse, setAlerteAdresse] = useState<string | null>(null);
+  const [telephone, setTelephone] = useState(societe.telephone ?? "");
+  const [alerteTelephone, setAlerteTelephone] = useState<string | null>(null);
   const [refus, setRefus] = useState<string | null>(null);
   const [article, setArticle] = useState({ nom: "", unite: UNITES_ACHAT[rubrique][0], prix: "" });
   const [nomDevis, setNomDevis] = useState("");
@@ -560,6 +689,7 @@ function Fiche({
   const appareil = useRef<HTMLInputElement>(null);
   const fichiers = useRef<HTMLInputElement>(null);
   const idAdresse = useId();
+  const idTelephone = useId();
 
   // **Retirer un prix d'achat se rattrape, comme un tarif** (planche soignée du
   // 26 octobre 2026) : il partait sans retour. Le prix tapé à la main ne se
@@ -606,6 +736,21 @@ function Fiche({
     demarrer(async () => {
       const r = await reglerContactAction(societe.id, { email: valeur });
       if (!r.ok) setAlerteAdresse(r.raison);
+      else router.refresh();
+    });
+  };
+
+  const enregistrerTelephone = (valeur: string) => {
+    const l = lireTelephone(valeur);
+    if (!l.ok) {
+      setAlerteTelephone(l.raison);
+      return;
+    }
+    setAlerteTelephone(null);
+    if (l.telephone === societe.telephone) return;
+    demarrer(async () => {
+      const r = await reglerContactAction(societe.id, { telephone: valeur });
+      if (!r.ok) setAlerteTelephone(r.raison);
       else router.refresh();
     });
   };
@@ -707,6 +852,27 @@ function Fiche({
               {alerteAdresse && (
                 <p className="mt-1 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas="refus-adresse">
                   {alerteAdresse}
+                </p>
+              )}
+            </LigneReglage>
+            {/* Son téléphone, sa planche du 19 novembre 2026 : tapé ici, ou lu
+                sur son devis quand il manquait. */}
+            <LigneReglage libelle="Téléphone" htmlFor={idTelephone}>
+              <input
+                id={idTelephone}
+                type="tel"
+                inputMode="tel"
+                autoComplete="off"
+                value={telephone}
+                onChange={(e) => setTelephone(e.target.value)}
+                onBlur={(e) => enregistrerTelephone(e.currentTarget.value)}
+                aria-label={`Téléphone de ${societe.nom}`}
+                data-atlas="telephone-societe"
+                style={styleValeurReglage}
+              />
+              {alerteTelephone && (
+                <p className="mt-1 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas="refus-telephone">
+                  {alerteTelephone}
                 </p>
               )}
             </LigneReglage>
@@ -1101,6 +1267,10 @@ function LuSurLeDevis({
   cocher,
   prendre,
   laisser,
+  libellePrendre,
+  libelleLaisser,
+  prendreSansPrix = false,
+  enPlus,
 }: {
   lu: { lignes: LigneDevisLue[]; ecartees: number; totalHt: string | null; totalTtc: string | null; gardees: boolean[] };
   /** Une facture se confronte à ses prix : l'ancien montré barré, la hausse en couleur. */
@@ -1109,6 +1279,13 @@ function LuSurLeDevis({
   cocher: (i: number) => void;
   prendre: () => void;
   laisser: () => void;
+  /** Le devis déposé depuis la liste (planche du 19 novembre 2026) : « Créer et ajouter ces 3 prix ». */
+  libellePrendre?: (n: number) => string;
+  libelleLaisser?: string;
+  /** Créer la société ou garder le devis reste possible sans aucun prix coché. */
+  prendreSansPrix?: boolean;
+  /** Entre le bouton plein et « Laisser » : « Le ranger chez un autre fournisseur ». */
+  enPlus?: React.ReactNode;
 }) {
   const n = lu.gardees.filter(Boolean).length;
   return (
@@ -1178,23 +1355,245 @@ function LuSurLeDevis({
           grilles de vente, sous Tarifs & catalogue (planche du 26 octobre 2026). */}
       <button
         type="button"
-        disabled={enCours || n === 0}
+        disabled={enCours || (n === 0 && !prendreSansPrix)}
         onClick={prendre}
         data-atlas="prendre-les-prix"
         className={`mt-3 ${boutonPlein}`}
         style={stylePlein}
       >
         <Picto nom="coche" />
-        {n > 1 ? `Ajouter ces ${n} prix` : n === 1 ? "Ajouter ce prix" : "Aucun prix coché"}
+        {libellePrendre ? libellePrendre(n) : n > 1 ? `Ajouter ces ${n} prix` : n === 1 ? "Ajouter ce prix" : "Aucun prix coché"}
       </button>
+      {enPlus}
       <button
         type="button"
         onClick={laisser}
         className="flex min-h-[48px] w-full items-center justify-center text-[16px] font-semibold"
         style={{ color: colors.inkSoft }}
+        data-atlas="laisser-le-devis"
       >
-        {facture ? "Garder la facture sans les prix" : "Laisser"}
+        {libelleLaisser ?? (facture ? "Garder la facture sans les prix" : "Laisser")}
       </button>
     </div>
+  );
+}
+
+type ResultatDeLecture = { lu: DevisLu | null; emetteur: EmetteurLu | null; reconnue: SocieteProposee | null; siennes: SocieteProposee[] };
+
+/**
+ * Le devis déposé depuis la liste, lu : sa planche du 19 novembre 2026
+ * (`appli/fournisseur-depuis-son-devis.html`). Un fournisseur qu'il n'a pas
+ * encore : « Nouveau fournisseur », sa fiche préremplie de ce qui a été lu, à
+ * relire. Un fournisseur qu'il a déjà : son nom, « Reconnu sur le devis », et
+ * le mail ou le téléphone qui lui manquaient. **Rien n'est gardé avant son
+ * appui** : « Ne rien créer » ne laisse ni société, ni fichier.
+ */
+function RangerLeDevisLu({
+  fichier,
+  resultat,
+  rubrique,
+  onFermer,
+  onRange,
+}: {
+  fichier: File;
+  resultat: ResultatDeLecture;
+  rubrique: RubriqueAchat;
+  onFermer: () => void;
+  onRange: (societeId: string) => void;
+}) {
+  const [enCours, demarrer] = useTransition();
+  const { lu, emetteur, siennes } = resultat;
+  const [choisie, setChoisie] = useState<SocieteProposee | null>(resultat.reconnue);
+  const [parCause, setParCause] = useState(resultat.reconnue !== null);
+  const [autres, setAutres] = useState(false);
+  const [nom, setNom] = useState(emetteur?.nom ?? "");
+  const [email, setEmail] = useState(emetteur?.email ?? "");
+  const [telephone, setTelephone] = useState(emetteur?.telephone ?? "");
+  const [gardees, setGardees] = useState<boolean[]>(lu?.lignes.map(() => true) ?? []);
+  const [refus, setRefus] = useState<string | null>(null);
+  const idNom = useId();
+  const idMail = useId();
+  const idTel = useId();
+  const nouveau = choisie === null;
+  const quoi = rubrique === "fournisseur" ? "fournisseur" : "partenaire";
+  // Chez un fournisseur déjà là, seul ce qui lui MANQUE et a été lu se propose.
+  const mailEnPlus = !nouveau && choisie.email === null && emetteur?.email ? emetteur.email : null;
+  const telEnPlus = !nouveau && choisie.telephone === null && emetteur?.telephone ? emetteur.telephone : null;
+
+  const ranger = () => {
+    const donnees = new FormData();
+    donnees.set("fichier", fichier);
+    donnees.set("rubrique", rubrique);
+    if (choisie) {
+      donnees.set("societeId", choisie.id);
+      donnees.set("email", mailEnPlus ?? "");
+      donnees.set("telephone", telEnPlus ?? "");
+    } else {
+      donnees.set("nom", nom);
+      donnees.set("email", email);
+      donnees.set("telephone", telephone);
+    }
+    donnees.set("lignes", JSON.stringify(lu?.lignes.filter((_, i) => gardees[i]) ?? []));
+    demarrer(async () => {
+      const r = await rangerLeDevisLuAction(donnees);
+      if (!r.ok) {
+        setRefus(r.raison);
+        return;
+      }
+      onRange(r.societeId);
+    });
+  };
+
+  const ligne = (libelle: string, id: string, valeur: string, changer: (v: string) => void, type: "text" | "email" | "tel", atlas: string, sous?: string) => (
+    <LigneReglage libelle={libelle} htmlFor={id}>
+      <input
+        id={id}
+        type={type}
+        inputMode={type === "text" ? "text" : type}
+        autoComplete="off"
+        value={valeur}
+        onChange={(e) => changer(e.target.value)}
+        aria-label={libelle}
+        data-atlas={atlas}
+        // Ce qui est lu pour compléter sa fiche se relit ici, et se corrige
+        // ensuite sur sa fiche, comme le reste de son contact.
+        readOnly={Boolean(sous)}
+        style={styleValeurReglage}
+      />
+      {sous && (
+        <small className="mt-0.5 block text-[13.5px] font-semibold leading-[1.35]" style={{ color: colors.or }}>
+          {sous}
+        </small>
+      )}
+    </LigneReglage>
+  );
+
+  const ailleurs = (
+    <button
+      type="button"
+      onClick={() => setAutres(true)}
+      className="flex min-h-[48px] w-full items-center justify-center text-[16px] font-semibold"
+      style={{ color: colors.inkSoft }}
+      data-atlas="ranger-ailleurs"
+    >
+      Le ranger chez un autre {quoi}
+    </button>
+  );
+  const n = gardees.filter(Boolean).length;
+  const ces = n > 1 ? `ces ${n} prix` : "ce prix";
+
+  return (
+    <BottomSheet open onBackdropClick={onFermer}>
+      <div data-atlas="devis-lu-sans-societe" className="min-h-[60svh]">
+        <div className="mt-1 flex items-center gap-3">
+          <h2 className="min-w-0 flex-1 text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+            {nouveau ? `Nouveau ${quoi}` : choisie.nom}
+          </h2>
+          <button type="button" onClick={onFermer} className="min-h-[44px] flex-none text-[16px] font-semibold" style={{ color: colors.rust }}>
+            Fermer
+          </button>
+        </div>
+        {!nouveau && parCause && (
+          <div className="flex items-center gap-3">
+            <p className="min-w-0 flex-1 text-[14.5px] font-semibold leading-[1.4]" style={{ color: colors.or }}>
+              Reconnu sur le devis.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setChoisie(null);
+                setParCause(false);
+              }}
+              className="min-h-[44px] flex-none text-[15px] font-semibold"
+              style={{ color: colors.inkSoft }}
+              data-atlas="pas-lui"
+            >
+              Ce n’est pas lui
+            </button>
+          </div>
+        )}
+
+        {autres ? (
+          <div className="mt-3 overflow-hidden rounded-[6px] px-4" style={{ backgroundColor: colors.card }} data-atlas="autres-societes">
+            {siennes.length === 0 ? (
+              <p className="py-4 text-[15px]" style={{ color: colors.inkSoft }}>
+                Aucun autre {quoi} pour l’instant.
+              </p>
+            ) : (
+              siennes.map((x, i) => (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => {
+                    setChoisie(x);
+                    setParCause(false);
+                    setAutres(false);
+                  }}
+                  className="block min-h-[52px] w-full py-3 text-left text-[17.5px]"
+                  style={{ fontFamily: font.display, color: colors.ink, borderTop: i > 0 ? `1px solid ${colors.lineSoft}` : undefined }}
+                >
+                  {x.nom}
+                </button>
+              ))
+            )}
+          </div>
+        ) : (
+          <>
+            {(nouveau || mailEnPlus || telEnPlus) && (
+              <div className="mt-2.5 overflow-hidden rounded-[6px] px-4" style={{ backgroundColor: colors.card }}>
+                {nouveau && ligne("Nom", idNom, nom, setNom, "text", "nom-lu")}
+                {nouveau && ligne("Adresse mail", idMail, email, setEmail, "email", "mail-lu")}
+                {nouveau && ligne("Téléphone", idTel, telephone, setTelephone, "tel", "telephone-lu")}
+                {mailEnPlus && ligne("Adresse mail", idMail, mailEnPlus, () => undefined, "email", "mail-lu", "Lu sur le devis")}
+                {telEnPlus && ligne("Téléphone", idTel, telEnPlus, () => undefined, "tel", "telephone-lu", "Lu sur le devis")}
+              </div>
+            )}
+
+            {lu && lu.lignes.length > 0 ? (
+              <LuSurLeDevis
+                lu={{ ...lu, gardees }}
+                facture={null}
+                enCours={enCours}
+                cocher={(i) => setGardees(gardees.map((g, k) => (k === i ? !g : g)))}
+                prendre={ranger}
+                laisser={onFermer}
+                prendreSansPrix
+                libellePrendre={() =>
+                  nouveau ? (n > 0 ? `Créer et ajouter ${ces}` : "Créer sans les prix") : n > 0 ? `Ajouter ${ces}` : "Garder le devis sans les prix"
+                }
+                libelleLaisser={nouveau ? "Ne rien créer" : "Laisser"}
+                enPlus={ailleurs}
+              />
+            ) : (
+              <>
+                <p className="mx-[2px] mt-3 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+                  Cause n’a pas pu en lire les prix : le devis sera gardé, tapez-les dans sa fiche.
+                </p>
+                <button type="button" disabled={enCours} onClick={ranger} data-atlas="prendre-les-prix" className={`mt-3 ${boutonPlein}`} style={stylePlein}>
+                  <Picto nom="coche" />
+                  {nouveau ? `Créer le ${quoi}` : "Garder le devis"}
+                </button>
+                {ailleurs}
+                <button
+                  type="button"
+                  onClick={onFermer}
+                  className="flex min-h-[48px] w-full items-center justify-center text-[16px] font-semibold"
+                  style={{ color: colors.inkSoft }}
+                  data-atlas="laisser-le-devis"
+                >
+                  {nouveau ? "Ne rien créer" : "Laisser"}
+                </button>
+              </>
+            )}
+          </>
+        )}
+
+        {refus && (
+          <p role="alert" className="mx-[2px] mt-3 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas="refus-devis-lu">
+            {refus}
+          </p>
+        )}
+      </div>
+    </BottomSheet>
   );
 }

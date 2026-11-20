@@ -16,6 +16,14 @@ lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite q
 rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
 montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
 
+## LE PRIX D'UNE PIÈCE : CODÉ LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« 4e planche parfait tu peux coder tout, pas de batterie »*.
+Codé sur la branche de session (`ARCHITECTURE.md` §593, migration 0188),
+parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
+20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
+612). Ce qui suit est la planche telle qu'elle a été posée.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
 Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
@@ -81,7 +89,17 @@ Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
 disponible ici » est retiré du ticket lu. Et partout, l'exemple
 « 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
 
-**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+**Sa demande du soir, faite** : entrer dans la fiche d'un client. Mme Costa a
+une histoire jouée avant la visite (`histoire.mjs`) : devis signé, retour
+d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
+« Dernier devis » avec « + 10 % ». **Les retours d'intervention ne sont pas sur
+la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y
+mettre serait un changement de `src/`, à lui de dire.
+
+**Sa capture du 20 au soir** : la bulle cachait les champs qui s'écrivent. Elle
+se retire pendant l'écriture et revient une fois tout écrit.
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (56,
 c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
 qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
 exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
@@ -112,7 +130,12 @@ pour lui seul (la planche du 19 novembre). Toucher cette mention rouvre le
 choix. **Une seule règle de rapprochement pour la dictée et la saisie**
 (`CLAUDE.md` §3) : la proposer telle quelle, jamais une seconde.
 
-## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
+## SANS MARGE : LA B, EN POUR CENT, CODÉE LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« la 3e planche je choisis la B en % »*. Codé avec le prix d'une
+pièce (`ARCHITECTURE.md` §593), même lot, même batterie. Ce qui
+suit est la planche telle qu'elle a été posée.
+
 
 Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
 d'un fournisseur, il faut qu'il puisse le faire »*. Aujourd'hui la marge est
@@ -136,7 +159,11 @@ au prix d'achat, sans rien dire, chez l'artisan qui a simplement oublié de la
 remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
 `ligneDeMarge`, `phraseDeLaMargePropre`, et la marge propre de chaque fiche).
 
-## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
+## LE FOURNISSEUR DEPUIS SON DEVIS : LES DEUX PLANCHES CODÉES (19 et 20 novembre 2026)
+
+**CODÉES LE 20 novembre 2026** (`ARCHITECTURE.md` §594, §595 ; migrations 0188, 0189), sur `main` le 20 novembre 2026, batterie jouée (`test-achat-retenu-db` et `test-devis-prix-achat-db` compris).
+
+**L'écran Prix montre le calcul (« Acheté 24,00 € chez Point P ») au commercial aussi : voulu.** Sa réponse du 20 novembre 2026 : *« le compte commercial, qu'il a accès au prix, ça a du sens »*. Ne pas le retirer.
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
 que c'est un fournisseur, me crée le dossier avec son nom, son mail, son
@@ -175,6 +202,19 @@ imprimée). Gravité argent : niveau 3.
 dans la maquette* ; le nom du partenaire sur la ligne « Main d'œuvre :
 Élagage Durand », qui partait chez le client, **le retirer** (voir l'entrée
 suivante).
+
+## LE NOM DU PARTENAIRE NE PART PLUS CHEZ LE CLIENT (19 novembre 2026), CODÉ, SUR `main`
+
+Sa réponse : **le retirer**. `ligneDeSonPartenaire`
+(`src/lib/feuille-main-oeuvre.ts`) écrivait « Main d’œuvre : Élagage Durand »
+sur la ligne du devis, donc sur le PDF et la page du client. La ligne dit
+désormais « Main d’œuvre » ; le partenaire reste dans l'encadré « Calcul » de
+l'écran Prix, pour lui seul. Les lignes déjà écrites gardent leur texte : il
+les corrige à la main s'il le veut. `ARCHITECTURE.md` §592. Gravité argent (devis) : niveau 3. Joués ici : la
+suite pure (vue rouge puis verte), les types, le style. **Pas joués** : la
+suite base et les deux suites navigateur adaptées (et `test-main-oeuvre-change-sa-ligne-db`,
+arrivée de `main` le 20 novembre, qui reconnaît désormais la ligne du
+partenaire à son unité), et la batterie avant `main`, qui attendent son accord.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 
@@ -222,6 +262,33 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 **Trouvé en regardant l'écran réel, à corriger en codant la fiche 4** : la
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
+
+## ⏳ UNE PLANCHE À REGARDER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
+
+Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repartait de
+la dictée (ici 1 homme, 1 journée), sur « Sur une ligne », avec « Ajouter la
+main d’œuvre ». Sur `main`, l'appui ajoute une ligne et les travaux gardent
+leur part : la main d'œuvre compte deux fois. La correction de l'argent
+(`ARCHITECTURE.md` §592 : poser son équipe fait sortir sa part des travaux)
+est codée sur `claude/sleepy-sagan-gq6c0x`, pas encore sur `main` ; l'écran,
+lui, ne dit toujours rien. Son « ok » du 20 pour la planche, figée sur son
+vrai devis (deux travaux, 2 hommes × 2 jours × 280 € répartis), rien dans
+`src/` :
+https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html
+
+| Tranché pour la planche | Pourquoi |
+|---|---|
+| hommes et durée « Repris de vos travaux » (leurs jours d'homme, 4 ici, en 2 × 2) | le pendant de « Repris de votre ligne » qu'il a validé le 18 |
+| « Répartis sur les travaux » déjà choisi, ses parts actuelles dans la barre (560 € et 560 €) | c'est la forme où elle est ; repartir « Sur une ligne » la déplacerait sans qu'il l'ait demandé |
+| « Changer la main d’œuvre », dans les deux modes | les mots de sa planche du 18 : elle change la sienne, elle ne s'ajoute pas |
+| « Sur une ligne » montre les travaux à leur prix SANS elle (750 € et 180 €) | c'est ce qu'ils deviendront, §592 |
+| un homme de plus puis « Changer » : 1 680 € à la place des 1 120 €, dans les travaux | rien ne compte deux fois |
+
+**Ce que coûtera le code, une fois choisi** : la feuille doit recevoir les
+travaux de la TVA avec leur part et leurs jours d'homme (`partDeSonEquipe`,
+§592), en tirer hommes et durée comme `equipeDeSaLigne` le fait d'une ligne,
+et ouvrir « Répartis » sur leurs parts. Après §592 sur `main` ; argent,
+niveau 3.
 
 ## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 

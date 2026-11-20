@@ -32,6 +32,13 @@ test("par référence, sinon une ligne « pas dans le catalogue », jamais devin
   assert.deepEqual(r.inconnues.map((i) => i.lu), ["Participation aux frais de port", "Turbine sans quantité, RA3504"]);
 });
 
+test("un tube lu « au m » ou « au ml » se compte en mètres, jamais en pièces", () => {
+  // Sa demande du 20 novembre 2026 : « ml » s'ajoute à « m » dans les unités des
+  // pièces. Un tube lu au ml ne doit pas devenir des pièces qu'on compte.
+  const r = reconnaitreLeDevis([lu("Dura PEBD rigide Ø16 (tube de reprise)", null, "50", "m"), lu("tube P.E.B.D. Ø 16mm 6,3 bars (12 x 16)", "UPE1116", "20", "ml")]);
+  assert.deepEqual(r.connues.map((c) => [c.cle, c.q, c.u]), [["pebd16", 50, "ml"], ["UPE1116", 20, "ml"]]);
+});
+
 test("trois électrovannes dont une FF : la nourrice 3 voies, dont 1 en goutte-à-goutte", () => {
   const { connues } = reconnaitreLeDevis([lu("EV", "REV100DVM9V", "2"), lu("EV FF", "REV100DV9V", "1")]);
   const m = montageDuDevis(connues, false);

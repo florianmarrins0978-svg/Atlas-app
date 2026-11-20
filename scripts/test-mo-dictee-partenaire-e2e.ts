@@ -122,7 +122,7 @@ async function main() {
       await page.locator(`[data-atlas="mo-prix-${aLaJournee}"]`).click();
       await page.locator('[data-atlas="mo-liste"]').waitFor({ state: "detached" });
       assert.equal(espaces(await question.innerText()), "Où mettre les 1 215 € de main d'œuvre ?");
-      assert.equal(espaces(await detail.innerText()), "2 jours × 450 € × 1,35");
+      assert.equal(espaces(await detail.innerText()), "2 jours × 450 €, plus 35 %");
       assert.match(await carte.locator('[data-atlas="mo-partenaire-pris"]').innerText(), new RegExp(durand));
       assert.equal(await pastille.getAttribute("aria-pressed"), "true");
       assert.equal(await carte.locator('[data-atlas="mo-quantite"]').count(), 0, "à la journée, rien ne se tape");
@@ -141,7 +141,7 @@ async function main() {
       const quantite = carte.locator('[data-atlas="mo-quantite"]');
       await quantite.fill("10");
       assert.equal(espaces(await question.innerText()), "Où mettre les 720 € de main d'œuvre ?");
-      assert.equal(espaces(await detail.innerText()), "10 heures × 60 € × 1,20");
+      assert.equal(espaces(await detail.innerText()), "10 heures × 60 €, plus 20 %");
     });
 
     await cas("le devis porte la ligne de son partenaire, au centime de ce que la carte montrait", async () => {
@@ -149,8 +149,11 @@ async function main() {
       await page.locator("button", { hasText: /^Continuer/ }).first().click();
       await page.waitForURL(`**/chantiers/${chantierId}/devis-complet`, { timeout: 60000 });
       const { rows } = await pool.query(`SELECT libelle, quantite, unite, montant FROM lignes_prix WHERE chantier_id = $1`, [chantierId]);
-      const sienne = rows.find((l) => String(l.libelle).includes(morel));
-      assert.ok(sienne, `aucune ligne au nom du partenaire : ${rows.map((l) => l.libelle).join(" || ")}`);
+      // Le nom du partenaire ne s'écrit plus sur la ligne (sa réponse du
+      // 19 novembre 2026, `ARCHITECTURE.md` §592) : sa ligne se reconnaît à son unité.
+      assert.ok(!rows.some((l) => String(l.libelle).includes(morel)), "le nom du partenaire est sur le devis du client");
+      const sienne = rows.find((l) => l.unite === "h");
+      assert.ok(sienne, `aucune ligne à l'heure : ${rows.map((l) => `${l.libelle} (${l.unite})`).join(" || ")}`);
       assert.equal(Number(sienne.montant), 720);
       assert.equal(Number(sienne.quantite), 10);
       // L'unité s'écrit comme sur toutes les lignes du devis (`unite-de-ligne.ts`) :

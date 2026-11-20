@@ -1,5 +1,9 @@
 # État du projet
 
+## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE, « ML », LE FOURNISSEUR DEPUIS SON DEVIS ET SOUS LA LIGNE DICTÉE : SUR `main` (20 novembre 2026)
+
+Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cent (0 % sans marge) ; la recherche de Ce que je paie dit le prix d'une pièce ; le devis tapé à la main propose ses prix d'achat sous la ligne, pour lui seul (migration 0188) ; la ligne d'un partenaire ne porte plus son nom ; « ml » s'ajoute aux unités ; un devis déposé sans choisir la société crée ou reconnaît son fournisseur (migration 0189) ; une ligne dictée chiffrée par un achat garde son fournisseur sous elle, pour lui seul (`ARCHITECTURE.md` §592 à §595). Niveau 3 : batterie jouée, 216 suites navigateur sur 217 ; les deux contrôles qui cherchaient encore le nom du partenaire sur la ligne ont été corrigés, puis rejoués verts (612 sur 612).
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.

@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "./prix-achat";
+import { auMetreLineaire, lireAdresseMail, lirePrixHt, lireTelephone, UNITES_ACHAT, type RubriqueAchat } from "./prix-achat";
 import { normaliserPourRecherche } from "./recherche-client";
 import { typeDuDocument } from "./vehicules";
 import type { LectureTableau } from "./import-tarifs";
@@ -29,7 +29,16 @@ export type LigneDevisLue = {
   prixHt: string;
 };
 
+/**
+ * Le fournisseur qui a émis le document, lu dans son en-tête (sa planche du
+ * 19 novembre 2026, `appli/fournisseur-depuis-son-devis.html`). Ce qui ne se
+ * lit pas, ou ne ressemble pas à un mail ou à un numéro, vaut `null`.
+ */
+export type EmetteurLu = { nom: string | null; email: string | null; telephone: string | null };
+
 export type DevisLu = {
+  /** `null` : rien de l'en-tête ne s'est lu (un tableur n'en a pas). */
+  emetteur: EmetteurLu | null;
   lignes: LigneDevisLue[];
   ecartees: number;
   /** Les totaux imprimés d'une facture, lus et jamais calculés ; `null` quand ils ne se lisent pas. */
@@ -39,7 +48,7 @@ export type DevisLu = {
 
 const UNITES_LUES: Record<string, string> = {
   u: "pièce", un: "pièce", unite: "pièce", unité: "pièce", pce: "pièce", pc: "pièce", piece: "pièce", pièce: "pièce",
-  sac: "sac", sacs: "sac", m: "m", ml: "m", mètre: "m", metre: "m", "m2": "m²", "m²": "m²", "m3": "m³", "m³": "m³",
+  sac: "sac", sacs: "sac", m: "m", ml: "ml", mètre: "m", metre: "m", "m2": "m²", "m²": "m²", "m3": "m³", "m³": "m³",
   kg: "kg", palette: "palette", h: "heure", heure: "heure", heures: "heure", j: "journée", jour: "journée",
   journée: "journée", journee: "journée", forfait: "forfait", ens: "forfait",
 };
@@ -48,7 +57,10 @@ const UNITES_LUES: Record<string, string> = {
 function uniteDeLaRubrique(brut: string | null, rubrique: RubriqueAchat): string {
   const siennes = UNITES_ACHAT[rubrique];
   const lue = UNITES_LUES[(brut ?? "").trim().toLowerCase().replace(/\.$/, "")];
-  return lue && siennes.includes(lue) ? lue : siennes[0];
+  if (lue && siennes.includes(lue)) return lue;
+  // Un partenaire n'a que « m » : un « ml » lu reste un mètre linéaire.
+  if (auMetreLineaire(lue)) return siennes.find((u) => auMetreLineaire(u)) ?? siennes[0];
+  return siennes[0];
 }
 
 /** Le texte du modèle, transformé en lignes, ou `null` s'il n'en rend aucune. */
@@ -56,7 +68,7 @@ export function lireReponseDevisFournisseur(texte: string, rubrique: RubriqueAch
   const debut = texte.indexOf("{");
   const fin = texte.lastIndexOf("}");
   if (debut === -1 || fin <= debut) return null;
-  let brut: { lignes?: unknown; total_ht?: unknown; total_ttc?: unknown };
+  let brut: { lignes?: unknown; total_ht?: unknown; total_ttc?: unknown; fournisseur?: unknown };
   try {
     brut = JSON.parse(texte.slice(debut, fin + 1)) as typeof brut;
   } catch {
@@ -89,7 +101,60 @@ export function lireReponseDevisFournisseur(texte: string, rubrique: RubriqueAch
     const t = chaine(v);
     return t === null ? null : lirePrixHt(t.replace(/€/g, ""));
   };
-  return { lignes, ecartees, totalHt: total(brut.total_ht), totalTtc: total(brut.total_ttc) };
+  return { emetteur: emetteurLu(brut.fournisseur, chaine), lignes, ecartees, totalHt: total(brut.total_ht), totalTtc: total(brut.total_ttc) };
+}
+
+/** L'en-tête lu, chaque champ revérifié : un mail qui n'en est pas un, un numéro qui n'en est pas un, valent `null`. */
+function emetteurLu(v: unknown, chaine: (v: unknown) => string | null): EmetteurLu | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  const nom = chaine(o.nom);
+  const brutMail = chaine(o.email);
+  const mail = brutMail === null ? null : lireAdresseMail(brutMail);
+  const brutTel = chaine(o.telephone);
+  const tel = brutTel === null ? null : lireTelephone(brutTel);
+  const e = {
+    nom: nom === null ? null : nom.slice(0, 120),
+    email: mail && mail.ok ? mail.email : null,
+    telephone: tel && tel.ok ? tel.telephone : null,
+  };
+  return e.nom === null && e.email === null && e.telephone === null ? null : e;
+}
+
+const FORMES_JURIDIQUES = new Set(["sarl", "sas", "sasu", "sa", "eurl", "ei", "snc", "sci", "scop", "eirl", "ets", "etablissements"]);
+const nomPropre = (nom: string) =>
+  normaliserPourRecherche(nom)
+    .split(" ")
+    .filter((m) => m && !FORMES_JURIDIQUES.has(m))
+    .join(" ");
+const neufDerniersChiffres = (t: string | null) => {
+  const c = (t ?? "").replace(/\D/g, "");
+  return c.length >= 9 ? c.slice(-9) : null;
+};
+
+/**
+ * Le fournisseur qu'il a déjà, reconnu sur le devis : **le même nom sans sa
+ * forme juridique** (« MATERIAUX GARNIER SAS » est « Matériaux Garnier »), le
+ * même mail, ou le même numéro. Jamais un nom voisin : « Garnier » seul n'est
+ * pas « Matériaux Garnier », et l'écran laisse toujours dire « Ce n'est pas
+ * lui ».
+ */
+export function societeReconnue<T extends { id: string; nom: string; email: string | null; telephone: string | null }>(
+  lu: EmetteurLu | null,
+  siennes: readonly T[]
+): T | null {
+  if (!lu) return null;
+  const nom = lu.nom ? nomPropre(lu.nom) : "";
+  const mail = lu.email?.toLowerCase() ?? null;
+  const tel = neufDerniersChiffres(lu.telephone);
+  return (
+    siennes.find(
+      (s) =>
+        (nom !== "" && nomPropre(s.nom) === nom) ||
+        (mail !== null && s.email?.toLowerCase() === mail) ||
+        (tel !== null && neufDerniersChiffres(s.telephone) === tel)
+    ) ?? null
+  );
 }
 
 /**
@@ -110,7 +175,7 @@ export function lignesDuTableau(lecture: LectureTableau, rubrique: RubriqueAchat
     }
     lignes.push({ designation, reference: null, quantite: null, unite: uniteDeLaRubrique(l.unite, rubrique), prixHt });
   }
-  return { lignes, ecartees, totalHt: null, totalTtc: null };
+  return { emetteur: null, lignes, ecartees, totalHt: null, totalTtc: null };
 }
 
 // ── Une facture confrontée à ses prix ──────────────────────────────────────
