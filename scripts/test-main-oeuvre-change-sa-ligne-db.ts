@@ -128,14 +128,15 @@ async function main() {
       mo.map((l) => [l.libelle, Number(l.montant), l.unite]),
       [
         [sienne.libelle, 2400, sienne.unite],
-        ["Main d’œuvre", 1080, "journée"],
+        // L'unité s'écrit comme sur toute ligne du devis (`unite-de-ligne.ts`) : « jour ».
+        ["Main d’œuvre", 1080, "jour"],
       ]
     );
   });
 
   await test("une ligne qui n'est pas celle de son équipe ne se réécrit pas, et le refus se dit", async () => {
     const avant = (await lignes()).map((l) => [l.id, l.montant]);
-    const partenaire = (await lignes()).find((l) => l.mainDoeuvre && l.unite === "journée")!;
+    const partenaire = (await lignes()).find((l) => l.mainDoeuvre && l.unite === "jour")!;
     const taille = (await lignes()).find((l) => l.libelle.startsWith("Taille"))!;
     for (const autre of [partenaire.id, taille.id, "00000000-0000-0000-0000-000000000000"]) {
       const r = await poserLaMainDoeuvreDeLaFeuille(A, c.id, null, { qui: "equipe", hommes: 1, jours: 1, tarif: "400" }, autre);
@@ -151,13 +152,13 @@ async function main() {
     assert.equal((await deSonEquipe()).length, 0, "la ligne de son équipe reste à côté de sa part");
     const apres = await lignes();
     assert.equal(Number(apres.find((l) => l.id === taille.id)?.montant), 3150);
-    assert.ok(apres.some((l) => l.mainDoeuvre && l.unite === "journée"), "la ligne du partenaire est partie avec");
+    assert.ok(apres.some((l) => l.mainDoeuvre && l.unite === "jour"), "la ligne du partenaire est partie avec");
   });
 
   await test("répartir sur une ligne qui n'est pas la sienne ne pose rien", async () => {
     const avant = (await lignes()).map((l) => [l.id, l.montant]);
     const taille = (await lignes()).find((l) => l.libelle.startsWith("Taille"))!;
-    const partenaire = (await lignes()).find((l) => l.mainDoeuvre && l.unite === "journée")!;
+    const partenaire = (await lignes()).find((l) => l.mainDoeuvre && l.unite === "jour")!;
     const r = await poserLesPartsDeMainDoeuvre(A, c.id, repartirMainOeuvre("400.00", [taille.id], {}), "400.00", partenaire.id);
     assert.ok(!r.ok, "la ligne d'un partenaire a été prise pour celle de son équipe");
     assert.deepEqual((await lignes()).map((l) => [l.id, l.montant]), avant, "un refus a écrit");
