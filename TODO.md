@@ -687,6 +687,13 @@ l'encodage ; `--apercu <dossier>` pour régler un récit en une minute ;
 `--images` pour les deux images du chapitre du plan seules, la carte en Ø32
 et la nourrice de deux voies, sa remarque du même soir sur les
 recouvrements).
+**Le diagnostic du site montre la fiche du peuplier SOIGNÉE**, celle de sa
+planche (`appli/soignee/fiche-de-diagnostic.html`, vue Proposé), sa demande
+du même soir. Elle n'est pas encore dans l'appli : une autre session la code
+(`claude/vigilant-ramanujan-kxr0np` au 20 novembre). **Quand elle sera sur
+`main`**, le film pourra la prendre dans la démonstration au lieu de la
+planche, à condition d'y mettre la fiche du peuplier (elle n'est que dans une
+base locale, pas dans `donnees/phyto/`).
 Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
 vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
 changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche
