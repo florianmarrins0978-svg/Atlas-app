@@ -1792,7 +1792,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu { padding-bottom: 0px; }
     ev.preventDefault();
     const pris = ligne.getAttribute("aria-pressed") !== "true";
     ligne.setAttribute("aria-pressed", String(pris));
-    ligne.querySelector("span[aria-hidden]").style.boxShadow = pris ? OR : VIDE;
+    ligne.querySelector("span[aria-hidden].rounded-full").style.boxShadow = pris ? OR : VIDE;
     const bloc = ligne.closest('[data-atlas="lu-sur-le-devis"]');
     const n = bloc.querySelectorAll("button[aria-pressed=true]").length;
     const bouton = bloc.querySelector('[data-atlas="prendre-les-prix"]');
