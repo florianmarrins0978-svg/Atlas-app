@@ -207,6 +207,33 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
 
+## ⏳ UNE PLANCHE À REGARDER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
+
+Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repartait de
+la dictée (ici 1 homme, 1 journée), sur « Sur une ligne », avec « Ajouter la
+main d’œuvre ». Sur `main`, l'appui ajoute une ligne et les travaux gardent
+leur part : la main d'œuvre compte deux fois. La correction de l'argent
+(`ARCHITECTURE.md` §592 : poser son équipe fait sortir sa part des travaux)
+est codée sur `claude/sleepy-sagan-gq6c0x`, pas encore sur `main` ; l'écran,
+lui, ne dit toujours rien. Son « ok » du 20 pour la planche, figée sur son
+vrai devis (deux travaux, 2 hommes × 2 jours × 280 € répartis), rien dans
+`src/` :
+https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html
+
+| Tranché pour la planche | Pourquoi |
+|---|---|
+| hommes et durée « Repris de vos travaux » (leurs jours d'homme, 4 ici, en 2 × 2) | le pendant de « Repris de votre ligne » qu'il a validé le 18 |
+| « Répartis sur les travaux » déjà choisi, ses parts actuelles dans la barre (560 € et 560 €) | c'est la forme où elle est ; repartir « Sur une ligne » la déplacerait sans qu'il l'ait demandé |
+| « Changer la main d’œuvre », dans les deux modes | les mots de sa planche du 18 : elle change la sienne, elle ne s'ajoute pas |
+| « Sur une ligne » montre les travaux à leur prix SANS elle (750 € et 180 €) | c'est ce qu'ils deviendront, §592 |
+| un homme de plus puis « Changer » : 1 680 € à la place des 1 120 €, dans les travaux | rien ne compte deux fois |
+
+**Ce que coûtera le code, une fois choisi** : la feuille doit recevoir les
+travaux de la TVA avec leur part et leurs jours d'homme (`partDeSonEquipe`,
+§592), en tirer hommes et durée comme `equipeDeSaLigne` le fait d'une ligne,
+et ouvrir « Répartis » sur leurs parts. Après §592 sur `main` ; argent,
+niveau 3.
+
 ## « MAIN D'ŒUVRE » DU DEVIS CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Sa capture du 18 novembre, sa réponse (*« changer ma ligne »*), sa planche
