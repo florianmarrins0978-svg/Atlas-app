@@ -23,6 +23,18 @@
    retours le refusent). Un geste est un vrai appui de la souris, enfoncé
    puis relâché : c'est l'appli qui répond, comme sous le doigt.
 
+   LA CAMÉRA, comme dans les films de cause-2.html. Sa remarque du
+   20 novembre au soir, devant des films qui montraient l'écran entier en
+   petit : « on voit rien […] sur le site internet, regarde comment c'est
+   fait. C'est fluide, c'est léger. Toi, tu fonces. » Chaque film s'approche
+   de ce qu'on va toucher, puis accompagne la réponse de l'appli (la feuille
+   qui s'ouvre, la ligne qui change), et finit sur elle, jamais sur un écran
+   refermé. La caméra est de la photographie seule : on photographie une
+   part de l'écran, que le film agrandit ; l'appli, elle, ne sait rien et
+   peint à sa taille. Elle ne recule jamais sur un écran immobile (ce qu'il
+   a vu comme un bug dans un film d'avant) : un changement de cadre
+   accompagne toujours un geste ou une réponse.
+
    Utilisation, depuis la racine du dépôt :
      node appli/scripts/film-outils.cjs appli/vente/images
      node appli/scripts/film-outils.cjs appli/vente/images --seulement diagnostic
@@ -174,18 +186,37 @@ async function plateau(navigateur, demo) {
   await page.waitForTimeout(1500);
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
 
-  let bobine = null, rang = 0, nomDuFilm = '';
+  let bobine = null, rang = 0, nomDuFilm = '', horloge = 0;
+  // La caméra : le centre de ce qu'on photographie (en pixels d'écran) et
+  // l'agrandissement. Un mouvement va d'un cadre à l'autre en ralentissant
+  // aux deux bouts, image par image.
+  const PLEIN = { x: ECRAN.l / 2, y: ECRAN.h / 2, z: 1 };
+  let camera = PLEIN, mouvement = null;
+  const doux = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const cameraMaintenant = () => {
+    if (!mouvement) return camera;
+    const t = Math.min(1, (horloge - mouvement.debut) / mouvement.images), e = doux(t), { de, vers } = mouvement;
+    const c = { x: de.x + (vers.x - de.x) * e, y: de.y + (vers.y - de.y) * e, z: de.z * Math.pow(vers.z / de.z, e) };
+    if (t >= 1) { camera = vers; mouvement = null; }
+    return c;
+  };
+  const cadreDe = (c) => {
+    const l = ECRAN.l / c.z, h = ECRAN.h / c.z;
+    return { x: Math.max(0, Math.min(ECRAN.l - l, c.x - l / 2)), y: Math.max(0, Math.min(ECRAN.h - h, c.y - h / 2)), width: l, height: h };
+  };
   const image = async () => {
     await page.clock.runFor(PAS);
     await page.evaluate(() => window.__film.synchro());
+    horloge++;
+    const cadre = cadreDe(cameraMaintenant());
     // Hors d'un film (les images du chapitre), le temps avance sans photo.
     if (!nomDuFilm) return;
     rang++;
     if (APERCU) {
-      if (rang % 15 === 1) await page.screenshot({ path: path.join(dossier, nomDuFilm + '-' + String(rang).padStart(4, '0') + '.png'), scale: 'css' });
+      if (rang % 15 === 1) await page.screenshot({ path: path.join(dossier, nomDuFilm + '-' + String(rang).padStart(4, '0') + '.png'), scale: 'css', clip: cadre });
       return;
     }
-    await bobine.image(await page.screenshot({ type: 'png' }));
+    await bobine.image(await page.screenshot({ type: 'png', clip: cadre }));
   };
   const pendant = async (secondes) => { for (let k = Math.round(secondes * IPS); k > 0; k--) await image(); };
   const trouver = (sel, o = {}) => page.evaluate(([sel, o]) => {
@@ -198,8 +229,18 @@ async function plateau(navigateur, demo) {
     return { x: r.left + r.width / 2, y: r.top + r.height / 2, haut: r.top + window.scrollY, h: r.height };
   }, [sel, o]);
   const viser = async (sel, o) => {
-    const el = await trouver(sel, o);
-    if (!el) throw new Error('introuvable dans ' + demo.page + ' : ' + sel + ' ' + JSON.stringify(o || {}));
+    // Un écran « serveur » se compose par promesses, hors du temps figé : on
+    // lui laisse un peu de temps réel avant de conclure qu'il manque.
+    let el = await trouver(sel, o);
+    for (let essai = 0; !el && essai < 40; essai++) {
+      await page.waitForTimeout(50);
+      el = await trouver(sel, o);
+    }
+    if (!el) {
+      // L'écran tel qu'il était, pour voir ce qui manquait.
+      await page.screenshot({ path: path.join(dossier, 'refus.png') });
+      throw new Error('introuvable dans ' + demo.page + ' : ' + sel + ' ' + JSON.stringify(o || {}) + ' (l\'écran : ' + path.join(dossier, 'refus.png') + ')');
+    }
     return el;
   };
   return {
@@ -207,12 +248,32 @@ async function plateau(navigateur, demo) {
     async film(nom, jouer) {
       nomDuFilm = 'nov-film-' + nom;
       rang = 0;
-      if (!APERCU) bobine = ouvrirBobine({ base: path.join(dossier, nomDuFilm), film: FILM, ips: IPS, x264: ENCODAGE.x264, vp9: ENCODAGE.vp9 });
+      if (!APERCU) bobine = ouvrirBobine({ base: path.join(dossier, nomDuFilm), film: FILM, ips: IPS, x264: ENCODAGE.x264, vp9: ENCODAGE.vp9, fixes: { l: ECRAN.l * ECHELLE, h: ECRAN.h * ECHELLE } });
       await jouer();
       if (erreurs.length) throw new Error(nom + ' : ' + erreurs.join(' ; '));
       console.log(nom + ' : ' + rang + ' images, ' + (rang / IPS).toFixed(2) + ' s');
       if (!APERCU) console.log('  écrits : ' + (await bobine.fermer()).join(', '));
       nomDuFilm = '';
+      camera = PLEIN; mouvement = null;
+    },
+    /**
+     * Déplace la caméra, en « secondes » (0 : d'un coup, entre deux films).
+     * Le cadre se centre en hauteur sur l'élément (décalé de dy), et reste
+     * au milieu de l'écran en largeur (décalé de dx), avec l'agrandissement
+     * z ; sans élément, l'écran entier à z.
+     */
+    async cadrer({ sel, o, z = 1, dx = 0, dy = 0 }, secondes) {
+      let vers = { x: PLEIN.x, y: PLEIN.y, z };
+      if (sel) {
+        const el = await viser(sel, o);
+        vers = { x: PLEIN.x + dx, y: el.y + dy, z };
+      }
+      // Le centre retenu est celui du cadre réellement photographié : un
+      // élément près d'un bord ne fait pas glisser la caméra hors de l'écran.
+      const c = cadreDe(vers);
+      vers = { x: c.x + c.width / 2, y: c.y + c.height / 2, z };
+      if (!secondes) { camera = vers; mouvement = null; return; }
+      mouvement = { de: cameraMaintenant(), vers, debut: horloge, images: Math.max(1, Math.round(secondes * IPS)) };
     },
     /** Entre deux films : l'élément à « haut » pixels du haut, sans être filmé. */
     async placer(sel, o, haut) {
@@ -299,6 +360,13 @@ const SOMMAIRE = '[data-atlas="sommaire-du-plan"] button';
 const GARDER = { texte: 'Garder' };
 const OBSERVATIONS = 'textarea[placeholder^="Ce que le client"]';
 const BASCULE = '[data-atlas="bascule"] [role="switch"]';
+const TUYAU_DU_RESEAU_1 = '[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"]';
+const EZ_FLO = 'EZ FLO+ 1" MM solénoïde 9V';
+// Le rapprochement de la caméra. Les cartes de l'appli prennent toute la
+// largeur de l'écran, à 22 pixels des bords : au-delà de 1,12, un mot sur
+// deux se coupait au bord du cadre. C'est aussi ce que font les films de
+// cause-2.html, qui ne s'approchent que d'un dixième.
+const ZOOM = 1.12;
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
@@ -334,41 +402,60 @@ const RECITS = {
       await p.photographier('outils-nourrice.jpg', '[data-atlas="nourrice-eclatee"] > div', { jusqua: ':scope > div', marge: 14 });
     },
     async jouer(p) {
+      const DIALOGUE = '[role="dialog"]';
       // 25 ou 32 : en Ø32, la pelouse tient sur un réseau de moins.
       await p.placer('[data-atlas="reseaux"]', {}, 64);
       await p.film('outils-tuyau', async () => {
-        await p.pendant(1.8);
-        await p.toucher('[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"] button', { texte: '32' });
-        await p.pendant(3.4);
+        await p.pendant(1.2);
+        await p.cadrer({ sel: TUYAU_DU_RESEAU_1, z: ZOOM }, 1.1);
+        await p.pendant(1.4);
+        await p.toucher(TUYAU_DU_RESEAU_1 + ' button', { texte: '32' });
+        await p.pendant(0.5);
+        await p.cadrer({ sel: '[data-atlas="carte-reseau"]', z: ZOOM, dy: -40 }, 1.2);
+        await p.pendant(3.2);
       });
       // La nourrice à votre idée : une sonde de pluie, le grillage
       // avertisseur, et chacun s'ajoute à la liste. Le téflon n'est pas au
       // catalogue, et l'appli le dit : le film ne le touche pas.
       await p.placer('[data-atlas="nourrice"]', {}, 64);
       await p.film('outils-options', async () => {
-        await p.pendant(1.6);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: BASCULE + '[aria-label="Grillage avertisseur"]', z: ZOOM, dy: 10 }, 1.1);
+        await p.pendant(1.3);
         await p.toucher(BASCULE + '[aria-label="Sonde de pluie"]');
-        await p.pendant(2.4);
+        await p.pendant(1.8);
         await p.toucher(BASCULE + '[aria-label="Grillage avertisseur"]');
-        await p.pendant(3.0);
+        await p.pendant(0.4);
+        await p.cadrer({ sel: BASCULE + '[aria-label="Grillage avertisseur"]', z: ZOOM, dy: 70 }, 1.0);
+        await p.pendant(2.8);
       });
       // Une pièce de la nourrice : la changer, ou la supprimer. L'électrovanne
       // Rain Bird 1" MM 9 V à impulsion devient une Toro EZ FLO+ 1" MM, au
       // solénoïde 9 V à impulsion : même filetage, même pile, le même
       // programmateur la commande.
-      await p.placer('[data-atlas="piece-nourrice"]', { rang: 8 }, 330);
+      const PIECE_9 = '[data-atlas="piece-nourrice"]';
+      await p.placer(PIECE_9, { rang: 8 }, 300);
       await p.film('outils-nourrice', async () => {
-        await p.pendant(1.6);
-        await p.toucher('[data-atlas="piece-nourrice"]', { rang: 8 });
-        await p.pendant(2.4);
-        await p.toucher('[role="dialog"] button', { texte: 'Changer' });
+        await p.pendant(1.0);
+        await p.cadrer({ sel: PIECE_9, o: { rang: 8 }, z: ZOOM }, 1.1);
+        await p.pendant(1.2);
+        await p.toucher(PIECE_9, { rang: 8 });
+        await p.pendant(0.3);
+        await p.cadrer({ sel: DIALOGUE, z: ZOOM }, 1.0);
         await p.pendant(1.8);
-        await p.toucher('[role="dialog"] button', { texte: 'Électrovannes' });
-        await p.pendant(1.6);
-        await p.amenerDansLaFeuille('[role="dialog"] button', { contient: 'EZ FLO+ 1" MM solénoïde 9V' }, 140, 1.6);
-        await p.pendant(0.8);
-        await p.toucher('[role="dialog"] button', { contient: 'EZ FLO+ 1" MM solénoïde 9V' });
-        await p.pendant(3.2);
+        await p.toucher(DIALOGUE + ' button', { texte: 'Changer' });
+        await p.pendant(0.3);
+        await p.cadrer({ sel: DIALOGUE + ' button', o: { texte: 'Électrovannes' }, z: ZOOM, dy: 60 }, 1.0);
+        await p.pendant(1.2);
+        await p.toucher(DIALOGUE + ' button', { texte: 'Électrovannes' });
+        await p.pendant(1.2);
+        await p.amenerDansLaFeuille(DIALOGUE + ' button', { contient: EZ_FLO }, 140, 1.4);
+        await p.cadrer({ sel: DIALOGUE + ' button', o: { contient: EZ_FLO }, z: ZOOM }, 0.9);
+        await p.pendant(1.3);
+        await p.toucher(DIALOGUE + ' button', { contient: EZ_FLO });
+        await p.pendant(0.6);
+        await p.cadrer({ sel: PIECE_9, o: { rang: 8 }, z: ZOOM }, 1.0);
+        await p.pendant(2.8);
       });
       // Les turbines : une, ou toutes. La chaîne d'une tête monte juste sous
       // le sommaire : la ligne du PEHD, au-dessus d'elle, dit encore « Ø25 »
@@ -376,20 +463,28 @@ const RECITS = {
       // et le site ne montre pas un libellé faux.
       await p.placer('[data-atlas="chaine"]', {}, 230);
       await p.film('outils-turbines', async () => {
-        await p.pendant(1.6);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="chaine"]', z: ZOOM }, 1.1);
+        await p.pendant(1.3);
         await p.toucher('[data-atlas="maillon"]', { rang: 4 });
+        await p.pendant(0.3);
+        await p.cadrer({ sel: DIALOGUE, z: ZOOM }, 1.0);
         await p.pendant(3.2);
-        await p.toucher('[role="dialog"] button', GARDER);
-        await p.pendant(1.2);
       });
+      await p.toucher(DIALOGUE + ' button', GARDER);
       // La liste, additionnée, puis le message au fournisseur.
       await p.placer('[data-atlas="liste"]', {}, 64);
       await p.film('outils-liste', async () => {
-        await p.pendant(1.6);
-        await p.amener('[data-atlas="total-de-la-liste"]', {}, 300, 5.0);
-        await p.pendant(1.6);
+        await p.pendant(1.0);
+        await p.amener('[data-atlas="total-de-la-liste"]', {}, 260, 4.2);
+        await p.cadrer({ sel: '[data-atlas="total-de-la-liste"]', z: ZOOM }, 1.0);
+        await p.pendant(1.8);
+        await p.cadrer({ sel: '[data-atlas="envoyer-fournisseur"]', z: ZOOM }, 1.0);
+        await p.pendant(0.6);
         await p.toucher('[data-atlas="envoyer-fournisseur"]');
-        await p.pendant(3.6);
+        await p.pendant(0.3);
+        await p.cadrer({ sel: DIALOGUE + ' textarea', z: ZOOM, dy: -40 }, 1.1);
+        await p.pendant(3.2);
       });
     },
   },
@@ -398,28 +493,37 @@ const RECITS = {
     async jouer(p) {
       // Une photo, et la réponse.
       await p.film('outils-photo', async () => {
-        await p.pendant(1.6);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="prendre-photo-diagnostic"]', z: ZOOM, dy: -60 }, 1.1);
+        await p.pendant(1.0);
         p.photo('diagnostic-anthracnose-platane-feuille.jpg', 'platane-exemple.jpg');
         await p.toucher('[data-atlas="prendre-photo-diagnostic"]');
-        await p.pendant(5.2);
+        await p.pendant(2.0);
+        await p.cadrer({ sel: '[data-atlas="diagnostic-rendu"]', z: ZOOM, dy: 40 }, 1.1);
+        await p.pendant(3.0);
       });
       // Que faire, et est-ce grave.
+      await p.cadrer({ sel: '[data-atlas="diagnostic-rendu"]', z: ZOOM, dy: 40 }, 0);
       await p.film('outils-conduite', async () => {
-        await p.pendant(1.4);
-        await p.amener('[data-atlas="diagnostic-gravite"]', {}, 90, 3.0);
-        await p.pendant(3.8);
+        await p.pendant(1.0);
+        await p.amener('[data-atlas="diagnostic-gravite"]', {}, 120, 2.6);
+        await p.cadrer({ sel: '[data-atlas="diagnostic-conduite"]', z: ZOOM, dy: -20 }, 1.0);
+        await p.pendant(3.6);
       });
       // Le diagnostic rejoint le chantier du client.
       await p.film('outils-rattacher', async () => {
-        await p.pendant(1.2);
-        await p.amener('[data-atlas="diagnostic-details"]', {}, 260, 1.8);
+        await p.pendant(1.0);
+        await p.amener('[data-atlas="diagnostic-details"]', {}, 300, 1.6);
+        await p.cadrer({ sel: '[data-atlas="diagnostic-details"] summary', z: ZOOM }, 0.9);
         await p.pendant(0.6);
         await p.toucher('[data-atlas="diagnostic-details"] summary');
-        await p.pendant(1.4);
-        await p.amener('[data-atlas="diagnostic-rattacher"]', {}, 260, 2.2);
-        await p.pendant(1.2);
+        await p.pendant(1.0);
+        await p.cadrer({ z: ZOOM, sel: '[data-atlas="diagnostic-details"] summary', dy: 160 }, 0.8);
+        await p.amener('[data-atlas="diagnostic-rattacher"]', {}, 300, 2.0);
+        await p.cadrer({ sel: '[data-atlas="diagnostic-rattacher"]', z: ZOOM }, 1.0);
+        await p.pendant(0.8);
         await p.choisir('[data-atlas="diagnostic-rattacher"] select', 'Bernard');
-        await p.pendant(1.6);
+        await p.pendant(1.4);
         await p.toucher('[data-atlas="diagnostic-rattacher"] button', { texte: 'Rattacher' });
         await p.pendant(3.0);
       });
@@ -430,38 +534,53 @@ const RECITS = {
     async jouer(p) {
       // Votre liste de prestations, composée une fois pour toutes.
       await p.film('outils-composer', async () => {
-        await p.pendant(1.4);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="carte-composer-ma-fiche"]', z: ZOOM, dy: 60 }, 1.1);
+        await p.pendant(0.9);
         await p.toucher('[data-atlas="carte-composer-ma-fiche"]');
-        await p.pendant(2.0);
+        await p.pendant(1.2);
+        await p.cadrer({ sel: 'button', o: { texte: 'Massifs' }, z: ZOOM, dy: 120 }, 1.0);
+        await p.pendant(0.8);
         await p.toucher('button', { texte: 'Massifs' });
         await p.pendant(3.2);
       });
-      // Une fiche pour M. Bernard : ses cases de la dernière fois.
+      // Une fiche pour M. Bernard : ses cases de la dernière fois. Le retour
+      // à la liste des fiches se fait entre deux films.
       await p.placer('a[aria-label^="Retour"]', {}, 14);
+      await p.toucher('a[aria-label^="Retour"]');
+      await p.pendant(1.0);
       await p.film('outils-bernard', async () => {
-        await p.pendant(1.4);
-        await p.toucher('a[aria-label^="Retour"]');
-        await p.pendant(1.6);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="ouvrir-fiche-chantier"]', z: ZOOM, dy: -40 }, 1.0);
+        await p.pendant(0.8);
         await p.toucher('[data-atlas="ouvrir-fiche-chantier"]');
-        await p.pendant(2.0);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="pont-client"]', z: ZOOM, dy: 60 }, 1.0);
+        await p.pendant(0.8);
         await p.toucher('[data-atlas="pont-client"]');
-        await p.pendant(1.8);
+        await p.pendant(1.0);
+        await p.cadrer({ sel: '[data-atlas="choix-du-client"] button', o: { contient: 'Bernard' }, z: ZOOM }, 0.9);
+        await p.pendant(0.8);
         await p.toucher('[data-atlas="choix-du-client"] button', { contient: 'Bernard' });
-        await p.pendant(2.2);
-        await p.defiler(300, 2.4);
-        await p.pendant(2.2);
+        await p.pendant(0.5);
+        await p.cadrer({ z: ZOOM }, 1.1);
+        await p.pendant(1.4);
+        await p.defiler(300, 2.6);
+        await p.pendant(2.0);
       });
-      // Enregistrée et envoyée.
+      // Une remarque, et c'est envoyé.
       await p.film('outils-envoyer', async () => {
-        await p.pendant(1.2);
-        await p.amener(OBSERVATIONS, {}, 250, 3.0);
+        await p.pendant(1.0);
+        await p.amener(OBSERVATIONS, {}, 250, 2.6);
+        await p.cadrer({ sel: OBSERVATIONS, z: ZOOM, dy: 20 }, 1.0);
         await p.pendant(0.6);
         await p.toucher(OBSERVATIONS);
-        await p.pendant(0.6);
+        await p.pendant(0.5);
         await p.ecrire('La haie du fond sera taillée la semaine prochaine.', 14);
-        await p.pendant(1.2);
+        await p.pendant(1.0);
         await p.amener('[data-atlas="envoyer-fiche"]', {}, 380, 1.4);
-        await p.pendant(0.8);
+        await p.cadrer({ sel: '[data-atlas="envoyer-fiche"]', z: ZOOM, dy: -50 }, 1.0);
+        await p.pendant(0.6);
         await p.toucher('[data-atlas="envoyer-fiche"]');
         await p.pendant(3.4);
       });
@@ -469,7 +588,9 @@ const RECITS = {
       await p.page.evaluate(() => window.postMessage({ revenir: '/entretien/dernier' }, '*'));
       await p.page.waitForTimeout(600);
       await p.film('outils-client', async () => {
-        await p.pendant(4.2);
+        await p.pendant(1.4);
+        await p.cadrer({ sel: '[data-atlas="rapport-entretien"] p', o: { contient: 'La haie du fond' }, z: ZOOM, dy: -150 }, 1.4);
+        await p.pendant(2.6);
       });
     },
   },
