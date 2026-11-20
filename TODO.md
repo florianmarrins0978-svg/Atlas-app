@@ -97,8 +97,9 @@ désormais « Main d’œuvre » ; le partenaire reste dans l'encadré « Calcul
 l'écran Prix, pour lui seul. Les lignes déjà écrites gardent leur texte : il
 les corrige à la main s'il le veut. `ARCHITECTURE.md` §592. Gravité argent (devis) : niveau 3. Joués ici : la
 suite pure (vue rouge puis verte), les types, le style. **Pas joués** : la
-suite base et les deux suites navigateur adaptées, et la batterie avant
-`main`, qui attendent son accord.
+suite base et les deux suites navigateur adaptées (et `test-main-oeuvre-change-sa-ligne-db`,
+arrivée de `main` le 20 novembre, qui reconnaît désormais la ligne du
+partenaire à son unité), et la batterie avant `main`, qui attendent son accord.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 
