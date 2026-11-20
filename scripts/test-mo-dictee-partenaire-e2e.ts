@@ -122,7 +122,7 @@ async function main() {
       await page.locator(`[data-atlas="mo-prix-${aLaJournee}"]`).click();
       await page.locator('[data-atlas="mo-liste"]').waitFor({ state: "detached" });
       assert.equal(espaces(await question.innerText()), "Où mettre les 1 215 € de main d'œuvre ?");
-      assert.equal(espaces(await detail.innerText()), "2 jours × 450 € × 1,35");
+      assert.equal(espaces(await detail.innerText()), "2 jours × 450 €, plus 35 %");
       assert.match(await carte.locator('[data-atlas="mo-partenaire-pris"]').innerText(), new RegExp(durand));
       assert.equal(await pastille.getAttribute("aria-pressed"), "true");
       assert.equal(await carte.locator('[data-atlas="mo-quantite"]').count(), 0, "à la journée, rien ne se tape");
@@ -141,7 +141,7 @@ async function main() {
       const quantite = carte.locator('[data-atlas="mo-quantite"]');
       await quantite.fill("10");
       assert.equal(espaces(await question.innerText()), "Où mettre les 720 € de main d'œuvre ?");
-      assert.equal(espaces(await detail.innerText()), "10 heures × 60 € × 1,20");
+      assert.equal(espaces(await detail.innerText()), "10 heures × 60 €, plus 20 %");
     });
 
     await cas("le devis porte la ligne de son partenaire, au centime de ce que la carte montrait", async () => {

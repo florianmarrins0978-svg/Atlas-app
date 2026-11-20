@@ -344,7 +344,7 @@ async function main() {
       ]
     );
     assert.ok(
-      p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€ × 1,35/.test(x.detail)),
+      p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€, plus 35\s%/.test(x.detail)),
       JSON.stringify(p.explication.calcul)
     );
   });

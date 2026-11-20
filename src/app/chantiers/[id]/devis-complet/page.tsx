@@ -9,6 +9,7 @@ import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getAcomptesDevis } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
@@ -98,6 +99,18 @@ export default async function DevisCompletPage({
   // client n'a rien reçu (`unLienExistePourLeDevis`).
   const lienParti = devisRow.statut === "envoye" ? await unLienExistePourLeDevis(ctx, devisRow.id) : false;
 
+  // **Ses prix d'achat, sous la ligne qu'il tape** (sa planche du 20 novembre
+  // 2026, `appli/le-prix-d-une-piece.html`). À lui seul, comme l'écran Ce que
+  // je paie : pour un autre compte, ils ne quittent pas le serveur, et la
+  // mention du fournisseur sous une ligne non plus.
+  const proprietaire = await estProprietaire(ctx);
+  const prixDAchat = proprietaire
+    ? await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]).then(([candidats, marges]) => ({
+        candidats: candidats.filter((c) => c.rubrique === "fournisseur"),
+        marges,
+      }))
+    : null;
+
   const aPreparer = devisAPreparer({
     aUneNoteVocale: note !== null,
     nombreDeLignes: lignes.length,
@@ -152,7 +165,7 @@ export default async function DevisCompletPage({
         // dans ses `useState` (la même raison que la facture, `page.tsx`).
         key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
-        emetteurModifiable={await estProprietaire(ctx)}
+        emetteurModifiable={proprietaire}
         // Une seule fois par compte, sa décision du 4 novembre 2026 (0163).
         aideNoteAMontrer={await aideNoteDevisAMontrer(ctx.utilisateurId)}
         sousTraitance={chantier.autoliquidation}
@@ -232,7 +245,9 @@ export default async function DevisCompletPage({
           partAncienne: l.partAncienne,
           partGrille: l.partGrille,
           hommesMainDoeuvre: l.hommesMainDoeuvre,
+          achatRetenu: proprietaire ? l.achatRetenu : null,
         }))}
+        prixDAchat={prixDAchat}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
         titre={devisRow.titre}

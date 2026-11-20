@@ -28,8 +28,10 @@ import {
   lignesAMontrer,
   lireAdresseMail,
   lireMarge,
+  margeEnPourcent,
   margeQuiVaut,
   phraseDeLaMargePropre,
+  prixDAchatEnMots,
   resumeDeLaSociete,
   societesAMontrer,
   type RubriqueAchat,
@@ -71,8 +73,6 @@ type Recu = {
 
 type Marges = { materiel: string | null; mainOeuvre: string | null };
 type Partie = "prix" | "devis" | "factures" | "demandes";
-
-const virgule = (m: string | null) => (m === null ? "" : m.replace(".", ","));
 
 /** Ce qui a été tapé, surligné comme dans la liste des clients. */
 function Surligne({ texte, saisie }: { texte: string; saisie: string }) {
@@ -175,13 +175,14 @@ function BandeDeMarge({
           <label htmlFor={id} className="text-[16px] font-semibold leading-[1.3]" style={{ color: colors.ink }}>
             {libelle}
           </label>
+          {/* **La marge se tape en pour cent** (sa planche B du 20 novembre 2026,
+              `appli/sans-marge-sur-les-pieces.html`) : « 30 % » comme il le dit,
+              « 0 % » pour vendre au prix du fournisseur. Le « × » d'avant
+              demandait un coefficient que personne ne dit. */}
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="text-[22px] leading-none" style={{ fontFamily: font.display, color: colors.inkSoft }}>
-              ×
-            </span>
             <input
               id={id}
-              inputMode="decimal"
+              inputMode="numeric"
               autoComplete="off"
               value={valeur}
               onChange={(e) => onChange(e.target.value)}
@@ -200,6 +201,9 @@ function BandeDeMarge({
                 outlineColor: colors.or,
               }}
             />
+            <span aria-hidden className="text-[20px] leading-none" style={{ fontFamily: font.display, color: colors.inkSoft }}>
+              %
+            </span>
           </span>
           {alerte && (
             <p className="col-span-2 mt-1.5 text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }} data-atlas={alerteAtlas}>
@@ -290,10 +294,13 @@ export default function FournisseursPartenaires({
   const [nouveau, setNouveau] = useState("");
   const [refus, setRefus] = useState<string | null>(null);
   const [margeTapee, setMargeTapee] = useState<Record<"materiel" | "mainOeuvre", string>>({
-    materiel: virgule(marges.materiel),
-    mainOeuvre: virgule(marges.mainOeuvre),
+    materiel: margeEnPourcent(marges.materiel),
+    mainOeuvre: margeEnPourcent(marges.mainOeuvre),
   });
   const [ouverte, setOuverte] = useState<string | null>(null);
+  // Une fiche ouverte depuis une pièce cherchée s'ouvre sur cette pièce (sa
+  // planche du 20 novembre 2026, « sa fiche s'ouvre sur ses terreaux »).
+  const [rechercheDeLaFiche, setRechercheDeLaFiche] = useState("");
 
   const societes = rubrique === "fournisseur" ? fournisseurs : partenaires;
   const laquelle = rubrique === "fournisseur" ? "materiel" : "mainOeuvre";
@@ -375,7 +382,7 @@ export default function FournisseursPartenaires({
           <ChampRecherche
             valeur={saisie}
             onChange={setSaisie}
-            placeholder={rubrique === "fournisseur" ? "Chercher un fournisseur" : "Chercher un partenaire"}
+            placeholder={rubrique === "fournisseur" ? "Chercher un fournisseur ou une pièce" : "Chercher un partenaire ou une prestation"}
             ariaLabel="Chercher"
             dataAtlas="chercher-societe"
           />
@@ -406,11 +413,18 @@ export default function FournisseursPartenaires({
               ligne={(s) => {
                 const aussi = ceQuiLaTrouve(s, saisie);
                 const aDonner = margeQuiVaut(s.marge, generale) === null;
+                // **Une pièce trouvée se dit avec son prix** (sa planche du
+                // 20 novembre 2026, `appli/le-prix-d-une-piece.html`) : « pour
+                // voir à combien déjà on lui facture », sans ouvrir la fiche.
+                const prixDe = (t: string) => s.prix.find((p) => p.nom === t);
                 return (
                   <button
                     type="button"
                     data-atlas="societe"
-                    onClick={() => setOuverte(s.id)}
+                    onClick={() => {
+                      setOuverte(s.id);
+                      setRechercheDeLaFiche(aussi.some((t) => prixDe(t)) ? saisie : "");
+                    }}
                     className="flex min-h-[76px] w-full items-center gap-3 pb-3 pt-2.5 text-left"
                   >
                     {/* Ses initiales, comme un client : on reconnaît la société avant de lire son nom. */}
@@ -430,12 +444,23 @@ export default function FournisseursPartenaires({
                       </span>
                       <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                         {aussi.length > 0
-                          ? aussi.map((t, i) => (
-                              <span key={i}>
-                                {i > 0 && ", "}
-                                <Surligne texte={t} saisie={saisie} />
-                              </span>
-                            ))
+                          ? aussi.map((t, i) => {
+                              const prix = prixDe(t);
+                              return (
+                                <span key={i}>
+                                  {i > 0 && ", "}
+                                  <Surligne texte={t} saisie={saisie} />
+                                  {prix && (
+                                    <>
+                                      {", "}
+                                      <span className="whitespace-nowrap" data-atlas="prix-de-la-piece">
+                                        {prixDAchatEnMots(prix)}
+                                      </span>
+                                    </>
+                                  )}
+                                </span>
+                              );
+                            })
                           : resumeDeLaSociete({ prix: s.prix.length, devis: s.devis.length, demandes: s.demandes.length })}
                       </span>
                       {/* Sa marge en pastille dorée ; celle qui manque en ambre, ce qui reste à faire. */}
@@ -485,6 +510,7 @@ export default function FournisseursPartenaires({
         <Fiche
           key={fiche.id}
           societe={fiche}
+          rechercheDeDepart={rechercheDeLaFiche}
           rubrique={rubrique}
           generale={generale}
           mois={mois}
@@ -521,12 +547,15 @@ function PastilleDeMarge({ aDonner, children }: { aDonner: boolean; children: Re
  */
 function Fiche({
   societe,
+  rechercheDeDepart,
   rubrique,
   generale,
   mois,
   onFermer,
 }: {
   societe: SocieteVue;
+  /** Ce qu'il cherchait quand la pièce l'a menée ici : la fiche s'ouvre dessus. */
+  rechercheDeDepart: string;
   rubrique: RubriqueAchat;
   generale: string | null;
   mois: string;
@@ -538,9 +567,9 @@ function Fiche({
   // ce temps n'affiche pas « Atlas lit le devis », et l'inverse non plus.
   const [lectureEnCours, demarrerLecture] = useTransition();
   const [partie, setPartie] = useState<Partie>("prix");
-  const [saisie, setSaisie] = useState("");
+  const [saisie, setSaisie] = useState(rechercheDeDepart);
   const [periode, setPeriode] = useState(mois);
-  const [margeTapee, setMargeTapee] = useState(virgule(societe.marge));
+  const [margeTapee, setMargeTapee] = useState(margeEnPourcent(societe.marge));
   const [alerteMarge, setAlerteMarge] = useState<string | null>(null);
   const [adresse, setAdresse] = useState(societe.email ?? "");
   const [alerteAdresse, setAlerteAdresse] = useState<string | null>(null);

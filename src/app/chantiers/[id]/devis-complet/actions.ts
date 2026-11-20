@@ -7,7 +7,9 @@ import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
-import { exigerProprietaire } from "@/server/autorisation";
+import { estProprietaire, exigerProprietaire } from "@/server/autorisation";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
+import { achatRetenuEnMots, prixDepuisAchat, sansAchatRetenu } from "@/lib/prix-achat";
 import { seulement } from "@/lib/champs-permis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import {
@@ -166,7 +168,59 @@ export async function majLigneAction(
     }
   }
 
-  return ligne;
+  return ligne ? sansAchatRetenu(ligne) : ligne;
+}
+
+/**
+ * Un prix d'achat touché sous la ligne : son prix × sa marge, et le
+ * fournisseur écrit sous la ligne pour lui seul (sa planche du 20 novembre
+ * 2026, `appli/le-prix-d-une-piece.html`).
+ *
+ * **L'écran n'envoie que l'identifiant du prix** : le prix, la marge et la
+ * phrase se relisent ici, sous son entreprise. Une page ouverte depuis la
+ * veille ne pose pas un prix qui a changé, et rien d'écrit par le navigateur
+ * n'arrive dans la mention.
+ *
+ * **Ses prix d'achat sont à lui seul**, comme l'écran Ce que je paie : le
+ * commercial qui tape un devis ne les voit pas, et ne peut pas les poser.
+ */
+export async function choisirUnPrixDAchatAction(
+  id: string,
+  prixAchatId: string
+): Promise<
+  | {
+      ok: true;
+      ligne: { prixUnitaire: string; unite: string | null; montant: string; aChiffrer: boolean | null; achatRetenu: string | null };
+    }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "chiffrer une ligne depuis un prix d'achat");
+  if (!(await estProprietaire(ctx))) return { ok: false, raison: "Les prix d’achat ne se consultent pas depuis ce compte." };
+  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
+  const prix = candidats.find((c) => c.id === prixAchatId && c.rubrique === "fournisseur");
+  if (!prix) return { ok: false, raison: "Ce prix d’achat n’existe plus. Rechargez l’écran." };
+  const calcul = prixDepuisAchat(prix, 1, marges);
+  if (calcul.venteHt === null) return { ok: false, raison: "Votre marge sur le matériel est à donner, dans Ce que je paie." };
+  const ligne = await modifierLignePrix(
+    ctx,
+    id,
+    { prixUnitaire: calcul.venteHt, unite: prix.unite },
+    { achatRetenu: achatRetenuEnMots(prix) }
+  );
+  if (!ligne) return { ok: false, raison: "Cette ligne n’est plus sur le devis. Rechargez l’écran." };
+  // Le prix choisi est le sien, comme un prix tapé : l'agent l'apprend pareil.
+  await retenirLecon(ctx, id);
+  return {
+    ok: true,
+    ligne: {
+      prixUnitaire: ligne.prixUnitaire,
+      unite: ligne.unite,
+      montant: ligne.montant,
+      aChiffrer: ligne.aChiffrer,
+      achatRetenu: ligne.achatRetenu,
+    },
+  };
 }
 
 export async function ajouterLigneAction(chantierId: string, tauxTva?: string | null) {
@@ -279,7 +333,8 @@ export async function deplacerLigneVersTvaAction(
   await exigerGestionDevis(ctx, "déplacer une ligne du devis");
   const propre = tauxTvaValide(taux);
   if (propre === null) return null;
-  return deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
+  const ligne = await deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
+  return ligne ? sansAchatRetenu(ligne) : ligne;
 }
 
 /** La catégorie disparaît, ses lignes reviennent au taux du devis. */
@@ -411,6 +466,7 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
   }
 
   const lignes = await listerLignesPrix(ctx, chantierId);
+  const proprietaire = await estProprietaire(ctx);
   // **Le prix accordé repart avec les lignes, et ce n'est pas une commodité.**
   // Il ne vit sur AUCUNE ligne : c'est l'en-tête du devis qui le porte. Rendre
   // les seules lignes laissait donc l'écran avec l'ancien pourcentage sous les
@@ -426,6 +482,9 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
       montant: l.montant,
+      // L'écran se recale sur ce que rend cette action : sans la mention, le
+      // fournisseur choisi disparaîtrait de sous sa ligne. Au patron seul.
+      achatRetenu: proprietaire ? l.achatRetenu : null,
       // **« À CHIFFRER » REPARTAIT AVEC LES LIGNES, ET IL NE PARTAIT PAS.**
       // Trouvé le 11 septembre 2026 en branchant le champ du prix sur ce
       // drapeau : l'écran se recale ENTIÈREMENT sur ce que rend cette action,

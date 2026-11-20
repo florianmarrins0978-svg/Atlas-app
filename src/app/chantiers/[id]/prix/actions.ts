@@ -2,6 +2,7 @@
 
 import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { sansAchatRetenu } from "@/lib/prix-achat";
 import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
 import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
@@ -28,7 +29,8 @@ export async function ajouterLignePrixDirectAction(chantierId: string, libelle: 
 export async function modifierLignePrixAction(id: string, data: { libelle?: string; montant?: string }) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier une ligne de prix");
-  return modifierLignePrix(ctx, id, data);
+  const ligne = await modifierLignePrix(ctx, id, data);
+  return ligne ? sansAchatRetenu(ligne) : ligne;
 }
 
 export async function supprimerLignePrixAction(id: string) {

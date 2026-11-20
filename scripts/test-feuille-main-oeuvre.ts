@@ -219,14 +219,25 @@ cas("à l'heure ou au forfait, la quantité est celle qu'il tape, au-dessus de z
   assert.equal(quantiteDuPartenaire(aLHeure, 2, 100000), null);
 });
 
-cas("2 jours × 450 € × 1,35 font 1 215 €, sur une ligne qui ne le nomme pas", () => {
+cas("2 jours × 450 €, plus 35 %, font 1 215 €, sur une ligne qui ne le nomme pas", () => {
   const m = mainOeuvreDUnPartenaire(durand, 2);
   assert.equal(m.montant, "1215.00");
   assert.equal(m.ligne.libelle, "Main d’œuvre");
-  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 € × 1,35");
+  // La marge se dit en pour cent depuis sa planche B du 20 novembre 2026.
+  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 €, plus 35 %");
 });
 
-cas("sans marge sur la main d'œuvre, la main d'œuvre arrive à chiffrer, et la phrase le dit", () => {
+cas("0 % sur un partenaire : son prix tel quel, et la phrase dit « sans marge »", () => {
+  const [tel] = prixDesPartenaires(
+    [candidat({ id: "d4", nom: "Démontage sur corde", unite: "journée", prixHt: "450", societeNom: "Élagage Durand", margePropre: "1.00" })],
+    { materiel: null, mainOeuvre: "1.20" }
+  );
+  const m = mainOeuvreDUnPartenaire(tel, 2);
+  assert.equal(m.montant, "900.00");
+  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 €, sans marge");
+});
+
+cas("une marge à donner sur la main d'œuvre : la main d'œuvre arrive à chiffrer, et la phrase le dit", () => {
   const [sansMarge] = prixDesPartenaires(
     [candidat({ id: "d3", nom: "Élagage", unite: "heure", prixHt: "60", societeNom: "Élagage Durand", margePropre: null })],
     { materiel: null, mainOeuvre: null }

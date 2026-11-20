@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
-import { margeQuiVaut, prixDepuisAchat, type PrixAchatCandidat } from "@/lib/prix-achat";
+import { margeEnMots, margeQuiVaut, prixDepuisAchat, type PrixAchatCandidat } from "@/lib/prix-achat";
 import { montantDeLaLigne } from "@/lib/montant-de-ligne";
 import { enEuros } from "@/lib/euros";
 
@@ -245,8 +245,8 @@ export function mainOeuvreDUnPartenaire(
     montant: montantDeLaMainOeuvre(ligne),
     calcul:
       p.marge === null
-        ? "Sans marge sur la main d’œuvre, la ligne arrivera à chiffrer."
-        : `${enUnite(p.unite, quantite)} × ${sansCentimes(p.prixHt)} × ${virgule(Number(p.marge).toFixed(2))}`,
+        ? "Marge sur la main d’œuvre à donner : la ligne arrivera à chiffrer."
+        : `${enUnite(p.unite, quantite)} × ${sansCentimes(p.prixHt)}, ${margeEnMots(p.marge) === "sans marge" ? "sans marge" : `plus ${margeEnMots(p.marge)}`}`,
   };
 }
 

@@ -1,6 +1,14 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
+## LE PRIX D'UNE PIÈCE : CODÉ LE 20 NOVEMBRE 2026, PAS ENCORE SUR `main` (batterie à jouer)
+
+Sa réponse : *« 4e planche parfait tu peux coder tout, pas de batterie »*.
+Codé sur la branche de session (`ARCHITECTURE.md` §593, migration 0188),
+parcouru dans un navigateur sur la base de démonstration. **Reste** : la
+batterie (niveau 3 : migration, devis), puis `main`, avec son accord ;
+`test-achat-retenu-db` est écrit et pas encore joué. Ce qui suit est la
+planche telle qu'elle a été posée.
+
 
 Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
 lui facture ; et, sur un devis tapé à la main, voir sous la ligne (pour lui
@@ -24,7 +32,12 @@ pour lui seul (la planche du 19 novembre). Toucher cette mention rouvre le
 choix. **Une seule règle de rapprochement pour la dictée et la saisie**
 (`CLAUDE.md` §3) : la proposer telle quelle, jamais une seconde.
 
-## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
+## SANS MARGE : LA B, EN POUR CENT, CODÉE LE 20 NOVEMBRE 2026, PAS ENCORE SUR `main` (batterie à jouer)
+
+Sa réponse : *« la 3e planche je choisis la B en % »*. Codé avec le prix d'une
+pièce (`ARCHITECTURE.md` §593), même branche, même batterie à jouer. Ce qui
+suit est la planche telle qu'elle a été posée.
+
 
 Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
 d'un fournisseur, il faut qu'il puisse le faire »*. Aujourd'hui la marge est

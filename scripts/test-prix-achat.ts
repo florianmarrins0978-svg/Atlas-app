@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
 import {
   ceQuiLaTrouve,
-  conseilDeMarge,
   dateesAMontrer,
   initialesDeLaSociete,
   ligneDeMarge,
   lireAdresseMail,
   lireMarge,
   lireMorceauDeMessage,
+  achatRetenuEnMots,
+  margeEnPourcent,
+  prixDAchatEnMots,
   phraseDeLaMargePropre,
   prixAchatCorrespondant,
+  prixAchatsProposes,
   prixDepuisAchat,
   quantiteDictee,
   resumeDeLaSociete,
@@ -19,7 +22,9 @@ import {
 } from "../src/lib/prix-achat";
 
 // Ses règles du 18 et du 19 octobre 2026 (`src/lib/prix-achat.ts`), avec ses
-// chiffres à lui : le sac de ciment acheté 8 €, sa marge × 1,30.
+// chiffres à lui : le sac de ciment acheté 8 €, sa marge de 30 % (le
+// coefficient 1,30 en base). La marge se tape en pour cent depuis sa planche B
+// du 20 novembre 2026 (`appli/sans-marge-sur-les-pieces.html`).
 
 let passed = 0;
 let failed = 0;
@@ -45,22 +50,44 @@ const ciment: PrixAchatCandidat = {
   margePropre: null,
 };
 
-test("une marge au-dessus de × 3 est refusée, avec ce qu'il fallait taper", () => {
-  assert.deepEqual(lireMarge("20"), { ok: false, raison: "« 20 » ferait × 20. Pour 20 % de marge, tapez 1,20." });
-  assert.equal(conseilDeMarge(30), "« 30 » ferait × 30. Pour 30 % de marge, tapez 1,30.");
-  assert.deepEqual(lireMarge("3"), { ok: true, marge: "3.00" });
-  assert.deepEqual(lireMarge("1,30"), { ok: true, marge: "1.30" });
+test("la marge se tape en pour cent : 30 fait 30 %, 0 fait sans marge, vide reste à donner", () => {
+  assert.deepEqual(lireMarge("30"), { ok: true, marge: "1.30" });
+  assert.deepEqual(lireMarge("30 %"), { ok: true, marge: "1.30" });
+  assert.deepEqual(lireMarge(" 5 "), { ok: true, marge: "1.05" });
+  // Sa demande du 20 novembre 2026 : un artisan qui ne prend pas de marge doit
+  // pouvoir le dire. 0 % vend au prix du fournisseur.
+  assert.deepEqual(lireMarge("0"), { ok: true, marge: "1.00" });
+  assert.deepEqual(lireMarge("200"), { ok: true, marge: "3.00" });
+  // Vide n'est PAS « sans marge » : un oubli vendrait au prix d'achat sans rien dire.
   assert.deepEqual(lireMarge(""), { ok: true, marge: null });
-  assert.equal(lireMarge("abc").ok, false);
-  assert.equal(lireMarge("0").ok, false);
 });
 
-test("la marge propre d'une société passe avant la générale, et se dit", () => {
+test("une marge qui ne se lit pas en pour cent est refusée, avec ce qu'il faut taper", () => {
+  const conseil = { ok: false, raison: "Tapez la marge en pour cent : 30 pour 30 %." };
+  // L'ancien coefficient, tapé par habitude : refusé, pas lu 1 %.
+  assert.deepEqual(lireMarge("1,30"), conseil);
+  assert.deepEqual(lireMarge("12,5"), conseil);
+  assert.deepEqual(lireMarge("abc"), conseil);
+  assert.deepEqual(lireMarge("-10"), conseil);
+  assert.deepEqual(lireMarge("250"), { ok: false, raison: "Au-delà de 200 %, vérifiez le chiffre." });
+});
+
+test("le coefficient en base s'écrit en pour cent dans la case", () => {
+  assert.equal(margeEnPourcent("1.30"), "30");
+  assert.equal(margeEnPourcent("1.00"), "0");
+  assert.equal(margeEnPourcent("3.00"), "200");
+  assert.equal(margeEnPourcent(null), "");
+});
+
+test("la marge propre d'une société passe avant la générale, et se dit en pour cent", () => {
   assert.equal(ligneDeMarge(null, null), "Marge à donner");
-  assert.equal(ligneDeMarge(null, "1.30"), "Marge × 1,30");
-  assert.equal(ligneDeMarge("1.50", "1.30"), "Marge × 1,50, la sienne");
-  assert.equal(phraseDeLaMargePropre(null, "1.30"), "Votre marge générale, × 1,30. Tapez-en une autre pour lui seul.");
-  assert.equal(phraseDeLaMargePropre("1.50", "1.30"), "La sienne. Videz la case pour reprendre la marge générale (× 1,30).");
+  assert.equal(ligneDeMarge(null, "1.30"), "Marge 30 %");
+  assert.equal(ligneDeMarge("1.50", "1.30"), "Marge 50 %, la sienne");
+  assert.equal(ligneDeMarge(null, "1.00"), "Sans marge");
+  assert.equal(ligneDeMarge("1.00", "1.30"), "Sans marge, la sienne");
+  assert.equal(phraseDeLaMargePropre(null, "1.30"), "Votre marge générale, 30 %. Tapez-en une autre pour lui seul.");
+  assert.equal(phraseDeLaMargePropre(null, "1.00"), "Votre marge générale, sans marge. Tapez-en une autre pour lui seul.");
+  assert.equal(phraseDeLaMargePropre("1.50", "1.30"), "La sienne. Videz la case pour reprendre la marge générale (30 %).");
   assert.equal(phraseDeLaMargePropre(null, null), "Pas encore donnée.");
 });
 
@@ -69,7 +96,10 @@ test("3 sacs de ciment : 8 € × 3 × 1,30 = 31,20 €, et la source le dit", (
   assert.equal(c?.id, "1");
   const p = prixDepuisAchat(c!, quantiteDictee("3 sacs de ciment"), { materiel: "1.30", mainOeuvre: null });
   assert.equal(p.venteHt, "31.20");
-  assert.equal(p.source, "Acheté 24,00 € chez Point P le 12/10/2026, × 1,30, votre marge sur le matériel.");
+  assert.equal(p.source, "Acheté 24,00 € chez Point P le 12/10/2026, plus 30 %, votre marge sur le matériel.");
+  const sans = prixDepuisAchat(c!, 3, { materiel: "1.00", mainOeuvre: null });
+  assert.equal(sans.venteHt, "24.00");
+  assert.equal(sans.source, "Acheté 24,00 € chez Point P le 12/10/2026, sans marge.");
 });
 
 test("sans marge, aucun prix : la ligne reste à chiffrer, jamais zéro", () => {
@@ -83,13 +113,42 @@ test("la main d'œuvre d'un partenaire prend la marge main d'œuvre, ou la sienn
   assert.equal(prixDepuisAchat(pose, 2, { materiel: "2.00", mainOeuvre: "1.20" }).venteHt, "24.00");
   const sienne = prixDepuisAchat({ ...pose, margePropre: "1.50" }, 2, { materiel: null, mainOeuvre: "1.20" });
   assert.equal(sienne.venteHt, "30.00");
-  assert.equal(sienne.source, "Main d’œuvre de Pilou : 20,00 € le 12/10/2026, × 1,50, sa marge à part.");
+  assert.equal(sienne.source, "Main d’œuvre de Pilou : 20,00 € le 12/10/2026, plus 50 %, sa marge à part.");
 });
 
 test("aucun mot en commun : aucun prix ; à égalité, le moins cher", () => {
   assert.equal(prixAchatCorrespondant("Tonte de pelouse", [ciment]), null);
   const autre = { ...ciment, id: "3", prixHt: "7.50", societeNom: "Gedimat" };
   assert.equal(prixAchatCorrespondant("2 sacs de ciment", [ciment, autre])?.id, "3");
+});
+
+test("sur un devis tapé à la main, tous les prix qui répondent, le moins cher d'abord", () => {
+  // Sa demande du 20 novembre 2026 (`appli/le-prix-d-une-piece.html`) : sous
+  // « Sac de terreau », ses prix chez chaque fournisseur, et il choisit. La
+  // même règle que le devis dicté, qui ne garde que le premier.
+  const val = { ...ciment, id: "t1", nom: "Terreau horticole 50 L", prixHt: "9.80", societeNom: "Pépinières du Val" };
+  const garnier = { ...ciment, id: "t2", nom: "Terreau universel 40 L", prixHt: "8.90", societeNom: "Matériaux Garnier" };
+  const tous = [ciment, val, garnier];
+  assert.deepEqual(prixAchatsProposes("Sac de terreau", tous).map((c) => c.id), ["t2", "t1"]);
+  assert.equal(prixAchatCorrespondant("Sac de terreau", tous)?.id, "t2");
+  // « sac » dit l'emballage, pas ce qu'on achète : il ne rapproche pas le
+  // terreau du ciment. Le devis dicté prenait le ciment, le moins cher des trois.
+  assert.equal(prixAchatCorrespondant("Il me faut 2 sacs de terreau", tous)?.id, "t2");
+  assert.equal(prixAchatCorrespondant("3 sacs de ciment", tous)?.id, "1");
+  assert.deepEqual(prixAchatsProposes("Tonte de pelouse", tous), []);
+  assert.deepEqual(prixAchatsProposes("", tous), []);
+});
+
+test("un prix d'achat se dit comme il le paie, et le fournisseur reste écrit sous la ligne", () => {
+  const sp = (t: string) => t.replace(/[\u00a0\u202f]/g, " ");
+  assert.equal(sp(prixDAchatEnMots({ prixHt: "8.90", unite: "sac" })), "8,90 € HT le sac");
+  assert.equal(sp(prixDAchatEnMots({ prixHt: "12", unite: "pièce" })), "12,00 € HT la pièce");
+  assert.equal(sp(prixDAchatEnMots({ prixHt: "52", unite: "palette" })), "52,00 € HT la palette");
+  assert.equal(sp(prixDAchatEnMots({ prixHt: "1250", unite: "m³" })), "1 250,00 € HT le m³");
+  assert.equal(
+    sp(achatRetenuEnMots({ societeNom: "Matériaux Garnier", prixHt: "8.90", unite: "sac" })),
+    "Matériaux Garnier, 8,90 € HT le sac"
+  );
 });
 
 test("la quantité dictée : un chiffre, « deux », « trois », sinon une", () => {

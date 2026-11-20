@@ -1425,6 +1425,12 @@ export const lignesPrix = pgTable(
      */
     hommesMainDoeuvre: integer("hommes_main_doeuvre"),
     /**
+     * Le prix d'achat qui a chiffré la ligne, en mots (migration 0188) :
+     * « Matériaux Garnier, 8,90 € HT le sac ». Pour lui seul : jamais recopié
+     * sur le devis du client. Nul dès qu'un prix est retapé à la main.
+     */
+    achatRetenu: text("achat_retenu"),
+    /**
      * Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173),
      * comme `prixAncien` et `prixGrille` pour son travail : l'ancienne part,
      * et la même au prix du jour d'aujourd'hui quand il a bougé.

@@ -3,6 +3,7 @@ import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-clien
 import { rangerParNom } from "./bandes-clients";
 import { tarifsCorrespondants } from "./tarifs-correspondants";
 import { tarifAvecSonHomme } from "./main-oeuvre-dictee";
+import { enEuros } from "./euros";
 
 /**
  * CE QU'IL PAIE, ET LA MARGE QU'IL Y MET — sa planche du 18 et du 19 octobre
@@ -13,14 +14,17 @@ import { tarifAvecSonHomme } from "./main-oeuvre-dictee";
  * | | |
  * |---|---|
  * | l'ordre des prix d'une ligne dictée | **son prix de vente** (Réglages, Tarifs), puis **prix d'achat × marge**, puis **« à chiffrer »**, jamais zéro (« le A », 19 octobre) |
- * | les marges | deux générales, le matériel (fournisseurs) et la main d'œuvre (partenaires), en COEFFICIENT ; une marge propre possible par société |
- * | au-dessus de × 3 | une faute de frappe (« 20 » pour 20 %) : refusée, et l'on dit quoi taper |
+ * | les marges | deux générales, le matériel (fournisseurs) et la main d'œuvre (partenaires) ; une marge propre possible par société |
+ * | la marge se tape en POUR CENT | sa planche B du 20 novembre 2026 (`appli/sans-marge-sur-les-pieces.html`) : « 30 » fait 30 %, « 0 » fait sans marge. La base garde le coefficient (1,30) : aucune migration, et le calcul ne bouge pas |
+ * | vide n'est pas « sans marge » | une case oubliée laisse la ligne « à chiffrer » ; la lire comme 0 % vendrait au prix d'achat sans rien dire |
+ * | au-dessus de 200 % | une faute de frappe : refusée |
  *
  * Fonctions pures : l'écran, le serveur et le devis dicté lisent les mêmes.
  */
 
 export type RubriqueAchat = "fournisseur" | "partenaire";
 
+/** Le coefficient le plus haut, 200 % de marge. */
 export const MARGE_MAX = 3;
 
 /** Les unités d'une ligne, celles de la planche. */
@@ -31,10 +35,6 @@ export const UNITES_ACHAT: Record<RubriqueAchat, readonly string[]> = {
 
 const virgule = (n: number | string) => String(n).replace(".", ",");
 
-/** « 20 » ferait × 20. Pour 20 % de marge, tapez 1,20. */
-export function conseilDeMarge(n: number): string {
-  return `« ${virgule(n)} » ferait × ${virgule(n)}. Pour ${virgule(n)} % de marge, tapez ${virgule((1 + n / 100).toFixed(2))}.`;
-}
 
 /** Un nombre écrit à la française, ou `null`. */
 function nombreLu(brut: string): number | null {
@@ -44,15 +44,32 @@ function nombreLu(brut: string): number | null {
 }
 
 /**
- * Une marge tapée. Vide : pas de marge (la générale reprend, ou la ligne reste
- * à chiffrer). Au-delà de × 3 : refusée, avec ce qu'il fallait taper.
+ * Une marge tapée, EN POUR CENT, rendue en coefficient pour la base : « 30 »
+ * donne 1.30, « 0 » donne 1.00 (sans marge). Vide : pas de marge (la générale
+ * reprend, ou la ligne reste à chiffrer).
+ *
+ * **Un nombre entier seulement.** La base garde deux décimales au coefficient :
+ * 12,5 % y deviendrait 13 % sans le dire. Et « 1,30 », l'ancienne façon de
+ * taper, ne se lit pas comme 1,3 % : elle est refusée, avec ce qu'il faut taper.
  */
 export function lireMarge(brut: string): { ok: true; marge: string | null } | { ok: false; raison: string } {
-  if (brut.trim() === "") return { ok: true, marge: null };
-  const n = nombreLu(brut);
-  if (n === null || n <= 0) return { ok: false, raison: "Tapez un coefficient : 1,30 pour 30 % de marge." };
-  if (n > MARGE_MAX) return { ok: false, raison: conseilDeMarge(n) };
-  return { ok: true, marge: new Decimal(n).toFixed(2) };
+  const t = brut.replace(/\s/g, "").replace(/%$/, "");
+  if (t === "") return { ok: true, marge: null };
+  if (!/^\d+$/.test(t)) return { ok: false, raison: "Tapez la marge en pour cent : 30 pour 30 %." };
+  const coefficient = new Decimal(t).dividedBy(100).plus(1);
+  if (coefficient.greaterThan(MARGE_MAX)) return { ok: false, raison: "Au-delà de 200 %, vérifiez le chiffre." };
+  return { ok: true, marge: coefficient.toFixed(2) };
+}
+
+/** Le coefficient de la base, écrit en pour cent dans la case : « 30 », « 0 », ou rien. */
+export function margeEnPourcent(marge: string | null): string {
+  return marge === null ? "" : new Decimal(marge).minus(1).times(100).toDecimalPlaces(0).toString();
+}
+
+/** Une marge en mots : « 30 % », ou « sans marge » pour 0 %. */
+export function margeEnMots(marge: string | number): string {
+  const pourcent = margeEnPourcent(String(marge));
+  return pourcent === "0" ? "sans marge" : `${pourcent} %`;
 }
 
 /**
@@ -81,9 +98,37 @@ export function lirePrixHt(brut: string): string | null {
   return n === null ? null : new Decimal(n).toFixed(2);
 }
 
-/** « × 1,30 ». */
-export function enCoefficient(marge: string | number): string {
-  return `× ${virgule(new Decimal(marge).toFixed(2))}`;
+const ARTICLE_DE_L_UNITE: Record<string, string> = {
+  pièce: "la pièce",
+  palette: "la palette",
+  journée: "la journée",
+  heure: "l’heure",
+  forfait: "le forfait",
+};
+
+/** « 8,90 € HT le sac » : un prix d'achat, tel qu'il le paie. */
+export function prixDAchatEnMots(p: { prixHt: string; unite: string }): string {
+  return `${enEuros(p.prixHt)} HT ${ARTICLE_DE_L_UNITE[p.unite] ?? `le ${p.unite}`}`;
+}
+
+/**
+ * « Matériaux Garnier, 8,90 € HT le sac » : ce qui reste écrit sous une ligne
+ * chiffrée depuis un prix d'achat, pour lui seul (sa planche du 20 novembre
+ * 2026, `appli/le-prix-d-une-piece.html`). L'écran l'écrit au toucher, le
+ * serveur le recopie en base : la même phrase des deux côtés.
+ */
+export function achatRetenuEnMots(c: { societeNom: string; prixHt: string; unite: string }): string {
+  return `${c.societeNom}, ${prixDAchatEnMots(c)}`;
+}
+
+/**
+ * Une ligne de devis telle qu'une action la rend au navigateur : sans le prix
+ * d'achat qui l'a chiffrée (migration 0188). Ses prix d'achat sont au patron
+ * seul ; une action d'édition sert aussi le commercial, et ce qu'elle rend
+ * se lit dans la réponse, même si l'écran ne l'affiche pas.
+ */
+export function sansAchatRetenu<T extends { achatRetenu: string | null }>(ligne: T): T {
+  return { ...ligne, achatRetenu: null };
 }
 
 /** La marge qui vaut chez une société : la sienne, sinon la générale de sa rubrique. */
@@ -95,15 +140,16 @@ export function margeQuiVaut(propre: string | null, generale: string | null): st
 export function ligneDeMarge(propre: string | null, generale: string | null): string {
   const vaut = margeQuiVaut(propre, generale);
   if (vaut === null) return "Marge à donner";
-  return `Marge ${enCoefficient(vaut)}${propre !== null ? ", la sienne" : ""}`;
+  const mots = margeEnMots(vaut);
+  return `${mots === "sans marge" ? "Sans marge" : `Marge ${mots}`}${propre !== null ? ", la sienne" : ""}`;
 }
 
 /** Ce que la fiche dit sous la case de sa marge. */
 export function phraseDeLaMargePropre(propre: string | null, generale: string | null): string {
   if (propre !== null) {
-    return `La sienne. Videz la case pour reprendre la marge générale${generale !== null ? ` (${enCoefficient(generale)})` : ""}.`;
+    return `La sienne. Videz la case pour reprendre la marge générale${generale !== null ? ` (${margeEnMots(generale)})` : ""}.`;
   }
-  if (generale !== null) return `Votre marge générale, ${enCoefficient(generale)}. Tapez-en une autre pour lui seul.`;
+  if (generale !== null) return `Votre marge générale, ${margeEnMots(generale)}. Tapez-en une autre pour lui seul.`;
   return "Pas encore donnée.";
 }
 
@@ -193,6 +239,13 @@ export function dateesAMontrer<T extends { nom: string; jour: string }>(
 const MOTS_VIDES = new Set([
   "il", "me", "faut", "de", "des", "du", "la", "le", "les", "un", "une", "et", "pour", "avec",
   "ai", "besoin", "en", "au", "aux", "sur",
+  // **L'emballage ne dit pas ce qu'on achète** (trouvé le 20 novembre 2026, en
+  // codant sa planche du prix d'une pièce) : « sac » rapprochait « Sac de
+  // terreau » de « Sac de ciment » autant que du terreau, et à égalité le moins
+  // cher gagnait. Le devis dicté chiffrait ainsi ses sacs de terreau au prix
+  // du ciment.
+  "sac", "sacs", "big", "bag", "bags", "palette", "palettes", "seau", "seaux",
+  "bidon", "bidons", "carton", "cartons", "paquet", "paquets",
 ]);
 const racine = (mot: string) => mot.replace(/s$/, "");
 const motsDe = (texte: string) =>
@@ -254,8 +307,20 @@ function lesMieuxNommees<T>(texte: string, candidats: readonly T[], nom: (c: T) 
  * commun : aucun prix, la ligne reste à chiffrer.
  */
 export function prixAchatCorrespondant(texte: string, candidats: readonly PrixAchatCandidat[]): PrixAchatCandidat | null {
-  const mieux = lesMieuxNommees(texte, candidats, (c) => `${c.nom} ${c.societeNom}`);
-  return mieux.reduce<PrixAchatCandidat | null>((m, c) => (m === null || new Decimal(c.prixHt).lt(m.prixHt) ? c : m), null);
+  return prixAchatsProposes(texte, candidats)[0] ?? null;
+}
+
+/**
+ * Tous les prix d'achat qui répondent à une ligne, **le moins cher d'abord** :
+ * ce que le devis tapé à la main lui propose sous la ligne (sa planche du
+ * 20 novembre 2026, `appli/le-prix-d-une-piece.html`), et dont le devis dicté
+ * garde le premier. Une seule règle pour les deux (`CLAUDE.md` §3).
+ */
+export function prixAchatsProposes<T extends PrixAchatCandidat>(texte: string, candidats: readonly T[]): T[] {
+  return lesMieuxNommees(texte, candidats, (c) => `${c.nom} ${c.societeNom}`)
+    .map((c, rang) => ({ c, rang }))
+    .sort((a, b) => new Decimal(a.c.prixHt).comparedTo(b.c.prixHt) || a.rang - b.rang)
+    .map((x) => x.c);
 }
 
 export type PrixDepuisAchat = {
@@ -289,9 +354,11 @@ export function prixDepuisAchat(
       ? c.rubrique === "partenaire"
         ? ". Donnez votre marge sur la main d’œuvre."
         : ". Donnez votre marge sur le matériel."
-      : `, ${enCoefficient(marge)}${
-          c.margePropre !== null ? ", sa marge à part." : c.rubrique === "partenaire" ? ", votre marge sur la main d’œuvre." : ", votre marge sur le matériel."
-        }`;
+      : margeEnMots(marge) === "sans marge"
+        ? ", sans marge."
+        : `, plus ${margeEnMots(marge)}${
+            c.margePropre !== null ? ", sa marge à part." : c.rubrique === "partenaire" ? ", votre marge sur la main d’œuvre." : ", votre marge sur le matériel."
+          }`;
   return { venteHt: vente, achatHt: achat.toFixed(2), quantite, source: debut + fin };
 }
 

@@ -37719,3 +37719,64 @@ main s'il le veut.
 Contrôles : `test-feuille-main-oeuvre` (pur, vu rouge puis vert : la ligne ne
 contient plus le nom), `test-main-oeuvre-dictee-db` et
 `test-feuille-main-oeuvre-e2e` adaptés à la même règle.
+
+## §593 : La marge se tape en pour cent, et le prix d'une pièce se retrouve
+
+*20 novembre 2026, ses deux réponses : « la 3e planche je choisis la B en % »
+(`appli/sans-marge-sur-les-pieces.html`), « 4e planche parfait tu peux coder
+tout » (`appli/le-prix-d-une-piece.html`).*
+
+**La marge.** Elle se tape en pour cent : « 30 » fait 30 %, « 0 » fait sans
+marge (sa demande : *« si un utilisateur ne veut pas prendre de marge sur les
+pièces d'un fournisseur, il faut qu'il puisse le faire »*). La base garde le
+coefficient (`marges_achat`, `societes_achat.marge`, 1,30) : aucune migration,
+et `prixDepuisAchat` calcule comme avant.
+
+| Décision | Pourquoi |
+|---|---|
+| `lireMarge` lit un entier en pour cent, et le rend en coefficient | deux décimales au coefficient en base : 12,5 % y deviendrait 13 % sans le dire |
+| « 1,30 » tapé par habitude est refusé, avec quoi taper | le lire 1,3 % vendrait presque au prix d'achat |
+| la case vide reste « Marge à donner », la ligne « à chiffrer » | un oubli ne doit pas vendre au prix d'achat sans rien dire ; 0 % est un choix, le vide n'en est pas un |
+| `margeEnMots` dit « 30 % » ou « sans marge » partout où la marge se lit | Ce que je paie, la feuille « Main d'œuvre », la liste de ses partenaires, le calcul (« 2 jours × 450 €, plus 35 % ») et l'explication d'un prix (« plus 30 %, votre marge sur le matériel ») : taper 30 % pour lire « × 1,30 » ailleurs aurait été deux langues |
+| `conseilDeMarge` supprimé | il servait à qui tapait 20 en voulant 20 % : c'est désormais ce qu'il faut taper |
+
+**Ce que la recherche montre.** Une pièce trouvée par « Chercher un
+fournisseur ou une pièce » se dit avec son prix d'achat (`prixDAchatEnMots` :
+« 8,90 € HT le sac »), et la fiche ouverte depuis elle s'ouvre sur la même
+recherche.
+
+**Le devis tapé à la main.** Sous une ligne sans prix, ses prix d'achat chez
+ses fournisseurs (`PrixDAchatDeLaLigne`), le moins cher d'abord, par la règle
+du devis dicté (`prixAchatsProposes`, dont `prixAchatCorrespondant` garde le
+premier : une seule règle). Un appui pose le prix × sa marge
+(`choisirUnPrixDAchatAction`, qui relit prix et marge en base à partir du seul
+identifiant), et le fournisseur reste écrit sous la ligne
+(`lignes_prix.achat_retenu`, migration 0188, expand seul).
+
+| Pour lui seul | Comment |
+|---|---|
+| ses prix d'achat | la page ne les passe qu'au patron (`estProprietaire`), comme l'écran Ce que je paie ; l'action refuse les autres comptes |
+| la mention sous la ligne | jamais dans la photographie du devis (`devis.ts` recopie ses champs un à un) ; retirée de l'export des données d'un client (`donnees-client.ts`) et de ce que rendent les actions d'édition (`sansAchatRetenu`), qui servent aussi le commercial |
+| la mention tombe | dès qu'un prix est retapé, en valeur (`modifierLignePrix`, comme la reprise) ; l'écran fait de même, comparé au prix que l'achat a posé |
+
+**Trouvé en codant : l'emballage ne dit pas ce qu'on achète.** « Sac de
+terreau » partageait « sac » avec « Sac de ciment » autant que « terreau »
+avec le terreau, et à égalité le moins cher gagnait : le devis DICTÉ chiffrait
+ses sacs de terreau au prix du ciment. Les mots d'emballage (sac, big bag,
+palette, seau, bidon, carton, paquet) rejoignent les mots vides de la règle
+(`MOTS_VIDES`). Test vu rouge avant.
+
+**Ce qui n'est pas tenu.** L'unité d'une ligne reste dans sa rangée
+(`uniteAdmise`) : une pièce achetée « au sac » se pose en « u » sur le devis ;
+la mention, elle, dit « le sac ». Les prix de ses partenaires ne sont pas
+proposés sous une ligne : leur main d'œuvre passe par la feuille « Main
+d'œuvre ».
+
+Contrôles : `test-prix-achat` (pur, vu rouge : la marge en pour cent, les
+prix proposés, l'emballage, les phrases), `test-feuille-main-oeuvre` (le
+calcul en pour cent, 0 % sans marge), `test-achat-retenu-db` (sous
+`atlas_app` : posée, gardée sur une description retouchée, tombée sur un prix
+retapé ou un montant, absente du devis et de l'export ; **écrit, pas encore
+joué**). Parcouru dans un vrai navigateur sur la base de démonstration : 21
+vérifications, dont le PDF du devis sans aucun fournisseur, et un compte
+commercial qui ne reçoit ni la liste ni la mention.

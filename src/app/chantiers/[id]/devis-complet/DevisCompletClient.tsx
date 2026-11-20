@@ -101,7 +101,11 @@ import {
   ajouterAcompteAction,
   changerTauxAcompteAction,
   retirerAcompteAction,
+  choisirUnPrixDAchatAction,
 } from "./actions";
+import PrixDAchatDeLaLigne from "./PrixDAchatDeLaLigne";
+import { achatRetenuEnMots, prixDepuisAchat, type PrixAchatCandidat } from "@/lib/prix-achat";
+import { uniteAdmise } from "@/lib/unite-de-ligne";
 import OuLeClientLiraLaNote, { IMAGE_NOTE_CHEZ_LE_CLIENT } from "./OuLeClientLiraLaNote";
 import CaseServicesALaPersonne from "@/components/atlas/CaseServicesALaPersonne";
 import { sansAcompteAuDevis } from "@/lib/urssaf/branchement";
@@ -155,6 +159,8 @@ type Ligne = {
   partGrille?: string | null;
   /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
   hommesMainDoeuvre?: number | null;
+  /** Le prix d'achat qui l'a chiffrée, en mots, pour lui seul (migration 0188). */
+  achatRetenu?: string | null;
 };
 
 /**
@@ -170,6 +176,12 @@ const CLE_REDUCTION = "prix-accorde-au-client";
 
 
 type Props = {
+  /**
+   * Ses prix d'achat chez ses fournisseurs, et ses marges : la liste sous la
+   * ligne qu'il tape (`PrixDAchatDeLaLigne`). `null` pour un autre compte que
+   * le patron : ses prix d'achat ne se consultent pas d'ailleurs.
+   */
+  prixDAchat?: { candidats: PrixAchatCandidat[]; marges: { materiel: string | null; mainOeuvre: string | null } } | null;
   chantierId: string;
   /**
    * Le chantier est-il en sous-traitance, sans TVA (migration 0119) ? Et
@@ -369,6 +381,16 @@ export default function DevisCompletClient(props: Props) {
    * et c'est elle qui ouvre la feuille.
    */
   const [ligneSaisie, setLigneSaisie] = useState<string | null>(null);
+  // La ligne dont il a rouvert la liste de ses prix d'achat, en touchant le
+  // fournisseur écrit dessous ; et ce qui a été refusé, sous la ligne en cause.
+  const [achatOuvert, setAchatOuvert] = useState<string | null>(null);
+  const [refusAchat, setRefusAchat] = useState<{ id: string; raison: string } | null>(null);
+  // Le prix qu'un prix d'achat a posé, par ligne : celui que le serveur compare
+  // pour faire tomber la mention (`modifierLignePrix`). Le champ, lui, porte
+  // déjà ce qu'il tape au moment où il le quitte.
+  const prixDesAchats = useRef(
+    new Map<string, string>(props.lignesInitiales.filter((l) => l.achatRetenu).map((l) => [l.id, l.prixUnitaire]))
+  );
   const [aDeplacer, setADeplacer] = useState<Ligne | null>(null);
   const appuiLong = useAppuiLong();
 
@@ -843,6 +865,18 @@ export default function DevisCompletClient(props: Props) {
     // une ligne vide en base — celle qui fait disparaître une dictée
     // (`src/lib/ligne-ouverte-devis.ts`).
     if (estLigneOuverte(ligne.id) && !ligneOuverteAEcrire(ligne)) return;
+    // **Un prix retapé fait tomber le fournisseur écrit sous la ligne**, ici
+    // comme en base (`modifierLignePrix`) : en valeur, une description
+    // retouchée renvoie le même prix et la mention reste.
+    const prixDeLAchat = prixDesAchats.current.get(l.id);
+    if (
+      prixDeLAchat !== undefined &&
+      frais?.prixUnitaire !== undefined &&
+      Number(normaliser(frais.prixUnitaire, "0")) !== Number(normaliser(prixDeLAchat, "0"))
+    ) {
+      prixDesAchats.current.delete(l.id);
+      setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, achatRetenu: null } : x)));
+    }
     // **À LA SUITE, jamais en parallèle — et c'est un prix qui se perdait.**
     // Chaque sortie de champ envoie la ligne ENTIÈRE, bâtie sur le rendu du
     // moment : deux sorties rapprochées — la description, puis le prix —
@@ -878,12 +912,53 @@ export default function DevisCompletClient(props: Props) {
     // Le serveur l'éteint aussi (`modifierLignePrix`) ; l'écran ne doit pas
     // continuer d'annoncer « à chiffrer » sur une ligne qu'il vient de chiffrer.
     if (Number(prix) > 0) setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, aChiffrer: false } : x)));
+    const prixDeLAchat = prixDesAchats.current.get(l.id);
+    if (prixDeLAchat !== undefined && Number(prix) !== Number(normaliser(prixDeLAchat, "0"))) {
+      prixDesAchats.current.delete(l.id);
+      setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, achatRetenu: null } : x)));
+    }
     await aLaSuite(async () =>
       majLigneAction(await idEnBase(l), {
         libelle: l.libelle,
         quantite: normaliser(l.quantite, "1"),
         prixUnitaire: prix,
       })
+    );
+  }
+
+  /**
+   * Un prix d'achat touché sous la ligne : le prix × sa marge se pose tout de
+   * suite (un chiffre qui tarde se lit comme un bouton qui n'a pas marché),
+   * puis le serveur le relit et le recopie en base avec le fournisseur. C'est
+   * sa réponse qui fait foi : il relit le prix, la marge et la phrase.
+   */
+  async function choisirUnPrixDAchat(l: Ligne, c: PrixAchatCandidat) {
+    if (!props.prixDAchat) return;
+    const vente = prixDepuisAchat(c, 1, props.prixDAchat.marges).venteHt;
+    if (vente === null) {
+      setRefusAchat({ id: l.id, raison: "Votre marge sur le matériel est à donner, dans Ce que je paie." });
+      return;
+    }
+    setRefusAchat(null);
+    setAchatOuvert(null);
+    const avant = l;
+    setLignes((cur) =>
+      cur.map((x) =>
+        x.id === l.id
+          ? { ...x, prixUnitaire: prixAEcrire(sansZerosInutiles(vente)), unite: uniteAdmise(c.unite), aChiffrer: false, achatRetenu: achatRetenuEnMots(c) }
+          : x
+      )
+    );
+    const r = await aLaSuite(async () => choisirUnPrixDAchatAction(await idEnBase(l), c.id));
+    if (!r.ok) {
+      setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, prixUnitaire: avant.prixUnitaire, unite: avant.unite, aChiffrer: avant.aChiffrer, achatRetenu: avant.achatRetenu } : x)));
+      setRefusAchat({ id: l.id, raison: r.raison });
+      return;
+    }
+    prixDesAchats.current.set(l.id, r.ligne.prixUnitaire);
+    // Écrit comme à l'ouverture de l'écran : « 11,57 », jamais « 11.57 ».
+    setLignes((cur) =>
+      cur.map((x) => (x.id === l.id ? { ...x, ...r.ligne, prixUnitaire: prixAEcrire(sansZerosInutiles(r.ligne.prixUnitaire)) } : x))
     );
   }
 
@@ -1586,6 +1661,22 @@ export default function DevisCompletClient(props: Props) {
                 className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
                 style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
               />
+              {/* Ses prix d'achat sous la ligne, pour lui seul (planche du
+                  20 novembre 2026) : sous la description, là où il tape le
+                  nom de la pièce. */}
+              {props.prixDAchat && !l.mainDoeuvre && (
+                <PrixDAchatDeLaLigne
+                  libelle={l.libelle}
+                  sansPrix={!(Number(normaliser(l.prixUnitaire, "0")) > 0)}
+                  achatRetenu={l.achatRetenu ?? null}
+                  candidats={props.prixDAchat.candidats}
+                  ouvert={achatOuvert === l.id}
+                  fige={fige}
+                  refus={refusAchat?.id === l.id ? refusAchat.raison : null}
+                  onOuvrir={() => setAchatOuvert(l.id)}
+                  onChoisir={(c) => void choisirUnPrixDAchat(l, c)}
+                />
+              )}
               {/* **La croix au-dessus de la colonne des chiffres, montée au
                   haut de la ligne** : sa réponse « D » du 16 octobre 2026
                   (`appli/devis-croix-plus-a-droite.html`), après *« il arrive

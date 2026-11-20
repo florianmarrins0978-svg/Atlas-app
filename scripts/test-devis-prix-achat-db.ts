@@ -84,7 +84,7 @@ async function main() {
     assert.equal(l?.prixUnitaire, "10.40");
     assert.equal(l?.quantite, "3");
     assert.ok(
-      p!.explication.calcul.some((x) => x.detail.includes("Acheté 24,00 € chez Point P le 12/10/2026, × 1,30, votre marge sur le matériel.")),
+      p!.explication.calcul.some((x) => x.detail.includes("Acheté 24,00 € chez Point P le 12/10/2026, plus 30 %, votre marge sur le matériel.")),
       "la source du prix n'est pas écrite"
     );
   });

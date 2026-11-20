@@ -1,5 +1,9 @@
 # État du projet
 
+## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE : CODÉS, PAS ENCORE SUR `main` (20 novembre 2026)
+
+Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cent (0 % sans marge) ; la recherche de Ce que je paie dit le prix d'une pièce ; le devis tapé à la main propose ses prix d'achat sous la ligne, pour lui seul (migration 0188) ; la ligne d'un partenaire ne porte plus son nom (`ARCHITECTURE.md` §592, §593). Niveau 3 : la batterie reste à jouer, sur sa consigne « pas de batterie » pour l'instant.
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.
