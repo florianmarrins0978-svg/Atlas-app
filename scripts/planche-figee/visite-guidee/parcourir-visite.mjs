@@ -20,7 +20,7 @@ await page.click(".v-ouverture button");
 const n = await page.evaluate(() => document.querySelectorAll(".visite-ecran").length);
 let i = 0;
 const sansCible = [];
-for (let k = 0; k < 60; k++) {
+for (let k = 0; k < 150; k++) {
   await page.waitForTimeout(1600);
   // Pendant que les champs s'écrivent, le guide est en retrait : on attend qu'il revienne.
   await page.waitForSelector(".v-guide:not(.en-retrait)", { timeout: 15000 });
