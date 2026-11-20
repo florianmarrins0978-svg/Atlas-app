@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e6">
+<title>Les outils de paysage, Cause</title>
+<meta name="description" content="Planche : les outils de paysage de Cause, le plan d'arrosage, le diagnostic végétal et les fiches de chantier.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  LES OUTILS DE PAYSAGE, LA PAGE DERRIÈRE LA PORTE. Planche posée le
+  20 novembre 2026 à côté de cause-2.html. Sa demande, depuis son téléphone :
+  « sur le site internet, il faudrait rajouter l'abonnement de 6 € pour les
+  outils. [...] qu'on puisse cliquer sur l'abonnement de 6 € pour les
+  outils, et que ça soit une porte pour ensuite arriver sur une autre page
+  qu'on ferait défiler, où on nous montrerait un petit peu les outils. Donc
+  il y aurait le plan d'arrosage, il y aurait le diagnostic végétal, et il y
+  aurait les fiches de fin de passage. [...] en respectant bien la DA du
+  site. » La porte est la carte « Les outils de paysage », sous les trois
+  formules de cause-2.html. Rien n'est codé dans l'application.
+
+  LE MONDE EST CELUI DE cause-2.html, sans un écart : crème, vert nuit, vert
+  feuille, or ; Instrument Serif et Hanken Grotesk ; les titres qui montent
+  mot à mot et le point d'or qui tombe ; les objets qui se tournent vers le
+  lecteur en descendant ; les bandes nuit qui montent comme des feuilles ; le
+  bouton d'essai sous le pouce. La feuille de style en est recopiée, et ne
+  garde que ce que cette page emploie.
+
+  LES MOTS. Les trois phrases des outils sont celles de l'appli
+  (phraseDeLaFermeture, src/lib/abonnements.ts) et du bloc qu'il a choisi le
+  19 novembre sur l'écran Abonnement. « Les fiches de chantier » est le nom
+  de l'outil dans l'appli ; ce qu'il appelle la fiche de fin de passage en
+  est le compte rendu que reçoit le client. Le prix, 6 € HT par mois et 60 €
+  à l'année, le même pour les trois formules, et l'offre d'un plan et d'un
+  diagnostic, sont ses décisions des 18 et 19 novembre
+  (docs/abonnement-module-paysage.md) : ni le module ni l'offre ne sont
+  codés. Chaque promesse sur l'arrosage vient de .claude/rules/arrosage.md
+  et se vérifie dans le calcul : les cotes commandent, pas le dessin ; la
+  pression se compte au dernier arroseur ; la liste part au fournisseur.
+
+  D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
+    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan
+      (LePlanDuJardin), rendu par scripts/capture-plan-arrosage.ts avec la
+      feuille de style de l'appli et le calcul réel, sur le jardin de la
+      planche du 18 octobre (deux pelouses, un massif en goutte-à-goutte, un
+      couloir de tuyères) ; ici la carte du réseau 1 et la nourrice éclatée ;
+    · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
+      peint aujourd'hui (onglet « Aujourd'hui » de
+      appli/soignee/fiche-de-diagnostic.html, figé par scripts/planche-figee/).
+      Elle porte encore « Probable · Peuplier » : c'est l'écran de main
+      (TODO.md, la fiche de diagnostic), il n'est pas retouché ici ;
+    · outils-fiche : la fiche du jour, onglet « Aujourd'hui, en cours » de
+      appli/fiche-de-chantier-ouverte-soignee.html, figée de même. Ses
+      données d'essai ont été alignées sur le compte rendu ci-dessous (M.
+      Bernard, le jeudi 29 octobre, la pelouse) : les prestations d'une fiche
+      sont celles que l'artisan compose, ce sont des données, et l'écran est
+      celui que l'appli peint ;
+    · outils-compte-rendu et outils-compte-rendu-carte : ce que reçoit le
+      client, capture de l'appli (appli/soignee/aujourdhui/recoit-rapport.jpg) ;
+    · outils-feuille : la photo de référence de la fiche du peuplier, de
+      Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia
+      Commons, sous licence CC BY 3.0 US ; recadrée, son crédit sous la scène.
+  Le croquis est un dessin, celui de appli/soignee/arrosage.html (le même
+  jardin) : c'est la feuille de papier de l'artisan, pas un écran de l'appli.
+
+  CE QUI BOUGE, et pourquoi. Le geste du site, « rien ne se retape, tout se
+  porte », répété une fois par outil :
+    · le plan d'arrosage : un trait d'or balaie le croquis (la lecture, comme
+      dans l'appli), « 12 m » quitte le croquis et se pose sur « 12 m sur
+      12 m » de la carte du réseau, qui s'écrit alors de haut en bas ;
+    · le diagnostic : le trait d'or balaie la photo, la photo recule, et la
+      fiche arrive un peu grande et se pose, comme Ma TVA dans Encaissez ;
+    · les fiches de chantier : le compte rendu sort de derrière le téléphone
+      de l'artisan, dans celui du client (le geste de l'ouverture du site).
+  Rien n'est dessiné par-dessus un écran de l'appli : le trait d'or passe
+  sur le papier et sur la photo, jamais sur un écran. Sans script, ou pour
+  qui a demandé moins de mouvement, chaque scène montre son état le plus
+  parlant, immobile.
+
+  PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : à regarder sur son iPhone.
+-->
+<script>
+(function(d){
+  var calme = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  d.classList.add("js");
+  if (!calme && "IntersectionObserver" in window && d.animate && window.Promise) d.classList.add("anime");
+  setTimeout(function(){ if (!window.causePret) d.classList.remove("anime"); }, 4000);
+})(document.documentElement);
+</script>
+<style>
+:root{
+  --fond:#f5f1e6;--papier:#fcfaf3;--encre:#12261b;--encre-2:#4b5a50;--trait:#e0d9c7;
+  --sauge:#e4ebda;--sable:#efe6d3;
+  --action:#1d7a3c;--action-survol:#186a33;--action-texte:#ffffff;
+  --feuille:#237a3c;--or:#95600f;--or-clair:#f0b43c;
+  --nuit:#0e2a1b;--nuit-2:#0a2015;--sur-nuit:#f3efe3;--sur-nuit-2:#b9cbbd;--trait-nuit:rgba(243,239,227,.14);
+  --ombre:18,38,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --large:1200px;
+  --sortie:cubic-bezier(.16,1,.3,1);
+  --va-et-vient:cubic-bezier(.65,0,.35,1);
+  --coin:28px;
+  color-scheme:light;
+}
+@media (min-width:960px){:root{--coin:44px}}
+*{box-sizing:border-box}
+html{overflow-x:hidden;overflow-x:clip;scroll-padding-top:76px;scrollbar-color:color-mix(in srgb,var(--encre-2) 45%,transparent) var(--fond);accent-color:var(--action)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--or-clair) 42%,transparent);color:inherit}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--action);outline-offset:3px;border-radius:8px}
+.nuit :focus-visible,.pied :focus-visible{outline-color:var(--or-clair)}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.015em;line-height:.95;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+.lu{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.large{width:min(100% - 32px,var(--large));margin-inline:auto}
+section{padding:clamp(88px,12vw,150px) 0}
+
+/* ── Les titres montent mot à mot ; le point d'or tombe en dernier ─────── */
+html.anime [data-monte] .mt{display:inline-block;overflow:hidden;vertical-align:top;padding:.16em .12em .18em;margin:-.16em -.12em -.18em}
+html.anime [data-monte] .mi{display:inline-block;transform:translateY(140%) rotate(5deg);transform-origin:0 100%;transition:transform .8s var(--sortie);transition-delay:calc(var(--i,0) * 34ms)}
+html.anime [data-monte].vu .mi{transform:none}
+html.anime .mot .point{display:inline-block;opacity:0;transform-origin:50% 82%}
+html.anime .mot.vu .point{animation:point-tombe .52s .56s both}
+@keyframes point-tombe{
+  0%{opacity:0;transform:translateY(-.9em) scale(1,1);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+  12%{opacity:1}
+  60%{opacity:1;transform:translateY(-.03em) scale(1,1);animation-timing-function:linear}
+  70%{opacity:1;transform:translateY(0) scale(1.24,.72);animation-timing-function:cubic-bezier(.2,.8,.3,1)}
+  100%{opacity:1;transform:none}
+}
+
+/* ── Le vert nuit, et les bandes qui montent comme des feuilles ────────── */
+.nuit,.pied{position:relative;isolation:isolate;background:radial-gradient(90% 70% at 85% -10%,rgba(240,180,60,.11),transparent 62%),var(--nuit);color:var(--sur-nuit)}
+.nuit::before,.pied::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")}
+.nuit .chapo,.nuit .sous{color:var(--sur-nuit-2)}
+.nappe{position:relative;margin-top:calc(var(--coin) * -1);border-radius:var(--coin) var(--coin) 0 0}
+html.anime .nuit.nappe.entre-etroite{-webkit-clip-path:inset(0 calc(var(--e,0) * 6%) 0 calc(var(--e,0) * 6%) round calc(var(--coin) + var(--e,0) * 22px) calc(var(--coin) + var(--e,0) * 22px) 0 0);clip-path:inset(0 calc(var(--e,0) * 6%) 0 calc(var(--e,0) * 6%) round calc(var(--coin) + var(--e,0) * 22px) calc(var(--coin) + var(--e,0) * 22px) 0 0)}
+.papier{background:var(--papier)}
+
+/* ── La barre, le menu ────────────────────────────────────────────────── */
+.barre{position:fixed;inset:0 0 auto 0;z-index:20;height:64px;background:color-mix(in srgb,var(--fond) 84%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid transparent;transition:border-color .3s}
+.barre.posee{border-bottom-color:var(--trait)}
+.barre .large{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.fil{position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--or-clair);transform:scaleX(0);transform-origin:0 50%;pointer-events:none}
+.marque{font:400 30px/1 var(--display);text-decoration:none;letter-spacing:-.01em}
+.liens{display:none;gap:30px;font-size:15.5px}
+.liens a{position:relative;text-decoration:none;color:var(--encre-2);transition:color .2s}
+.liens a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform .45s var(--sortie)}
+.liens a:hover{color:var(--encre)}
+.liens a:hover::after{transform:scaleX(1)}
+.barre .droite{display:flex;align-items:center;gap:6px}
+.ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
+.lien-demo{font:600 14.5px/1 var(--texte);text-decoration:none;padding:13px 18px;border-radius:999px;background:var(--action);color:var(--action-texte);transition:background .2s}
+.lien-demo:hover{background:var(--action-survol)}
+@media (min-width:1040px){.liens{display:flex}.ouvre-menu{display:none}}
+.menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:92px 24px 32px;display:flex;flex-direction:column;visibility:hidden;pointer-events:none}
+.menu.ouvert{visibility:visible;pointer-events:auto}
+html.anime .menu{clip-path:circle(0 at calc(100% - 150px) 32px);transition:clip-path .38s var(--va-et-vient),visibility 0s linear .38s}
+html.anime .menu.ouvert{clip-path:circle(150% at calc(100% - 150px) 32px);transition:clip-path .8s var(--sortie),visibility 0s}
+html.anime .menu a{opacity:0;transform:translateY(24px);transition:opacity .18s ease,transform .18s ease}
+html.anime .menu.ouvert a{opacity:1;transform:none;transition:opacity .5s ease calc(var(--i,0) * 60ms + .14s),transform .85s var(--sortie) calc(var(--i,0) * 60ms + .14s)}
+.menu a{font:400 clamp(38px,10vw,64px)/1.15 var(--display);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--trait)}
+.menu .ferme{position:absolute;top:10px;right:max(16px,env(safe-area-inset-right));border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:12px;min-height:44px;cursor:pointer}
+.menu .bouton{margin-top:32px;font:600 17px/1 var(--texte);border:0}
+
+/* ── Les boutons ──────────────────────────────────────────────────────── */
+.bouton{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 30px;border-radius:999px;background:var(--action);color:var(--action-texte);font:600 17px/1 var(--texte);text-decoration:none;border:0;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 10px 24px -14px rgba(var(--ombre),.7);transition:transform .3s var(--sortie),box-shadow .3s var(--sortie),background .2s}
+.bouton:hover{background:var(--action-survol);transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 18px 32px -16px rgba(var(--ombre),.75)}
+.bouton:active{transform:translateY(0) scale(.985)}
+.bouton::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 36%,rgba(255,255,255,.3) 50%,transparent 64%);transform:translateX(-130%);pointer-events:none}
+@media (hover:hover){.bouton:hover::after{transform:translateX(130%);transition:transform .95s var(--sortie)}}
+.bouton.clair{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 22%,transparent)}
+.bouton.clair:hover{background:color-mix(in srgb,var(--encre) 5%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 45%,transparent)}
+.bouton.clair::after{display:none}
+.nuit .bouton,.bouton.or{background:var(--or-clair);color:var(--nuit);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 18px 40px -18px rgba(240,180,60,.55)}
+.nuit .bouton:hover,.bouton.or:hover{background:#f5c25a}
+/* Sur le vert nuit, le bouton clair passe à la couleur de la bande. */
+.nuit .bouton.clair{background:transparent;color:var(--sur-nuit);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--sur-nuit) 30%,transparent)}
+.nuit .bouton.clair:hover{background:rgba(243,239,227,.06);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--sur-nuit) 60%,transparent)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.rassure{margin-top:16px;font-size:15px;color:var(--encre-2)}
+
+/* ── Les supports : le téléphone, la feuille, la capture à plat ─────────── */
+.appareil{position:relative;width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
+@supports ((mask-composite:exclude) or (-webkit-mask-composite:xor)){
+  html.anime .appareil::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;background:linear-gradient(calc(132deg + var(--t,0) * 150deg),rgba(255,255,255,.62),rgba(255,255,255,0) 26%,rgba(255,255,255,0) 68%,rgba(255,255,255,.3));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+}
+.ecran{position:relative;border-radius:39px;overflow:hidden;isolation:isolate;transform:translateZ(0);aspect-ratio:1170/1992;background:var(--papier)}
+.ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+.gros{margin:0;border-radius:22px;overflow:hidden;isolation:isolate;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
+.gros img{width:100%}
+html.anime .gros[data-vu] img{transform:scale(1.035);transition:transform 1.6s var(--sortie)}
+html.anime .gros[data-vu].vu img{transform:none}
+/* Une capture s'écrit de haut en bas : « Cause dessine le plan ». Elle n'est
+   jamais toute blanche, son en-tête est là d'emblée (cause-2.html). */
+html.anime .blanche img{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);-webkit-mask-size:100% 230%;mask-size:100% 230%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:0 68%;mask-position:0 68%}
+html.anime .blanche.ecrite img{-webkit-mask-position:0 0;mask-position:0 0;transition:-webkit-mask-position 1.5s cubic-bezier(.45,0,.2,1),mask-position 1.5s cubic-bezier(.45,0,.2,1)}
+.sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
+.credit{margin-top:14px;font-size:13.5px;line-height:1.45;color:var(--encre-2)}
+.nuit .credit{color:var(--sur-nuit-2)}
+.scene{position:relative;border-radius:30px;background:radial-gradient(70% 55% at 30% 20%,rgba(255,255,255,.55),transparent 70%),var(--sauge);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.05)}
+.scene.sable{background:radial-gradient(70% 55% at 70% 15%,rgba(255,255,255,.5),transparent 70%),var(--sable)}
+
+/* ── La profondeur, au défilement seulement ───────────────────────────── */
+.socle{position:relative}
+html.anime .tourne{transform:perspective(1200px) translateY(calc(var(--t,0) * 64px)) rotateX(calc(var(--t,0) * 21deg)) rotateY(calc(var(--t,0) * var(--cote,-19deg))) scale(calc(1 - var(--tp,0) * .1))}
+html.anime .leve{transform:perspective(1100px) translateY(calc(var(--t,0) * 44px)) rotateX(calc(var(--tp,0) * 34deg)) scale(calc(1 - var(--tp,0) * .06));transform-origin:50% 100%}
+html.anime .leve.douce{transform:perspective(1300px) translateY(calc(var(--tp,0) * 40px)) rotateX(calc(var(--tp,0) * 12deg))}
+html.anime .socle.repos > .tourne,html.anime .socle.repos > .leve{transform:none}
+
+/* ── L'ouverture : les trois outils, à trois distances ─────────────────── */
+.ouverture{padding-top:clamp(112px,14vw,156px);padding-bottom:calc(clamp(64px,8vw,112px) + var(--coin))}
+.ouverture-grille{display:grid;gap:44px;text-align:center}
+.ouverture h1{font-size:clamp(52px,13.6vw,96px);line-height:.93}
+.ouverture h1 em{font-style:italic;color:var(--feuille)}
+.ouverture .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);line-height:1.45;color:var(--encre-2);max-width:30em}
+.ouverture .actions{justify-content:center}
+html.anime .ouverture .chapo,html.anime .ouverture .actions,html.anime .ouverture .rassure{opacity:0;transform:translateY(14px);transition:opacity .45s ease,transform .8s var(--sortie)}
+html.anime .ouverture.pret .chapo{opacity:1;transform:none}
+html.anime .ouverture.pret .actions{opacity:1;transform:none;transition-delay:.06s}
+html.anime .ouverture.pret .rassure{opacity:1;transform:none;transition-delay:.12s}
+/* Le plateau : le plan d'un réseau derrière à gauche, le compte rendu
+   derrière à droite, la fiche du diagnostic devant. Le pointeur (sur
+   ordinateur) et le défilement les déplacent l'un par rapport à l'autre. */
+.plateau{height:clamp(440px,126vw,520px);overflow:hidden;isolation:isolate;transform:translateZ(0)}
+.pose{position:absolute}
+.pose-plan{width:52%;left:-2%;top:34px}
+.pose-cr{width:44%;right:-1%;top:116px}
+.pose-appareil{width:min(54vw,226px);left:50%;top:70px;margin-left:calc(min(54vw,226px) / -2)}
+.plateau .appareil{width:100%}
+.plateau .gros{border-radius:16px}
+.plateau .pose-plan .gros{transform:rotate(-5deg)}
+.plateau .pose-cr .feuille{transform:rotate(4.5deg);border-radius:12px}
+html.anime .pose-plan{transform:translate3d(calc(var(--mx,0) * -22px),calc(var(--my,0) * -12px + var(--t,0) * 74px),0) rotate(calc(var(--mx,0) * 1.2deg))}
+html.anime .pose-cr{transform:translate3d(calc(var(--mx,0) * -16px),calc(var(--my,0) * -9px + var(--t,0) * 58px),0) rotate(calc(var(--mx,0) * -1deg))}
+html.anime .pose-appareil{transform:perspective(1500px) translate3d(calc(var(--mx,0) * 12px),calc(var(--my,0) * 8px + var(--t,0) * 30px),0) rotateX(calc(var(--my,0) * -4deg + var(--t,0) * 9deg + var(--rx,0deg))) rotateY(calc(var(--mx,0) * 7deg + var(--ry,0deg)))}
+/* L'arrivée : le téléphone monte incliné et se pose ; les deux feuilles
+   glissent de derrière lui, l'une à gauche, l'autre à droite. */
+html.anime .plateau .entre{opacity:0}
+html.anime .plateau.vu .entre-appareil{animation:arrive-appareil 1.4s var(--sortie) .1s both}
+html.anime .plateau.vu .entre-plan{animation:arrive-gauche 1.25s var(--sortie) .36s both}
+html.anime .plateau.vu .entre-cr{animation:arrive-droite 1.25s var(--sortie) .5s both}
+@keyframes arrive-appareil{
+  from{opacity:0;transform:perspective(1400px) translate3d(0,24%,0) rotateX(26deg) rotateY(-22deg) rotateZ(7deg) scale(.86)}
+  18%{opacity:1}
+  to{opacity:1;transform:perspective(1400px) translate3d(0,0,0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)}
+}
+@keyframes arrive-gauche{
+  from{opacity:0;transform:translate3d(44%,12%,0) rotate(8deg) scale(.82)}
+  25%{opacity:1}
+  to{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+}
+@keyframes arrive-droite{
+  from{opacity:0;transform:translate3d(-48%,6%,0) rotate(-8deg) scale(.82)}
+  25%{opacity:1}
+  to{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+}
+html.anime .plateau.flotte .appareil{animation:flotte 7s ease-in-out infinite alternate}
+html.anime .plateau.flotte .pose-plan .gros{animation:flotte-g 9s ease-in-out infinite alternate}
+html.anime .plateau.flotte .pose-cr .feuille{animation:flotte-d 8s ease-in-out infinite alternate}
+@keyframes flotte{from{translate:0 0}to{translate:0 -9px}}
+@keyframes flotte-g{from{translate:0 0}to{translate:0 8px}}
+@keyframes flotte-d{from{translate:0 0}to{translate:0 -6px}}
+@media (min-width:960px){
+  .ouverture-grille{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;text-align:left;gap:56px}
+  .ouverture .chapo{margin-inline:0}
+  .ouverture .actions{justify-content:flex-start}
+  .plateau{height:640px;--rx:2deg;--ry:-9deg}
+  .pose-plan{width:50%;left:2%;top:64px}
+  .pose-cr{width:40%;right:6%;top:150px}
+  .pose-appareil{width:286px;top:auto;bottom:-88px;margin-left:-143px}
+}
+
+/* ── Un outil : son nom, sa phrase, ce qu'il fait, ce qu'on voit ──────── */
+.mot{font-size:clamp(54px,12.4vw,92px);line-height:.92}
+.mot .point{color:var(--or)}
+.nuit .mot .point{color:var(--or-clair)}
+.outil .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.nuit.outil .chapo{color:var(--sur-nuit-2)}
+.chap-grille{display:grid;gap:52px}
+.chap-visuel{display:grid;gap:36px;justify-items:center}
+.faits{list-style:none;margin:40px 0 0;padding:0;display:grid}
+.faits li{padding:22px 0 22px 46px;border-bottom:1px solid var(--trait);display:grid;gap:6px;position:relative}
+.faits li:first-child{border-top:1px solid var(--trait)}
+.faits li svg{position:absolute;left:0;top:25px;width:26px;height:26px;color:var(--feuille)}
+.faits b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display)}
+.faits span{color:var(--encre-2);font-size:16.5px}
+.nuit .faits li{border-color:var(--trait-nuit)}
+.nuit .faits li svg{color:var(--or-clair)}
+.nuit .faits span{color:var(--sur-nuit-2)}
+html.anime .faits svg circle{stroke-dasharray:76;stroke-dashoffset:76;transform:rotate(-90deg);transform-origin:13px 13px;transition:stroke-dashoffset .9s var(--sortie);transition-delay:calc(var(--i,0) * 150ms)}
+html.anime .faits svg path{stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .45s var(--sortie);transition-delay:calc(var(--i,0) * 150ms + 420ms)}
+html.anime .faits.vu svg circle,html.anime .faits.vu svg path{stroke-dashoffset:0}
+@media (min-width:960px){
+  .chap-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
+  .chap-texte{position:sticky;top:132px}
+  .chap-grille.inverse .chap-texte{order:2}
+}
+
+/* Le trait d'or de la lecture : il balaie le papier ou la photo, une fois,
+   comme la lecture du croquis dans l'appli. Jamais un écran de l'appli. */
+.balaye{position:relative;overflow:hidden}
+.balaye::after{content:"";position:absolute;left:0;right:0;top:0;height:24%;pointer-events:none;opacity:0;border-bottom:2px solid var(--or-clair);background:linear-gradient(to bottom,rgba(240,180,60,0),rgba(240,180,60,.16));transform:translateY(-100%)}
+html.anime .balaye.lit::after{animation:balaye 1.25s cubic-bezier(.45,0,.25,1) both}
+@keyframes balaye{0%{opacity:0;transform:translateY(-100%)}12%{opacity:1}88%{opacity:1}100%{opacity:0;transform:translateY(420%)}}
+
+/* Le plan d'arrosage : le croquis de l'artisan, et la carte du réseau que
+   Cause en tire. « 12 m » quitte le croquis et se pose sur la carte. */
+.scene-croquis{width:100%;max-width:560px;padding:28px 22px 30px;display:grid}
+.croquis{margin:0;width:90%;border-radius:6px;background:#fbf8ef;transform:rotate(-2.5deg);box-shadow:0 30px 50px -32px rgba(var(--ombre),.55),0 0 0 1px rgba(var(--ombre),.06);--crayon:#33322e;--quadrillage:#d9e2ec}
+.croquis svg{display:block;width:100%;height:auto}
+.croquis .eclat{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);transition:transform .45s var(--va-et-vient)}
+.scene-croquis.surligne .croquis .eclat{transform:none}
+html:not(.anime) .croquis .eclat{transform:none}
+.scene-croquis .socle{width:80%;justify-self:end;margin-top:-16%;z-index:2}
+.scene-croquis .gros{border-radius:18px}
+/* La carte du réseau sort une fois le croquis lu : restée posée, blanche
+   sous son en-tête, elle se lisait comme une image qui ne charge pas. */
+html.anime #carte-reseau{opacity:0;transform:translateY(28px) scale(.96);transition:opacity .45s ease,transform .9s var(--sortie)}
+html.anime .scene-croquis.sort #carte-reseau{opacity:1;transform:none}
+/* Le mot porté : une étiquette, un seul objet, dont le fond de papier
+   apparaît quand elle se soulève (cause-2.html, Dictez). */
+.porte{position:absolute;left:0;top:0;z-index:6;padding:.02em .14em .06em;font:italic 400 30px/1.12 var(--display);color:var(--or);white-space:nowrap;pointer-events:none;transform-origin:0 0;opacity:0;will-change:transform,opacity}
+.porte .fond{position:absolute;inset:0;border-radius:.22em;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.08),0 14px 26px -14px rgba(var(--ombre),.55);opacity:0}
+.porte .texte{position:relative}
+.nourrice-fig{width:100%;max-width:460px}
+
+/* Le diagnostic : la photo, puis la fiche qui arrive un peu grande et se
+   pose, comme Ma TVA dans Encaissez. La photo recule derrière elle. */
+/* Sur téléphone, la fiche passe devant en grand : c'est elle qu'on lit. */
+.scene-diag{position:relative;width:min(100%,560px);aspect-ratio:1/1.24;margin:0 auto}
+.tirage{position:absolute;left:0;top:2%;width:52%;margin:0;padding:10px 10px 34px;background:#f7f4ec;border-radius:4px;transform:rotate(-4deg);box-shadow:0 40px 70px -34px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.04);transition:opacity .8s ease,transform 1.1s var(--sortie)}
+.tirage img{width:100%;aspect-ratio:1;object-fit:cover}
+.scene-diag .appareil{position:absolute;right:0;top:9%;width:64%;z-index:2}
+@media (min-width:960px){.scene-diag{aspect-ratio:1/1.12}.tirage{top:3%;width:60%}.scene-diag .appareil{top:12%;width:54%}}
+html.anime .scene-diag .appareil{opacity:0;transform:scale(1.07);transition:opacity .45s ease,transform 1s var(--sortie)}
+html.anime .scene-diag.reponse .appareil{opacity:1;transform:none}
+html.anime .scene-diag.reponse .tirage{opacity:.55;transform:translate(-3%,2%) rotate(-6deg) scale(.95)}
+
+/* Les fiches de chantier : la fiche de l'artisan devant, le compte rendu
+   qui sort de derrière elle dans le téléphone du client. */
+.scene-fiche{width:100%;padding:40px 18px 34px}
+.duo{position:relative;width:min(100%,520px);margin:0 auto;aspect-ratio:1/.98}
+.duo .a{position:absolute;left:0;top:0;width:58%;z-index:2}
+.duo .c{position:absolute;right:0;top:9%;width:52%;z-index:1;transform:rotate(3deg)}
+html.anime .duo .c{opacity:0;transform:translate3d(-46%,2%,0) rotate(-2deg) scale(.9)}
+html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .35s ease,transform 1.2s var(--sortie)}
+.duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
+@media (min-width:960px){.scene-fiche{padding:56px 40px 44px}.scene-croquis{padding:36px 30px 40px}}
+
+/* ── Le prix : une carte, la bascule mois ou année ─────────────────────── */
+.prix-tete{text-align:center}
+.prix-tete .mot{font-size:clamp(64px,15vw,112px)}
+.prix-tete .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);color:var(--encre-2);max-width:28em}
+.bascule{position:relative;display:inline-flex;margin-top:34px;padding:5px;border-radius:999px;background:var(--fond);box-shadow:inset 0 0 0 1px var(--trait)}
+.bascule button{position:relative;z-index:1;border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);padding:12px 18px;border-radius:999px;min-height:44px;cursor:pointer;transition:background .25s,color .25s}
+.bascule button[aria-pressed="true"]{background:var(--action);color:var(--action-texte);box-shadow:0 6px 16px -10px rgba(var(--ombre),.8)}
+.curseur{position:absolute;left:0;top:5px;bottom:5px;border-radius:999px;background:var(--action);box-shadow:0 6px 16px -10px rgba(var(--ombre),.8)}
+html.anime .curseur{transition:transform .55s var(--sortie),width .55s var(--sortie)}
+.bascule.glisse button[aria-pressed="true"]{background:transparent;box-shadow:none}
+html.anime .bascule.glisse button{transition:color .25s ease .1s}
+.formule{position:relative;max-width:520px;margin:44px auto 0;border-radius:28px;padding:40px 30px 30px;display:flex;flex-direction:column;color:var(--sur-nuit);background:radial-gradient(120% 70% at 85% 0%,rgba(240,180,60,.2),transparent 60%),var(--nuit);box-shadow:0 0 0 1.5px var(--or-clair),0 44px 80px -36px rgba(var(--ombre),.8)}
+html.anime .formule{opacity:0;transform:perspective(1200px) translateY(48px) rotateX(9deg);transform-origin:50% 100%;transition:opacity .6s ease,transform 1.15s var(--sortie)}
+html.anime .formule.vu{opacity:1;transform:none}
+html.anime .formule::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 42%,rgba(240,180,60,.2) 50%,transparent 58%) no-repeat 150% 0/250% 100%}
+html.anime .formule.vu::after{background-position:-50% 0;transition:background-position 1.5s var(--va-et-vient) .55s}
+.formule .bandeau{position:absolute;top:-14px;left:26px;padding:8px 14px;border-radius:999px;background:var(--or-clair);color:var(--nuit);font:600 12.5px/1 var(--texte);letter-spacing:.06em;text-transform:uppercase}
+.formule h3{font-size:44px;color:var(--or-clair)}
+.formule .accroche{margin-top:8px;color:var(--sur-nuit-2);font-size:16px}
+.formule .prix{position:relative;margin-top:18px;font:400 70px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.formule .prix .plus{color:var(--or-clair)}
+.formule .prix .montant{display:inline-block}
+.formule .prix .cache{position:relative;display:inline-block;overflow:hidden;vertical-align:bottom;white-space:nowrap}
+.sortant{position:absolute;margin:0;pointer-events:none}
+.formule .prix .sortant{white-space:nowrap}
+.formule .prix small{display:inline-block;font:400 16px/1 var(--texte);color:var(--sur-nuit-2);letter-spacing:0}
+.formule .offert{margin-top:6px;font-size:14px;color:var(--or-clair);min-height:1.55em}
+.formule ul{list-style:none;padding:0;margin:22px 0 28px}
+.formule li{padding:11px 0 11px 30px;position:relative;font-size:16px;border-top:1px solid var(--trait-nuit)}
+.formule li::before{content:"";position:absolute;left:3px;top:17px;width:12px;height:7px;border-left:2px solid var(--or-clair);border-bottom:2px solid var(--or-clair);transform:rotate(-45deg)}
+.formule .bouton{width:100%}
+.essai-note{margin-top:28px;text-align:center;color:var(--encre-2);font-size:16px}
+
+/* ── Les questions ────────────────────────────────────────────────────── */
+.questions-grille{display:grid;gap:40px}
+.questions details{border-top:1px solid var(--trait)}
+.questions details:last-child{border-bottom:1px solid var(--trait)}
+.questions summary{cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:23px 0;font:400 clamp(24px,2.4vw,28px)/1.18 var(--display);list-style:none;transition:color .2s}
+.questions summary:hover{color:var(--feuille)}
+.questions summary::-webkit-details-marker{display:none}
+.questions summary::after{content:"";flex:none;width:11px;height:11px;margin-right:4px;border-right:1.5px solid var(--or);border-bottom:1.5px solid var(--or);transform:rotate(45deg) translateY(-4px);transition:transform .35s var(--sortie)}
+.questions details[open] summary::after{transform:rotate(225deg) translateY(-4px)}
+.questions details.ferme summary::after{transform:rotate(45deg) translateY(-4px)}
+.questions .corps{overflow:hidden}
+.questions details p{padding-bottom:26px;color:var(--encre-2);max-width:38em}
+@media (min-width:960px){.questions-grille{grid-template-columns:.8fr 1.2fr;gap:88px}.questions-grille .tete-q{position:sticky;top:132px;align-self:start}}
+
+/* ── La fin, le pied, le bouton sous le pouce ─────────────────────────── */
+.fin{text-align:center;padding:clamp(110px,15vw,180px) 0 calc(clamp(110px,15vw,180px) + var(--coin));overflow:hidden;background:var(--nuit)}
+.couchant{position:absolute;z-index:-2;left:50%;top:0;width:min(170vw,1300px);aspect-ratio:1;margin-left:calc(min(170vw,1300px) / -2);border-radius:50%;background:radial-gradient(closest-side,rgba(240,180,60,.3),rgba(240,180,60,.13) 44%,rgba(240,180,60,.04) 66%,transparent 76%);transform:translate3d(0,calc(-52% + var(--p,.38) * 118%),0);pointer-events:none}
+.fin h2{font-size:clamp(50px,11.5vw,108px);line-height:.98;max-width:11em;margin-inline:auto}
+.fin .actions{justify-content:center;margin-top:44px}
+.fin .rassure{color:var(--sur-nuit-2)}
+.pied{background:var(--nuit-2);padding:72px 0 0;overflow:hidden}
+.pied-grille{display:grid;gap:44px}
+.pied .marque{font-size:36px;color:var(--sur-nuit)}
+.pied .devise{margin-top:10px;color:var(--sur-nuit-2);font-size:16px}
+.pied nav{display:grid;grid-template-columns:1fr 1fr;gap:32px 24px}
+.pied h3{font:600 12.5px/1 var(--texte);letter-spacing:.12em;text-transform:uppercase;color:var(--or-clair)}
+.pied ul{list-style:none;padding:0;margin:14px 0 0}
+.pied li a{display:block;padding:7px 0;color:var(--sur-nuit);text-decoration:none;font-size:16px}
+.pied li a:hover{text-decoration:underline}
+.pied .bas{margin-top:52px;padding-top:20px;border-top:1px solid var(--trait-nuit);color:var(--sur-nuit-2);font-size:14px}
+.geant{margin:40px 0 0;padding-bottom:calc(8px + env(safe-area-inset-bottom));font:400 clamp(150px,41vw,560px)/.78 var(--display);letter-spacing:-.03em;text-align:center;white-space:nowrap;overflow:hidden;color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--or-clair) 62%,transparent);user-select:none;-webkit-user-select:none}
+.geant span{display:block}
+html.anime .geant span{transform:translateY(62%);transition:transform 1.6s var(--sortie)}
+html.anime .geant.vu span{transform:none}
+@media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
+.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(calc(100% + 24px + env(safe-area-inset-bottom)));visibility:hidden;transition:transform .5s var(--sortie),visibility 0s linear .5s;pointer-events:none}
+.pouce.vu{transform:none;visibility:visible;transition:transform .5s var(--sortie),visibility 0s;pointer-events:auto}
+.pouce .bouton{width:100%;max-width:420px;box-shadow:0 20px 44px -16px rgba(var(--ombre),.75)}
+@media (min-width:960px){.pouce{display:none}}
+@media (prefers-reduced-motion:reduce){
+  .pouce,.bouton,.bouton::after,.bascule button,.liens a::after,.questions summary::after,.tirage{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="barre" id="barre">
+  <div class="large">
+    <a class="marque" href="cause-2.html">Cause</a>
+    <nav class="liens" aria-label="Rubriques">
+      <a href="#arrosage">Le plan d'arrosage</a>
+      <a href="#diagnostic">Le diagnostic végétal</a>
+      <a href="#fiches">Les fiches de chantier</a>
+      <a href="#prix-outils">Le prix</a>
+    </nav>
+    <div class="droite">
+      <button type="button" class="ouvre-menu" aria-expanded="false" aria-controls="menu">Menu</button>
+      <a class="lien-demo" href="#essayer">Essai gratuit</a>
+    </div>
+  </div>
+  <span class="fil" aria-hidden="true"></span>
+</header>
+
+<nav class="menu" id="menu" aria-label="Rubriques">
+  <button type="button" class="ferme">Fermer</button>
+  <a href="#arrosage" style="--i:0">Le plan d'arrosage</a>
+  <a href="#diagnostic" style="--i:1">Le diagnostic végétal</a>
+  <a href="#fiches" style="--i:2">Les fiches de chantier</a>
+  <a href="#prix-outils" style="--i:3">Le prix</a>
+  <a href="cause-2.html" style="--i:4">Tout Cause</a>
+  <a class="bouton" href="#essayer" style="--i:5">Essayer 15 jours gratuits</a>
+</nav>
+
+<main>
+
+<section class="ouverture">
+  <div class="large ouverture-grille">
+    <div>
+      <h1 data-monte>Trois outils pour <em>le jardin.</em></h1>
+      <p class="chapo">Le plan d'arrosage, le diagnostic végétal et les fiches de chantier, en plus de votre formule.</p>
+      <div class="actions">
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+        <a class="bouton clair" href="#prix-outils">Voir le prix</a>
+      </div>
+      <p class="rassure">6 € HT par mois. Un plan d'arrosage et un diagnostic offerts pour essayer.</p>
+    </div>
+    <div class="scene plateau socle" id="plateau" data-t aria-hidden="true">
+      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1137"></figure></div></div>
+      <div class="pose pose-cr"><div class="entre entre-cr"><figure class="feuille"><img src="images/outils-compte-rendu-carte.jpg" alt="" width="700" height="1366"></figure></div></div>
+      <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="" width="1170" height="1992"></div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="outil papier nappe" id="arrosage">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot" data-monte>Le plan d'arrosage<span class="point">.</span></h2>
+      <p class="chapo">Photographiez le croquis du jardin, et le plan sort avec sa liste de pièces.</p>
+      <ul class="faits" data-vu="0.3">
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>À main levée, avec ses cotes.</b><span>Les cotes commandent, pas le dessin. Le croquis porte aussi le piquage et la nourrice.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Calculé, pas deviné.</b><span>Chaque réseau est dimensionné sur la pression qui arrive au dernier arroseur.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>La liste part chez votre fournisseur.</b><span>Chaque pièce comptée, du compteur à la nourrice et jusqu'au dernier arroseur.</span></li>
+      </ul>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene scene-croquis" id="scene-croquis">
+        <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : deux pelouses de 12 m sur 12 m et de 8 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 2,40 m, un couloir de 10 m sur 2 m, la nourrice et le compteur">
+          <svg viewBox="0 0 372 212" aria-hidden="true">
+            <defs>
+              <filter id="trait-crayon" x="-2%" y="-2%" width="104%" height="104%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="grain"/>
+                <feDisplacementMap in="SourceGraphic" in2="grain" scale="1.4"/>
+              </filter>
+              <pattern id="quadrillage" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M10 0H0V10" fill="none" stroke="var(--quadrillage)" stroke-width="0.6"/>
+              </pattern>
+            </defs>
+            <rect width="372" height="212" fill="#fbf8ef"/>
+            <rect width="372" height="212" fill="url(#quadrillage)"/>
+            <rect class="eclat" x="63" y="13" width="34" height="14.5" rx="3" fill="rgba(240,180,60,.42)"/>
+            <g fill="none" stroke="var(--crayon)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" filter="url(#trait-crayon)">
+              <path d="M26.5 35.2 C62 33.8 101 35.9 134.3 34.6 C133.6 70 134.8 106 133.8 142.4 C99 143.2 61 141.6 26 142.6 C27 106 25.6 70 26.5 35.2 Z"/>
+              <path d="M152.4 34.8 C176 33.9 201 35.4 224.2 34.4 C223.6 58 224.6 83 223.8 106.4 C200 107.1 175 105.8 151.8 106.6 C152.6 83 151.6 58 152.4 34.8 Z"/>
+              <path d="M152.2 124.4 C212 123.2 271 125.3 332.4 123.9 C332.8 131 331.8 139 332.3 145.9 C272 146.7 211 144.9 151.9 146.2 C152.5 139 151.7 131 152.2 124.4 Z"/>
+              <path d="M26.3 160.6 C56 159.6 86 161.2 116.4 160.2 C116.9 166 115.9 172 116.2 178.4 C86 179.1 56 177.7 25.9 178.6 C26.5 172 25.8 166 26.3 160.6 Z"/>
+              <path d="M137.6 85.2 L148.8 85 L148.9 91.8 L137.4 92 Z" fill="var(--crayon)"/>
+              <path d="M166 111.4 C160 106 155 100 149.6 94.6 M150 99.8 L149.4 94.4 L154.6 94.8"/>
+              <circle cx="143.2" cy="178.6" r="5.4"/>
+              <circle cx="143.2" cy="178.6" r="1.2" fill="var(--crayon)"/>
+              <path d="M32 28.4 L128 28.4 M32 26 L32 31 M128 26 L128 31"/>
+              <path d="M19.6 41 L19.6 136 M17 41 L22.2 41 M17 136 L22.2 136"/>
+              <path d="M157 28.4 L219 28.4 M157 26 L157 31 M219 26 L219 31"/>
+              <path d="M230.8 40 L230.8 101 M228.2 40 L233.4 40 M228.2 101 L233.4 101"/>
+              <path d="M157 153.4 L327 153.4 M157 151 L157 156 M327 151 L327 156"/>
+              <path d="M30 186.4 L112 186.4 M30 184 L30 189 M112 184 L112 189"/>
+            </g>
+            <g fill="var(--crayon)" font-family="'Bradley Hand', 'Segoe Print', 'Marker Felt', 'Comic Sans MS', cursive" text-anchor="middle">
+              <text x="80" y="93" font-size="15">pelouse</text>
+              <text x="188" y="75" font-size="14">pelouse</text>
+              <text x="242" y="139.4" font-size="12.5">massif  GAG</text>
+              <text x="71" y="173.8" font-size="11.5">couloir</text>
+              <text id="cote-depart" x="80" y="24.2" font-size="12.5">12 m</text>
+              <text x="13" y="92" font-size="12.5" transform="rotate(-90 13 92)">12 m</text>
+              <text x="188" y="24.2" font-size="12.5">8 m</text>
+              <text x="245" y="74" font-size="12.5">8 m</text>
+              <text x="242" y="167" font-size="12.5">20 m</text>
+              <text x="352" y="139" font-size="12">2,40</text>
+              <text x="71" y="200" font-size="12">10 m</text>
+              <text x="13" y="173" font-size="12">2 m</text>
+              <text x="190" y="120.6" font-size="12.5">nourrice</text>
+              <text x="183" y="183" font-size="12.5">compteur</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, pelouse arrière de 12 m sur 12 m, 8 turbines 3504 buse 0,75 de portée 5,1 m, et 42 m de PEHD Ø25" width="1038" height="1137" decoding="async"></figure></div></div>
+        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">12 m</span></span>
+      </div>
+      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de quatre voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1185" decoding="async"></figure>
+      <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="outil nuit nappe" id="diagnostic">
+  <div class="large chap-grille inverse">
+    <div class="chap-texte">
+      <h2 class="mot" data-monte>Le diagnostic végétal<span class="point">.</span></h2>
+      <p class="chapo">Photographiez une plante malade, et sachez quoi faire.</p>
+      <ul class="faits" data-vu="0.3">
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>L'IA regarde, la fiche décide.</b><span>Le modèle décrit ce qu'il voit. Le diagnostic vient d'une fiche écrite et sourcée.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Probable, jamais certain.</b><span>Cause dit ce qu'il pense, et sur quel arbre. Jamais un pourcentage.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Que faire, et est-ce grave.</b><span>La conduite à tenir, et la gravité pour l'arbre.</span></li>
+      </ul>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene-diag" id="scene-diag">
+        <figure class="tirage"><div class="balaye"><img src="images/outils-feuille.jpg" alt="Photo d'une feuille de peuplier couverte de petites taches brunes" width="650" height="650" decoding="async"></div></figure>
+        <div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du diagnostic dans Cause : brunissure des feuilles de peuplier, probable sur un peuplier, ce qu'est la maladie et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div>
+      </div>
+      <p class="credit">Photo de Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia Commons, sous licence CC BY 3.0 US, recadrée.</p>
+    </div>
+  </div>
+</section>
+
+<section class="outil nappe" id="fiches" style="background:var(--fond)">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot" data-monte>Les fiches de chantier<span class="point">.</span></h2>
+      <p class="chapo">Cochez ce qui a été fait pendant l'entretien, puis envoyez la fiche au client.</p>
+      <ul class="faits" data-vu="0.3">
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Votre liste, une fois pour toutes.</b><span>Vous composez vos prestations. Chaque fiche les reprend.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Par SMS ou par e-mail.</b><span>Le client lit son compte rendu sur son téléphone, sans rien installer.</span></li>
+        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Gardées pour vous.</b><span>Les comptes rendus envoyés restent dans l'outil, à leur date.</span></li>
+      </ul>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene sable scene-fiche">
+        <div class="socle" data-t style="--cote:16deg"><div class="tourne">
+          <div class="duo" id="duo">
+            <div class="appareil a"><div class="ecran"><img src="images/outils-fiche.jpg" alt="La fiche de chantier dans Cause, le jeudi 29 octobre 2026 chez M. Bernard : tonte, ébarbage des bordures et ramassage de l'herbe cochés, envoyée par SMS" width="1170" height="1992" decoding="async"></div></div>
+            <div class="appareil c"><div class="ecran"><img src="images/outils-compte-rendu.jpg" alt="Ce que reçoit M. Bernard : le retour d'intervention du jeudi 29 octobre 2026, les travaux faits, le temps passé et une remarque" width="780" height="1328" decoding="async"></div></div>
+          </div>
+        </div></div>
+        <p class="duo-legende"><span>Votre fiche.</span><span>Ce que reçoit M. Bernard.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="papier nappe" id="prix-outils">
+  <div class="large">
+    <div class="prix-tete">
+      <h2 class="mot" data-monte>Le prix<span class="point">.</span></h2>
+      <p class="chapo">En plus de votre formule, quelle qu'elle soit. Vous les retirez quand vous voulez.</p>
+      <div class="bascule" role="group" aria-label="Paiement">
+        <button type="button" data-periode="mois" aria-pressed="true">Au mois</button>
+        <button type="button" data-periode="an" aria-pressed="false">À l'année, 2 mois offerts</button>
+      </div>
+    </div>
+    <article class="formule" data-vu="0.1" data-mois="6" data-an="60">
+      <span class="bandeau">Un plan et un diagnostic offerts</span>
+      <h3>Les outils de paysage</h3>
+      <p class="accroche">Avec Artisan, Entreprise ou Illimité.</p>
+      <p class="prix"><span class="plus">+</span><span class="montant">6 €</span> <small class="rythme">HT par mois</small></p>
+      <p class="offert"></p>
+      <ul>
+        <li>Le plan d'arrosage</li>
+        <li>Le diagnostic végétal</li>
+        <li>Les fiches de chantier</li>
+      </ul>
+      <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
+    </article>
+    <p class="essai-note"><a href="cause-2.html#prix">Voir les trois formules</a></p>
+  </div>
+</section>
+
+<section class="questions" id="questions">
+  <div class="large questions-grille">
+    <div class="tete-q"><h2 class="mot" data-monte>Vos questions.</h2></div>
+    <div>
+      <details><summary>Faut-il les outils pour se servir de Cause ?</summary><p>Non. Le devis, le planning, la facture et la TVA sont dans chaque formule. Les outils s'y ajoutent, et se retirent.</p></details>
+      <details><summary>Et si mon croquis est incomplet ?</summary><p>Cause vous dit ce qui manque, une cote, le piquage ou la nourrice. Le plan attend que tout soit là.</p></details>
+      <details><summary>Le diagnostic remplace-t-il un expert ?</summary><p>Non. Il dit ce qui est probable et quoi faire. Une photo ne permet pas de juger la solidité d'un arbre.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="fin nuit nappe" id="essayer">
+  <div class="couchant" aria-hidden="true"></div>
+  <div class="large">
+    <h2 data-monte>Le jardin, en plus.</h2>
+    <div class="actions">
+      <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+      <a class="bouton clair" href="cause-2.html#prix">Voir les formules</a>
+    </div>
+    <p class="rassure">Sans carte bancaire. Sans engagement.</p>
+  </div>
+</section>
+
+</main>
+
+<div class="pouce" id="pouce"><a class="bouton" href="#essayer">Essayer 15 jours gratuits</a></div>
+
+<footer class="pied nappe">
+  <div class="large">
+    <div class="pied-grille">
+      <div>
+        <a class="marque" href="cause-2.html">Cause</a>
+        <p class="devise">Le logiciel des artisans.</p>
+      </div>
+      <nav aria-label="Pied de page">
+        <div><h3>Cause</h3><ul>
+          <li><a href="cause-2.html#fonctionnement">Comment ça marche</a></li>
+          <li><a href="cause-2.html#prix">Les prix</a></li>
+          <li><a href="#essayer">Essai gratuit</a></li>
+        </ul></div>
+        <div><h3>Les outils</h3><ul>
+          <li><a href="#arrosage">Le plan d'arrosage</a></li>
+          <li><a href="#diagnostic">Le diagnostic végétal</a></li>
+          <li><a href="#fiches">Les fiches de chantier</a></li>
+        </ul></div>
+        <div><h3>Légal</h3><ul>
+          <li><a href="mentions-legales-cause.html#mentions">Mentions légales</a></li>
+          <li><a href="mentions-legales-cause.html#conditions">Conditions générales</a></li>
+          <li><a href="mentions-legales-cause.html#donnees">Données personnelles</a></li>
+          <li><a href="mentions-legales-cause.html#cookies">Cookies</a></li>
+        </ul></div>
+      </nav>
+    </div>
+    <p class="bas">© 2026 Cause. Prix hors taxes.</p>
+  </div>
+  <div class="geant" data-vu="0.35" aria-hidden="true"><span>Cause</span></div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var racine = document.documentElement, anime = racine.classList.contains("anime");
+  var un = function(s, c){ return (c || document).querySelector(s); };
+  var tous = function(s, c){ return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var attendre = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+  var borne = function(v, a, b){ return v < a ? a : v > b ? b : v; };
+  var lisse = function(a, b, v){ var x = borne((v - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
+  var SORTIE = "cubic-bezier(.16,1,.3,1)", CAMERA = "cubic-bezier(.65,0,.35,1)";
+
+  // ── CE QUI SERT AVEC OU SANS MOUVEMENT ────────────────────────────────
+
+  var menu = document.getElementById("menu"), ouvre = un(".ouvre-menu");
+  var basculer = function(ouvert, rendre){
+    menu.classList.toggle("ouvert", ouvert); ouvre.setAttribute("aria-expanded", String(ouvert));
+    racine.style.overflow = ouvert ? "hidden" : "";
+    if (ouvert) un(".ferme", menu).focus(); else if (rendre) ouvre.focus();
+  };
+  ouvre.addEventListener("click", function(){ basculer(true); });
+  un(".ferme", menu).addEventListener("click", function(){ basculer(false, true); });
+  tous("a", menu).forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
+  addEventListener("keydown", function(e){ if (e.key === "Escape" && menu.classList.contains("ouvert")) basculer(false, true); });
+
+  // Le mois ou l'année : 6 € HT par mois, 60 € HT à l'année (deux mois
+  // offerts, comme les formules ; docs/abonnement-module-paysage.md). Même
+  // geste que cause-2.html : le curseur glisse, l'ancien prix sort par le
+  // haut pendant que le nouveau monte.
+  var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), carte = un("#prix-outils .formule");
+  var curseur = document.createElement("span"); curseur.className = "curseur"; curseur.setAttribute("aria-hidden", "true");
+  bascule.insertBefore(curseur, bascule.firstChild); bascule.classList.add("glisse");
+  var placerCurseur = function(){
+    var b = un('[aria-pressed="true"]', bascule);
+    curseur.style.width = b.offsetWidth + "px"; curseur.style.transform = "translateX(" + b.offsetLeft + "px)";
+  };
+  var ecrirePrix = function(f, p){
+    un(".montant", f).textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
+    un(".rythme", f).textContent = p === "an" ? "HT par an" : "HT par mois";
+    var auMois = Number(f.getAttribute("data-an")) / 12;
+    un(".offert", f).textContent = p === "an" ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
+  };
+  (function(){ var m = un(".montant", carte), cache = document.createElement("span"); cache.className = "cache"; m.parentNode.insertBefore(cache, m); cache.appendChild(m); })();
+  var sortant = function(el){
+    var c = el.cloneNode(true);
+    c.classList.add("sortant"); c.setAttribute("aria-hidden", "true");
+    c.style.left = el.offsetLeft + "px"; c.style.top = el.offsetTop + "px"; c.style.width = el.offsetWidth + "px";
+    el.parentNode.appendChild(c); return c;
+  };
+  var roulements = [];
+  var jouer = function(el, cles, options){ var a = el.animate(cles, options); roulements.push(a); return a; };
+  var partir = function(copie, cles, options){ var a = jouer(copie, cles, options); a.onfinish = a.oncancel = function(){ copie.remove(); }; };
+  var periode = function(p){
+    boutonsPeriode.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-periode") === p)); });
+    placerCurseur();
+    roulements.forEach(function(a){ a.cancel(); }); roulements = [];
+    tous(".sortant").forEach(function(c){ c.remove(); });
+    var montant = un(".montant", carte), cache = montant.parentNode, rythme = un(".rythme", carte), offert = un(".offert", carte);
+    if (!anime || !montant.animate){ ecrirePrix(carte, p); return; }
+    var largeur = cache.offsetWidth;
+    var vieuxPrix = sortant(montant), vieuxRythme = sortant(rythme), vieilleOffre = offert.textContent ? sortant(offert) : null;
+    ecrirePrix(carte, p);
+    partir(vieuxPrix, [{ transform: "translateY(0)" }, { transform: "translateY(-105%)" }], { duration: 200, easing: "cubic-bezier(.5,0,.9,.4)", fill: "both" });
+    jouer(cache, [{ width: largeur + "px" }, { width: cache.offsetWidth + "px" }], { duration: 520, easing: SORTIE, fill: "backwards" });
+    jouer(montant, [{ transform: "translateY(105%)" }, { transform: "translateY(0)" }], { duration: 520, delay: 120, easing: SORTIE, fill: "backwards" });
+    partir(vieuxRythme, [{ opacity: 1 }, { opacity: 0 }], { duration: 110, delay: 130, fill: "both" });
+    jouer(rythme, [{ opacity: 0 }, { opacity: 1 }], { duration: 110, delay: 130, fill: "backwards" });
+    if (vieilleOffre) partir(vieilleOffre, [{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: "both" });
+    if (offert.textContent) jouer(offert, [{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 150, fill: "backwards" });
+  };
+  boutonsPeriode.forEach(function(b){ b.addEventListener("click", function(){ if (b.getAttribute("aria-pressed") !== "true") periode(b.getAttribute("data-periode")); }); });
+  placerCurseur();
+  addEventListener("resize", placerCurseur);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placerCurseur);
+
+  // Le bouton du pouce : visible une fois l'ouverture passée, effacé dès qu'un
+  // autre bouton d'essai est à l'écran.
+  var pouce = document.getElementById("pouce");
+  if ("IntersectionObserver" in window){
+    var visibles = new Set();
+    var veille = new IntersectionObserver(function(entrees){
+      entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
+      pouce.classList.toggle("vu", visibles.size === 0);
+    });
+    tous(".ouverture, #prix-outils .formule, #essayer, .pied").forEach(function(c){ veille.observe(c); });
+  }
+
+  // La seule boucle du défilement : la barre et son fil, et ce que chaque
+  // élément suivi tire de sa place à l'écran.
+  var barre = document.getElementById("barre"), fil = un(".fil", barre);
+  var proches = new Set(), prevue = false;
+  var passe = function(){
+    prevue = false;
+    var vh = innerHeight, y = scrollY, total = racine.scrollHeight - vh, lus = [];
+    proches.forEach(function(el){ lus.push([el, el.getBoundingClientRect()]); });
+    barre.classList.toggle("posee", y > 8);
+    fil.style.transform = "scaleX(" + (total > 0 ? borne(y / total, 0, 1) : 0).toFixed(4) + ")";
+    lus.forEach(function(l){ l[0].auDefilement(l[1], vh); });
+  };
+  var demander = function(){ if (!prevue){ prevue = true; requestAnimationFrame(passe); } };
+  addEventListener("scroll", demander, {passive:true});
+  addEventListener("resize", demander);
+  demander();
+
+  // Les questions : la réponse se déplie à sa hauteur, se replie plus vite.
+  tous(".questions details").forEach(function(d){
+    var s = un("summary", d), corps = document.createElement("div"), veut = d.open, cours = null;
+    corps.className = "corps";
+    while (s.nextSibling) corps.appendChild(s.nextSibling);
+    d.appendChild(corps);
+    s.addEventListener("click", function(e){
+      if (!anime) return;
+      e.preventDefault(); veut = !veut;
+      if (cours){ cours.onfinish = null; cours.cancel(); }
+      if (veut){
+        d.open = true; d.classList.remove("ferme");
+        cours = corps.animate([{ height: "0px", opacity: 0 }, { height: corps.scrollHeight + "px", opacity: 1 }], { duration: 480, easing: SORTIE });
+      } else {
+        d.classList.add("ferme");
+        cours = corps.animate([{ height: corps.offsetHeight + "px", opacity: 1 }, { height: "0px", opacity: 0 }], { duration: 260, easing: "cubic-bezier(.5,0,.75,0)" });
+        cours.onfinish = function(){ d.open = false; d.classList.remove("ferme"); };
+      }
+    });
+  });
+
+  if (!anime){ window.causePret = true; return; }
+
+  // ── LE MOUVEMENT ───────────────────────────────────────────────────────
+
+  // Sur téléphone, le bouton d'essai couvre le bas de l'écran : ce qui ne
+  // se joue qu'une fois attend d'être au-dessus de lui (cause-2.html).
+  var grand = window.matchMedia && matchMedia("(min-width:960px)").matches;
+  var sousLePouce = grand ? "-40px" : "-104px";
+
+  var veilleProche = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting) proches.add(e.target); else proches.delete(e.target); });
+    demander();
+  }, {rootMargin:"30% 0px 30% 0px"});
+  var suivre = function(el, fn){ el.auDefilement = fn; veilleProche.observe(el); };
+
+  // Les titres : chaque mot dans son cache, le texte entier gardé pour qui
+  // l'écoute.
+  function enfants(n){ return Array.prototype.slice.call(n.childNodes); }
+  var decouper = function(el){
+    var rang = 0, entier = el.textContent.replace(/\s+/g, " ").trim();
+    var traiter = function(noeud){
+      enfants(noeud).forEach(function(n){
+        if (n.nodeType === 3){
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/([ \n\t]+)/).forEach(function(m){
+            if (!m) return;
+            if (/^[ \n\t]+$/.test(m)){ frag.appendChild(document.createTextNode(" ")); return; }
+            var cache = document.createElement("span"), mot = document.createElement("span");
+            cache.className = "mt"; mot.className = "mi"; mot.style.setProperty("--i", rang++); mot.textContent = m;
+            cache.appendChild(mot); frag.appendChild(cache);
+          });
+          noeud.replaceChild(frag, n);
+        } else if (n.nodeType === 1 && !n.classList.contains("point")) traiter(n);
+      });
+    };
+    traiter(el);
+    if (/^H[1-6]$/.test(el.tagName)) el.setAttribute("aria-label", entier);
+  };
+  tous("[data-monte]").forEach(decouper);
+
+  var voir = function(el){ el.classList.add("vu"); el.vuA = performance.now(); };
+  var guets = {};
+  var guetter = function(el, seuil){
+    var marge = grand || el.closest(".pied") ? "-8%" : sousLePouce, cle = seuil + " " + marge;
+    if (!guets[cle]) guets[cle] = new IntersectionObserver(function(es, o){
+      es.forEach(function(e){ if (e.isIntersecting){ o.unobserve(e.target); voir(e.target); } });
+    }, {rootMargin:"0px 0px " + marge + " 0px", threshold:seuil});
+    guets[cle].observe(el);
+  };
+  tous("[data-monte]").forEach(function(el){ if (el.tagName !== "H1") guetter(el, 0.35); });
+  tous("[data-vu]").forEach(function(el){ guetter(el, Number(el.getAttribute("data-vu")) || 0.2); });
+  tous(".faits").forEach(function(liste){ Array.prototype.forEach.call(liste.children, function(li, n){ li.style.setProperty("--i", n); }); });
+
+  // La profondeur : « t » vaut 1 quand le socle entre par le bas, 0 posé.
+  tous("[data-t]").forEach(function(socle){
+    suivre(socle, function(r, vh){
+      var h = Math.min(r.height, vh * .8);
+      var entre = borne((vh - r.top) / h, 0, 1), sorti = borne((72 - r.top) / r.height, 0, 1);
+      var t = (1 - lisse(0, .75, entre)) - .3 * lisse(.3, 1, sorti);
+      socle.style.setProperty("--t", t.toFixed(3)); socle.style.setProperty("--tp", Math.max(0, t).toFixed(3));
+      socle.classList.toggle("repos", Math.abs(t) < .0005);
+    });
+  });
+  tous(".nuit.nappe").forEach(function(bande){
+    suivre(bande, function(r, vh){
+      var e = 1 - lisse(vh * .34, vh, vh * 1.34 - r.top);
+      bande.style.setProperty("--e", e.toFixed(3));
+      bande.classList.toggle("entre-etroite", e > .001 && r.top < vh);
+    });
+  });
+  var fin = un(".fin");
+  suivre(fin, function(r, vh){ fin.style.setProperty("--p", borne((vh - r.top) / (vh + r.height), 0, 1).toFixed(3)); });
+
+  // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
+  // y revenir la rejoue depuis le début.
+  var scene = function(el, seuil, jouerLa, arreter){
+    var tour = 0;
+    new IntersectionObserver(function(e){
+      if (e[0].isIntersecting){ tour++; var mien = tour; jouerLa(function(){ return mien === tour; }); }
+      else { tour++; if (arreter) arreter(); }
+    }, {rootMargin:"0px 0px " + sousLePouce + " 0px", threshold:seuil}).observe(el);
+  };
+
+  // 0. L'OUVERTURE. Le chapo et les boutons tout de suite ; le titre dès que
+  // sa police est là ; le plateau quand ses trois images sont décodées.
+  var ouverture = un(".ouverture"), plateau = document.getElementById("plateau");
+  var polices = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  requestAnimationFrame(function(){ ouverture.classList.add("pret"); });
+  Promise.race([polices, attendre(500)]).then(function(){ un("h1", ouverture).classList.add("vu"); });
+  var images = tous("img", plateau);
+  var decodees = Promise.race([Promise.all(images.map(function(i){ return i.decode ? i.decode().catch(function(){}) : Promise.resolve(); })), attendre(1800)]);
+  var plateauVu = new Promise(function(r){ new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); r(); } }, {threshold:0.3}).observe(plateau); });
+  var pretAFlotter = false, plateauEnVue = false;
+  Promise.all([decodees, plateauVu]).then(async function(){
+    plateau.classList.add("vu");
+    await attendre(2000); pretAFlotter = true; plateau.classList.toggle("flotte", plateauEnVue);
+  });
+  new IntersectionObserver(function(e){ plateauEnVue = e[0].isIntersecting; plateau.classList.toggle("flotte", pretAFlotter && plateauEnVue); }).observe(plateau);
+  if (window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches){
+    var vise = { x:0, y:0 }, tenu = { x:0, y:0 }, enRoute = false;
+    var glisser = function(){
+      tenu.x += (vise.x - tenu.x) * .08; tenu.y += (vise.y - tenu.y) * .08;
+      plateau.style.setProperty("--mx", tenu.x.toFixed(3)); plateau.style.setProperty("--my", tenu.y.toFixed(3));
+      if (Math.abs(vise.x - tenu.x) + Math.abs(vise.y - tenu.y) > .002) requestAnimationFrame(glisser); else enRoute = false;
+    };
+    var viser = function(x, y){ vise.x = x; vise.y = y; if (!enRoute){ enRoute = true; requestAnimationFrame(glisser); } };
+    ouverture.addEventListener("pointermove", function(e){
+      var r = ouverture.getBoundingClientRect();
+      viser(borne((e.clientX - r.left) / r.width * 2 - 1, -1, 1), borne((e.clientY - r.top) / r.height * 2 - 1, -1, 1));
+    });
+    ouverture.addEventListener("pointerleave", function(){ viser(0, 0); });
+  }
+
+  // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 12 m » s'éclaire,
+  // quitte le croquis, vole jusqu'à « 12 m sur 12 m » de la carte du réseau
+  // et s'y pose au pixel près (mesuré sur le rendu : 38,8 % de la largeur de
+  // la carte, 20,0 % de sa hauteur, le mot faisant 9,0 % de sa largeur),
+  // puis s'efface sur le chiffre de l'appli. La carte s'écrit alors.
+  var sceneCroquis = document.getElementById("scene-croquis"), croquis = un(".croquis", sceneCroquis);
+  var carteReseau = document.getElementById("carte-reseau"), porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
+  var depart = document.getElementById("cote-depart"), CIBLE_12 = { x:.3881, y:.1998, l:.0900 };
+  var vols = [];
+  var voler = function(el, cles, options){ var a = el.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
+  var place = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
+  var remettreCroquis = function(){
+    vols.forEach(function(a){ a.cancel(); }); vols = [];
+    sceneCroquis.classList.remove("surligne", "sort"); croquis.classList.remove("lit");
+    carteReseau.classList.remove("ecrite"); carteReseau.classList.add("blanche");
+  };
+  scene(sceneCroquis, 0.55, async function(encore){
+    remettreCroquis();
+    await attendre(500); if (!encore()) return;
+    croquis.classList.add("lit");
+    await attendre(1150); if (!encore()) return;
+    // Le croquis lu, la carte sort, son en-tête seul écrit.
+    sceneCroquis.classList.add("sort");
+    await attendre(850); if (!encore()) return;
+    sceneCroquis.classList.add("surligne");
+    await attendre(480); if (!encore()) return;
+    var s = sceneCroquis.getBoundingClientRect(), d = depart.getBoundingClientRect(), c = carteReseau.getBoundingClientRect();
+    var L = porte.offsetWidth, H = porte.offsetHeight;
+    var de = { e: d.width / (L * .78) };
+    de.x = d.left - s.left + d.width / 2 - L * de.e / 2; de.y = d.top - s.top + d.height / 2 - H * de.e / 2;
+    var vers = { e: (CIBLE_12.l * c.width) / (L * .78) };
+    vers.x = c.left - s.left + CIBLE_12.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_12.y * c.height - H * vers.e / 2;
+    var haut = { x: de.x + (vers.x - de.x) * .45, y: Math.min(de.y, vers.y) - 26, e: Math.max(de.e, vers.e) * 1.5 };
+    voler(fondPorte, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1150, easing: "linear" });
+    await voler(porte, [
+      { transform: place(de), opacity: 0, filter: "blur(0px)" },
+      { transform: place(de), opacity: 1, offset: .12 },
+      { transform: place(haut), opacity: 1, filter: "blur(2px)", offset: .5 },
+      { transform: place(vers), opacity: 1, filter: "blur(0px)" }
+    ], { duration: 1150, easing: CAMERA });
+    if (!encore()) return;
+    await voler(porte, [{ transform: place(vers), opacity: 1 }, { transform: place(vers), opacity: 0 }], { duration: 220 });
+    if (!encore()) return;
+    carteReseau.classList.add("ecrite");
+    await attendre(1600); if (!encore()) return;
+    carteReseau.classList.remove("blanche", "ecrite");
+  }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
+
+  // 2. LE DIAGNOSTIC. Le trait d'or lit la photo, puis la fiche arrive un
+  // peu grande et se pose ; la photo recule derrière elle.
+  var sceneDiag = document.getElementById("scene-diag"), lecture = un(".balaye", sceneDiag);
+  scene(sceneDiag, 0.45, async function(encore){
+    sceneDiag.classList.remove("reponse"); lecture.classList.remove("lit");
+    await attendre(500); if (!encore()) return;
+    lecture.classList.add("lit");
+    await attendre(1350); if (!encore()) return;
+    sceneDiag.classList.add("reponse");
+  });
+
+  // 3. LES FICHES. La fiche de l'artisan est là ; une demi-seconde, puis le
+  // compte rendu sort de derrière elle, dans le téléphone du client.
+  var duo = document.getElementById("duo");
+  scene(duo, 0.5, async function(encore){
+    duo.classList.remove("envoye");
+    await attendre(900); if (!encore()) return;
+    duo.classList.add("envoye");
+  });
+
+  window.causePret = true;
+})();
+</script>
+</body>
+</html>

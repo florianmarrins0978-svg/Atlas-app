@@ -520,6 +520,46 @@ peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
 texte des cartes vertes).
 
 
+## ⏳ UNE PLANCHE À REGARDER : LES OUTILS DE PAYSAGE SUR LE SITE (20 novembre 2026)
+
+Sa demande, depuis son téléphone, devant `appli/vente/cause-2.html` : *« il
+faudrait rajouter l'abonnement de 6 € pour les outils [...] qu'on puisse
+cliquer sur l'abonnement de 6 € pour les outils, et que ça soit une porte pour
+ensuite arriver sur une autre page qu'on ferait défiler, où on nous montrerait
+un petit peu les outils »* : le plan d'arrosage, le diagnostic végétal, les
+fiches de fin de passage, dans la DA du site.
+
+**Fait, rien dans `src/` :** dans les prix de `cause-2.html`, sous les trois
+formules, la carte dorée « Les outils de paysage » (+6 € HT par mois, 60 € à
+l'année avec la bascule, les trois lignes de son bloc du 19 novembre) ; la
+carte entière ouvre `appli/vente/outils.html`, la page qui montre les trois
+outils. Les écrans sont ceux de l'appli d'aujourd'hui (écrans figés et rendu
+réel du plan, la source de chacun dans l'en-tête de la page) ; le croquis est
+un dessin. « Fiche de fin de passage » y porte le nom de l'outil dans l'appli,
+« Les fiches de chantier » : c'est son compte rendu que reçoit le client.
+`appli/tests/e2e.js` touche la carte au milieu de sa liste et regarde chaque
+image de la page (vu rouge en retirant le lien et une image).
+
+**Changé à côté, et dit :** l'accroche d'Entreprise disait « Tout Cause,
+jusqu'à cinq personnes qui facturent ». Les outils étant en plus, elle dit
+« Jusqu'à cinq personnes qui facturent. », la première moitié de la phrase de
+sa planche du 18 novembre.
+
+**À trancher par lui, non touché :**
+- la carte Artisan coche encore « Vos salariés ont accès au planning », et la
+  ligne au-dessus des prix dit « Vos salariés ne comptent jamais » : depuis
+  le 18 novembre, Artisan est un seul accès, salariés compris ;
+- « L'essai ouvre tout » sous les prix : depuis le 19 novembre, le plan
+  d'arrosage et le diagnostic sont offerts une fois, essai compris (la carte
+  des outils le dit déjà) ;
+- la fiche du diagnostic montrée est celle de `main`, qui porte encore
+  « Probable · Peuplier » (l'entrée de la fiche de diagnostic, plus haut) : à
+  refaire quand l'écran aura changé ;
+- les trois scènes sont des captures animées, pas des films de l'appli : les
+  filmer demande le serveur de l'appli, donc son oui.
+
+`cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
