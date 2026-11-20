@@ -1,5 +1,21 @@
 # Prochaines tâches
 
+## ⚠️ ARROSAGE : « LES PIÈCES DES RÉSEAUX » DIT PEHD Ø25 APRÈS LE CHOIX DU Ø32 (vu le 20 novembre 2026, non corrigé)
+
+Vu en filmant le plan pour le site (`appli/scripts/film-outils.cjs`). Sur le
+jardin de la démonstration, toucher « 32 » sur la carte du réseau 1 le passe
+bien en Ø32 : la carte le dit, et la liste compte « 48 m PEHD Ø32 ». Mais la
+section « Les pièces des réseaux » écrit toujours **« PEHD Ø25, 48 m »** sous
+le titre du réseau : le libellé est écrit en dur dans
+`src/app/paysage/arrosage/PiecesDuReseau.tsx` (`<span>PEHD Ø25, {r.metres}</span>`),
+alors que la pièce dessinée à côté (`r.pe`) est la bonne. La commande au
+fournisseur part juste ; l'écran, lui, dit deux diamètres pour le même tuyau.
+
+**À corriger sur son oui** (c'est `src/`, l'arrosage, donc une batterie) :
+lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite qui
+rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
+montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
 Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
@@ -676,27 +692,36 @@ sa planche du 18 novembre.
 - la fiche du diagnostic montrée est celle de `main`, qui porte encore
   « Probable · Peuplier » (l'entrée de la fiche de diagnostic, plus haut) : à
   refaire quand l'écran aura changé ;
-- les trois scènes sont des captures animées, pas des films de l'appli : les
-  filmer demande le serveur de l'appli, donc son oui.
+- les trois scènes des chapitres sont des captures animées ; les trois
+  outils de bout en bout, plus bas, sont des films de l'appli.
 
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
 
-**Le soir même, « Essayez le plan » (sa demande : toute la page, cliquable) :**
-le vrai écran du plan tourne dans le téléphone, compilé depuis `src/` par
-`appli/scripts/demo-outils/construire.ts`. **À relancer quand l'écran du plan
-change dans l'appli**, sans quoi le site montre une version d'avant. Le jardin
-(pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change vraiment les
-réseaux : sa pelouse à 4 turbines sur un seul réseau n'en changeait pas.
-**Fait le même soir, sa demande : « pareil avec les autres outils »** :
-« Essayez le diagnostic » (la fiche du platane, publiable, composée par le
-vrai moteur) et « Essayez la fiche » (M. Bernard, ses cases reprises, l'envoi,
-le retour chez le client). Les trois démonstrations se reconstruisent par
-`npx tsx appli/scripts/demo-outils/construire.ts`, **à relancer dès qu'un de
-ces écrans change dans l'appli**. **Vu en le faisant, non corrigé (hors
-périmètre)** : la fiche du platane de `donnees/phyto/` affiche des tirets
-dans l'appli (« INRAE — Ephytia », le titre de sa source, le crédit de sa
-photo), contraires à sa règle du 22 septembre ; la démonstration les change
-en virgules à la construction, la donnée et l'écran de `main` les gardent.
+**Le soir même, les trois outils de bout en bout, EN FILMS.** Ses demandes :
+toute la page du plan (25 ou 32, n'importe quelle pièce, la liste, l'envoi au
+fournisseur), puis *« pareil avec les autres outils »*. Une première version
+les donnait à toucher dans le téléphone ; sa correction : *« Je veux pas que
+ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il regardait un
+film. »* Chaque outil est donc une suite de scènes qui se jouent seules au
+défilement (onze films, `appli/vente/images/nov-film-outils-*`), tournées par
+`appli/scripts/film-outils.cjs` dans les démonstrations (les vrais écrans,
+compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
+**Quand un de ces écrans change dans l'appli**, le site montre une version
+d'avant : relancer, dans cet ordre,
+`npx tsx appli/scripts/demo-outils/construire.ts` puis
+`node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
+l'encodage ; `--apercu <dossier>` pour régler un récit en une minute).
+Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
+vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
+changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche
+du platane de `donnees/phyto/` affiche des tirets dans l'appli (« INRAE —
+Ephytia », le titre de sa source, le crédit de sa photo), contraires à sa règle
+du 22 septembre ; la démonstration les change en virgules à la construction,
+la donnée et l'écran de `main` les gardent. Les films du diagnostic montrent
+encore deux points médians de l'écran de `main` (« forêts) · consultée le… »
+sous Que faire, « Fiche version 1 · à jour au… » dans les détails) : ils
+partent avec l'entrée de la fiche de diagnostic, plus haut, et les films se
+retournent alors.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 

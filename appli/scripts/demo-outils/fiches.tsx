@@ -1,5 +1,5 @@
 /**
- * LES FICHES DE CHANTIER, POUR DE VRAI, DANS LE TÉLÉPHONE DU SITE.
+ * LES FICHES DE CHANTIER, POUR DE VRAI, SANS SERVEUR : LE PLATEAU DE LEURS FILMS.
  *
  * Sa demande du 20 novembre 2026 : « pareil avec les autres outils ». Les
  * écrans de l'outil, montés comme l'appli les monte, dans son cadre : la
@@ -17,7 +17,7 @@ import FichePage from "@/app/paysage/fiche/[id]/page";
 import PageRapportClient from "@/app/entretien/[jeton]/page";
 import RapportDansLAppliPage from "@/app/documents/entretien/[jeton]/page";
 import { Routeur } from "./routeur";
-import { ecouterLaPage } from "./pilote";
+import { ecouterLeTournage } from "./pilote";
 
 const ROUTES = [
   { motif: /^\/paysage\/fiche$/, ecran: () => <FichesPage /> },
@@ -31,4 +31,4 @@ createRoot(document.getElementById("racine")!).render(
   <Routeur routes={ROUTES} depart="/paysage/fiche" cadre={(vue) => <CadreApplication role="proprietaire">{vue}</CadreApplication>} />
 );
 
-ecouterLaPage('[data-atlas="ecran-fiches-chantier"], [data-atlas="fiche-chantier"]');
+ecouterLeTournage();

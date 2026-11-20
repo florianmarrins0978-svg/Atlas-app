@@ -39,6 +39,45 @@ function ecrire(flux, tampon) {
 }
 
 /**
+ * Ouvre les deux films d'une scène, et les nourrit image par image : rend
+ * { image(png), fermer() }. fermer() écrit aussi la première et la dernière
+ * image reçues (-debut.jpg, -fin.jpg), à la taille de la photographie.
+ *
+ * base  : le chemin des fichiers, sans extension.
+ * film  : { l, h }, la taille du film.
+ * x264, vp9 : ce qui est propre à ce film (qualité, niveau, images clés).
+ */
+function ouvrirBobine({ base, film, ips, x264, vp9 }) {
+  const entree = ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(ips), '-c:v', 'png', '-i', 'pipe:0', '-vf', versLeFilm(film)];
+  const encodeurs = [
+    [base + '.mp4', ['-c:v', 'libx264', '-preset', 'veryslow', '-profile:v', 'high', '-movflags', '+faststart'].concat(x264)],
+    [base + '.webm', ['-c:v', 'libvpx-vp9', '-b:v', '0', '-deadline', 'good', '-cpu-used', '1', '-row-mt', '1'].concat(vp9)],
+  ].map(([sortie, reglages]) => {
+    const p = spawn('ffmpeg', entree.concat(reglages, COULEUR, ['-an', sortie]), { stdio: ['pipe', 'inherit', 'inherit'] });
+    return { sortie, p, fini: new Promise((resolve) => p.on('close', resolve)) };
+  });
+  let premiere = null, derniere = null;
+  return {
+    async image(png) {
+      if (!premiere) premiere = png;
+      derniere = png;
+      await Promise.all(encodeurs.map((e) => ecrire(e.p.stdin, png)));
+    },
+    async fermer() {
+      for (const e of encodeurs) {
+        e.p.stdin.end();
+        if ((await e.fini) !== 0) throw new Error('l\'encodage a échoué : ' + e.sortie);
+      }
+      for (const [suffixe, png] of [['-debut.jpg', premiere], ['-fin.jpg', derniere]]) {
+        const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'png_pipe', '-i', 'pipe:0', '-frames:v', '1', '-q:v', '4', base + suffixe], { input: png });
+        if (r.status !== 0) throw new Error('image fixe non écrite : ' + base + suffixe + ' ' + String(r.stderr));
+      }
+      return ['.mp4', '.webm', '-debut.jpg', '-fin.jpg'].map((s) => path.basename(base) + s);
+    },
+  };
+}
+
+/**
  * Photographie la composition et écrit <base>.mp4, <base>.webm,
  * <base>-debut.jpg et <base>-fin.jpg.
  *
@@ -52,32 +91,13 @@ function ecrire(flux, tampon) {
  *         tout l'écran.
  */
 async function tourner({ page, base, film, ips, duree, x264, vp9, cadre }) {
+  const bobine = ouvrirBobine({ base, film, ips, x264, vp9 });
   const images = Math.round(duree * ips);
-  const entree = ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(ips), '-c:v', 'png', '-i', 'pipe:0', '-vf', versLeFilm(film)];
-  const encodeurs = [
-    [base + '.mp4', ['-c:v', 'libx264', '-preset', 'veryslow', '-profile:v', 'high', '-movflags', '+faststart'].concat(x264)],
-    [base + '.webm', ['-c:v', 'libvpx-vp9', '-b:v', '0', '-deadline', 'good', '-cpu-used', '1', '-row-mt', '1'].concat(vp9)],
-  ].map(([sortie, reglages]) => {
-    const p = spawn('ffmpeg', entree.concat(reglages, COULEUR, ['-an', sortie]), { stdio: ['pipe', 'inherit', 'inherit'] });
-    return { sortie, p, fini: new Promise((resolve) => p.on('close', resolve)) };
-  });
-  let premiere = null, derniere = null;
   for (let k = 0; k < images; k++) {
     await page.evaluate((t) => window.poser(t), k / ips);
-    const png = await page.screenshot(cadre ? { type: 'png', clip: cadre } : { type: 'png' });
-    if (k === 0) premiere = png;
-    derniere = png;
-    await Promise.all(encodeurs.map((e) => ecrire(e.p.stdin, png)));
+    await bobine.image(await page.screenshot(cadre ? { type: 'png', clip: cadre } : { type: 'png' }));
   }
-  for (const e of encodeurs) {
-    e.p.stdin.end();
-    if ((await e.fini) !== 0) throw new Error('l\'encodage a échoué : ' + e.sortie);
-  }
-  for (const [suffixe, png] of [['-debut.jpg', premiere], ['-fin.jpg', derniere]]) {
-    const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'png_pipe', '-i', 'pipe:0', '-frames:v', '1', '-q:v', '4', base + suffixe], { input: png });
-    if (r.status !== 0) throw new Error('image fixe non écrite : ' + base + suffixe + ' ' + String(r.stderr));
-  }
-  return ['.mp4', '.webm', '-debut.jpg', '-fin.jpg'].map((s) => path.basename(base) + s);
+  return bobine.fermer();
 }
 
-module.exports = { tourner, pixels, versLeFilm };
+module.exports = { tourner, ouvrirBobine, pixels, versLeFilm };

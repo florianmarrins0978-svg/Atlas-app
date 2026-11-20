@@ -96,3 +96,22 @@ Chaque montage le dit dans son en-tête, sous « ce qui est du montage ». Deux
 écarts tiennent à l'appli elle-même et sont notés dans `TODO.md` : le bouton
 « Envoyer le retour du jour » qui se rallume pendant le repli, et le filet du
 PDF qui traverse l'encadré « Bon pour accord ».
+
+## Les films des outils de paysage : sans serveur, sans base
+
+Les onze films de `appli/vente/outils.html` (le plan d'arrosage, le diagnostic,
+la fiche de chantier, 20 novembre 2026) ne passent pas par ce dossier. Ils se
+tournent dans les démonstrations du site (`appli/vente/demo/`, les vrais écrans
+compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`), qui
+n'ont besoin ni du serveur ni d'une base : aucune permission à demander.
+
+```bash
+npx tsx appli/scripts/demo-outils/construire.ts       # si un écran a changé
+node appli/scripts/film-outils.cjs appli/vente/images  # une heure, l'encodage
+node appli/scripts/film-outils.cjs <dossier> --apercu  # une photo par quart de seconde, en une minute
+```
+
+Le temps de la page y est figé et n'avance que d'une image à la fois ; les
+animations de l'appli et son défilement doux sont recalés sur lui, et chaque
+geste est un vrai appui de la souris. Le récit de chaque film est écrit dans
+`film-outils.cjs`, sous « Les récits ».

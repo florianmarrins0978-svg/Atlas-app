@@ -42,11 +42,9 @@
 
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
     · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
-      dans la démonstration (voir « ESSAYEZ LE PLAN » plus bas), sur le même
+      dans la démonstration (voir « DE BOUT EN BOUT » plus bas), sur le même
       jardin qu'elle ; ici la carte du réseau 1 et la nourrice éclatée ;
-    · outils-demo-arrosage, outils-demo-diagnostic, outils-demo-fiches : le
-      premier écran de chaque démonstration, posé sous le téléphone tant
-      qu'elle charge ;
+    · nov-film-outils-* : les films de la démonstration (même endroit) ;
     · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
       peint aujourd'hui (onglet « Aujourd'hui » de
       appli/soignee/fiche-de-diagnostic.html, figé par scripts/planche-figee/).
@@ -81,18 +79,25 @@
   qui a demandé moins de mouvement, chaque scène montre son état le plus
   parlant, immobile.
 
-  ESSAYEZ LE PLAN, LE 20 NOVEMBRE AU SOIR. Sa demande, la page vue : après
+  DE BOUT EN BOUT, LE 20 NOVEMBRE AU SOIR. Sa demande, la page vue : après
   la nourrice, un exemple à deux réseaux (« un réseau pour le gazon avec
   4 arroseurs [Rain Bird], et un réseau de goutte à goutte »), et « toute la
-  page » : toucher 25 ou 32 et voir les réseaux changer, toucher n'importe
-  quelle pièce pour la changer ou la supprimer, la liste, l'envoi au
-  fournisseur. Le téléphone de la section « Essayez le plan » porte donc le
-  VRAI écran de l'appli, pas une copie : demo/arrosage.html, compilé depuis
-  src/ par appli/scripts/demo-outils/construire.ts (mêmes composants, même
-  calcul, même feuille de style), les actions serveur remplacées par
-  appli/scripts/demo-outils/bouchons.ts. Le guide à côté ne dessine rien sur
-  l'écran : il le fait défiler et touche ce qu'il faut, et c'est l'appli qui
-  répond (pilote.ts).
+  page » : 25 ou 32 qui change les réseaux, n'importe quelle pièce à changer
+  ou supprimer, la liste, l'envoi au fournisseur ; puis « pareil avec les
+  autres outils ». Une première version les donnait à TOUCHER, dans un
+  téléphone qui portait l'appli. Sa correction, le soir même : « Je veux pas
+  que ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il
+  regardait un film. Comme on a fait sur le site internet normal. »
+  Chaque outil est donc une suite de scènes filmées, une par geste, qui se
+  jouent seules quand on arrive dessus et se rejouent quand on y revient
+  (onze films, images/nov-film-outils-*). Ce qu'ils filment est le VRAI
+  écran de l'appli, pas une copie : vente/demo/*.html, compilés depuis src/
+  par appli/scripts/demo-outils/construire.ts (mêmes composants, même
+  calcul, même feuille de style), la base remplacée par
+  appli/scripts/demo-outils/bouchons/<outil>.ts. Le tournage
+  (appli/scripts/film-outils.cjs) y fait les gestes avec un vrai appui,
+  image par image : rien n'est dessiné sur l'écran, c'est l'appli qui
+  répond.
   LE JARDIN : une pelouse de 20 m sur 8 m et un massif en goutte-à-goutte,
   cherché avec le vrai calcul parmi des centaines. Une pelouse à 4 turbines
   sur un seul réseau passe déjà en Ø25 : le 32 n'y change rien, et l'appli
@@ -101,23 +106,24 @@
   moins ». « 3005 » n'existe pas dans son catalogue ; la 3504 est la turbine
   Rain Bird que le calcul choisit. Le croquis, la carte du réseau et la
   nourrice du chapitre sont ceux de ce même jardin.
-
-  ESSAYEZ LE DIAGNOSTIC, ESSAYEZ LA FICHE : « pareil avec les autres outils »,
-  sa demande du même soir. Même principe : le vrai écran, compilé depuis src/.
-  Ces écrans lisent la base (ce sont des écrans « serveur ») : routeur.tsx les
-  rend dans le navigateur, et bouchons/<outil>.ts tient lieu de base.
+  LE DIAGNOSTIC ET LA FICHE lisent la base (ce sont des écrans « serveur ») :
+  demo-outils/routeur.tsx les rend dans le navigateur.
     · le diagnostic : la fiche de l'anthracnose du platane, l'une des trois
       fiches publiables de donnees/phyto/ (celle du peuplier, montrée plus
       haut, n'est que dans une base locale), lue par la fonction de l'import
-      et composée par le vrai moteur (composerResultat). Le guide dépose sa
-      photo comme si on l'avait prise ; une autre photo est refusée en clair
-      (l'IA n'est pas sur le site). L'essence n'est pas donnée : l'écran dit
-      « Probable » seul, sans le point que main met encore devant l'essence ;
+      et composée par le vrai moteur (composerResultat). La photo est donnée
+      à l'appareil photo que l'appli ouvre ; l'IA n'est pas dans la
+      démonstration, et seule cette photo-là reçoit une réponse. L'essence
+      n'est pas donnée : l'écran dit « Probable » seul, sans le point que
+      main met encore devant l'essence. Sous « Que faire », la source porte
+      encore un point médian (« forêts) · consultée ») : c'est l'écran de
+      main, noté dans TODO.md, pas retouché ici ;
     · les fiches : le modèle fourni par l'appli, deux clients d'exemple, un
       compte rendu déjà envoyé chez M. Bernard ; le nommer sur une fiche
-      neuve recoche ses cases de la dernière fois (cocherCommeLaDerniereFois),
-      l'envoi dit à côté du téléphone que la messagerie s'ouvrirait, et
-      « Chez le client » ouvre le retour d'intervention tel qu'il le lit.
+      neuve recoche ses cases de la dernière fois (cocherCommeLaDerniereFois).
+      Le dernier film est le retour d'intervention tel qu'il le lit.
+  Les films sont datés du vendredi 20 novembre 2026, 17 h 36 : l'heure
+  s'écrit sur la fiche envoyée, et ne change plus d'un tournage à l'autre.
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : à regarder sur son iPhone.
 -->
@@ -395,73 +401,43 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 .duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
 @media (min-width:960px){.scene-fiche{padding:56px 40px 44px}.scene-croquis{padding:36px 30px 40px}}
 
-/* ── Essayez : le vrai écran de l'appli, dans le téléphone ──────────────── */
-/* Sa demande du 20 novembre 2026 : « leur montrer toute la page », et qu'on
-   puisse toucher. Le téléphone porte la VRAIE page de l'appli (demo/, compilée
-   depuis src/ par appli/scripts/demo-outils/construire.ts), dans un cadre à
-   part : ses styles ne débordent pas sur le site, ni ceux du site sur elle.
-   Elle se dessine à la largeur d'un téléphone (390 px) et le cadre est mis à
-   l'échelle de l'écran. Tant qu'elle charge, son premier écran photographié
-   est posé dessous : jamais d'écran blanc. */
-/* minmax(0, 1fr) : la rangée de gestes, qui défile, ne doit pas élargir la
-   colonne (elle poussait le téléphone hors de l'écran, à droite). */
-.essai-grille{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
-.essai .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
-/* Sur téléphone, le téléphone, sa ligne et ses gestes tiennent ensemble
-   sous la barre du haut (vu le 20 novembre : à 76 % de la largeur et sur
-   deux rangées de gestes, la seconde rangée tombait sous le bord). */
-.scene-essai{display:flex;justify-content:center;padding:22px 18px}
-.appareil.demo{width:min(64vw,290px)}
-.demo .ecran img.affiche{z-index:0}
-.demo .ecran iframe{position:absolute;left:0;top:0;z-index:1;width:100%;height:100%;border:0;background:transparent;opacity:0;transition:opacity .35s ease}
-.demo.echelle .ecran iframe{width:390px;height:664px;transform:scale(var(--s,1));transform-origin:0 0}
-.demo.pret .ecran iframe{opacity:1}
-.dit{min-height:1.5em;margin-top:14px;text-align:center;font-size:15.5px;color:var(--encre-2)}
-/* Les gestes à essayer : sous le téléphone, une rangée de pastilles qu'on
-   touche du pouce ; à côté de lui sur ordinateur, une liste qui dit ce que
-   chaque geste montre. Ils pilotent l'appli, ils ne dessinent rien dessus. */
-.guide{list-style:none;margin:0 -16px;padding:2px 16px 8px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.guide::-webkit-scrollbar{display:none}
-.guide li{flex:none}
-.guide button{display:grid;gap:4px;min-height:44px;padding:11px 16px;white-space:nowrap;border:0;border-radius:999px;background:var(--fond);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);font:500 15px/1.2 var(--texte);text-align:left;cursor:pointer;transition:background .2s,box-shadow .2s,color .2s}
-.guide button b{font-weight:500}
-.guide button span{display:none}
-.guide button:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--encre) 40%,transparent)}
-.guide button[aria-pressed="true"]{background:var(--nuit);color:var(--sur-nuit);box-shadow:none}
-.recommencer{display:block;margin:10px auto 0;min-height:44px;padding:0 12px;border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);text-decoration:underline;text-underline-offset:.22em;cursor:pointer}
+/* ── De bout en bout : le vrai écran de l'appli, filmé ───────────────────── */
+/* Sa correction du 20 novembre 2026 au soir, devant des démonstrations à
+   toucher : « comme s'il regardait un film ». Chaque geste est un film de la
+   démonstration (vente/demo/, les vrais écrans compilés depuis src/), tourné
+   par appli/scripts/film-outils.cjs, et se joue seul quand on arrive dessus,
+   comme les scènes de cause-2.html. Le texte dit le geste, le téléphone le
+   montre ; l'un sous l'autre sur téléphone, côte à côte sur ordinateur. */
+.film-tete .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.nuit .film-tete .chapo{color:var(--sur-nuit-2)}
+.plans{list-style:none;margin:48px 0 0;padding:0;display:grid;gap:56px}
+.plan{display:grid;gap:22px;min-width:0}
+.plan-texte{display:grid;gap:6px;max-width:24em}
+.plan-texte b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display);font-weight:400}
+.plan-texte span{color:var(--encre-2);font-size:16.5px}
+.nuit .plan-texte span{color:var(--sur-nuit-2)}
+.scene-plan{display:flex;justify-content:center;padding:22px 18px}
+.scene-plan .appareil{width:min(64vw,290px)}
+/* Le film d'un écran : sa première image dessous avant qu'il parte, sa
+   dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
+.film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.film img.film-debut{z-index:1}
+.film video{z-index:2;opacity:0}
+.film video.joue{opacity:1}
+.film img.film-fin{z-index:3;opacity:0}
+.film img.film-fin.vue{opacity:1}
+/* Sur ordinateur, le cadre sable épouse le téléphone : étiré sur sa colonne,
+   il changeait de largeur d'une rangée à l'autre. */
 @media (min-width:960px){
-  .essai-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-areas:"tete visuel" "guide visuel";column-gap:76px;row-gap:28px;align-items:start}
-  .essai-tete{grid-area:tete}
-  .essai-visuel{grid-area:visuel}
-  .essai-guide{grid-area:guide}
-  .appareil.demo{width:340px}
-  .scene-essai{padding:56px 40px}
-  .guide{display:grid;gap:0;justify-content:stretch;margin:0;padding:0;overflow:visible}
-  .guide li{flex:initial}
-  .guide button{white-space:normal}
-  .guide li{border-top:1px solid var(--trait)}
-  .guide li:last-child{border-bottom:1px solid var(--trait)}
-  .guide button{width:100%;border-radius:12px;padding:18px 14px;background:transparent;box-shadow:none}
-  .guide button b{font:400 clamp(25px,2.4vw,28px)/1.15 var(--display)}
-  .guide button span{display:block;font-size:16px;color:var(--encre-2)}
-  .guide button:hover{background:color-mix(in srgb,var(--encre) 4%,transparent);box-shadow:none}
-  .guide button[aria-pressed="true"]{background:var(--sable);color:var(--encre)}
-  .recommencer{margin:18px 0 0}
-}
-/* Sur le vert nuit (le diagnostic), la phrase et le guide prennent les
-   couleurs de la bande : « .essai .chapo », écrite plus haut pour le clair,
-   l'emportait sur « .nuit .chapo » et posait du gris sombre sur du vert nuit. */
-.essai.nuit .chapo{color:var(--sur-nuit-2)}
-.nuit .guide button{background:rgba(243,239,227,.06);color:var(--sur-nuit);box-shadow:inset 0 0 0 1px var(--trait-nuit)}
-.nuit .guide button:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sur-nuit) 40%,transparent)}
-.nuit .guide button[aria-pressed="true"]{background:var(--or-clair);color:var(--nuit);box-shadow:none}
-.nuit .dit,.nuit .recommencer{color:var(--sur-nuit-2)}
-@media (min-width:960px){
-  .nuit .guide li{border-color:var(--trait-nuit)}
-  .nuit .guide button{background:transparent;box-shadow:none}
-  .nuit .guide button span{color:var(--sur-nuit-2)}
-  .nuit .guide button:hover{background:rgba(243,239,227,.05);box-shadow:none}
-  .nuit .guide button[aria-pressed="true"]{background:rgba(240,180,60,.14);color:var(--sur-nuit)}
+  .plans{gap:88px}
+  .plan{grid-template-columns:minmax(0,1fr) auto;column-gap:96px;align-items:center}
+  .plan:nth-child(even){grid-template-columns:auto minmax(0,1fr)}
+  .plan:nth-child(even) .plan-texte{order:2}
+  .plan-texte{gap:10px}
+  .plan-texte b{font-size:clamp(30px,3vw,42px)}
+  .plan-texte span{font-size:18px}
+  .scene-plan{padding:44px 64px}
+  .scene-plan .appareil{width:320px}
 }
 
 /* ── Le prix : une carte, la bascule mois ou année ─────────────────────── */
@@ -649,30 +625,30 @@ html.anime .geant.vu span{transform:none}
   </div>
 </section>
 
-<section class="essai papier" id="essai-arrosage">
-  <div class="large essai-grille">
-    <div class="essai-tete">
-      <h2 class="mot" data-monte>Essayez le plan<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, sur ce jardin. Touchez ce que vous voulez.</p>
+<section class="en-film papier" id="film-arrosage">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>Le plan, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, sur ce jardin.</p>
     </div>
-    <div class="essai-visuel">
-      <div class="scene sable scene-essai">
-        <div class="appareil demo" id="demo-arrosage">
-          <div class="ecran"><img class="affiche" src="images/outils-demo-arrosage.jpg" alt="Le plan d'arrosage dans Cause : le croquis lu, deux zones au compteur, le piquage et la nourrice" width="1170" height="1992" decoding="async"><iframe title="Le plan d’arrosage de Cause, à essayer" src="demo/arrosage.html" loading="lazy"></iframe></div>
-        </div>
-      </div>
-      <p class="dit" aria-live="polite"></p>
-    </div>
-    <div class="essai-guide">
-      <ul class="guide" aria-label="À essayer dans le téléphone" data-demo="demo-arrosage">
-        <li><button type="button" data-etape="tuyau"><b>Ø25 ou Ø32</b><span>En Ø32, la pelouse tient sur un seul réseau.</span></button></li>
-        <li><button type="button" data-etape="nourrice"><b>Une pièce de la nourrice</b><span>La changer, ou la supprimer.</span></button></li>
-        <li><button type="button" data-etape="turbines"><b>Les turbines</b><span>Combien en changer : une, ou toutes.</span></button></li>
-        <li><button type="button" data-etape="liste"><b>La liste</b><span>Tout est additionné, pièce par pièce.</span></button></li>
-        <li><button type="button" data-etape="fournisseur"><b>Au fournisseur</b><span>Le message part tel quel, ou retouché.</span></button></li>
-      </ul>
-      <button type="button" class="recommencer" data-demo="demo-arrosage">Recommencer</button>
-    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>25 ou 32.</b><span>En Ø32, la pelouse tient sur un réseau de moins.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-tuyau"><img class="film-pose" src="images/nov-film-outils-tuyau-fin.jpg" alt="Le plan dans Cause : réseau 1 passé en Ø32, avec la phrase « En Ø32 : 8 arroseurs sur ce réseau au lieu de 4, un réseau de moins. » et 2 réseaux, 48 m de tranchée" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une pièce de la nourrice.</b><span>La changer, ou la supprimer.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La nourrice de deux voies, pièce par pièce, après l’appui sur l’électrovanne Rain Bird 100 DV 1 pouce MM 9V : Changer, Supprimer, Garder" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Les turbines.</b><span>Une seule, ou les huit d’un coup.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 : huit turbines 3504, chaque maillon de la chaîne dessiné, du té taraudé à la turbine" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Au fournisseur.</b><span>Tout est additionné, pièce par pièce. Le message part tel quel, ou retouché.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-liste"><img class="film-pose" src="images/nov-film-outils-liste-fin.jpg" alt="La feuille « Au fournisseur » : Bonjour, voici ma commande pour un chantier d’arrosage, 8 m de PEHD Ø32, puis chaque pièce avec sa référence" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -697,29 +673,26 @@ html.anime .geant.vu span{transform:none}
   </div>
 </section>
 
-<section class="essai nuit" id="essai-diagnostic">
-  <div class="large essai-grille">
-    <div class="essai-tete">
-      <h2 class="mot" data-monte>Essayez le diagnostic<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, sur une feuille de platane. Touchez ce que vous voulez.</p>
+<section class="en-film nuit" id="film-diagnostic">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>Le diagnostic, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, sur une feuille de platane.</p>
     </div>
-    <div class="essai-visuel">
-      <div class="scene sable scene-essai">
-        <div class="appareil demo" id="demo-diagnostic">
-          <div class="ecran"><img class="affiche" src="images/outils-demo-diagnostic.jpg" alt="Le diagnostic végétal dans Cause : photographiez la zone qui vous semble anormale" width="1170" height="1992" decoding="async"><iframe title="Le diagnostic végétal de Cause, à essayer" src="demo/diagnostic.html" loading="lazy"></iframe></div>
-        </div>
-      </div>
-      <p class="dit" aria-live="polite"></p>
-    </div>
-    <div class="essai-guide">
-      <ul class="guide" aria-label="À essayer dans le téléphone" data-demo="demo-diagnostic">
-        <li><button type="button" data-etape="photo"><b>Une feuille de platane</b><span>Photographiée, puis comparée aux fiches.</span></button></li>
-        <li><button type="button" data-etape="conduite"><b>Que faire ?</b><span>La conduite à tenir, et sa source.</span></button></li>
-        <li><button type="button" data-etape="details"><b>Les détails</b><span>Ce qui le distingue, ce qui le favorise.</span></button></li>
-        <li><button type="button" data-etape="client"><b>Chez quel client</b><span>Le diagnostic rejoint son chantier.</span></button></li>
-      </ul>
-      <button type="button" class="recommencer" data-demo="demo-diagnostic">Recommencer</button>
-    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>Une photo.</b><span>Cause la compare aux fiches, et répond.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="Le diagnostic dans Cause : Anthracnose du platane, probable, une maladie fongique du platane, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Que faire.</b><span>La gravité pour l’arbre, la conduite à tenir, et d’où elle vient.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-conduite"><img class="film-pose" src="images/nov-film-outils-conduite-fin.jpg" alt="Gravité : faible. Que faire : surveiller l’évolution ; le dégât est spectaculaire mais rarement grave, et sa source, l’INRAE" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Chez quel client.</b><span>Le diagnostic rejoint son chantier.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-rattacher"><img class="film-pose" src="images/nov-film-outils-rattacher-fin.jpg" alt="Les détails du diagnostic, puis « Rattacher à un chantier » : Bernard, déjà rattaché" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -748,30 +721,30 @@ html.anime .geant.vu span{transform:none}
   </div>
 </section>
 
-<section class="essai" id="essai-fiches" style="background:var(--fond)">
-  <div class="large essai-grille">
-    <div class="essai-tete">
-      <h2 class="mot" data-monte>Essayez la fiche<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, chez M. Bernard. Touchez ce que vous voulez.</p>
+<section class="en-film" id="film-fiches" style="background:var(--fond)">
+  <div class="large">
+    <div class="film-tete">
+      <h2 class="mot" data-monte>La fiche, de bout en bout<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, chez M. Bernard.</p>
     </div>
-    <div class="essai-visuel">
-      <div class="scene sable scene-essai">
-        <div class="appareil demo" id="demo-fiches">
-          <div class="ecran"><img class="affiche" src="images/outils-demo-fiches.jpg" alt="Les fiches de chantier dans Cause : composer ma fiche, créer une fiche, les rapports envoyés" width="1170" height="1992" decoding="async"><iframe title="Les fiches de chantier de Cause, à essayer" src="demo/fiches.html" loading="lazy"></iframe></div>
-        </div>
-      </div>
-      <p class="dit" aria-live="polite"></p>
-    </div>
-    <div class="essai-guide">
-      <ul class="guide" aria-label="À essayer dans le téléphone" data-demo="demo-fiches">
-        <li><button type="button" data-etape="composer"><b>Composer ma fiche</b><span>Vos prestations, rangées par famille.</span></button></li>
-        <li><button type="button" data-etape="bernard"><b>Une fiche pour M. Bernard</b><span>Ses cases de la dernière fois, déjà cochées.</span></button></li>
-        <li><button type="button" data-etape="signature"><b>La signature</b><span>Au doigt, si le client est là.</span></button></li>
-        <li><button type="button" data-etape="envoyer"><b>Enregistrer et envoyer</b><span>Par SMS, le compte rendu prêt à partir.</span></button></li>
-        <li><button type="button" data-etape="client"><b>Chez le client</b><span>Ce qu’il lit sur son téléphone.</span></button></li>
-      </ul>
-      <button type="button" class="recommencer" data-demo="demo-fiches">Recommencer</button>
-    </div>
+    <ol class="plans">
+      <li class="plan">
+        <div class="plan-texte"><b>Votre liste.</b><span>Vos prestations, rangées par famille, une fois pour toutes.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-composer"><img class="film-pose" src="images/nov-film-outils-composer-fin.jpg" alt="Composer ma fiche dans Cause : la famille Massifs et ses cinq prestations, puis Propreté" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une fiche pour M. Bernard.</b><span>Ses cases de la dernière fois, déjà cochées.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-bernard"><img class="film-pose" src="images/nov-film-outils-bernard-fin.jpg" alt="Une fiche de chantier pour Bernard : 5 prestations cochées, celles du dernier chantier, envoyée par SMS" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Une remarque, et c’est envoyé.</b><span>Par SMS, le compte rendu prêt à partir.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-envoyer"><img class="film-pose" src="images/nov-film-outils-envoyer-fin.jpg" alt="La fiche de Bernard, avec la remarque « La haie du fond sera taillée la semaine prochaine. », envoyée le 20 novembre 2026 à 17:36" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+      <li class="plan">
+        <div class="plan-texte"><b>Chez M. Bernard.</b><span>Ce qu’il lit sur son téléphone, sans rien installer.</span></div>
+        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-client"><img class="film-pose" src="images/nov-film-outils-client-fin.jpg" alt="Le retour d’intervention que lit Bernard : les Jardins de Valmorin, le vendredi 20 novembre 2026, cinq travaux faits et la remarque" width="1170" height="1992" decoding="async"></div></div></div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -943,9 +916,7 @@ html.anime .geant.vu span{transform:none}
       entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
       pouce.classList.toggle("vu", visibles.size === 0);
     });
-    // Pendant qu'on essaie un outil, le bouton couvrirait les gestes sous le
-    // téléphone : il s'efface aussi là.
-    tous(".ouverture, .essai, #prix-outils .formule, #essayer, .pied").forEach(function(c){ veille.observe(c); });
+    tous(".ouverture, #prix-outils .formule, #essayer, .pied").forEach(function(c){ veille.observe(c); });
   }
 
   // La seule boucle du défilement : la barre et son fil, et ce que chaque
@@ -983,74 +954,6 @@ html.anime .geant.vu span{transform:none}
         cours = corps.animate([{ height: corps.offsetHeight + "px", opacity: 1 }, { height: "0px", opacity: 0 }], { duration: 260, easing: "cubic-bezier(.5,0,.75,0)" });
         cours.onfinish = function(){ d.open = false; d.classList.remove("ferme"); };
       }
-    });
-  });
-
-  // ── ESSAYEZ : la page pilote le téléphone, sans rien dessiner dessus ──
-  // Les ordres sont lus par appli/scripts/demo-outils/pilote.ts, dans la
-  // démonstration : amener une partie de l'écran sous les yeux, la toucher,
-  // ou basculer le choix 25 ou 32. Un ordre donné avant que l'écran soit prêt
-  // attend qu'il le soit.
-  var ORDRES = {
-    "demo-arrosage": {
-      tuyau: { basculer: '[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"]' },
-      nourrice: { toucher: '[data-atlas="piece-nourrice"]', rang: 8 },
-      turbines: { toucher: '[data-atlas="maillon"]', rang: 4 },
-      liste: { aller: '[data-atlas="liste-des-pieces"]' },
-      fournisseur: { toucher: '[data-atlas="envoyer-fournisseur"]' }
-    },
-    // Une étape peut être une suite d'ordres : rouvrir le bon écran, puis
-    // agir. Le résultat d'exemple a son adresse dans l'outil.
-    "demo-diagnostic": {
-      photo: [{ revenir: "/paysage/diagnostic" }, { deposer: 'input[type="file"]', fichier: "../../diagnostic-anthracnose-platane-feuille.jpg", nom: "platane-exemple.jpg" }],
-      conduite: [{ revenir: "/paysage/diagnostic/exemple", siAilleurs: true }, { aller: '[data-atlas="diagnostic-conduite"]' }],
-      details: [{ revenir: "/paysage/diagnostic/exemple", siAilleurs: true }, { ouvrir: '[data-atlas="diagnostic-details"]' }],
-      client: [{ revenir: "/paysage/diagnostic/exemple", siAilleurs: true }, { ouvrir: '[data-atlas="diagnostic-details"]', aller: '[data-atlas="diagnostic-rattacher"]' }]
-    },
-    // « pause » : le temps que l'écran d'avant se pose (une fiche se crée,
-    // puis s'ouvre) avant le geste suivant.
-    "demo-fiches": {
-      composer: [{ revenir: "/paysage/fiche/composer" }],
-      bernard: [{ revenir: "/paysage/fiche" }, { toucher: '[data-atlas="ouvrir-fiche-chantier"]' }, { pause: 1300, toucher: '[data-atlas="pont-client"]' }, { pause: 1000, garder: true, toucher: '[data-atlas="choix-du-client"] button', contient: "Bernard" }],
-      signature: [{ aller: '[data-atlas="signature-client"]' }],
-      envoyer: [{ toucher: '[data-atlas="envoyer-fiche"]' }],
-      client: [{ revenir: "/entretien/dernier" }]
-    }
-  };
-  tous(".demo").forEach(function(demo){
-    var ecran = un(".ecran", demo), cadre = un("iframe", demo), attente = null;
-    var guide = un('.guide[data-demo="' + demo.id + '"]'), dit = un(".dit", demo.closest(".essai-visuel"));
-    var echelle = function(){ demo.style.setProperty("--s", (ecran.clientWidth / 390).toFixed(4)); };
-    demo.classList.add("echelle"); echelle();
-    if ("ResizeObserver" in window) new ResizeObserver(echelle).observe(ecran); else addEventListener("resize", echelle);
-    var suite = 0;
-    var poster = function(ordres){
-      var mien = ++suite;
-      var quand = 0;
-      ordres.forEach(function(o, n){ quand += n ? (o.pause || 700) : 0; setTimeout(function(){ if (mien === suite) cadre.contentWindow.postMessage(o, "*"); }, quand); });
-    };
-    var envoyer = function(ordre){ var ordres = [].concat(ordre); if (demo.classList.contains("pret")) poster(ordres); else attente = ordres; };
-    addEventListener("message", function(e){
-      if (e.source !== cadre.contentWindow || !e.data) return;
-      if (e.data.pret){ demo.classList.add("pret"); if (attente){ var o = attente; attente = null; poster(o); } }
-      // Un lien de l'appli (la barre d'onglets, la flèche) ne quitte pas la
-      // démonstration : la page dit ce qu'il ouvre (sa règle du 8 novembre :
-      // aucun geste muet).
-      if (e.data.lien && dit) dit.textContent = "Dans l’appli : " + (e.data.nom || "un autre écran") + ".";
-    });
-    if (guide) tous("button[data-etape]", guide).forEach(function(b){
-      b.setAttribute("aria-pressed", "false");
-      b.addEventListener("click", function(){
-        tous("button[data-etape]", guide).forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
-        if (dit) dit.textContent = "";
-        envoyer(ORDRES[demo.id][b.getAttribute("data-etape")]);
-      });
-    });
-    var reprendre = un('.recommencer[data-demo="' + demo.id + '"]');
-    if (reprendre) reprendre.addEventListener("click", function(){
-      demo.classList.remove("pret"); attente = null; if (dit) dit.textContent = "";
-      if (guide) tous("button[data-etape]", guide).forEach(function(x){ x.setAttribute("aria-pressed", "false"); });
-      cadre.src = cadre.getAttribute("src");
     });
   });
 
@@ -1234,6 +1137,53 @@ html.anime .geant.vu span{transform:none}
     duo.classList.remove("envoye");
     await attendre(900); if (!encore()) return;
     duo.classList.add("envoye");
+  });
+
+  // DE BOUT EN BOUT. Chaque geste est un film de l'appli, qui se joue seul
+  // quand son téléphone est au tiers à l'écran, et se rejoue quand on y
+  // revient. Rien ne se charge avant l'approche : un film prépare ses images
+  // à 900 px de l'écran, ou en arrivant, si l'on arrive d'un coup. Un film
+  // refusé (économie d'énergie) ou introuvable montre sa dernière image.
+  // C'est la mécanique de cause-2.html, recopiée.
+  var bobine = function(cadre){
+    var nom = "images/nov-film-" + cadre.dataset.film, video = null, fin = null, quand = null, casse = false;
+    var rendre = function(){ if (quand){ var q = quand; quand = null; q(); } };
+    // La dernière image se pose PAR-DESSUS le film, qui reste dessous, arrêté
+    // sur sa dernière image : caché au même instant, il laissait voir un
+    // éclair de sa première (cause-2.html, 19 novembre 2026).
+    var finir = function(){ fin.classList.add("vue"); rendre(); };
+    return {
+      preparer: function(){
+        var debut = new Image(); debut.src = nom + "-debut.jpg"; debut.alt = ""; debut.decoding = "async"; debut.className = "film-debut";
+        video = document.createElement("video"); video.muted = true; video.playsInline = true; video.setAttribute("muted", ""); video.setAttribute("playsinline", ""); video.preload = "auto";
+        ["mp4", "webm"].forEach(function(t){ var so = document.createElement("source"); so.src = nom + "." + t; so.type = "video/" + t; video.appendChild(so); });
+        video.lastChild.addEventListener("error", function(){ casse = true; finir(); });
+        fin = new Image(); fin.src = nom + "-fin.jpg"; fin.alt = ""; fin.decoding = "async"; fin.className = "film-fin";
+        video.addEventListener("playing", function(){ video.classList.add("joue"); });
+        video.addEventListener("ended", finir);
+        cadre.append(debut, video, fin);
+      },
+      remettre: function(){ rendre(); video.pause(); video.classList.remove("joue"); if (!casse) fin.classList.remove("vue"); video.currentTime = 0; },
+      jouer: function(){
+        this.remettre();
+        if (casse) return Promise.resolve();
+        // Une lecture coupée par la sortie de l'écran n'est pas un refus.
+        return new Promise(function(r){ quand = r; var p = video.play(); if (p && p.catch) p.catch(function(e){ if (!e || e.name !== "AbortError") finir(); }); });
+      },
+      arreter: function(){ rendre(); if (video) video.pause(); }
+    };
+  };
+  tous(".en-film .film").forEach(function(cadre){
+    var film = bobine(cadre), pret = false;
+    var preparer = function(){ if (!pret){ pret = true; film.preparer(); } };
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting) preparer(); }, {rootMargin:"900px 0px"}).observe(cadre);
+    // Le film commence par un temps immobile : avec ce court délai, le
+    // premier geste vient une demi-seconde après l'arrivée.
+    scene(cadre, 0.35, async function(encore){
+      preparer(); film.remettre();
+      await attendre(150); if (!encore()) return;
+      film.jouer();
+    }, film.arreter);
   });
 
   window.causePret = true;
