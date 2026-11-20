@@ -1,0 +1,214 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-collybie-pied-fuseau",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Collybie à pied en fuseau (Gymnopus fusipes), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19058/Forets-Collybie-a-pied-en-fuseau",
+      "nature": "officielle",
+      "publieeLe": "2025-08-07",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "collybie-pied-fuseau",
+      "nomCommun": "Collybie à pied en fuseau",
+      "nomScientifique": "Gymnopus fusipes",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Un champignon, Gymnopus fusipes, qu’on appelle la collybie à pied en fuseau. C’est une espèce commune.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "champignon_sur_bois",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les champignons sortent au pied de l’arbre de juin jusqu’à l’automne, surtout entre la fin juin et la fin septembre. C’est souvent l’un des rares champignons qu’on voit par temps assez sec.",
+      "autresEssences": "La page nomme les chênes et le châtaignier, et dit que le champignon s’attaque aux feuillus, surtout aux chênes. Le chêne pédonculé adulte est le plus touché, le chêne rouge est aussi très sensible, et le chêne sessile l’est peu.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon des racines des chênes et du châtaignier. Il abîme l’écorce des grosses racines, qui devient orange et se boursoufle, puis il décompose leur bois. Au pied de l’arbre sortent en été des champignons brun-roux en touffes, au pied renflé en fuseau. Le chêne peut vivre longtemps avec, mais il dépérit après une sécheresse.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Ce champignon peut abîmer les racines d’un chêne en bonne santé, sans attendre qu’il soit affaibli. Mais il avance très lentement : chez le chêne pédonculé, il faut un arbre d’environ cent ans pour que ses racines soient vraiment touchées. Le chêne peut vivre de longues années avec des racines infectées, et la plupart des chênes qui portent ces champignons ne dépérissent pas. Après une sécheresse, en revanche, l’arbre dont les racines sont abîmées dépérit nettement.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "La lésion gagne le bois des grosses racines et le décompose. Rien n’est dit sur la tenue de l’arbre ni sur un risque de chute.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "collet",
+        "champignon_sur_bois",
+        "racine"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez l’arbre d’une année sur l’autre, surtout après une sécheresse, car c’est alors qu’un chêne aux racines abîmées se met à dépérir.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon s’installe dans l’écorce des grosses racines, sans avoir besoin que l’arbre soit affaibli. Il y forme des taches jaunes à orange vif, avec de petites lames de feutre blanc dispersées dans l’écorce. Chez nos chênes, l’écorce de la racine s’épaissit souvent, jusqu’à 3 à 5 cm. Le plus souvent, il atteint ensuite la couche vivante qui fait grossir la racine, puis il décompose son bois. Il survit mieux dans les sols à grain grossier, rarement gorgés d’eau, car il supporte mal le manque d’air dans le sol.",
+      "gestion": "Il se propage surtout par l’air : les champignons qui sortent au pied des arbres libèrent des spores, et l’air les emporte. Une fois dans les racines, il avance très lentement.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "carpophore",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "au_collet",
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Au pied de l’arbre, des champignons brun-roux en touffes. Leur pied est renflé en fuseau, prolongé comme une racine dans le sol, et creusé de sillons."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "necrose",
+          "couleurs": [
+            "jaune",
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur les grosses racines, l’écorce abîmée devient jaune à orange vif et se boursoufle."
+        },
+        {
+          "nature": "signe",
+          "partie": "racine",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Dans l’épaisseur de l’écorce des racines, de nombreuses petites lames de feutre blanc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "pourriture_bois",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "La lésion gagne en profondeur et décompose le bois de la racine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Après une sécheresse, l’arbre dont les racines sont abîmées dépérit. La plupart des chênes qui portent ces champignons ne dépérissent pas."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "castanea",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Au pied de l’arbre, des champignons brun-roux en touffes.",
+        "Leur pied est caractéristique : renflé en fuseau, prolongé comme une racine dans le sol, et creusé de sillons.",
+        "Sur les grosses racines, l’écorce prend une couleur orangée et se boursoufle.",
+        "Dans cette écorce, on trouve beaucoup de petites lames de feutre blanc.",
+        "On voit souvent ces champignons par temps assez sec, quand les autres sont rares."
+      ],
+      "criteresExclusion": [
+        "Sans champignons au pied de l’arbre, on peut la confondre avec d’autres maladies qui pourrissent les racines, comme l’armillaire ou le ganoderme."
+      ],
+      "facteursFavorisants": [
+        "Des chênes pédonculés adultes.",
+        "Un sol à grain grossier et rarement gorgé d’eau : le champignon y survit mieux, car il supporte mal le manque d’air.",
+        "Un sol riche en sable : plus il y en a, plus un chêne infecté risque de dépérir.",
+        "Un chêne pédonculé planté là où cette essence n’est pas adaptée.",
+        "Une sécheresse, après laquelle l’arbre aux racines abîmées dépérit.",
+        "Le chêne rouge, lui aussi très sensible."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-08-07",
+      "sources": [
+        {
+          "source": "ephytia-collybie-pied-fuseau",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Collybia%20fusipes%20EtgRompu%20041024%20001.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/collybie-pied-fuseau-collet.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Strobilomyces, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Une touffe de collybies brun-roux au pied d’un arbre, dans une forêt près de Rambouillet. Un champignon couché montre son pied en fuseau."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gymnopus%20fusipes%20161030w.JPG?width=960",
+          "fichier": "donnees/phyto/brouillons/images/collybie-pied-fuseau-champignon_sur_bois.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Strobilomyces, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Des collybies brun-roux au long pied, dans une forêt près de Clairefontaine."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 2
+    }
+  ]
+}

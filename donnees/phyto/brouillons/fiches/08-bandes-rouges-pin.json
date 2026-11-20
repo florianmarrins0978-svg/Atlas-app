@@ -1,0 +1,194 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-bandes-rouges-pin",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Maladie des bandes rouges (Dothistroma septosporum, Dothistroma pini), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20367/Forets-Maladie-des-bandes-rouges",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "bandes-rouges-pin",
+      "nomCommun": "Maladie des bandes rouges",
+      "nomScientifique": "Dothistroma septosporum, Dothistroma pini",
+      "categorie": "maladie",
+      "agentCausal": "Deux champignons distincts, Dothistroma septosporum et Dothistroma pini. Le premier porte aussi les noms de Mycosphaerella pini ou Scirrhia pini sous son autre forme de reproduction. Celle du second n’est pas connue. D’après la page, D. pini vit dans un grand quart sud-ouest de la France et manque dans le Nord, alors que D. septosporum se trouve presque partout où la maladie est présente. Dans le Sud-Ouest, les deux peuvent se trouver ensemble sur le même arbre, et même sur la même aiguille.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les taches jaunes apparaissent en automne ou en hiver, sur les aiguilles de l’année. Les bouts d’aiguilles virent au brun rouge parfois dès l’automne, le plus souvent pendant l’hiver et à sa fin. Au printemps suivant, de petites taches noires se forment sur les parties rouges. Les spores se dispersent par temps de pluie pendant toute la saison de végétation.",
+      "autresEssences": "La page cite le pin laricio et Pinus radiata comme hôtes habituels, et dit que d’autres pins et divers résineux peuvent être atteints. En France, ce sont surtout les reboisements de pin laricio qui souffrent, et à un degré moindre ceux de pin noir. Dans le monde, un grand nombre d’espèces de pins sont touchées.",
+      "periodeDebutMois": 9,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie causée par deux champignons, sur le pin, surtout le pin laricio. Des taches jaunes apparaissent sur les aiguilles, puis des bandes rouges qui en font le tour. Le bout de l’aiguille, qui n’est plus nourri, devient brun rouge. Au printemps suivant, de petites taches noires se forment sur les zones rouges.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "La maladie met en doute l’avenir des peuplements de pin laricio. Les arbres atteints meurent peu, même malades depuis des années. Mais là où elle est très présente, elle freine nettement leur croissance, en hauteur comme en diamètre. Et comme le bout des aiguilles meurt, le feuillage nourrit moins l’arbre.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Avant de planter un pin, regardez bien ses aiguilles, car la maladie voyage avec les plants contaminés. Sur un arbre en place, surveillez d’abord le bas du houppier, où elle est en général la plus forte.",
+      "prevention": null,
+      "commentCaArrive": "Les spores germent sur les aiguilles saines et entrent par leurs pores. Après plusieurs semaines, des taches jaunes apparaissent, puis des bandes rougeâtres qui font le tour de l’aiguille. Ce rouge vient d’une toxine du champignon, qui fait sécher le bout de l’aiguille. La chaleur humide et les peuplements confinés, où l’air se renouvelle mal, favorisent la maladie.",
+      "gestion": "À la fin de l’hiver et au printemps, le champignon produit beaucoup de spores. Par temps de pluie, pendant toute la saison de végétation, elles partent à courte distance et contaminent les aiguilles saines des rameaux voisins. Sa forme sexuée est rare, mais elle sert sans doute à porter la maladie au loin. Le commerce de plants contaminés la transporte aussi.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "En automne ou en hiver, des taches jaunes sur les aiguilles de l’année."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Puis des bandes rougeâtres qui font tout le tour de l’aiguille, comme des anneaux."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun",
+            "rouge"
+          ],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "frequent",
+          "libelle": "Le bout de l’aiguille, qui n’est plus nourri, sèche et vire au brun rouge."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au printemps suivant, de petites taches noires sur les zones rouges des aiguilles : elles portent les fructifications du champignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun",
+            "rouge"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Le feuillage brunit, et la maladie est en général plus forte dans le bas du houppier."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Des aiguilles tombent, surtout sous le couvert d’autres arbres."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des taches jaunes sur les aiguilles, puis des bandes rougeâtres qui font tout le tour de l’aiguille, comme des anneaux.",
+        "Au-delà de la bande, le bout de l’aiguille, qui n’est plus nourri, devient brun rouge.",
+        "Au printemps suivant, de petites taches noires apparaissent sur les zones rouges des aiguilles.",
+        "Les dégâts sont en général plus forts dans le bas du houppier."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "La chaleur humide.",
+        "Les peuplements confinés, où l’air se renouvelle mal.",
+        "Le temps pluvieux, qui disperse les spores vers les rameaux voisins.",
+        "Le couvert d’autres arbres : dessous, la contamination, les symptômes et la chute d’aiguilles sont plus forts.",
+        "Le commerce de plants contaminés, qui transporte la maladie."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-bandes-rouges-pin",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dothistroma%20needle%20blight%20as%20shown%20on%20these%20pine%20needles%20%2824128550834%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/bandes-rouges-pin-aiguille.jpg",
+          "licence": "CC BY 2.0",
+          "credit": "Photo de Robert L. James, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "Aiguilles de pin jaunies, marquées de bandes brun rouge et de petits points noirs. L’espèce du pin n’est pas précisée : ce n’est pas forcément un pin laricio."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

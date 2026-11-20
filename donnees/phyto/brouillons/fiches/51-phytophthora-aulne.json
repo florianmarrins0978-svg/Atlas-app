@@ -1,0 +1,208 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-phytophthora-aulne",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Phytophthora de l’aulne (Phytophthora x alni), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27475/Forets-Phytophthora-de-l-aulne",
+      "nature": "officielle",
+      "publieeLe": "2025-10-27",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "alnus",
+      "nomScientifique": "Alnus",
+      "nomCommun": "Aulne",
+      "article": "un",
+      "synonymes": [
+        "aulnes",
+        "aulne glutineux"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "phytophthora-aulne",
+      "nomCommun": "Phytophthora de l’aulne",
+      "nomScientifique": "Phytophthora x alni",
+      "categorie": "maladie",
+      "agentCausal": "Un micro-organisme du groupe des oomycètes, Phytophthora x alni. Le « x » dit qu’il est né d’un croisement récent entre deux autres espèces. Il vient d’ailleurs, et il est devenu envahissant en Europe.",
+      "agentType": "inconnu",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "houppier",
+        "feuille"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Il n’attaque que les aulnes. L’aulne glutineux est de loin le plus touché. La page signale aussi le pathogène sur l’aulne de Corse, l’aulne blanc et l’aulne vert, sans dégâts notables.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie des racines et du collet de l’aulne, surtout de l’aulne glutineux au bord des cours d’eau. La cime s’éclaircit et jaunit, et des taches noires suintent au pied. Les jeunes aulnes en meurent souvent, les gros arbres résistent des années.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Il attaque les aulnes de tout âge, mais les jeunes aulnes glutineux sont les plus fragiles. Chez les jeunes arbres de moins de 5 cm de diamètre, les parties mortes sous l’écorce peuvent faire le tour du collet et tuer l’arbre : la mortalité est très forte dix ans après les premiers signes. Là où la maladie est très présente, l’avenir des jeunes aulnes qui poussent seuls est compromis. Chez les gros arbres de plus de 40 cm, environ 5 à 10 % meurent en dix ans : ils peuvent vivre longtemps malades, avec un feuillage clairsemé ou des taches qui suintent au pied.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "collet",
+        "houppier",
+        "racine"
+      ],
+      "conduiteRecommandee": "Aucun moyen de soigner un arbre atteint. Couper les arbres malades ne sert à rien : le pathogène reste vivant dans le sol. N’arrachez pas les souches, car cela abîme les berges. Si vous plantez des aulnes le long d’un cours d’eau, vérifiez que les plants sont sains, surtout leurs racines, pour ne pas apporter la maladie. Recéper un arbre adulte malade donne de beaux rejets pendant quelques années, mais les racines restent malades et la cime des rejets peut dépérir ensuite.",
+      "methodeConfirmation": "Pour le confirmer, il faut enlever l’écorce sous les taches qui suintent : on doit trouver dessous une tache morte en forme de flamme, reliée au sol.",
+      "informationsRequises": [
+        "Une photo du pied de l’arbre, écorce enlevée sous une tache qui suinte."
+      ],
+      "prevention": null,
+      "commentCaArrive": "Quand le sol est humide, le pathogène libère des spores qui nagent dans l’eau du sol, dans l’eau qui ruisselle ou dans les cours d’eau. Elles infectent les racines : les plus fines sont vite détruites, et les plus grosses portent des taches noires. Le collet est souvent touché aussi, soit parce que le mal monte des racines, soit directement par les petits pores de l’écorce, quand le pied baigne dans une eau contaminée. Les taches ne montent jamais à plus de 50 cm au-dessus du sol.",
+      "gestion": "Il voyage surtout avec l’eau des cours d’eau : la maladie touche avant tout les aulnes des berges et des forêts de bord de rivière. Il survit plusieurs mois dans le sol. Il se répand avec l’eau qui ruisselle, et aussi avec la terre ou les plants malades que l’on transporte. Après un hiver doux, il survit mieux et la maladie repart l’année suivante. Les étés chauds, eux, aident les arbres malades à se rétablir.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "ecoulement",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "au_collet",
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "À la base du tronc et sur les racines, des taches noirâtres qui suintent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "necrose",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce du pied, des parties mortes noirâtres en forme de flamme, reliées au sol. Elles ne montent pas à plus de 50 cm."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "necrose",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les fines racines sont détruites, et les grosses racines portent des taches noires."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Une cime clairsemée, avec de petites feuilles."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le feuillage jaunit."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "alnus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Une cime clairsemée, avec de petites feuilles qui jaunissent.",
+        "À la base du tronc et sur les racines, des taches noirâtres qui suintent.",
+        "Sous l’écorce du pied, une partie morte noirâtre en forme de flamme, reliée au sol. Elle ne monte pas à plus de 50 cm.",
+        "Les fines racines sont détruites."
+      ],
+      "criteresExclusion": [
+        "D’autres Phytophthora du sol peuvent donner la même chose, mais Phytophthora x alni est le plus fréquent sur les aulnes.",
+        "Une blessure ou des attaques d’insectes peuvent aussi faire des taches qui suintent et des coulures. La page demande d’enlever l’écorce pour vérifier qu’il y a dessous une tache en flamme reliée au sol."
+      ],
+      "facteursFavorisants": [
+        "Un sol humide, de l’eau qui ruisselle, un cours d’eau tout proche.",
+        "Un pied d’arbre qui baigne dans une eau contaminée.",
+        "Un hiver doux, qui aide le pathogène à survivre dans le sol.",
+        "Un jeune arbre : les jeunes aulnes glutineux sont les plus fragiles."
+      ],
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-10-27",
+      "sources": [
+        {
+          "source": "ephytia-phytophthora-aulne",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "informations_requises"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Erlensterben.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-aulne-collet.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Gerhard Elsner, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Au pied d’un jeune aulne glutineux, des taches noirâtres qui suintent."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/MFG%201014-Phytophthora-alni.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-aulne-tronc.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo de Malte, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Des taches noires sur le tronc d’un aulne malade, au bord de l’eau."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/B%C5%99ehov%C3%BD%20porost%20po%C5%A1kozen%C3%BD%20pl%C3%ADsn%C3%AD%20ol%C5%A1ovou.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-aulne-houppier.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Karel Černý, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Des aulnes glutineux malades en bord de rivière, en Tchéquie : plusieurs cimes sont clairsemées."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 3,
+      "noteFrequence": 2
+    }
+  ]
+}

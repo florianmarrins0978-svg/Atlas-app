@@ -1,0 +1,198 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rouge-cryptogamique-pin",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Rouge cryptogamique des aiguilles de pin (Lophodermium seditiosum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19092/Forets-Rouge-cryptogamique-des-aiguilles-de-pin",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rouge-cryptogamique-pin",
+      "nomCommun": "Rouge cryptogamique des aiguilles de pin",
+      "nomScientifique": "Lophodermium seditiosum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Lophodermium seditiosum. Jusque dans les années 1980, la maladie était attribuée à Lophodermium pinastri ; la page explique que celui-ci ne rend pas l’arbre malade et ne vit que sur les aiguilles tombées au sol. Il existe beaucoup d’autres Lophodermium, qui pour la plupart ne s’installent que sur des aiguilles affaiblies ou mortes : seul Lophodermium seditiosum attaque vraiment les aiguilles saines.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les premières taches jaunes apparaissent à l’automne et brunissent pendant l’hiver. Au printemps suivant, les aiguilles deviennent toutes brunes et tombent au plus tard fin mai. Les marques noires se forment ensuite sur les aiguilles sèches. Les nouvelles contaminations ont lieu en juillet et en août.",
+      "autresEssences": "Le pin sylvestre est l’hôte habituel. La page cite aussi comme hôtes possibles le pin noir, le pin cembro (Pinus cembra) et le pin mugo.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie des aiguilles du pin, surtout du pin sylvestre, causée par un champignon. À l’automne, de petites taches jaunes apparaissent et brunissent ; au printemps, l’aiguille devient toute brune et tombe. Elle fait surtout du tort aux jeunes pins, dont elle ralentit la croissance.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les dégâts sont surtout sérieux en pépinière, dans les plantations et chez les jeunes pins : la maladie peut y retarder la croissance. Au-delà de 10 ans, elle ne fait presque plus de tort à l’arbre.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes pins, car c’est chez eux qu’elle retarde la croissance. Au-delà de 10 ans, elle ne fait presque plus de tort.",
+      "prevention": null,
+      "commentCaArrive": "En juillet et en août, les spores germent sur les aiguilles saines de l’année, et le champignon entre dans l’aiguille. Quand l’infection réussit, de petites taches jaunâtres apparaissent peu à peu pendant l’automne, puis s’étendent vite et brunissent en hiver. Le bas de l’arbre est le plus touché : il y fait plus frais, et les aiguilles y restent humides plus longtemps.",
+      "gestion": "Le champignon fait un tour complet en un an environ. Au printemps, il forme ses marques noires sur les aiguilles sèches, qu’elles soient tombées au sol ou encore sur l’arbre. Ce sont ses grains noirs qui libèrent les spores qui vont contaminer les aiguilles saines de l’année. Les fortes pluies de l’été, de juin à septembre, lui font produire plus de spores. Les traits noirs, son autre forme, ne jouent presque aucun rôle dans la propagation.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "À l’automne, de petites taches jaunes sur les aiguilles, qui grossissent peu à peu et deviennent brunâtres."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "Au printemps suivant, toute l’aiguille devient brune."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles les moins atteintes sèchent sur l’arbre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Les aiguilles les plus atteintes tombent au plus tard fin mai. Le bas de l’arbre est le plus touché."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les aiguilles sèches, au sol ou sur l’arbre, des grains noirs ovales qui ressemblent à des grains de café (90 à 130 µm)."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les aiguilles sèches, des traits noirs fins dans le sens de l’aiguille."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "À l’automne, de petites taches jaunes sur les aiguilles. Elles grossissent peu à peu et virent au brun.",
+        "Au printemps suivant, toute l’aiguille devient brune, et elle tombe au plus tard fin mai.",
+        "Sur les aiguilles sèches, au sol ou encore sur l’arbre, de petites marques noires : des traits fins dans le sens de l’aiguille, ou des grains noirs ovales qui ressemblent à des grains de café.",
+        "Les dégâts sont plus forts dans le bas de l’arbre."
+      ],
+      "criteresExclusion": [
+        "Le rouge physiologique des pins : l’aiguille sèche à partir de sa pointe, à cause d’un déséquilibre en eau.",
+        "La chute des aiguilles d’automne : les aiguilles rougissent aussi, mais seulement celles de 2 et 3 ans.",
+        "La maladie des bandes rouges : des anneaux rougeâtres font le tour des aiguilles.",
+        "D’autres Lophodermium vivent sur les aiguilles mortes sans causer la maladie. Lophodermium pinastri, longtemps tenu pour responsable, ne s’installe que sur les aiguilles tombées au sol."
+      ],
+      "facteursFavorisants": [
+        "Des pluies abondantes en été, de juin à septembre.",
+        "Plusieurs années de suite très pluvieuses (2 à 3 ans).",
+        "Une station humide.",
+        "Des jeunes peuplements très serrés, ou trop envahis par l’herbe.",
+        "La fraîcheur et une humidité qui reste longtemps sur les aiguilles, comme dans le bas de l’arbre."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-rouge-cryptogamique-pin",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lophodermium%20seditosum.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-houppier.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Jeune pin aux aiguilles brunies, surtout dans le bas de l’arbre."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

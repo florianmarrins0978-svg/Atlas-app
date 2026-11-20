@@ -1,0 +1,276 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-resineux-pin",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Chancre résineux du pin (Fusarium circinatum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/26414/Forets-Chancre-resineux-du-pin",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-radiata",
+      "nomScientifique": "Pinus radiata",
+      "nomCommun": "Pin de Monterey",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-resineux-pin",
+      "nomCommun": "Chancre résineux du pin",
+      "nomScientifique": "Fusarium circinatum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Fusarium circinatum. Il porte un second nom, Gibberella circinata. Il vient d’Amérique du Nord, où la maladie s’appelle pitch canker.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "rameau",
+        "aiguille",
+        "racine",
+        "collet",
+        "fruit"
+      ],
+      "quandCaSeVoit": "La page ne donne pas de saison : la contamination peut se faire toute l’année, surtout pendant les périodes humides ou de brouillard.",
+      "autresEssences": "La page dit que le champignon touche plus de 50 espèces de pins. Elle nomme Pinus sylvestris, P. nigra, P. pinaster, P. halepensis et P. pinea, et le pin de Monterey (Pinus radiata), le plus sensible. Elle cite aussi le douglas comme hôte possible.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie grave des pins, causée par un champignon classé organisme de quarantaine. Sur les arbres adultes, elle forme des chancres sur le tronc et les branches, avec de forts écoulements de résine. Les aiguilles jaunissent puis brunissent, des pousses et des branches meurent, et l’arbre peut mourir. Elle est absente des forêts françaises.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "En pépinière et dans les jeunes plantations, les jeunes plants pourrissent et meurent, ce qui met en péril la production de plants et les plantations. Sur les arbres adultes, les parties mortes sous l’écorce et les chancres déforment les branches et le tronc. L’infection favorise d’autres champignons qui bleuissent le bois et lui font perdre de sa qualité. La croissance ralentit, et des arbres peuvent mourir. Le champignon s’attaque aussi aux cônes.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "quarantaine",
+      "referenceReglementaire": "Organisme de quarantaine, soumis à surveillance et à éradication en cas de détection. Décision 2007/433/CE de la Commission du 18 juin 2007.",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement : une fois installée, la maladie est presque impossible à éliminer. La lutte est préventive, au moment de planter : prenez des plants sans aucun symptôme, de préférence à racines nues, et renseignez-vous sur les pratiques de la pépinière d’où ils viennent. Tailler ou couper un arbre malade risque de répandre la maladie, car les outils transportent le champignon.",
+      "methodeConfirmation": "Seule une analyse en laboratoire permet de confirmer cette maladie, car d’autres champignons des pins donnent des symptômes très proches.",
+      "informationsRequises": [],
+      "prevention": "Pour les plantations, la page conseille des plants sans symptôme, de préférence à racines nues, et de se renseigner sur les pratiques de la pépinière d’origine. En pépinière, elle cite la désinfection, par la chaleur ou par un produit, des graines, du sol ou du terreau, des outils et des vêtements de travail.",
+      "commentCaArrive": "Les spores entrent dans le pin par des blessures : dégâts d’intempéries extrêmes, blessures faites par l’homme ou par les animaux, surtout par les insectes. La contamination peut se faire toute l’année, surtout quand il fait humide ou qu’il y a du brouillard, avec un optimum vers 20 °C. Le champignon se développe ensuite dans les tissus, au mieux vers 25 °C, et forme des parties mortes et des chancres. Il aime la chaleur et une forte humidité de l’air.",
+      "gestion": "Sur de courtes distances, les spores voyagent avec le vent, avec l’eau qui éclabousse ou ruisselle, et sur les outils qui ont servi à tailler ou à couper sans avoir été désinfectés. Sur de longues distances, ce sont les plants, les graines et la terre, où il survit bien. Un plant peut porter le champignon sans montrer aucun symptôme. Certains insectes, comme Tomicus piniperda en Europe, pourraient aussi le transporter. Le risque de le déplacer avec du bois infecté est jugé faible.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [
+            "le_long_du_tronc"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, des chancres d’où coule beaucoup de résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [
+            "le_long_du_tronc"
+          ],
+          "poids": "cardinal",
+          "libelle": "Un fort écoulement de résine, parfois massif, sur le tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les branches, des parties mortes qui peuvent en faire tout le tour."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des branches flétrissent et meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des pousses meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles virent au jaune, puis au brun, et finissent par tomber."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Le tronc et les branches se déforment autour des chancres."
+        },
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "possible",
+          "libelle": "Sur les jeunes plants, en pépinière ou en jeune plantation, le collet pourrit et le plant flétrit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [
+            "rouge",
+            "brun"
+          ],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "possible",
+          "libelle": "Sur les jeunes plants, la tige et les aiguilles rougissent puis brunissent, et la pointe se recourbe en crosse."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-radiata",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur le tronc, des chancres d’où coule beaucoup de résine, parfois en masse.",
+        "Sur les branches, des parties mortes qui peuvent en faire tout le tour.",
+        "Des pousses et des branches qui flétrissent et meurent.",
+        "Les aiguilles virent au jaune, puis au brun, et finissent par tomber.",
+        "Sur les jeunes plants, le collet pourrit, la tige et les aiguilles rougissent puis brunissent, et la pointe se recourbe en crosse."
+      ],
+      "criteresExclusion": [
+        "D’autres champignons donnent des symptômes proches : Diplodia sapinea (le sphaeropsis des pins) et Gremmeniella abietina, qui s’attaquent aux pousses, et Caliciopsis pinea, qui forme des chancres. La page dit qu’une analyse en laboratoire est indispensable pour les séparer."
+      ],
+      "facteursFavorisants": [
+        "Des blessures : intempéries extrêmes, blessures faites par l’homme ou les animaux, surtout par les insectes.",
+        "Le temps humide ou le brouillard, quand il fait environ 20 °C.",
+        "La chaleur et une forte humidité de l’air.",
+        "Des arbres affaiblis par la sécheresse.",
+        "Des sols peu profonds ou gorgés d’eau.",
+        "Des plantations très serrées.",
+        "Des sols riches en azote.",
+        "Des espèces de pins sensibles, surtout le pin de Monterey (Pinus radiata)."
+      ],
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-resineux-pin",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "prevention"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Fusarium%20circinatum%20Nirenberg%20%26%20O%27Donnell%201247233.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-resineux-pin-rameau.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Terry S. Price, Georgia Forestry Commission, Bugwood.org, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Pousses mortes au bout des branches d’un pin d’Elliott (Pinus elliottii), aux États-Unis."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 2,
+      "noteFrequence": 0
+    }
+  ]
+}

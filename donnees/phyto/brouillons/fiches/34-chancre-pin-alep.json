@@ -1,0 +1,199 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-pin-alep",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Maladie chancreuse du pin d’Alep (Crumenulopsis sororia), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20369/Forets-Maladie-chancreuse-du-pin-d-Alep",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-pin-alep",
+      "nomCommun": "Maladie chancreuse du pin d’Alep",
+      "nomScientifique": "Crumenulopsis sororia",
+      "categorie": "maladie",
+      "agentCausal": "Plusieurs champignons qui agissent ensemble, en particulier Crumenulopsis sororia et Diplodia pinea, avec de nombreux champignons qui vivent sur l’écorce. La page cite aussi Sphaeropsis sapinea et Sclerophoma pythiophila, souvent présents, qui aident les rameaux à sécher.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "rameau",
+        "aiguille",
+        "branche",
+        "houppier"
+      ],
+      "quandCaSeVoit": "La contamination a lieu en été ou en automne. Les symptômes mettent ensuite plus de six mois à apparaître.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le pin d’Alep.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie du pin d’Alep due à plusieurs champignons, dont Crumenulopsis sororia. Sur les rameaux, de petites bosses creusées laissent couler un peu de résine, puis s’ouvrent en chancres. Les rameaux sèchent et leurs aiguilles roussissent par bouquets, d’abord dans le bas de l’arbre.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Sur les branches atteintes, les aiguilles tombent, et tout ce qui se trouve au-dessus du chancre peut sécher. De jeunes arbres en meurent. Les arbres les plus touchés ont un feuillage rougeâtre et clairsemé, avec beaucoup de branches mortes.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "rameau",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes arbres, car ce sont eux que la maladie peut tuer.",
+      "prevention": null,
+      "commentCaArrive": "La contamination se fait en été ou en automne. Le champignon semble entrer surtout par les cicatrices fraîches laissées par les aiguilles tombées. Plus une pousse vieillit, plus elle se laisse contaminer. Des pluies plus fortes que d’habitude à ce moment-là favorisent la maladie.",
+      "gestion": "Les spores de la forme asexuée du champignon sont surtout emportées par l’eau. Celles de sa forme sexuée partent surtout avec le vent.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur les rameaux, surtout à l’endroit où une aiguille est tombée, de petites zones creusées en forme de bouton, avec un peu de résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les morceaux d’écorce soulevés tombent et laissent voir un jeune chancre, qui attaque en profondeur la couche vivante sous l’écorce."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le chancre coule souvent beaucoup de résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les rameaux atteints sèchent peu à peu. Dans les cas graves, plusieurs chancres se rejoignent et étranglent le rameau."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun",
+            "rouge"
+          ],
+          "localisations": [
+            "en_plages"
+          ],
+          "poids": "frequent",
+          "libelle": "Sur les rameaux qui sèchent, les aiguilles roussissent par bouquets."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Les symptômes sont surtout dans le bas du houppier, et le dessèchement monte vers le haut de l’arbre. Les arbres les plus touchés ont un feuillage anormalement rougeâtre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Le feuillage s’éclaircit : les branches atteintes perdent leurs aiguilles."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les arbres les plus touchés portent de nombreuses branches mortes."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur les rameaux, surtout là où une aiguille est tombée, de petites zones creusées en forme de bouton, avec un peu de résine.",
+        "Les morceaux d’écorce soulevés tombent et laissent voir un jeune chancre, qui coule souvent beaucoup de résine.",
+        "Les rameaux atteints sèchent peu à peu, et leurs aiguilles roussissent par bouquets.",
+        "Les dégâts commencent dans le bas du houppier et montent vers le haut de l’arbre.",
+        "Sur les rameaux, les dégâts font penser à ceux d’une forte grêle."
+      ],
+      "criteresExclusion": [
+        "La chute naturelle des aiguilles les plus vieilles, à la base des rameaux, n’est pas cette maladie.",
+        "La bactériose du pin d’Alep, due à Corynebacterium halepensis, forme sur le côté des rameaux des boules d’abord toutes petites, qui grossissent peu à peu. Elles bloquent la sève, et le bout des pousses sèche."
+      ],
+      "facteursFavorisants": [
+        "Des pluies plus abondantes que la normale au moment de la contamination.",
+        "L’âge des pousses : plus elles vieillissent, plus elles se laissent contaminer.",
+        "Les cicatrices fraîches laissées par la chute des aiguilles, qui semblent être les entrées préférées du champignon."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-pin-alep",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

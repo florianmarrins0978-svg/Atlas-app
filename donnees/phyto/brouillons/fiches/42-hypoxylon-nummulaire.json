@@ -1,0 +1,191 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-hypoxylon-nummulaire",
+      "organisme": "INRAE, Ephytia (auteur : C. Husson, DSF et DGAL)",
+      "titre": "L’hypoxylon nummulaire (Biscogniauxia nummularia), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27445/Forets-Hypoxylon-nummulaire",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "hypoxylon-nummulaire",
+      "nomCommun": "Hypoxylon nummulaire",
+      "nomScientifique": "Biscogniauxia nummularia",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Biscogniauxia nummularia. D’ordinaire, il vit dans le bois sans le rendre malade, ou sur le bois mort.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "branche",
+        "tronc",
+        "ecorce",
+        "champignon_sur_bois"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Le hêtre est son hôte habituel. La page cite aussi d’autres feuillus, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon du bois, surtout du hêtre, qui ne devient parasite que sur des arbres déjà très affaiblis, par la sécheresse par exemple. Il forme alors des croûtes noires qui font éclater l’écorce du tronc et des branches. Il aggrave le dépérissement de l’arbre.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Ce champignon ne profite que d’un arbre déjà affaibli ou déséquilibré. Il aggrave le dépérissement du hêtre, et parfois d’autres feuillus, quand l’arbre est déjà très abîmé par la sécheresse, la concurrence, ou les attaques d’autres champignons ou de ravageurs.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Le champignon aggrave le dépérissement d’arbres déjà très affaiblis, et l’écorce se décolle. Rien n’est dit d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "ecorce"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez l’état de l’arbre d’une année sur l’autre, car ce champignon ne s’installe que sur un arbre déjà très affaibli et aggrave son dépérissement.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "D’ordinaire, le champignon vit dans le bois sans le rendre malade, ou sur le bois mort. Quand l’arbre est très affaibli, par une sécheresse par exemple, il peut devenir parasite : il forme des croûtes noires qui font éclater l’écorce des branches et du tronc.",
+      "gestion": "Les croûtes noires libèrent des spores que le vent et la pluie emportent.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, des croûtes noires en taches, parfois réunies en plaques, qui font éclater l’écorce."
+        },
+        {
+          "nature": "signe",
+          "partie": "branche",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les branches, des croûtes noires en taches, parfois réunies en plaques."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le champignon forme des croûtes noires à la surface de l’écorce."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des taches noires sur l’écorce : ce sont les croûtes du champignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’écorce se décolle."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "fagus",
+          "specificite": "frequent"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Sur le tronc et les branches, des croûtes noires en taches, qui font éclater l’écorce.",
+        "Ces croûtes se rejoignent parfois en grandes plaques.",
+        "L’écorce se décolle."
+      ],
+      "criteresExclusion": [
+        "Le charbon de la mère, dû à Biscogniauxia mediterranea, peut lui ressembler.",
+        "La maladie de la suie de l’érable, due à Cryptostroma corticale, peut aussi lui ressembler.",
+        "La page ne donne aucun moyen de les distinguer à l’œil."
+      ],
+      "facteursFavorisants": [
+        "Un arbre très affaibli, notamment par la sécheresse.",
+        "La concurrence entre arbres.",
+        "Les attaques d’autres champignons ou de ravageurs."
+      ],
+      "hotesNonExhaustifs": true,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Biscogniauxia%20nummularia.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/hypoxylon-nummulaire-tronc.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Roger Griffith, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Les croûtes noires du champignon sur le tronc d’un hêtre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Detail%20of%20Biscogniauxia%20nummularia.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/hypoxylon-nummulaire-champignon_sur_bois.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Roger Griffith, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Les croûtes noires du champignon, vues de près."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-hypoxylon-nummulaire",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique"
+          ]
+        }
+      ]
+    }
+  ]
+}

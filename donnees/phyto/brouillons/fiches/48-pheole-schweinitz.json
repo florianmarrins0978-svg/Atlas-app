@@ -1,0 +1,376 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-pheole-schweinitz",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Phéole de Schweinitz (Phaeolus schweinitzii), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18724/Forets-Pheole-de-Schweinitz",
+      "nature": "officielle",
+      "publieeLe": "2020-07-31",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea",
+      "nomScientifique": "Picea",
+      "nomCommun": "Épicéa",
+      "article": "un",
+      "synonymes": [
+        "épicéas"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-sitchensis",
+      "nomScientifique": "Picea sitchensis",
+      "nomCommun": "Épicéa de Sitka",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-alba",
+      "nomScientifique": "Abies alba",
+      "nomCommun": "Sapin pectiné",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-grandis",
+      "nomScientifique": "Abies grandis",
+      "nomCommun": "Sapin de Vancouver",
+      "article": "un",
+      "synonymes": [
+        "sapin grandissime"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-abies",
+      "nomScientifique": "Picea abies",
+      "nomCommun": "Épicéa commun",
+      "article": "un",
+      "synonymes": [
+        "épicéa"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "pheole-schweinitz",
+      "nomCommun": "Phéole de Schweinitz",
+      "nomScientifique": "Phaeolus schweinitzii",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Un champignon, Phaeolus schweinitzii, qui fait pourrir les souches et le cœur du bois des arbres sur pied.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "tronc",
+        "champignon_sur_bois"
+      ],
+      "quandCaSeVoit": "Le champignon sort au pied de l’arbre à la fin de l’été et à l’automne. Il vit deux ou trois mois, mais il peut rester en place un an ou deux.",
+      "autresEssences": "Le champignon s’attaque surtout au douglas, aux mélèzes, aux sapins, aux épicéas et aux pins. La page cite aussi d’autres conifères et, plus rarement, des feuillus comme les cerisiers et les chênes.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon qui pourrit les souches et le cœur du bois des conifères, à la base du tronc. On le reconnaît à un gros champignon mou, jaune à brun-roux, qui sort au pied de l’arbre à la fin de l’été et à l’automne. Le bois pourri est brun, sec, se casse en cubes et sent la térébenthine.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Le champignon pourrit le cœur du bois des arbres sur pied. La pourriture gagne en général tout le cœur, à la base du tronc. On ne sait pas bien si elle peut monter plus haut : les avis divergent. Les dégâts sont forts sur l’épicéa de Sitka. Ils sont plus graves dans les sols peu profonds, et quand un sol gorgé d’eau est suivi d’une sécheresse d’été : l’arbre s’affaiblit et ses racines meurent.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "La pourriture gagne en général tout le cœur du bois, à la base du tronc.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "collet",
+        "champignon_sur_bois",
+        "tronc"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Regardez le pied de l’arbre à la fin de l’été et à l’automne, car c’est là que sort le champignon, alors que la pourriture, elle, est à l’intérieur, dans le cœur du bois.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon entre dans les racines et à la base du tronc par une blessure, ou après l’attaque d’un autre parasite comme l’armillaire. Il touche surtout les arbres de plus de 50 ans, mais il peut aussi s’installer sur de jeunes arbres.",
+      "gestion": "Il passe mal, ou pas du tout, d’un arbre malade à un arbre sain par les racines qui se touchent. Dans un bois, les arbres atteints sont dispersés, ici et là.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "carpophore",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "cardinal",
+          "libelle": "Au pied de l’arbre, à la fin de l’été et à l’automne, un gros champignon mou et sans pied, de 10 à 30 cm de large. Le dessus est feutré, jaune à brun-roux, avec un bord jaune."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "frequent",
+          "libelle": "Sous le champignon, des pores irréguliers jaune soufre à jaune verdâtre, qui deviennent bruns."
+        },
+        {
+          "nature": "signe",
+          "partie": "racine",
+          "motif": "carpophore",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois sur le sol, à partir des racines, un champignon porté par un pied court, épais et velouté."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "pourriture_bois",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "À la base du tronc, le cœur du bois est brun et sec, et il se casse en cubes. Il sent la térébenthine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "tache",
+          "couleurs": [
+            "brun",
+            "jaune",
+            "rose"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Au début, des taches discrètes brun-jaune ou rosées dans le bois, avec une forte odeur d’anis ou de térébenthine."
+        },
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc",
+            "jaune"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Dans les fentes du bois pourri, de fines lames de champignon blanches ou jaunâtres."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-sitchensis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-alba",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-grandis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "quercus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Au pied de l’arbre, un gros champignon mou et sans pied, de 10 à 30 cm de large et de 1 à 3 cm d’épaisseur.",
+        "Le dessus est feutré, jaune à brun-roux, avec un bord jaune qui s’efface avec l’âge. Sa chair est brune, spongieuse et pleine d’eau.",
+        "Le dessous est couvert de pores irréguliers, jaune soufre à jaune verdâtre, qui brunissent ensuite.",
+        "Il peut aussi pousser sur le sol, à partir des racines, sur un pied court, épais et velouté.",
+        "À la base du tronc, le cœur du bois est brun et sec, et il se casse en cubes. Il sent la térébenthine."
+      ],
+      "criteresExclusion": [
+        "Sans le champignon au pied de l’arbre, la pourriture peut venir d’un autre champignon qui pourrit lui aussi le cœur du bois en cubes bruns."
+      ],
+      "facteursFavorisants": [
+        "Un sol peu profond.",
+        "Un sol gorgé d’eau puis une sécheresse d’été, qui affaiblissent l’arbre et font mourir ses racines.",
+        "Une blessure aux racines ou à la base du tronc.",
+        "L’attaque d’un autre parasite des racines, comme l’armillaire.",
+        "Un arbre de plus de 50 ans."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2020-07-31",
+      "sources": [
+        {
+          "source": "ephytia-pheole-schweinitz",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phaeolus%20schweinitzii%20171005w.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pheole-schweinitz-collet.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Strobilomyces, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Le champignon au pied d’un arbre, brun-roux au bord jaune, dans un parc près des Ulis."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2011.%20Decay%20in%20a%20Douglas-fir%20from%20Phaeolus%20schweinitzii%2C%20brown%20cubicle%20butt%20rot.%20%2838723506535%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pheole-schweinitz-tronc.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Kristen Chadwick, USDA Forest Service, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Le cœur du bois d’un douglas, brun et cassé en cubes par la pourriture."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

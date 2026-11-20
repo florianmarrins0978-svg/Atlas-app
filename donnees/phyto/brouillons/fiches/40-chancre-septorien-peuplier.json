@@ -1,0 +1,224 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-septorien-peuplier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Le chancre septorien du peuplier (Sphaerulina musiva), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/26473/Forets-Le-chancre-septorien-du-peuplier",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-septorien-peuplier",
+      "nomCommun": "Chancre septorien du peuplier",
+      "nomScientifique": "Sphaerulina musiva",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Sphaerulina musiva. Il porte aussi les noms de Mycosphaerella populorum et de Septoria musiva. Il vient d’Amérique du Nord, et la page le dit absent d’Europe.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "tronc",
+        "ecorce",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les taches sur les feuilles apparaissent quelques semaines après le débourrement. Les parties mortes sur les pousses apparaissent au début de l’été. Le champignon produit des spores pendant toute la saison de végétation.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le peuplier. Les peupliers baumiers et les hybrides euraméricains et interaméricains sont sensibles, avec des différences d’un clone à l’autre ; les hybrides apparentés à Populus maximowiczii le sont beaucoup. Populus deltoides, peuplier d’Amérique du Nord, prend la maladie sur ses feuilles mais résiste aux chancres, et n’en souffre pas.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie du peuplier causée par un champignon d’Amérique du Nord, absent d’Europe et classé organisme de quarantaine. Elle fait des taches à centre clair et bord foncé sur les feuilles, puis des parties mortes et des chancres sur les pousses, les branches et le tronc. Les tiges atteintes cassent sous le vent.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Les dégâts sont surtout forts dans les jeunes plantations : les feuilles tombent trop tôt, et les tiges portent des parties mortes et des chancres qui cassent sous le vent. Sur les arbres adultes, la croissance baisse et le bois perd de sa qualité. Le peuplier affaibli est ensuite attaqué par d’autres parasites, qui accélèrent son dépérissement. En Amérique du Nord, la maladie fait peu de dégâts sur les peupliers du pays, mais beaucoup dans les plantations de peupliers hybrides.",
+      "impactMecanique": "avere",
+      "impactMecaniqueNote": "Les branches et les tiges cassent sous le vent à l’endroit des parties mortes et des chancres, surtout dans les jeunes plantations.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "quarantaine",
+      "referenceReglementaire": "Organisme de quarantaine de l’Union européenne, règlement d’exécution 2019/2072.",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "feuille",
+        "rameau",
+        "tronc"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. Le moyen de lutte le plus efficace est le choix de clones de peuplier sélectionnés pour résister à la maladie ou la tolérer. En pépinière, enfouir les feuilles tombées par un labour, ou les ramasser en hiver, réduit les spores qui lancent les infections au printemps.",
+      "methodeConfirmation": "Le diagnostic se fait sur un prélèvement, de préférence sur des feuilles prises 3 à 4 semaines après le débourrement, et parfois sur les pousses de l’année, au bord de la partie morte. Sur un arbre adulte, les chancres du tronc et des branches sont peu typiques et vite envahis par d’autres champignons.",
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Au printemps, par temps humide, le champignon libère des spores que la pluie et le vent portent sur les feuilles, les pousses et les tiges encore vertes. Il entre par les lenticelles, les petits pores de l’écorce, et par les blessures. Les rameaux déjà devenus du bois ne sont pas touchés par ces premières infections. Les symptômes apparaissent quelques semaines après le débourrement, surtout sur les jeunes plants et dans le bas du houppier.",
+      "gestion": "Le champignon passe l’hiver dans les feuilles mortes au sol et dans les chancres des tiges. Ses spores voyagent à courte distance avec les éclaboussures de pluie et le vent. Sur de longues distances, il voyage avec les plants et les boutures malades, et avec l’écorce et les grumes non écorcées de peuplier qui portent des chancres. Les vieux chancres ne produisent presque plus de spores et ne sont plus contagieux.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "blanc",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Quelques semaines après le débourrement, des taches de 1 à 15 mm sur les feuilles : un centre clair, blanchâtre, entouré d’une bordure brun foncé."
+        },
+        {
+          "nature": "signe",
+          "partie": "feuille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Au milieu des taches, de très petits amas noirâtres : les organes du champignon qui produisent des spores."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au début de l’été, des parties mortes brun jaune sur les pousses. Elles peuvent faire le tour des tiges de moins de 2 cm de diamètre."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les pousses mortes de l’année, de très petits amas noirâtres."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des chancres sur les branches, qui déforment le bois des peupliers sensibles."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur la tige, un chancre plat, l’écorce enfoncée des deux côtés."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "La tige se déforme à l’endroit du chancre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent trop tôt. Le bas du houppier est le plus touché."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "populus",
+          "specificite": "strict"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Quelques semaines après le débourrement, des taches de 1 à 15 mm sur les feuilles, au centre clair et au pourtour foncé.",
+        "Les feuilles sont plus touchées dans le bas du houppier.",
+        "Au début de l’été, des parties mortes sur les pousses, puis des chancres sur les branches et les tiges.",
+        "Une tige déformée, l’écorce enfoncée : un chancre plat, creusé des deux côtés.",
+        "Des branches et des tiges cassées par le vent, à l’endroit des chancres.",
+        "Les feuilles tombent trop tôt."
+      ],
+      "criteresExclusion": [
+        "D’autres champignons font des parties mortes sur les peupliers affaiblis, comme le Cytospora ou le Dothichiza du peuplier.",
+        "Sur un arbre adulte, les chancres du tronc et des branches sont peu typiques. D’autres champignons s’y installent vite (Cytospora, Phomopsis, Fusarium) et rendent le diagnostic difficile."
+      ],
+      "facteursFavorisants": [
+        "Le temps humide au printemps.",
+        "Les clones sensibles : peupliers baumiers, hybrides euraméricains et interaméricains, et surtout les hybrides apparentés à Populus maximowiczii."
+      ],
+      "hotesNonExhaustifs": false,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Septoria%20leaf%20spot%20and%20canker4212089.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-houppier.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo du Minnesota Department of Natural Resources (FIA), Bugwood.org, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Des peupliers atteints, dans le Minnesota (États-Unis) : le feuillage brunit et se dégarnit."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 0,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-septorien-peuplier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "impact_mecanique",
+            "reference_reglementaire"
+          ]
+        }
+      ]
+    }
+  ]
+}

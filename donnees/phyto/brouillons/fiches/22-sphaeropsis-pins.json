@@ -1,0 +1,294 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-sphaeropsis-pins",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Sphaeropsis des pins (Diplodia sapinea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19093/Forets-Sphaeropsis-des-pins",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "sphaeropsis-pins",
+      "nomCommun": "Sphaeropsis des pins",
+      "nomScientifique": "Diplodia sapinea",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Diplodia sapinea. Il porte aussi les noms de Diplodia pinea et de Sphaeropsis sapinea. Il est très répandu dans le monde. Il vit souvent dans les tissus du pin sans le rendre malade, et devient dangereux quand l’arbre subit un stress. On ne lui connaît qu’une seule forme de reproduction.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "rameau",
+        "aiguille",
+        "branche",
+        "houppier",
+        "ecorce",
+        "tronc",
+        "fruit"
+      ],
+      "quandCaSeVoit": "Les jeunes pousses se contaminent en mai et en juin, pendant qu’elles s’allongent. Les petites fructifications noires apparaissent en général vers la fin de l’été. Après un violent orage de grêle, les branches sèchent quelques semaines plus tard. La page ne donne pas de saison pour les dessèchements de branches et de cime qui suivent une sécheresse.",
+      "autresEssences": "La page nomme le pin sylvestre et le pin noir comme hôtes habituels, puis les autres pins et d’autres résineux, sans les nommer. Le pin noir, le pin laricio et le pin sylvestre sont ceux qui montrent le plus de symptômes. Les cônes du pin maritime sont en moyenne 7 fois moins souvent contaminés que ceux du pin noir et du pin sylvestre.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur les pins. Il vit souvent dans l’arbre sans dégât, puis attaque quand le pin est affaibli par une sécheresse ou blessé par la grêle. Les pousses de l’année sèchent, puis des branches ou une partie de la cime. Sous l’écorce morte, le bois devient bleu.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "La maladie progresse en France depuis 25 ans. Le pin noir, le pin laricio et le pin sylvestre en montrent de plus en plus souvent les symptômes, surtout après une sécheresse ou un violent orage. Les pousses de l’année sèchent. Sur les arbres adultes, ce sont des branches ou une partie de la cime qui sèchent, et après la grêle, la cime peut mourir. Quand la cime des arbres est touchée à plus de 50 % en moyenne, des peuplements adultes doivent souvent être coupés en urgence pour éviter de trop grosses pertes. Les dégâts comptent moins sur les jeunes arbres, en semis naturel ou en plantation. Sur un jeune plant, une pousse du sommet touchée peut le déformer.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "rameau",
+        "aiguille",
+        "branche",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Après une sécheresse ou un violent orage de grêle, surveillez vos pins pendant les semaines qui suivent, car c’est à ce moment que les branches et la cime sèchent. Sur une branche sèche, cherchez les pousses de l’année touchées : elles vont toujours avec ce dégât.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon vit souvent dans le pin sans le rendre malade. Il attaque quand l’arbre est affaibli, surtout par une sécheresse : il tue l’écorce et fait sécher des branches ou une partie de la cime. Si le stress cesse, il s’arrête, et l’arbre referme peu à peu les parties mortes, qui prennent l’aspect d’un chancre. Les jeunes pousses, elles, se contaminent en mai et en juin, par temps chaud et humide : il entre par les jeunes aiguilles et par la pousse encore tendre, et la fait sécher même sur un arbre vigoureux. Il entre aussi par les blessures, en particulier celles de la grêle.",
+      "gestion": "En forêt, la principale réserve du champignon, ce sont les cônes mûrs, où il fructifie en abondance. À chaque période humide, ses fructifications libèrent beaucoup de spores, qui retombent pour la plupart à courte distance. Les fructifications qui se forment vite sur les parties mortes, après la grêle par exemple, en ajoutent encore. Il voyage aussi avec les graines contaminées : c’est sans doute ainsi qu’il s’est répandu dans le monde. En pépinière, on n’a jamais montré que la graine transmet la maladie au semis : la contamination vient sans doute de l’extérieur.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Les pousses de l’année sèchent entièrement. Elles restent courtes, avec des aiguilles courtes et brunâtres, et deviennent cassantes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les pousses touchées sont enrobées de résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les pousses touchées, les aiguilles restent courtes et prennent une teinte brunâtre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "necrose",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Quand on tire une aiguille hors de sa gaine, sa base est noire sur un demi-millimètre environ."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Vers la fin de l’été, de petites fructifications noires, surtout à la base des aiguilles."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "De petites fructifications noires sur l’écorce des pousses mortes et des rameaux touchés."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur un arbre adulte, une branche sèche en partie ou en entier. C’est le dégât le plus fréquent, et il va toujours avec des pousses touchées."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "frequent",
+          "libelle": "Une partie de la cime sèche, ou la cime meurt."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "possible",
+          "libelle": "Quelques semaines après un violent orage de grêle, toutes les aiguilles peuvent rougir."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des parties d’écorce mortes, que l’arbre referme peu à peu et qui prennent l’aspect d’un chancre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "decoloration",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sous l’écorce morte, le bois est bleu, en quartier (en forme de part de tarte, vu en coupe), sans galerie de scolytes."
+        },
+        {
+          "nature": "signe",
+          "partie": "fruit",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les écailles des cônes mûrs, de petites fructifications noirâtres en forme de boule, qui soulèvent la peau de l’écaille."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les pousses de l’année sont courtes, enrobées de résine, avec des aiguilles courtes et brunâtres. Elles sèchent entièrement et deviennent cassantes.",
+        "Quand on tire une aiguille hors de sa gaine, sa base est noire sur un demi-millimètre environ.",
+        "Vers la fin de l’été, de petites fructifications noires apparaissent, surtout à la base des aiguilles et sur les rameaux touchés.",
+        "Sur un arbre adulte, ce sont surtout des branches ou une partie de la cime qui sèchent. Ces dessèchements vont toujours avec des pousses touchées : cherchez-les.",
+        "Sous l’écorce morte, le bois est bleu, en quartier, sans galerie de scolytes."
+      ],
+      "criteresExclusion": [
+        "Un bois bleu sous l’écorce, mais avec des galeries de scolytes : la page ne retient ce bleuissement comme signe de la maladie que sans galerie."
+      ],
+      "facteursFavorisants": [
+        "Une sécheresse, qui affaiblit les défenses de l’arbre.",
+        "Un violent orage de grêle, qui blesse l’arbre.",
+        "Des épisodes chauds et humides en mai et en juin, pendant que les pousses s’allongent.",
+        "Des blessures sur les parties en bois.",
+        "De jeunes peuplements qui ont reçu de l’engrais semblent plus sensibles.",
+        "Les périodes de chaleur favorisent le bleuissement du bois."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-sphaeropsis-pins",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diplodia_blightSphaeropsis_sapinea5051011.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/sphaeropsis-pins-houppier.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Sommet séché d’un jeune pin rouge (Pinus resinosa, un pin d’Amérique du Nord). L’écorce enlevée montre le bois taché de sombre."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 2
+    }
+  ]
+}

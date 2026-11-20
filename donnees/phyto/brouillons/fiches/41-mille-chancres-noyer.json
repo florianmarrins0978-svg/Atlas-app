@@ -1,0 +1,203 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-mille-chancres-noyer",
+      "organisme": "INRAE, Ephytia (auteur : C. Husson, DSF et DGAL)",
+      "titre": "La maladie des mille chancres du noyer (Geosmithia morbida), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27354/Forets-Maladie-des-mille-chancres-du-noyer",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "juglans",
+      "nomScientifique": "Juglans",
+      "nomCommun": "Noyer",
+      "article": "un",
+      "synonymes": [
+        "noyers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "pterocarya",
+      "nomScientifique": "Pterocarya",
+      "nomCommun": "Ptérocaryer",
+      "article": "un",
+      "synonymes": [
+        "ptérocaryers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "mille-chancres-noyer",
+      "nomCommun": "Maladie des mille chancres du noyer",
+      "nomScientifique": "Geosmithia morbida",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Geosmithia morbida, porté par un petit insecte, le scolyte Pityophthorus juglandis, dont l’adulte mesure 1,5 à 2 mm. Le scolyte creuse ses galeries sous l’écorce et y dépose les spores du champignon. Tous deux viennent du sud-ouest de l’Amérique du Nord.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "tronc",
+        "ecorce",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les scolytes adultes sortent de mai à octobre, en deux générations par an. Les symptômes, et parfois la mort de l’arbre, arrivent plusieurs années après l’infection, 3 à 5 ans.",
+      "autresEssences": "Les noyers et les noyers hybrides sont les hôtes habituels. La page cite aussi les ptérocaryers (Pterocarya) comme hôtes possibles. Juglans nigra est le plus sensible. Le noyer commun (Juglans regia) et les autres noyers sont moyennement sensibles, avec peu de cas de mort. Les hybrides sont sensibles eux aussi.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie du noyer causée par un champignon que transmet un petit scolyte venu d’Amérique du Nord. L’insecte creuse des galeries sous l’écorce, et le champignon y fait de nombreuses taches mortes brun noir, de forme ovale. Le feuillage jaunit, des rameaux et des branches meurent. Les deux organismes sont classés de quarantaine dans l’Union européenne, et ont été trouvés près de Lyon en 2022.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Des branches meurent. Les noyers les plus sensibles, comme Juglans nigra, peuvent mourir. Le noyer commun (Juglans regia) et les autres noyers sont moyennement sensibles, et en meurent rarement ; les noyers hybrides sont sensibles. Les symptômes, et parfois la mort de l’arbre, n’arrivent que 3 à 5 ans après l’infection.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Des branches meurent, et les noyers les plus sensibles peuvent mourir. Rien n’est dit d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "quarantaine",
+      "referenceReglementaire": "Le champignon Geosmithia morbida et le scolyte Pityophthorus juglandis sont classés organismes de quarantaine dans l’Union européenne.",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "houppier",
+        "rameau",
+        "ecorce"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les noyers d’une année sur l’autre, car les symptômes n’apparaissent que 3 à 5 ans après l’infection.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Un petit scolyte, Pityophthorus juglandis, creuse des galeries sous l’écorce pour y pondre. Il porte sur son dos les spores du champignon, et les dépose ainsi dans l’arbre. Le champignon fait alors, sous l’écorce, des taches mortes brun noir, de forme ovale. Les larves grandissent dans la couche vivante sous l’écorce et y creusent à leur tour des galeries. D’autres insectes, l’eau ou le vent peuvent porter le champignon, mais seul ce scolyte sait vraiment contaminer un arbre.",
+      "gestion": "Les scolytes adultes sortent de mai à octobre, en deux générations par an, et portent à leur tour des spores vers les arbres voisins. La maladie gagne de nouvelles zones par le vol du scolyte, ou par le transport de plants ou de bois non écorcé qui portent l’insecte et le champignon. Elle s’est étendue dans l’ouest puis dans quelques États de l’est des États-Unis. Elle est présente dans le nord de l’Italie depuis 2013, et les deux organismes ont été trouvés en 2022 dans des parcs de la métropole de Lyon.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le feuillage jaunit au bout des rameaux."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les rameaux flétrissent, puis sèchent et meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des branches meurent."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "galerie",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce, des galeries d’insecte entourées de parties mortes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce des branches, de nombreuses taches mortes brun noir, de forme ovale."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sous l’écorce du tronc, de nombreuses taches mortes brun noir, de forme ovale."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "juglans",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pterocarya",
+          "specificite": "occasionnel"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Le feuillage jaunit au bout des rameaux.",
+        "Les rameaux flétrissent, puis sèchent et meurent.",
+        "Sous l’écorce, des galeries d’insecte entourées de parties mortes.",
+        "Sous l’écorce des branches et du tronc, de nombreuses taches mortes brun noir, de forme ovale."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [],
+      "hotesNonExhaustifs": false,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Thousand%20Cankers%20Disease.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/mille-chancres-noyer-houppier.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Jeffrey Beall, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Un noyer noir (Juglans nigra) atteint, à Denver (États-Unis) : des branches sont mortes en haut de la cime."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 3,
+      "noteFrequence": 1,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-mille-chancres-noyer",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique",
+            "reference_reglementaire"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-encre-chataignier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Encre du châtaignier (Phytophthora cinnamomi et Phytophthora cambivora), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20253/Forets-Encre-du-chataignier",
+      "nature": "officielle",
+      "publieeLe": "2024-04-19",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "encre-chataignier",
+      "nomCommun": "Encre du châtaignier",
+      "nomScientifique": "Phytophthora cinnamomi et Phytophthora cambivora",
+      "categorie": "maladie",
+      "agentCausal": "Deux micro-organismes du sol, Phytophthora cinnamomi et Phytophthora cambivora. Ce sont des oomycètes : ils ressemblent à des champignons, mais la page précise qu’ils en sont très différents.",
+      "agentType": "inconnu",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "feuille",
+        "rameau",
+        "branche",
+        "houppier"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Les chênes sont aussi des hôtes habituels. La page cite de très nombreux autres arbres, dont le pin, l’eucalyptus et des arbres d’ornement. En France, le châtaignier est parmi les plus sensibles, avec le chêne vert et le chêne-liège. Le chêne rouge et le chêne pédonculé sont sensibles aussi, mais leurs racines souffrent moins. Le chêne sessile résiste mieux.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie des racines du châtaignier, causée par deux Phytophthora qui vivent dans le sol et aiment l’eau. Les racines meurent, la cime dépérit (petites feuilles, feuillage jaune ou rouge, rameaux secs) et l’arbre peut mourir. Plus rarement, une tache noire en flamme apparaît au collet, avec un écoulement noir.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Les racines sont détruites, en partie ou en totalité. La cime se dégrade, et l’arbre peut mourir. Le châtaignier est très sensible : il est tué quel que soit son âge ou sa taille. La maladie s’étend par taches, d’un arbre à l’autre, à partir des premiers arbres atteints. Depuis les années 2000, elle repart en forêt. Elle n’abîme pas directement la qualité du bois.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "collet",
+        "racine",
+        "houppier",
+        "feuille"
+      ],
+      "conduiteRecommandee": "Pour limiter les dégâts, plantez des plants sains, de préférence à racines nues (ils portent moins de terre), dans un sol bien drainé. Évitez de tasser le sol, et évitez les coupes trop fortes, qui font remonter l’eau. Faites passer les engins toujours aux mêmes endroits, et sortez le bois quand le sol s’est ressuyé. Pour replanter, le chêne sessile, plus tolérant, peut être envisagé.",
+      "methodeConfirmation": "Sur place, le diagnostic est toujours délicat. Un test rapide de terrain (Elisa) montre la présence d’un Phytophthora, sans dire lequel. En laboratoire, le pathogène est difficile à isoler : l’échantillon se prélève à la limite entre le bois sain et la partie morte, de préférence au printemps ou en été.",
+      "informationsRequises": [
+        "Les racines d’un jeune semis arraché sur la parcelle : abîmées et peu nombreuses, elles signalent l’encre."
+      ],
+      "prevention": null,
+      "commentCaArrive": "Le pathogène vit dans le sol. Dans l’eau, il produit des spores qui nagent sur de courtes distances et qui sont attirées par les petites racines. Au printemps, elles se fixent au bout des racines et germent. Le pathogène tue alors les racines, des plus fines vers les plus grosses, et parfois jusqu’au collet. Il se plaît dans les sols gorgés d’eau ou qui évacuent mal l’eau.",
+      "gestion": "La maladie avance par taches, de proche en proche, à partir des premiers arbres atteints. Elle part plus loin avec la terre et les plants malades que l’on transporte. Quand les conditions ne lui conviennent pas, le pathogène survit plusieurs années dans le sol, sous forme de spores de conservation. Les hivers rigoureux le freinent : on le trouve surtout dans l’ouest de la France, sous climat océanique, et il manque en Alsace et dans les Alpes.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur les racines, des parties mortes brunes à noires. Les racines sont détruites en partie ou en totalité."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le feuillage prend une couleur anormale, jaune ou rouge."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles restent petites, et les pousses sont chétives."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des feuilles mortes restent accrochées à l’arbre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des rameaux se dessèchent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des branches meurent, et la cime se dégrade."
+        },
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "necrose",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "possible",
+          "libelle": "Au collet, sous l’écorce, une tache morte en forme de flamme, bordée d’un liseré noir. Rare sur le châtaignier, qui meurt souvent avant."
+        },
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "ecoulement",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "possible",
+          "libelle": "Parfois, un écoulement de sève qui noircit à l’air, d’où le nom d’encre."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "castanea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les racines portent des parties mortes, brunes à noires.",
+        "Les feuilles restent petites, les pousses sont chétives, et le feuillage prend une couleur anormale, jaune ou rouge.",
+        "Des feuilles mortes restent accrochées, des rameaux se dessèchent et des branches meurent.",
+        "Plus rarement sur le châtaignier, au collet, une tache morte sous l’écorce en forme de flamme, bordée de noir. Elle laisse parfois couler une sève qui noircit à l’air.",
+        "Les arbres malades forment des taches qui s’agrandissent autour des premiers arbres atteints."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un sol gorgé d’eau : fond de vallon, zone inondable, bord de cours d’eau.",
+        "Un sol qui évacue mal l’eau : argileux, mal drainé ou tassé, avec des traces d’eau stagnante à moins de 50 cm de profondeur.",
+        "Les travaux qui tassent le sol.",
+        "Des hivers doux, qui aident le pathogène à survivre dans le sol.",
+        "Des périodes humides suivies d’une sécheresse : l’humidité répand les spores, et la sécheresse épuise les arbres qui n’ont plus assez de racines.",
+        "La chaleur, pour Phytophthora cinnamomi, qui se développe le mieux entre 24 et 26 °C."
+      ],
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-04-19",
+      "sources": [
+        {
+          "source": "ephytia-encre-chataignier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "informations_requises"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maladie%20encre.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-tronc.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Abrahami, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Des taches noires sur le bas du tronc de châtaigniers malades."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Castagn%C3%AE%20maladeye%20intche.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-ecorce.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Lucyin, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Un châtaignier mort de l’encre, en Lozère : son tronc éclaté montre une couche noire sous l’écorce."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 3,
+      "noteFrequence": 2
+    }
+  ]
+}

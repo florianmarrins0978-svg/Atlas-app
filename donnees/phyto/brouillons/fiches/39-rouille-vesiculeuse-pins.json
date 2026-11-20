@@ -1,0 +1,221 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rouille-vesiculeuse-pins",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Rouille vésiculeuse de l’écorce des pins (Cronartium ribicola et Cronartium pini), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19091/Forets-Rouille-vesiculeuse-de-l-ecorce-des-pins",
+      "nature": "officielle",
+      "publieeLe": "2025-09-03",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rouille-vesiculeuse-pins",
+      "nomCommun": "Rouille vésiculeuse de l’écorce des pins",
+      "nomScientifique": "Cronartium ribicola et Cronartium pini",
+      "categorie": "maladie",
+      "agentCausal": "Deux champignons de la famille des rouilles. Cronartium ribicola s’attaque aux pins à cinq aiguilles, Cronartium pini aux pins à deux aiguilles. La page donne aussi à Cronartium pini les noms de Cronartium flaccidum et de Peridermium pini.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "ecorce",
+        "aiguille"
+      ],
+      "quandCaSeVoit": "Les vésicules orange sortent de l’écorce au printemps. Les chancres qui coulent de résine viennent quelques mois ou quelques années plus tard.",
+      "autresEssences": "La page ne nomme aucune espèce de pin : Cronartium ribicola touche les pins à cinq aiguilles, Cronartium pini les pins à deux aiguilles. Aujourd’hui, ce sont surtout les pins à deux aiguilles qui portent ces chancres. Le champignon vit aussi une partie de l’année sur d’autres plantes, qui ne sont pas des arbres : les groseilliers sauvages (Ribes) pour Cronartium ribicola ; le dompte-venin, le mélampyre et la pivoine pour Cronartium pini. Certaines formes de Cronartium pini se passent de cette autre plante.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Deux champignons de la famille des rouilles, qui attaquent l’écorce du tronc et des branches des pins. Au printemps, des vésicules orange sortent de l’écorce ; viennent ensuite des boursouflures, des coulées de résine et des chancres. Un chancre qui fait le tour du tronc peut tuer un jeune pin.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Le pin pousse moins. Des branches meurent, et les jeunes pins les plus touchés peuvent mourir : un chancre qui fait le tour du tronc suffit à tuer un jeune arbre. Un pin plus âgé peut vivre avec la maladie pendant de longues années, jusqu’à 20 ans, avant de dépérir. Des papillons profitent de l’arbre affaibli pour pondre dans l’écorce malade, et leurs chenilles qui creusent dedans augmentent le risque de dépérissement.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Des branches meurent, et des chancres se forment sur le tronc et les branches. Rien n’est dit d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "aiguille"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les chancres d’une année sur l’autre, surtout sur un jeune pin, car un chancre qui fait le tour du tronc peut le faire mourir.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Le plus souvent, le champignon a besoin de deux plantes pour boucler sa vie : le pin et une autre plante. Au printemps, le vent emporte les spores des vésicules du pin sur les feuilles de cette autre plante. D’autres spores s’y forment, et le vent les ramène sur les aiguilles du pin en automne. Le champignon passe ensuite des aiguilles aux branches, puis au tronc. Il peut se passer jusqu’à 5 ans avant que les vésicules sortent de l’écorce.",
+      "gestion": "Le vent porte les spores du pin vers l’autre plante au printemps, puis de l’autre plante vers les aiguilles du pin en automne. Chez certaines formes de Cronartium pini, les spores des vésicules peuvent contaminer directement un autre pin, sans passer par une autre plante.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "pustule",
+          "couleurs": [
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Au printemps, des vésicules orange sortent de l’écorce du tronc."
+        },
+        {
+          "nature": "signe",
+          "partie": "branche",
+          "motif": "pustule",
+          "couleurs": [
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au printemps, des vésicules orange sortent de l’écorce des branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des boursouflures et des renflements en forme de fuseau sur l’écorce des branches et du tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des coulées de résine, qui attirent souvent un papillon, la pyrale du tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des chancres sur le tronc, parfois avec un méplat là où la couche vivante sous l’écorce est morte."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des chancres sur les branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "decoloration",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Une zone couverte d’un dépôt noirâtre, la fumagine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au-delà des chancres, les aiguilles jaunissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au-delà des chancres, les aiguilles jaunies tombent trop tôt."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "strict"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Au printemps, des vésicules orange sur l’écorce du tronc et des branches.",
+        "Des boursouflures et des renflements en forme de fuseau sur l’écorce.",
+        "Des coulées de résine et des chancres, parfois avec un méplat là où la couche vivante sous l’écorce est morte.",
+        "Une zone noircie par un dépôt noirâtre, la fumagine.",
+        "Au-delà des chancres, les aiguilles jaunissent puis tombent trop tôt."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [],
+      "hotesNonExhaustifs": false,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cronartium%20ribicola%20Pinus%20strobus%20aecia%20%2804%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouille-vesiculeuse-pins-tronc.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Steven Katovich, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Les vésicules du champignon (Cronartium ribicola) sur le tronc d’un jeune pin weymouth."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pinus%20sylvestris%20cronartium%20flaccidium%20beentree.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouille-vesiculeuse-pins-houppier.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Beentree, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Un pin sylvestre atteint, en Pologne : le haut de la cime est mort."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 2,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-09-03",
+      "sources": [
+        {
+          "source": "ephytia-rouille-vesiculeuse-pins",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique",
+            "quand_ca_se_voit"
+          ]
+        }
+      ]
+    }
+  ]
+}

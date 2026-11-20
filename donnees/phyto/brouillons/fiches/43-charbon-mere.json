@@ -1,0 +1,202 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-charbon-mere",
+      "organisme": "INRAE, Ephytia (auteur : C. Husson, DSF et DGAL)",
+      "titre": "Le charbon de la mère (Biscogniauxia mediterranea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27446/Forets-Charbon-de-la-mere",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus-suber",
+      "nomScientifique": "Quercus suber",
+      "nomCommun": "Chêne-liège",
+      "article": "un",
+      "synonymes": [
+        "chêne liège",
+        "chênes-lièges"
+      ],
+      "rang": "espece",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "charbon-mere",
+      "nomCommun": "Charbon de la mère",
+      "nomScientifique": "Biscogniauxia mediterranea",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Biscogniauxia mediterranea. Il vit dans le bois et devient parasite des arbres affaiblis.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "branche",
+        "tronc",
+        "ecorce",
+        "champignon_sur_bois",
+        "houppier"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Le chêne-liège est son hôte habituel. La page cite aussi d’autres feuillus, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon du bois, surtout du chêne-liège, qui s’attaque aux arbres affaiblis par la sécheresse, un incendie ou des blessures. Il forme sous l’écorce des plaques noires qui la font éclater. Le feuillage sèche, le houppier dépérit, et l’arbre peut mourir.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Ce champignon profite d’un arbre affaibli ou déséquilibré. Il fait dépérir le houppier, et il peut tuer l’arbre.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "L’arbre peut mourir, et le bois brunit à l’intérieur. Rien n’est dit d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez la cime de l’arbre d’une année sur l’autre, car ce champignon fait dépérir le houppier et peut tuer un arbre déjà affaibli.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Le champignon vit dans le bois. Il s’attaque aux arbres affaiblis, notamment par la sécheresse, par un incendie ou par des blessures, et il peut les faire mourir. Il forme sous l’écorce des plaques noires qui la font éclater, sur les branches et sur le tronc.",
+      "gestion": "Les plaques noires libèrent des spores que le vent et la pluie emportent. Les insectes et les outils peuvent aussi transporter la maladie.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce du tronc, des plaques noires qui la font éclater."
+        },
+        {
+          "nature": "signe",
+          "partie": "branche",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sous l’écorce des branches, des plaques noires qui la font éclater."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le champignon forme des plaques noires sous l’écorce."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’écorce se décolle."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le feuillage se dessèche, et le houppier dépérit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Le bois brunit, ce qui se voit sur une coupe en travers."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus-suber",
+          "specificite": "frequent"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Sous l’écorce du tronc et des branches, des plaques noires qui la font éclater.",
+        "L’écorce se décolle.",
+        "Le feuillage se dessèche.",
+        "Sur une coupe en travers, le bois a bruni."
+      ],
+      "criteresExclusion": [
+        "L’hypoxylon nummulaire, dû à Biscogniauxia nummularia, peut lui ressembler.",
+        "La maladie de la suie de l’érable, due à Cryptostroma corticale, peut aussi lui ressembler.",
+        "La page ne donne aucun moyen de les distinguer à l’œil."
+      ],
+      "facteursFavorisants": [
+        "Un arbre affaibli, notamment par la sécheresse.",
+        "Les incendies.",
+        "Les blessures."
+      ],
+      "hotesNonExhaustifs": true,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Biscogniauxia%20mediterranea%2054290868.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/charbon-mere-branche.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo d’Eugene Popov, iNaturalist, via Wikimedia Commons",
+          "partie": "branche",
+          "legende": "Les plaques noires du champignon font éclater l’écorce d’une branche, en Russie (l’arbre n’est pas nommé)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Biscogniauxia%20mediterranea%20%2826370423867%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/charbon-mere-champignon_sur_bois.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de Björn Sothmann, Flickr, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Une plaque noire du champignon, vue de près, sous l’écorce éclatée, en Allemagne (l’arbre n’est pas nommé)."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-charbon-mere",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique"
+          ]
+        }
+      ]
+    }
+  ]
+}

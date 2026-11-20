@@ -1,0 +1,204 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-criblure-merisier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Criblure du merisier (Stigmina carpophila), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19050/Forets-Criblure-du-merisier",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "prunus-avium",
+      "nomScientifique": "Prunus avium",
+      "nomCommun": "Merisier",
+      "article": "un",
+      "synonymes": [
+        "merisiers"
+      ],
+      "rang": "espece",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "criblure-merisier",
+      "nomCommun": "Criblure du merisier",
+      "nomScientifique": "Stigmina carpophila",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Stigmina carpophila. Il porte un second nom, Coryneum beiijerinckii, quand il se reproduit sous son autre forme. La page appelle aussi la maladie la maladie criblée.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "fruit",
+        "rameau",
+        "bourgeon",
+        "fleur",
+        "branche"
+      ],
+      "quandCaSeVoit": "Les taches apparaissent au printemps sur les jeunes feuilles, et très tôt sur les fruits. En automne, les jeunes pousses très attaquées se couvrent de taches sèches. Au printemps suivant, ces taches devenues des chancres font sécher des pousses et des grappes de fleurs.",
+      "autresEssences": "La page donne pour hôtes habituels les Prunus en général, sans nommer d’espèce. Elle parle aussi des dégâts dans les vergers de fruitiers, sans dire lesquels.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 11,
+      "explicationCourte": "Maladie causée par un champignon, sur le merisier et les autres Prunus. Au printemps, de petites taches brun rouge apparaissent sur les jeunes feuilles. Leur centre sèche et tombe, et la feuille paraît criblée de trous. Les fruits se couvrent de petites taches noires, et des chancres sur les rameaux peuvent faire sécher bourgeons, rameaux et branches.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les dégâts, ce sont surtout des bourgeons, des rameaux et parfois des branches qui sèchent, à partir des chancres installés. En verger, quand les attaques sont fortes, la récolte baisse beaucoup en quantité comme en qualité, et les arbres sont nettement affaiblis.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "fruit",
+        "rameau"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les rameaux au printemps, car c’est à partir des chancres qui s’y forment que les bourgeons, les rameaux et parfois les branches sèchent.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps, par temps de pluie, le champignon libère ses spores. Elles contaminent les bourgeons de fleurs et de feuilles au moment où ils s’ouvrent. Les jeunes feuilles se tachent, et les fruits très tôt.",
+      "gestion": "Au printemps, les spores partent des plaies déjà présentes sur les rameaux, sur les bourgeons et sur les cicatrices laissées par les feuilles tombées. En automne, les jeunes pousses très attaquées se couvrent de taches sèches, qui peuvent devenir des chancres actifs. Au printemps suivant, ces chancres gênent la montée de la sève et laissent couler beaucoup de gomme au niveau des bourgeons.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "brun",
+            "rouge",
+            "violet",
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur les feuilles, des taches rondes d’environ 3 mm, brunes à pourpres, entourées d’une auréole jaune."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "perforation",
+          "couleurs": [
+            "violet"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Le centre de la tache sèche et tombe. Il reste un petit trou bordé de violet, et la feuille paraît criblée."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les fruits, très tôt, de nombreuses petites taches noirâtres."
+        },
+        {
+          "nature": "symptome",
+          "partie": "fruit",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les fruits tachés peuvent se dessécher."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les rameaux, des chancres qui laissent couler de la gomme. Seul, ce symptôme ne suffit pas à reconnaître la maladie."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "gomme",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Au printemps qui suit l’attaque, une gomme abondante coule au niveau des bourgeons."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des bourgeons, des pousses et des grappes de fleurs sèchent, à partir des chancres de l’année d’avant."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois, ce sont des branches entières qui sèchent, à partir de chancres anciens."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "prunus-avium",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des taches rondes d’environ 3 mm, brunes à pourpres, entourées d’une auréole jaune, sur les feuilles.",
+        "Le centre de la tache sèche et tombe. La feuille paraît alors criblée de petits trous bordés de violet, et c’est le signe le plus net de la maladie.",
+        "De nombreuses petites taches noirâtres sur les fruits, très tôt dans la saison.",
+        "Sur les rameaux, des chancres qui laissent couler de la gomme. Seuls, ils ne suffisent pas à reconnaître la maladie."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "La pluie au printemps, qui libère les spores au moment où les bourgeons s’ouvrent."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-criblure-merisier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Stigmina%20carpophila%20a1%20%284%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/criblure-merisier-feuille.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Taches dont le centre est tombé, sur une feuille de cerisier acide (Prunus cerasus), et non de merisier."
+        }
+      ],
+      "noteImpact": null,
+      "noteAgressivite": null,
+      "noteFrequence": null
+    }
+  ]
+}

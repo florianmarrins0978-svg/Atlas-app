@@ -1,0 +1,143 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-croutes-noires-erable",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Maladie des croûtes noires de l’érable (Rhytisma acerinum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20370/Forets-Maladie-des-croutes-noires-de-l-erable",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "croutes-noires-erable",
+      "nomCommun": "Maladie des croûtes noires de l’érable",
+      "nomScientifique": "Rhytisma acerinum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Rhytisma acerinum. Il porte un second nom, Melasmia acerina, sous son autre forme de reproduction. La page le dit très commun.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Le champignon entre dans la feuille au printemps. Les grosses taches noires se voient dans le courant de l’été, et elles grandissent pendant cette saison.",
+      "autresEssences": "La page ne nomme aucun autre arbre que l’érable.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 9,
+      "explicationCourte": "Maladie causée par un champignon très commun, sur l’érable. En été, de grosses taches noires, comme du goudron, couvrent le dessus des feuilles, avec un cercle très clair autour. Elle est peu grave, sauf en pépinière.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "C’est une maladie peu grave, sauf en pépinière. Quand l’attaque est forte, les feuilles peuvent tomber plus tôt que d’habitude.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les plants en pépinière : ailleurs, elle est peu grave.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps, les spores du champignon germent sur la feuille et entrent dans les cellules de sa face du dessus. Le champignon y forme une croûte, qui se voit comme une tache noire. Pendant l’été, cette tache s’agrandit jusqu’à 1 à 2 cm.",
+      "gestion": "Pendant l’été, le champignon prépare dans la tache sa forme d’hiver, et c’est ainsi qu’il passe la mauvaise saison. Au printemps suivant, il se développe sur les feuilles tombées au sol. Ses spores contaminent alors les nouvelles feuilles.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "face_superieure"
+          ],
+          "poids": "cardinal",
+          "libelle": "En été, sur le dessus de la feuille, grosses taches noires d’aspect goudronneux, d’un à plusieurs centimètres, entourées d’une auréole très claire."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Quand l’attaque est forte, les feuilles tombent avant l’heure."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "acer",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "En été, de grosses taches noires sur le dessus de la feuille. Elles ont l’air de goudron.",
+        "Chaque tache grandit pendant l’été. Elle atteint 1 à 2 cm, et peut faire plusieurs centimètres.",
+        "Un cercle très clair entoure chaque tache."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-croutes-noires-erable",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ahorn-Runzelschorf-Rhytisma-acerinum.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/croutes-noires-erable-feuille.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo de Holger Krisp, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Grosses taches noires sur des feuilles d’érable sycomore tombées au sol."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rhytisma%20acerinum%20107883697.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/croutes-noires-erable-champignon.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Nova Patch, iNaturalist, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "La croûte noire de près : c’est le champignon lui-même, sur une feuille d’érable."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

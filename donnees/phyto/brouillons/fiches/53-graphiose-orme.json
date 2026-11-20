@@ -1,0 +1,188 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-graphiose-orme",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts et C. Husson (DSF/DGAL))",
+      "titre": "Graphiose de l’orme (Ophiostoma novo-ulmi), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20845/Forets-Graphiose-de-l-orme",
+      "nature": "officielle",
+      "publieeLe": "2023-11-29",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "ulmus",
+      "nomScientifique": "Ulmus",
+      "nomCommun": "Orme",
+      "article": "un",
+      "synonymes": [
+        "ormes",
+        "orme champêtre",
+        "orme lisse",
+        "orme de montagne"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "graphiose-orme",
+      "nomCommun": "Graphiose de l’orme",
+      "nomScientifique": "Ophiostoma novo-ulmi",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Ophiostoma novo-ulmi, venu d’Asie et arrivé en Europe au XXe siècle. Une première épidémie, après la Première Guerre mondiale, était due à un champignon voisin, Ophiostoma ulmi.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "houppier",
+        "tronc"
+      ],
+      "quandCaSeVoit": "Le feuillage flétrit au printemps et en été.",
+      "autresEssences": "La page ne nomme aucun autre arbre que l’orme. L’orme champêtre (Ulmus minor), l’orme lisse (Ulmus laevis) et l’orme de montagne (Ulmus glabra) sont tous sensibles, l’orme champêtre plus que les autres.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 9,
+      "explicationCourte": "Maladie des vaisseaux de l’orme, due à un champignon que transportent des scolytes. Le feuillage flétrit et jaunit, les branches sèchent, et l’arbre entier peut mourir. Coupé en travers, le bois d’un rameau malade est taché par plages.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "L’épidémie a tué une grande partie des ormes adultes d’Europe, en forêt comme ailleurs. C’est l’une des maladies les plus destructrices du monde végétal. Sur l’arbre, les branches meurent, et parfois l’arbre entier. L’orme n’a pourtant pas disparu de la nature.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "houppier",
+        "rameau",
+        "branche"
+      ],
+      "conduiteRecommandee": "Aucun moyen de lutte contre cette maladie. Pour vérifier, regardez le bois d’un rameau qui flétrit, coupé en travers : des taches par plages qui suivent les cernes, avec des points noirâtres, font partie des signes de la maladie. Pour replanter des ormes dans une haie, un parc, un jardin ou un alignement, il existe des ormes résistants à la graphiose, comme Lutèce et Vada, très plantés en ville. Comme ce sont des clones, il n’est pas conseillé d’en planter beaucoup en forêt.",
+      "prevention": null,
+      "commentCaArrive": "Des scolytes, de petits coléoptères (Scolytus scolytus et Scolytus multistriatus), portent les spores. Ils les déposent en mordant l’écorce à l’aisselle des rameaux pour se nourrir. Le champignon envahit alors les vaisseaux du bois des branches et du tronc, plus vite vers la cime que vers le pied. L’eau ne monte plus : les feuilles flétrissent et les branches sèchent.",
+      "gestion": "Quand le champignon atteint les racines, il passe aux ormes voisins par les racines qui se touchent. L’arbre malade s’affaiblit, et les scolytes creusent alors leurs galeries dans son tronc. Le champignon y pousse et couvre de spores les jeunes scolytes, qui vont ensuite contaminer d’autres ormes.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Le feuillage flétrit, plus ou moins brusquement, au printemps ou en été."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les branches sèchent et leur feuillage jaunit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des branches meurent, et parfois l’arbre entier."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "decoloration",
+          "couleurs": [],
+          "localisations": [
+            "en_plages"
+          ],
+          "poids": "cardinal",
+          "libelle": "Coupé en travers, le bois des rameaux ou des branches est taché par plages, limitées par les cernes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "eparse"
+          ],
+          "poids": "frequent",
+          "libelle": "Dans le bois, des points noirâtres sur les vaisseaux, là où avance le champignon."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "ulmus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Le feuillage flétrit, plus ou moins brusquement, au printemps ou en été.",
+        "Des branches sèchent et leur feuillage jaunit. Des branches meurent, et parfois l’arbre entier.",
+        "Coupé en travers, le bois d’un rameau ou d’une branche est taché par plages, qui s’arrêtent aux cernes.",
+        "Dans le bois, des points noirâtres marquent les vaisseaux, là où avance le champignon."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "La présence de scolytes de l’orme, qui portent les spores.",
+        "Des ormes voisins dont les racines se touchent.",
+        "Un orme champêtre : c’est le plus fragile, notamment parce qu’il attire beaucoup les scolytes."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2023-11-29",
+      "sources": [
+        {
+          "source": "ephytia-graphiose-orme",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dutch%20elm%20disease.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-houppier.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Rasbak, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Dans la cime d’un orme malade, des branches sèches aux feuilles flétries, à côté de branches encore vertes."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Iepziekte%20op%20goudiep%20%28Ophiostoma%20ulmi%20on%20Ulmus%20hollandica%20%27Wredei%27%204%20May%202009%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-ensemble.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Rasbak, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Un orme doré de jardin (Ulmus × hollandica ‘Wredei’), en mai : le haut de l’arbre est mort, le bas porte encore ses feuilles."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 3,
+      "noteFrequence": 3
+    }
+  ]
+}

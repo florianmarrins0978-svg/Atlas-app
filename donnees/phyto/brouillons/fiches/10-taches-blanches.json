@@ -1,0 +1,211 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-taches-blanches",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Maladie des taches blanches (Cristulariella depraedans), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/23875/Forets-Maladie-des-taches-blanches",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "tilia",
+      "nomScientifique": "Tilia",
+      "nomCommun": "Tilleul",
+      "article": "un",
+      "synonymes": [
+        "tilleuls"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "taches-blanches",
+      "nomCommun": "Maladie des taches blanches",
+      "nomScientifique": "Cristulariella depraedans",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Cristulariella depraedans. La page le dit peu fréquent.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Le champignon se développe quand le printemps est pluvieux. Les feuilles tombent en été.",
+      "autresEssences": "L’érable est l’hôte habituel. La page nomme aussi le hêtre, le tilleul et le chêne comme hôtes possibles.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 9,
+      "explicationCourte": "Maladie causée par un champignon peu fréquent, surtout sur l’érable. Des taches blanchâtres et rondes se forment sur les feuilles, qui se percent, sèchent et tombent tôt, en été. Le bois n’est pas atteint.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Les feuilles portent des taches mortes, puis elles tombent en été. Le champignon ne passe pas dans les rameaux et ne tue pas le bois. Le vrai dégât, c’est la chute des feuilles avant l’heure, qui peut freiner la pousse de l’arbre.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Après un printemps pluvieux, surveillez le feuillage des érables, car c’est alors que le champignon se développe.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon s’attaque aux feuilles. Il se développe quand le printemps est pluvieux.",
+      "gestion": null,
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Taches blanchâtres et rondes sur les feuilles. Ce sont des parties mortes de la feuille."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "perforation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "La feuille se perce à l’endroit des taches mortes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le feuillage se dessèche."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent tôt, en été."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "acer",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "tilia",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "quercus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des taches blanchâtres et rondes sur les feuilles. Ce sont des parties mortes.",
+        "La feuille se perce à l’endroit de ces taches.",
+        "Le feuillage se dessèche, puis il tombe tôt, en été."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un printemps pluvieux."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-taches-blanches",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cristulariella%20depraedans%201.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/taches-blanches-feuille.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Cwmhiraeth, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Taches blanchâtres et rondes sur une feuille d’érable sycomore."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cristulariella%20depraedans%20DK19.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/taches-blanches-feuille-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Feuilles d’érable tachées de blanc, et percées à l’endroit des taches."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

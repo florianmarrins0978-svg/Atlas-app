@@ -1,0 +1,193 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-pousses-resineux",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Maladie des pousses des résineux, rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/22237/Forets-Maladie-des-pousses-des-resineux",
+      "nature": "officielle",
+      "publieeLe": "2025-08-25",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-alba",
+      "nomScientifique": "Abies alba",
+      "nomCommun": "Sapin pectiné",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "pousses-resineux",
+      "nomCommun": "Maladie des pousses des résineux",
+      "nomScientifique": null,
+      "categorie": "maladie",
+      "agentCausal": "Pas un seul agent, mais un ensemble : d’abord un gel ou un autre accident qui n’est pas une maladie, puis plusieurs champignons qui s’attaquent aux arbres affaiblis. La page cite Cytospora, Phomopsis, Sclerophoma, Botrytis, Diplodia sapinea, Sirococcus conigenus et Pestalotiopsis. Sur le mélèze d’Europe, en France, Cytospora kunzei a été isolé plusieurs fois dans le bois, et Botrytis peut se trouver sur les aiguilles atteintes. En Suisse, un Phomopsis et un Cytospora ont été trouvés à la limite entre la partie saine et la partie qui meurt.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "rameau",
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Du printemps jusqu’au début de l’été.",
+      "autresEssences": "Tous les résineux peuvent être touchés. La page cite le mélèze d’Europe, le sapin pectiné et le pin sylvestre comme les plus souvent atteints.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 7,
+      "explicationCourte": "Dessèchement des pousses de l’année sur les résineux, surtout le mélèze d’Europe, le sapin pectiné et le pin sylvestre. Un gel ou une sécheresse affaiblit d’abord l’arbre, puis des champignons s’installent. Le bout des rameaux sèche sur 15 à 30 cm, mais la mort de l’arbre est extrêmement rare.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Dans les forêts suivies, la mort d’un arbre est extrêmement rare, et les cas restent isolés. Le risque pour un peuplement est donc limité, d’après ce que l’on sait aujourd’hui. Sur un arbre adulte, les rameaux desséchés vont d’une dizaine de pousses jusqu’à 20 % des rameaux.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "rameau",
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Après une gelée tardive, une sécheresse ou de la grêle, surveillez les pousses de vos résineux, car c’est l’arbre affaibli que les champignons attaquent.",
+      "prevention": null,
+      "commentCaArrive": "Tout commence par un arbre affaibli : un gel, une sécheresse, une gelée tardive ou une averse de grêle. Des champignons qui profitent des arbres en faiblesse s’installent ensuite. Sur le mélèze, l’un d’eux, Cytospora kunzei, forme dans le bois des parties mortes qui bloquent la sève, et la branche sèche.",
+      "gestion": null,
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Du printemps au début de l’été, les aiguilles du bout des rameaux virent au rouge ou au brun, se flétrissent et pendent depuis les rameaux courts."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Le bout des rameaux longs se dessèche sur 15 à 30 cm environ."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [
+            "eparse"
+          ],
+          "poids": "frequent",
+          "libelle": "Les rameaux secs sont dispersés dans le houppier. Sur un arbre adulte, ils vont d’une dizaine de pousses jusqu’à 20 % des rameaux."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois, l’écorce se resserre à la limite de la partie saine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois, un écoulement de résine à cette limite."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-alba",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Du printemps au début de l’été, les aiguilles du bout des rameaux deviennent rouges ou brunes, se flétrissent et pendent.",
+        "Le bout des rameaux longs sèche sur 15 à 30 cm environ, ici et là dans l’arbre.",
+        "Sur un arbre adulte, cela touche d’une dizaine de pousses jusqu’à 20 % des rameaux.",
+        "Parfois, l’écorce se resserre à la limite de la partie saine, avec parfois un écoulement de résine."
+      ],
+      "criteresExclusion": [
+        "Des dégâts de gel de printemps : les symptômes se voient alors quelques jours après la gelée, les branches basses et les arbres placés dans un creux où le froid stagne sont les plus touchés, et l’on ne trouve aucun champignon sur les rameaux.",
+        "Le chancre du mélèze (Lachnellula willkommii), quand les plus jeunes rameaux sont atteints : un chancre se voit alors à la base de la partie touchée, avec ou sans ses fructifications caractéristiques."
+      ],
+      "facteursFavorisants": [
+        "Un arbre affaibli par une sécheresse, une gelée tardive ou une averse de grêle.",
+        "Des fleurs et des bourgeons abîmés par une gelée tardive : en Suisse, c’est probablement par là que Phomopsis entre.",
+        "Les arbres de lisière, ou ceux des peuplements peu serrés, qui semblent plus touchés."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-08-25",
+      "sources": [
+        {
+          "source": "ephytia-pousses-resineux",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

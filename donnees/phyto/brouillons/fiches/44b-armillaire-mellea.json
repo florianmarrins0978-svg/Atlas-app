@@ -1,0 +1,163 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-armillaire-mellea",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Armillaria mellea (Armillaria mellea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18706/Forets-Armillaria-mellea",
+      "nature": "officielle",
+      "publieeLe": "2026-06-12",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [],
+  "fiches": [
+    {
+      "code": "armillaire-mellea",
+      "nomCommun": "Armillaire couleur de miel",
+      "nomScientifique": "Armillaria mellea",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Un champignon, Armillaria mellea, qu’on appelle aussi l’armillaire couleur de miel.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "champignon_sur_bois"
+      ],
+      "quandCaSeVoit": "Les champignons sortent à l’automne, en touffes. La page ne donne pas de saison pour les autres signes.",
+      "autresEssences": "La page ne nomme aucun arbre. Elle dit seulement que ce champignon s’attaque à beaucoup d’essences, aux feuillus comme aux résineux.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon des racines et du collet, sur les feuillus comme sur les résineux. Il s’attaque surtout aux arbres déjà affaiblis, et il pourrit leurs racines. Sous l’écorce du collet, on trouve un feutre blanc, et à l’automne des champignons clairs en touffes.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Ce champignon s’attaque surtout aux arbres, feuillus ou résineux, déjà affaiblis par un autre parasite ou par les aléas du climat. Il pourrit les racines : l’arbre reçoit moins bien l’eau et les éléments nutritifs, et sa santé se dégrade. Il aggrave le dépérissement d’un arbre qui va déjà mal. Il est moins agressif qu’Armillaria ostoyae, qui peut s’attaquer à un arbre sain, et plus qu’Armillaria gallica, qui ne s’attaque qu’aux arbres affaiblis.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Les racines pourrissent et le bois se dégrade. Rien n’est dit sur la tenue de l’arbre ni sur un risque de chute.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "collet",
+        "racine",
+        "champignon_sur_bois"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Vérifiez ce qui a pu affaiblir l’arbre (une autre maladie, des ravageurs, un coup de climat), car ce champignon s’attaque surtout aux arbres déjà affaiblis. Surveillez-le d’une année sur l’autre, car il aggrave le dépérissement d’un arbre qui va déjà mal.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon vit d’abord sur les souches et sur les morceaux de bois mort, puis il s’attaque aux arbres vivants. Ses spores germent dans le sol. Ses cordons noirs s’étalent sur les racines et sur le pied des arbres. Quand l’arbre est affaibli par un autre parasite ou par les aléas du climat, ils passent sous son écorce. Là, le champignon forme un feutre blanc en lames, les palmettes, qui dégrade le bois.",
+      "gestion": "Les spores sortent des lamelles du chapeau à l’automne, et le vent les emporte. Dans le sol, le champignon forme des cordons noirs, les rhizomorphes : ils lui servent à se conserver et à gagner les arbres voisins.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc",
+            "brun"
+          ],
+          "localisations": [
+            "au_collet",
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce des racines et du collet, un feutre blanc comme une peau de chamois. Il peut former des lames, les palmettes, blanches à brunes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "pourriture_bois",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les racines pourrissent."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "À l’automne, des champignons en touffes. Le chapeau est très clair et sans écailles. Le pied est long, de même grosseur sur toute sa longueur, avec une base en forme de fuseau. L’anneau est bien formé et assez épais."
+        }
+      ],
+      "hotes": [],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sous l’écorce des racines et du collet, un feutre blanc qui fait penser à une peau de chamois.",
+        "Ce feutre peut former des lames sous l’écorce, les palmettes, blanches à brunes.",
+        "Sous l’écorce, des cordons bruns et aplatis, plus ou moins ramifiés.",
+        "Dans le sol, des cordons noirs, plus ou moins ronds : les rhizomorphes.",
+        "À l’automne, des champignons en touffes. Le chapeau est très clair, sans écailles. Le pied est long, de même grosseur partout, avec une base en fuseau. L’anneau est bien formé et assez épais.",
+        "Il s’attaque surtout à des arbres déjà affaiblis."
+      ],
+      "criteresExclusion": [
+        "Les champignons de l’armillaire couleur de miel peuvent se confondre avec ceux des autres armillaires.",
+        "Les cordons noirs et les palmettes sont les mêmes chez toutes les armillaires. La page dit que seul un test PCR distingue l’espèce."
+      ],
+      "facteursFavorisants": [
+        "Un arbre déjà affaibli par un autre parasite.",
+        "Un arbre affaibli par les aléas du climat."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": "Seul un test PCR en laboratoire dit avec certitude de quelle armillaire il s’agit.",
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2026-06-12",
+      "sources": [
+        {
+          "source": "ephytia-armillaire-mellea",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique",
+            "methode_confirmation"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Armillaria%20mellea%20Linden.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-mellea-collet.jpg",
+          "licence": "CC BY-SA 2.5",
+          "credit": "Photo de Júlio Reis, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Des touffes d’armillaire couleur de miel au pied d’un tilleul."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Armillaria%20mellea%202014%20G1.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-mellea-champignon_sur_bois.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de George Chernilevsky, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Une grosse touffe de champignons à chapeau clair au pied d’un tronc, en Ukraine."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Armillaria%20mellea%20rhizomorphs%2C%20Lainshaw%20Woods%2C%20East%20Ayrshire.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-mellea-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Rosser1954 (Roger Griffith), via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Les cordons noirs du champignon sur le bois d’un tronc, sous l’écorce décollée, en Écosse."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 3
+    }
+  ]
+}

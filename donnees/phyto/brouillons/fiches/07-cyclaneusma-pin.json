@@ -1,0 +1,170 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-cyclaneusma-pin",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Cyclaneusma sur pin (Cyclaneusma), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20425/Forets-Cyclaneusma-sur-pin",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "cyclaneusma-pin",
+      "nomCommun": "Cyclaneusma sur pin",
+      "nomScientifique": "Cyclaneusma",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon du genre Cyclaneusma, qui porte aussi le nom de Naemacyclus. Le genre réunit deux espèces, Cyclaneusma niveus et Cyclaneusma minus. D’après la page, c’est plutôt C. minus qui rend l’arbre malade.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "L’arbre se contamine en général pendant l’hiver, et la maladie couve jusqu’à l’été suivant. Les coussinets blanc crème du champignon se voient sur les aiguilles en été, plusieurs mois après la contamination. La page ne dit pas à quelle saison les aiguilles rougissent.",
+      "autresEssences": "La page donne le pin sylvestre comme hôte habituel, et dit que d’autres pins peuvent être atteints, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le pin, surtout le pin sylvestre. La base des aiguilles rougit, puis l’aiguille sèche. Des griffures blanches, puis en été de petits coussinets blanc crème, se voient sur les aiguilles, et les aiguilles d’un an et plus tombent avant l’heure.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Le seul dégât décrit est la chute précoce des aiguilles d’un an et plus.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie.",
+      "prevention": null,
+      "commentCaArrive": "La contamination commence en général pendant l’hiver. Le champignon couve ensuite dans l’aiguille jusqu’à l’été suivant, et ses fructifications n’apparaissent que plusieurs mois après.",
+      "gestion": "Le champignon forme sur les aiguilles de petits coussinets blanc crème, où mûrissent ses spores. Par temps humide, la peau de ces coussinets s’ouvre comme une trappe et laisse partir les spores.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "La base des aiguilles rougit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Après avoir rougi, l’aiguille sèche."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des griffures blanches sur les aiguilles."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "En été, de petits coussinets blanc crème sur les aiguilles : ce sont les fructifications du champignon. Par temps humide, ils s’ouvrent comme une trappe."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles d’un an et plus tombent avant l’heure."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "La base des aiguilles rougit, puis l’aiguille sèche.",
+        "Des griffures blanches sur les aiguilles, puis en été de petits coussinets blanc crème.",
+        "Ce sont les aiguilles d’un an et plus qui tombent avant l’heure."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Le temps humide, qui fait s’ouvrir les coussinets et partir les spores."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-cyclaneusma-pin",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cyclaneusma%20needle%20cast%20Cyclaneusma%20minus.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cyclaneusma-pin-houppier.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo du USDA Forest Service (Forest Health Protection, St. Paul, Minnesota), Bugwood.org, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Jeune pin sylvestre très atteint : beaucoup d’aiguilles anciennes ont viré au jaune orangé, le bout des pousses reste vert."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

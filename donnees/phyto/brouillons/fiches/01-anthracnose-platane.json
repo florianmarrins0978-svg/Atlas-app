@@ -1,0 +1,183 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-anthracnose-platane",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Anthracnose du platane (Apiognomonia veneta), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20409/Forets-Anthracnose-du-platane",
+      "nature": "officielle",
+      "publieeLe": "2024-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "platanus",
+      "nomScientifique": "Platanus",
+      "nomCommun": "Platane",
+      "article": "un",
+      "synonymes": [
+        "platanes",
+        "platane commun",
+        "platane à feuilles d’érable"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "anthracnose-platane",
+      "nomCommun": "Anthracnose du platane",
+      "nomScientifique": "Apiognomonia veneta",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Apiognomonia veneta. Il porte un second nom, Discula platani, quand il se reproduit sous son autre forme.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "bourgeon",
+        "feuille",
+        "rameau",
+        "branche",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Surtout au printemps : les taches sur les feuilles, puis la chute des feuilles. Les rameaux touchés l’année d’avant flétrissent d’un coup au moment où les bourgeons s’ouvrent. Pendant l’hiver, par temps doux, les plaies des rameaux peuvent se réveiller.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le platane.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie causée par un champignon, sur le platane. Au printemps, de grandes taches brunes suivent les nervures des feuilles, des pousses flétrissent et les feuilles tombent tôt. Ça se voit beaucoup, mais c’est rarement grave.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Des rameaux se dessèchent et l’arbre perd ses feuilles avant l’heure. Ça se voit beaucoup, mais c’est rarement grave. Dès que le temps redevient sec, la maladie s’arrête et le platane refait des feuilles.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "rameau",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Surveiller l’évolution.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps, le vent apporte les spores sur les feuilles neuves. Le champignon y germe quand l’air est assez humide et que la température reste plutôt fraîche. Les feuilles qui viennent de s’ouvrir sont les plus fragiles, et il y fait vite de nouvelles spores. Les taches gagnent parfois la queue de la feuille, qui tombe alors tôt. Un printemps très humide étend l’infection, et les feuilles peuvent tomber en grand nombre. Le champignon passe ensuite dans les jeunes rameaux, y fait de petites plaies, puis ne bouge plus jusqu’à la fin de la saison. Par temps doux pendant l’hiver, ces plaies se réveillent : l’écorce meurt autour des bourgeons, ou la plaie fait le tour du rameau.",
+      "gestion": "Le champignon passe l’hiver dans les petites plaies de l’écorce des rameaux, et sur les feuilles tombées au sol. Au printemps, il fructifie dans ces feuilles mortes et sur ces plaies. Il libère alors une grande quantité de spores, que le vent disperse.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [
+            "nervure"
+          ],
+          "poids": "cardinal",
+          "libelle": "Surtout au printemps, de grandes taches brunes à noirâtres qui suivent les nervures principales de la feuille."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Des pousses qui flétrissent. Au moment où les bourgeons s’ouvrent, les rameaux touchés l’année d’avant flétrissent très vite."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des parties mortes sur les branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "De petites plaies sur les jeunes rameaux. Elles peuvent finir par faire le tour du rameau."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent tôt, quand les taches gagnent leur queue."
+        },
+        {
+          "nature": "symptome",
+          "partie": "bourgeon",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "L’écorce meurt autour des bourgeons, quand les plaies se réveillent par temps doux pendant l’hiver."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "platanus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "De larges taches brunes à noirâtres qui suivent les nervures de la feuille, surtout au printemps.",
+        "Des pousses qui flétrissent, et des parties mortes sur les branches.",
+        "Au moment où les bourgeons s’ouvrent, les rameaux touchés l’année d’avant flétrissent d’un coup."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Au printemps, une humidité suffisante et une température plutôt fraîche.",
+        "Un printemps très humide, qui étend l’infection."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-08",
+      "sources": [
+        {
+          "source": "ephytia-anthracnose-platane",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Apiognomonia%20veneta%20leaf.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-feuille.jpg",
+          "licence": "Domaine public (travail d’un employé de l’USDA)",
+          "credit": "Photo de Clemson University, USDA Cooperative Extension Slide Series, Bugwood.org, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Tache sèche brune le long d’une nervure, sur une feuille de Platanus occidentalis, un platane d’Amérique."
+        }
+      ],
+      "noteImpact": null,
+      "noteAgressivite": null,
+      "noteFrequence": null
+    }
+  ]
+}

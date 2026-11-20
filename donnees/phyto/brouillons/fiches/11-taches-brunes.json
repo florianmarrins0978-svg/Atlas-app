@@ -1,0 +1,187 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-taches-brunes",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Maladie des taches brunes (Lecanosticta acicola), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/24927/Forets-Maladie-des-taches-brunes",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "cedrus",
+      "nomScientifique": "Cedrus",
+      "nomCommun": "Cèdre",
+      "article": "un",
+      "synonymes": [
+        "cèdres"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "taches-brunes",
+      "nomCommun": "Maladie des taches brunes",
+      "nomScientifique": "Lecanosticta acicola",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon venu d’Amérique du Nord, Lecanosticta acicola. Sous sa forme sexuée, il s’appelle Mycosphaerella dearnessii, aussi nommé Scirrhia acicola. Vu en France pour la première fois en 1993, dans les Landes et les Pyrénées-Atlantiques, il est depuis resté très localisé dans le sud-ouest.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "branche",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les taches apparaissent au printemps. En mai, les symptômes se voient bien. Les aiguilles malades tombent environ deux mois plus tard, et l’arbre ne se remarque alors presque plus.",
+      "autresEssences": "La page nomme les pins en général (pin sylvestre, pin de montagne, pin noir, entre autres), et le cèdre comme hôte possible : la maladie a été trouvée sur un cèdre de l’Atlas en 2020, dans le sud-ouest. En France, on l’a vue surtout sur l’hybride Pinus attenuata × Pinus radiata, très sensible, et sur le pin radiata. Cet hybride a été arraché pour que le champignon ne s’installe pas sur les pins du pays, en particulier le pin maritime.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 7,
+      "explicationCourte": "Maladie des aiguilles de pin, causée par un champignon venu d’Amérique du Nord, encore très localisée dans le sud-ouest de la France. Au printemps, de petites taches brunes bordées de jaune marquent les aiguilles, qui brunissent et tombent tôt. Une forte attaque peut faire dépérir des branches ou de jeunes pins.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Quand l’attaque est forte, toutes les générations d’aiguilles peuvent être touchées. Certaines branches dépérissent alors, et de jeunes pins aussi.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "aiguille",
+        "branche",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. En mai, surveillez les pins rampants et les pins à crochets des jardins, surtout les jeunes : c’est le moment où la maladie se voit, et une forte attaque peut faire dépérir un jeune pin.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon a besoin d’humidité et de chaleur pour germer. Au printemps, quand il pleut, ses spores contaminent les aiguilles vertes.",
+      "gestion": "Le champignon passe l’hiver sur les aiguilles mortes, qu’elles pendent encore à l’arbre ou qu’elles soient tombées au sol. C’est là qu’il forme les spores qui contamineront les aiguilles vertes au printemps.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "brun",
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Au printemps, sur les aiguilles vertes d’un an ou plus, petites taches brunes de 1 à 2 mm, bordées de jaune."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Plus tard, au centre des taches, de petites fructifications noires en relief."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles touchées brunissent, puis tombent avant l’heure."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles malades tombent environ deux mois après les premiers symptômes. Sur un pin de montagne très attaqué, il ne reste souvent que les aiguilles qui viennent de pousser. Ensuite, seules les branches en partie dégarnies gardent la trace de la maladie."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Quand l’attaque est forte, certaines branches dépérissent, et de jeunes pins aussi."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "cedrus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Au printemps, de petites taches brunes de 1 à 2 mm, bordées de jaune, sur les aiguilles vertes d’un an ou plus.",
+        "Plus tard, de petites fructifications noires en relief se forment au centre des taches.",
+        "Les aiguilles touchées brunissent et tombent avant l’heure.",
+        "En mai, les symptômes se voient bien sur les pins rampants et les pins à crochets des jardins et des parcs.",
+        "Sur un pin de montagne très attaqué, il ne reste souvent que les aiguilles de la dernière pousse.",
+        "Une fois les aiguilles tombées, l’arbre ne se remarque presque plus. Seules les branches en partie dégarnies gardent la trace."
+      ],
+      "criteresExclusion": [
+        "Au début, des piqûres ou des traces de forage d’insectes, comme celles du charançon des aiguilles du pin, peuvent tromper. Mais il n’y a alors pas de fructifications en relief : à leur place, on voit un trou, une piqûre ou un écoulement de résine.",
+        "À l’échelle de l’arbre, d’autres champignons qui font tomber les aiguilles donnent des symptômes proches : la page cite Dothistroma pini, Lophodermium seditiosum et Naemacyclus minor, entre autres."
+      ],
+      "facteursFavorisants": [
+        "L’humidité et la chaleur, dont le champignon a besoin pour germer.",
+        "Un printemps pluvieux, au moment où les aiguilles vertes se contaminent.",
+        "Des pins très sensibles, comme l’hybride Pinus attenuata × Pinus radiata, et le pin radiata."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-taches-brunes",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 3,
+      "noteFrequence": 1
+    }
+  ]
+}

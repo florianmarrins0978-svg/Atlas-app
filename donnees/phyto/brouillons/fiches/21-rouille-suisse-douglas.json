@@ -1,0 +1,179 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rouille-suisse-douglas",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Rouille suisse du Douglas (Phaeocryptopus gaeumannii), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18695/Forets-Rouille-suisse-du-Douglas",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rouille-suisse-douglas",
+      "nomCommun": "Rouille suisse du Douglas",
+      "nomScientifique": "Phaeocryptopus gaeumannii",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Phaeocryptopus gaeumannii. Malgré son nom, ce n’est pas une vraie rouille. Il vient d’Amérique du Nord. On l’a trouvé pour la première fois en Suisse, en 1925, où il était arrivé avec des plants contaminés.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "rameau"
+      ],
+      "quandCaSeVoit": "Les aiguilles se contaminent au printemps et au début de l’été. Les petits points noirs se voient à la fin de l’hiver suivant. Les dégâts paraissent les plus forts au printemps, avant l’ouverture des bourgeons, et les aiguilles de l’année d’avant peuvent tomber dès mai ou juin.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le Douglas. Elle présente ce champignon comme un parasite du Douglas seulement.",
+      "periodeDebutMois": 2,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie causée par un champignon, sur le Douglas. Il vit à l’intérieur des aiguilles et forme de petits points noirs en lignes sous l’aiguille. Les aiguilles jaunissent, brunissent, puis tombent trop tôt, en commençant par les plus vieilles.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les rameaux perdent une partie de leurs aiguilles, parfois presque toutes. Dans les cas les plus graves, il ne reste que les aiguilles de l’année et quelques aiguilles de l’année d’avant. Les dégâts paraissent les plus forts au printemps, avant l’ouverture des bourgeons, et l’arbre prend alors du retard dans sa croissance. Les attaques semblent plus fortes dans les jeunes plantations, sur un sol pauvre.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "aiguille",
+        "rameau"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. À la fin de l’hiver, regardez le dessous des aiguilles : c’est le moment où les petits points noirs se voient. Surveillez surtout les jeunes Douglas plantés serrés, ou sur un sol tassé, peu profond ou gorgé d’eau une partie de l’année, car c’est là que les attaques sont les plus fortes.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps et au début de l’été, les spores du champignon entrent dans les jeunes aiguilles pendant qu’elles s’allongent. Elles passent par les stomates (les petits pores de l’aiguille). Le champignon vit ensuite dans l’aiguille toute sa vie, sans l’abîmer. Ce sont ses fructifications, formées dans les stomates, qui finissent par les boucher : quand la moitié des stomates est bouchée, l’aiguille jaunit puis tombe. La maladie se développe surtout quand la fin du printemps est très humide et que l’hiver est doux.",
+      "gestion": "Le champignon passe l’hiver dans les aiguilles contaminées : ses fructifications s’y forment dès la fin de l’automne, 4 à 5 mois après la contamination. Au printemps, elles libèrent les spores qui contaminent les nouvelles aiguilles. On ne lui connaît pas d’autre façon de se reproduire. Il voyage aussi avec des plants contaminés : c’est ainsi qu’il est arrivé en Suisse.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sous l’aiguille, de petits points noirs (les fructifications du champignon, de 40 à 100 µm) alignés le long des lignes de stomates (les petits pores de l’aiguille), qu’ils finissent par boucher."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [
+            "eparse"
+          ],
+          "poids": "frequent",
+          "libelle": "Les aiguilles touchées se couvrent de petites taches jaunâtres."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "Les aiguilles touchées jaunissent, puis deviennent vite brunes avant de tomber trop tôt."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles tombent trop tôt, les plus vieilles en premier. Quand l’attaque est forte, il ne reste sur le rameau qu’un pinceau vert : les aiguilles de l’année."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sous l’aiguille, de petits points noirs alignés le long des lignes de stomates (ses petits pores).",
+        "Des aiguilles tachées de jaune, qui brunissent vite puis tombent trop tôt.",
+        "Les aiguilles les plus vieilles tombent en premier.",
+        "Quand l’attaque est forte, il ne reste qu’un pinceau vert : les aiguilles de l’année."
+      ],
+      "criteresExclusion": [
+        "Des champignons du genre Rhizosphaera donnent des symptômes tout à fait identiques, dans les mêmes conditions. La page ne donne aucun moyen de les distinguer à l’œil."
+      ],
+      "facteursFavorisants": [
+        "Une forte humidité à la fin du printemps, qui favorise la contamination.",
+        "Un hiver doux, qui favorise la formation des fructifications.",
+        "Une jeune plantation, sur un sol pauvre.",
+        "Une plantation qui pousse mal, ou trop serrée.",
+        "Un sol gorgé d’eau une partie de l’année, un sol peu profond, ou un sol tassé ou décapé au bulldozer avant la plantation."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-rouille-suisse-douglas",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Swiss-needle-cast-on-Douglas-fir-Phaeocryptopus-gaeumannii.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouille-suisse-douglas-rameau.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de l’archive de la North Central Research Station, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Rameaux de Douglas aux aiguilles brunies, parmi des aiguilles encore vertes."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 3
+    }
+  ]
+}

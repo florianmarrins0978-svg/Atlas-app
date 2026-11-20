@@ -1,0 +1,263 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-pourriture-grise",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Pourriture grise (Botryotinia fuckeliana), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20419/Forets-Pourriture-grise",
+      "nature": "officielle",
+      "publieeLe": "2024-08-07",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea",
+      "nomScientifique": "Picea",
+      "nomCommun": "Épicéa",
+      "article": "un",
+      "synonymes": [
+        "épicéas"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "pourriture-grise",
+      "nomCommun": "Pourriture grise",
+      "nomScientifique": "Botryotinia fuckeliana",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Botryotinia fuckeliana. Il porte un second nom, Botrytis cinerea, sous son autre forme. Il vit d’ordinaire sur des tissus morts, mais il peut devenir parasite quand les conditions lui conviennent.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "rameau",
+        "aiguille",
+        "feuille"
+      ],
+      "quandCaSeVoit": "Les dégâts touchent surtout les jeunes pousses de l’année, en mai. À l’automne, de petits grains sombres apparaissent sur les parties mortes. Au printemps suivant, une moisissure grise se forme sur ces parties.",
+      "autresEssences": "La page nomme le mélèze, le douglas, les sapins, les épicéas et les pins comme hôtes habituels. Elle ajoute qu’on le trouve quelquefois sur des feuillus, sans les nommer, et que sur eux il semble ne s’installer qu’après une blessure, du gel par exemple. Sur le mélèze d’Europe, il peut aussi gagner les rameaux de l’année d’avant.",
+      "periodeDebutMois": 4,
+      "periodeFinMois": 11,
+      "explicationCourte": "Maladie causée par un champignon, surtout sur les jeunes pousses des résineux. Les pousses de l’année pourrissent, brunissent, pendent puis sèchent. Au printemps suivant, une moisissure grise se forme sur les parties mortes. Le champignon entre surtout par des blessures.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Il s’attaque surtout aux jeunes pousses de l’année, en mai. Il y cause une pourriture molle, marron à brune : la pousse se courbe et pend, puis elle sèche. Sur le mélèze d’Europe, il peut aussi gagner les rameaux de l’année d’avant.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "rameau",
+        "aiguille"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Avant de conclure, voyez si une gelée tardive ou un coup de sécheresse n’explique pas les pousses qui pendent : ils donnent le même aspect.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon vit d’ordinaire sur des tissus morts. Il entre par des blessures (grêle, insectes, fortes pluies) sur des organes qui vieillissent, et il s’attaque aussi aux parties tendres. Il s’installe d’abord sur la partie blessée, puis, quand les conditions lui conviennent, il gagne les tissus sains. Les automnes pluvieux et les printemps chauds et humides le favorisent, tout comme un excès d’azote ou une nutrition déséquilibrée. Sur les feuillus, il semble ne s’installer qu’après une blessure, du gel par exemple.",
+      "gestion": "Il produit de nombreuses spores, ce qui lui permet de se multiplier vite. À l’automne, il forme de petits grains sombres sur les parties mortes, et c’est là qu’apparaissent, au printemps suivant, ses fructifications grises.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Les jeunes pousses de l’année pourrissent : elles deviennent molles et prennent une couleur marron à brune."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "La pousse atteinte se courbe et pend."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Puis la pousse sèche et paraît flétrie."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles atteintes prennent une couleur brunâtre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur un feuillu, les feuilles atteintes prennent une couleur brunâtre."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "À l’automne, petits grains sombres sur les parties mortes."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "gris"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au printemps suivant, une moisissure grise caractéristique sur la partie morte, avec de petites fructifications ramifiées comme de minuscules arbres."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les jeunes pousses de l’année se ramollissent, brunissent, se courbent et pendent, puis elles sèchent.",
+        "Les parties atteintes prennent une couleur brunâtre.",
+        "À l’automne, de petits grains sombres sur les parties mortes.",
+        "Au printemps suivant, une moisissure grise caractéristique sur la partie morte, avec de petites fructifications ramifiées comme de minuscules arbres."
+      ],
+      "criteresExclusion": [
+        "Une gelée tardive peut donner le même aspect, sur toutes les essences et sur tous les rameaux.",
+        "La sécheresse peut aussi faire flétrir les rameaux, sur le mélèze et le douglas."
+      ],
+      "facteursFavorisants": [
+        "Des blessures : grêle, insectes, fortes pluies, et gel sur les feuillus.",
+        "Un automne pluvieux.",
+        "Un printemps chaud et humide.",
+        "Un excès d’azote, ou une nutrition déséquilibrée."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "sources": [
+        {
+          "source": "ephytia-pourriture-grise",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Botrytis%20cinerea.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pourriture-grise-rameau.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de Flowersabc, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "La moisissure grise du champignon, ici sur un bouton de rosier et non sur un résineux."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 1,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-07"
+    }
+  ]
+}

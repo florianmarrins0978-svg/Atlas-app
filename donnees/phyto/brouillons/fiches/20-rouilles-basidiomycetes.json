@@ -1,0 +1,148 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rouilles-basidiomycetes",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Rouilles (basidiomycètes) (Uredinales), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20420/Forets-Rouilles-basidiomycetes",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea",
+      "nomScientifique": "Picea",
+      "nomCommun": "Épicéa",
+      "article": "un",
+      "synonymes": [
+        "épicéas"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rouilles-basidiomycetes",
+      "nomCommun": "Rouilles (basidiomycètes)",
+      "nomScientifique": "Uredinales",
+      "categorie": "maladie",
+      "agentCausal": "Un groupe de champignons, les rouilles (Urédinales), qui font partie des basidiomycètes. La page est une page générale : elle renvoie à cinq maladies décrites chacune à part, les rouilles des peupliers à Melampsora, la rouille des aiguilles du sapin, la rouille courbeuse du pin, la rouille des aiguilles du pin et les rouilles de l’épicéa.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "aiguille"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "La page cite des rouilles sur le peuplier, le sapin, le pin et l’épicéa, chacune sur sa propre page. Elle ne donne pas de liste complète des arbres touchés, et elle dit que la plupart des rouilles ont besoin de deux plantes hôtes, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Page générale sur les rouilles, un groupe de champignons parasites qui ne vivent que sur des tissus vivants. La plupart ont besoin de deux plantes hôtes. En forêt, beaucoup s’attaquent aux feuilles et aux aiguilles, et sauf sur le peuplier, les attaques restent occasionnelles. La page ne décrit aucun symptôme : chaque rouille a sa propre page.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Rien n’est dit des dégâts sur l’arbre lui-même. Sauf sur le peuplier, les attaques restent en général occasionnelles, et elles touchent rarement de grandes surfaces.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "impossible",
+      "photosUtiles": [],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie.",
+      "prevention": null,
+      "commentCaArrive": "Les rouilles sont des champignons parasites très spécialisés : elles ne peuvent vivre que sur des tissus vivants. Elles apparaissent surtout quand les conditions s’y prêtent, par exemple le climat, ou la présence de leurs deux plantes hôtes près l’une de l’autre.",
+      "gestion": "La plupart des rouilles ont besoin de deux plantes hôtes pour faire leur cycle, et ces deux plantes sont souvent très différentes l’une de l’autre. Au cours de ce cycle, une rouille peut produire jusqu’à cinq sortes de spores, l’une après l’autre.",
+      "traitement": null,
+      "symptomes": [],
+      "hotes": [
+        {
+          "taxon": "populus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un climat favorable.",
+        "La présence des deux plantes hôtes près l’une de l’autre."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "brouillon",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-rouilles-basidiomycetes",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": null,
+      "noteAgressivite": null,
+      "noteFrequence": null
+    }
+  ]
+}

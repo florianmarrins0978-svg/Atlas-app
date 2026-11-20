@@ -1,0 +1,178 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-cylindrosporiose-merisier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Cylindrosporiose du merisier (Blumeriella jaapii), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19381/Forets-Cylindrosporiose-du-merisier",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "prunus-avium",
+      "nomScientifique": "Prunus avium",
+      "nomCommun": "Merisier",
+      "article": "un",
+      "synonymes": [
+        "merisiers"
+      ],
+      "rang": "espece",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "cylindrosporiose-merisier",
+      "nomCommun": "Cylindrosporiose du merisier",
+      "nomScientifique": "Blumeriella jaapii",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Blumeriella jaapii. Il porte un second nom, Phloeosporella padi, quand il se reproduit sous son autre forme.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les premières taches se voient à partir de la fin mai ou du début juin. Le champignon fructifie en juin et juillet. Les feuilles jaunies ou rougies tombent tôt, de la mi-juillet à la mi-août.",
+      "autresEssences": "La page cite aussi Prunus cerasus parmi les hôtes habituels, et indique que d’autres Prunus peuvent être atteints, sans les nommer.",
+      "periodeDebutMois": 5,
+      "periodeFinMois": 8,
+      "explicationCourte": "Maladie causée par un champignon, sur le merisier. À partir de juin, de petites taches anguleuses apparaissent sur les feuilles, pourpres dessus et brunes dessous. La feuille entière peut virer au rouge sombre puis au noir, et les feuilles tombent tôt, en commençant en général par les branches basses.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les taches tuent la feuille par endroits, et les feuilles jaunies ou rougies tombent avant l’heure, de la mi-juillet à la mi-août. L’arbre garde donc moins de feuillage. Les dégâts sont plus forts les années humides.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Les années humides, surveillez les branches basses dès la fin mai, car c’est par elles que la maladie commence en général, et elle peut gagner beaucoup de feuilles en très peu de temps.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon se développe juste sous la peau de la feuille. Par temps humide, il libère beaucoup de spores que la pluie disperse. Elles se posent sur des feuilles saines, ou sur une autre partie de la même feuille, et y font de nouvelles taches.",
+      "gestion": "La maladie avance par cycles très courts, de 10 à 15 jours : les spores d’une tache en font de nouvelles, que la pluie disperse à leur tour. Elle peut donc exploser, avec beaucoup de feuilles touchées en très peu de temps. Elle part en général des branches basses.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "tache",
+          "couleurs": [
+            "violet",
+            "rouge",
+            "brun"
+          ],
+          "localisations": [
+            "face_superieure",
+            "face_inferieure",
+            "eparse",
+            "en_plages"
+          ],
+          "poids": "cardinal",
+          "libelle": "Dès la fin mai ou le début juin, petites taches de 1 à 2 mm, plus ou moins anguleuses : pourpres à lie-de-vin sur le dessus de la feuille, brunes sur le dessous. Sur les arbres les plus sensibles, elles se groupent par plages."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge",
+            "noir"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "La feuille entière change de couleur : rouge sombre, puis noire."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Avant de tomber, les feuilles jaunissent ou rougissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent tôt, de la mi-juillet à la mi-août. La maladie part en général des branches basses."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "prunus-avium",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "De petites taches de 1 à 2 mm, plus ou moins anguleuses, à partir de la fin mai ou du début juin.",
+        "Les taches sont pourpres à lie-de-vin sur le dessus de la feuille, et brunes sur le dessous.",
+        "Sur les arbres les plus sensibles, les taches se regroupent par plages.",
+        "La feuille entière vire au rouge sombre, puis au noir.",
+        "La maladie part en général des branches basses."
+      ],
+      "criteresExclusion": [
+        "La maladie des taches rouges du cerisier (Gnomonia erythrostoma) se reconnaît autrement : les feuilles malades restent accrochées à l’arbre, elles se replient sur elles-mêmes, et leur queue se courbe si bien que la feuille pend à la verticale du rameau."
+      ],
+      "facteursFavorisants": [
+        "Les années humides.",
+        "Les périodes humides, pendant lesquelles le champignon libère beaucoup de spores que la pluie disperse."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-cylindrosporiose-merisier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Blumeriella%20jaapi%20a1%20%281%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cylindrosporiose-merisier-feuille.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Petites taches pourpres sur des feuilles de merisier, dont certaines rougissent."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

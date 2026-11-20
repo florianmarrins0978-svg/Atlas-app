@@ -1,0 +1,420 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-fomes-resineux",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Fomès (Heterobasidion sp.), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18534/Forets-Fomes",
+      "nature": "officielle",
+      "publieeLe": "2025-06-19",
+      "consulteeLe": "2026-11-19"
+    },
+    {
+      "code": "dsf-fomes-2013",
+      "organisme": "Département de la santé des forêts, ministère de l’Agriculture",
+      "titre": "Information santé des forêts : le fomes des résineux",
+      "url": "https://agriculture.gouv.fr/sites/default/files/documents/pdf/Plaquette_Fomes_2013-1_cle0d148e.pdf",
+      "nature": "officielle",
+      "publieeLe": "2013-07-01",
+      "consulteeLe": "2026-08-20"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "picea",
+      "nomScientifique": "Picea",
+      "nomCommun": "Épicéa",
+      "article": "un",
+      "synonymes": [
+        "épicéas"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-abies",
+      "nomScientifique": "Picea abies",
+      "nomCommun": "Épicéa commun",
+      "article": "un",
+      "synonymes": [
+        "épicéa"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-sitchensis",
+      "nomScientifique": "Picea sitchensis",
+      "nomCommun": "Épicéa de Sitka",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-alba",
+      "nomScientifique": "Abies alba",
+      "nomCommun": "Sapin pectiné",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-grandis",
+      "nomScientifique": "Abies grandis",
+      "nomCommun": "Sapin de Vancouver",
+      "article": "un",
+      "synonymes": [
+        "sapin grandissime"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "betula",
+      "nomScientifique": "Betula",
+      "nomCommun": "Bouleau",
+      "article": "un",
+      "synonymes": [
+        "bouleaux"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "fomes-resineux",
+      "nomCommun": "Fomès",
+      "nomScientifique": "Heterobasidion sp.",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Un champignon, ou plutôt un groupe de trois champignons très proches : Heterobasidion annosum, qui semble le plus répandu en France, Heterobasidion abietinum et Heterobasidion parviporum. Les trois vivent et abîment les arbres de la même façon. Heterobasidion annosum porte un second nom, Spiniger meineckellus, quand il se reproduit sous son autre forme.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "tronc",
+        "champignon_sur_bois",
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les champignons vivent en général un à trois ans. En plaine, ils libèrent leurs spores presque toute l’année, sauf pendant le gel ou les fortes chaleurs.",
+      "autresEssences": "La page nomme les pins et les autres résineux comme hôtes habituels : le pin maritime, le pin weymouth, les épicéas, le douglas, les sapins, dont le sapin pectiné et le sapin de Vancouver, et le mélèze. Elle cite aussi le bouleau, le peuplier et le hêtre, comme hôtes possibles mais rares : chez les feuillus, le fomès se rencontre peu, sans dégâts notables.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon des racines et du collet des pins et des autres résineux. Il fait mourir les arbres par taches rondes, ou pourrit le bois du cœur, surtout chez les épicéas. Il entre par les souches fraîchement coupées, puis passe de racine en racine. Au pied des arbres, on trouve un champignon en console, brun dessus et blanc dessous.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Le fomès peut faire mourir tous les résineux, isolés ou en rond. Chez les épicéas, il colore puis pourrit le bois du cœur, du collet vers le haut, sur plusieurs mètres. L’arbre vit en général, et rien ne se voit de l’extérieur. Chez le pin maritime et les autres pins, il tue les arbres sans pourrir le cœur, par taches qui s’agrandissent en rond. Chez les sapins, le mélèze et le pin weymouth, il pourrit parfois le cœur, et l’arbre peut en mourir. Les jeunes arbres plantés avec des racines déformées peuvent souffrir beaucoup. Chez les feuillus, il ne fait pas de dégâts notables.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Chez les épicéas, les sapins, le mélèze et le pin weymouth, le bois du cœur peut pourrir depuis le collet sur plusieurs mètres de haut. Rien n’est dit sur la tenue de l’arbre ni sur un risque de chute.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "collet",
+        "champignon_sur_bois",
+        "houppier",
+        "aiguille"
+      ],
+      "conduiteRecommandee": "La lutte est essentiellement préventive et porte sur les souches, pas sur l’arbre atteint : traiter toute souche fraîchement coupée dans les 3 heures qui suivent l’abattage. Dans un peuplement déjà contaminé, tout reboisement résineux devient hasardeux.",
+      "prevention": "Application localisée, sur les souches fraîchement coupées, d’une solution aqueuse contenant les spores d’un champignon antagoniste. Le traitement doit être effectué à chaque éclaircie et dès la première, sur toutes les souches et immédiatement après abattage, y compris lors de la coupe définitive si elle doit être suivie d’un reboisement résineux sans dessouchage. Impératif pour les épicéas commun et de Sitka, et pour le pin maritime dans le massif des Landes de Gascogne ; particulièrement recommandé pour tous les boisements résineux sur d’anciennes terres agricoles.",
+      "commentCaArrive": "Le vent dépose les spores sur les souches fraîches, juste après une coupe. Elles germent, et le champignon envahit la souche puis ses racines. Une souche est très réceptive pendant 1 à 3 jours après l’abattage. Ensuite elle l’est de moins en moins, et presque plus du tout après 3 à 4 semaines. Les blessures faites aux racines et au pied des arbres pendant l’exploitation sont une autre porte d’entrée, sans doute moins efficace. Selon l’essence, le champignon pourrit le bois du cœur, ou bien il tue les tissus sous l’écorce et l’arbre meurt.",
+      "gestion": "Le fomès se propage de deux façons. Ses spores voyagent loin avec le vent, sur des dizaines et parfois des centaines de kilomètres, et créent de nouveaux foyers. Ensuite, le champignon passe de proche en proche, d’une racine malade à une racine saine qui la touche : c’est ainsi que les foyers s’agrandissent. Les souches lui servent de porte d’entrée dans un peuplement sain, et de réserve dans un peuplement déjà touché.",
+      "traitement": "Un seul produit est homologué pour cet usage d’après le document : le ROTSTOP®, contenant 100 g/kg de spores et mycélium de la souche naturelle VRA 1835 de Phlebiopsis gigantea (AMM d’octobre 2012). Dose autorisée : 1 g/m² de souche, dans la limite de 68 g/ha. Application dans les 3 heures suivant l’abattage, par badigeonnage ou pulvérisation. C’est un produit phytopharmaceutique à usage professionnel : l’utilisateur doit être titulaire du Certiphyto, et l’entreprise agréée comme applicateur en prestation de service. L’homologation date de 2012 : la vérifier au registre officiel avant tout emploi.",
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "carpophore",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [
+            "au_collet",
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Au pied des arbres, sur les racines qui courent au ras du sol, ou plutôt sur de vieilles souches, un champignon de forme irrégulière, en console aplatie. Le dessus est une croûte acajou ou brun chocolat, qui noircit en vieillissant."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Le dessous du champignon est blanc à crème, couvert de petits trous. Il peut être petit, quelques centimètres, ou grand, plusieurs dizaines de centimètres. Il est souvent caché par les feuilles mortes ou par l’herbe."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles jaunissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les arbres dépérissent et meurent par taches rondes, qui s’agrandissent peu à peu."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "pourriture_bois",
+          "couleurs": [
+            "rouge",
+            "blanc"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Chez les épicéas, le bois du cœur se colore à partir du collet et sur plusieurs mètres vers le haut, le « cœur rouge de l’épicéa », puis il tourne en une pourriture blanche et fibreuse. Rien ne se voit de l’extérieur."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-sitchensis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-alba",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-grandis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "betula",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "populus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les aiguilles jaunissent.",
+        "Les arbres dépérissent par taches rondes.",
+        "Au pied des arbres, sur des racines qui courent au ras du sol, et plus souvent sur de vieilles souches, un champignon de forme irrégulière.",
+        "Ce champignon a le dessus en croûte acajou ou brun chocolat, qui noircit en vieillissant, et le dessous blanc à crème, couvert de petits trous.",
+        "Il peut être petit, quelques centimètres, ou grand, plusieurs dizaines de centimètres. Il est souvent caché par les feuilles mortes ou par l’herbe."
+      ],
+      "criteresExclusion": [
+        "Des arbres qui meurent en rond peuvent avoir une autre cause : l’armillaire, le rhizina, la foudre, ou des scolytes."
+      ],
+      "facteursFavorisants": [
+        "Des coupes régulières : les dégâts les plus forts se voient dans les forêts de résineux exploitées.",
+        "Des souches fraîches, très réceptives pendant 1 à 3 jours après la coupe.",
+        "Des blessures faites aux racines et au pied des arbres pendant l’exploitation.",
+        "De jeunes arbres plantés avec des racines déformées, en chignon ou en crosse, parce qu’ils ont été mal plantés.",
+        "Chez le douglas, un arbre déjà affaibli, ou frappé par la foudre.",
+        "Les conditions du milieu et la façon dont le peuplement est conduit."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-19",
+      "sources": [
+        {
+          "source": "ephytia-fomes-resineux",
+          "champs": [
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique"
+          ]
+        },
+        {
+          "source": "dsf-fomes-2013",
+          "champs": [
+            "conduite_recommandee",
+            "prevention",
+            "traitement"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Heterobasidion%20annosum%20-%20Lindsey.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/fomes-resineux-champignon_sur_bois.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de James Lindsey, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Des consoles du fomès sur une vieille souche moussue, en Belgique : le dessus est brun, le bord et le dessous blancs."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ruhland%2C%20Wasserwerk%20%28Stra%C3%9Fe%29%2C%20Kiefernwurzelschwamm%2C%20Seitenansicht%20und%20Unterseite%2C%20Vorwinter%2C%2001.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/fomes-resineux-champignon_sur_bois-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Wilhelm Zimmerling, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Le dessous du champignon, blanc crème et couvert de petits trous, en Allemagne."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Heterobasidion%20annosum%20on%20Pinus%20mugo%201.JPG?width=960",
+          "fichier": "donnees/phyto/brouillons/images/fomes-resineux-racine.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de MurielBendel, via Wikimedia Commons",
+          "partie": "racine",
+          "legende": "Un petit champignon blanc du fomès sur les racines d’un pin à crochets mort et déraciné, en Suisse."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 3,
+      "noteFrequence": 3
+    }
+  ]
+}

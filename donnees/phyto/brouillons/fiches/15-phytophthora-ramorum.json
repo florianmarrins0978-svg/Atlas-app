@@ -1,0 +1,583 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-phytophthora-ramorum",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Phytophthora ramorum (Phytophthora ramorum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/24935/Forets-Phytophthora-ramorum",
+      "nature": "officielle",
+      "publieeLe": "2025-08-08",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "rhododendron",
+      "nomScientifique": "Rhododendron",
+      "nomCommun": "Rhododendron",
+      "article": "un",
+      "synonymes": [
+        "rhododendrons"
+      ],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "viburnum",
+      "nomScientifique": "Viburnum",
+      "nomCommun": "Viorne",
+      "article": "une",
+      "synonymes": [
+        "viornes"
+      ],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "camellia",
+      "nomScientifique": "Camellia",
+      "nomCommun": "Camélia",
+      "article": "un",
+      "synonymes": [
+        "camélias"
+      ],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "pieris",
+      "nomScientifique": "Pieris",
+      "nomCommun": "Piéris",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "vaccinium-myrtillus",
+      "nomScientifique": "Vaccinium myrtillus",
+      "nomCommun": "Myrtillier",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "arbuste"
+    },
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "aesculus",
+      "nomScientifique": "Aesculus",
+      "nomCommun": "Marronnier",
+      "article": "un",
+      "synonymes": [
+        "marronniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "betula",
+      "nomScientifique": "Betula",
+      "nomCommun": "Bouleau",
+      "article": "un",
+      "synonymes": [
+        "bouleaux"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "chamaecyparis-lawsoniana",
+      "nomScientifique": "Chamaecyparis lawsoniana",
+      "nomCommun": "Cyprès de Lawson",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "corylus",
+      "nomScientifique": "Corylus",
+      "nomCommun": "Noisetier",
+      "article": "un",
+      "synonymes": [
+        "noisetiers"
+      ],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "fraxinus",
+      "nomScientifique": "Fraxinus",
+      "nomCommun": "Frêne",
+      "article": "un",
+      "synonymes": [
+        "frênes",
+        "frêne commun",
+        "frêne élevé",
+        "frêne oxyphylle"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "ilex",
+      "nomScientifique": "Ilex",
+      "nomCommun": "Houx",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "arbuste"
+    },
+    {
+      "code": "picea-sitchensis",
+      "nomScientifique": "Picea sitchensis",
+      "nomCommun": "Épicéa de Sitka",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "salix-caprea",
+      "nomScientifique": "Salix caprea",
+      "nomCommun": "Saule marsault",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "feuillu"
+    },
+    {
+      "code": "sorbus-aucuparia",
+      "nomScientifique": "Sorbus aucuparia",
+      "nomCommun": "Sorbier des oiseleurs",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "phytophthora-ramorum",
+      "nomCommun": "Phytophthora ramorum",
+      "nomScientifique": "Phytophthora ramorum",
+      "categorie": "maladie",
+      "agentCausal": "Un organisme du groupe des oomycètes, Phytophthora ramorum. La page le range parmi les Chromista, et non parmi les champignons. Aux États-Unis, il cause la maladie appelée « mort subite des chênes » (Sudden Oak Death).",
+      "agentType": "inconnu",
+      "partiesAtteintes": [
+        "feuille",
+        "aiguille",
+        "rameau",
+        "branche",
+        "tronc",
+        "houppier"
+      ],
+      "quandCaSeVoit": "La page ne donne pas de saison. Elle précise que les symptômes avancent plus lentement en hiver, et que l’infection se fait surtout pendant les périodes humides.",
+      "autresEssences": "La page cite environ 120 espèces d’arbres et d’arbustes touchées. En Europe : mélèzes, rhododendrons, viornes, chênes, châtaigniers, hêtres, sapins, érables, marronniers, bouleaux, cyprès de Lawson, noisetiers, frênes, houx, épicéas de Sitka, douglas, saule marsault et sorbier des oiseleurs, et sa liste reste ouverte. Le rhododendron, la viorne, le camélia et le myrtillier sont touchés aux feuilles sans en mourir, mais ils produisent beaucoup de spores. Le chêne rouge, le hêtre et le marronnier sont touchés au tronc et aux branches. Le mélèze et le châtaignier sont touchés des deux façons, ce qui les rend particulièrement exposés. En Europe, l’organisme a surtout été confirmé sur rhododendrons, viornes, piéris et camélias, en particulier en pépinière. Le mélèze du Japon est le plus vulnérable ; le mélèze d’Europe et le mélèze hybride sont sensibles, mais leur vulnérabilité est encore mal connue.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Organisme proche des champignons, qui attaque environ 120 espèces d’arbres et d’arbustes. Sur les arbustes comme le rhododendron ou la viorne, il marque les feuilles. Sur les arbres, il fait sur le tronc des plaies qui coulent brun à noir, et il peut les tuer. Le mélèze du Japon y est très sensible. Il est soumis à une lutte obligatoire.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "C’est lui qui cause les dégâts, et sur un très grand nombre d’espèces. Il tue l’arbre, parfois en moins de 2 ans, parfois en plusieurs années. Aux États-Unis, il a tué plus d’un million de chênes et d’arbres de la même famille depuis le milieu des années 1990. En Angleterre, il fait mourir de nombreux mélèzes du Japon depuis 2009, et ces mélèzes meurent vite après l’infection. Les arbustes touchés seulement aux feuilles, comme le rhododendron, n’en meurent pas.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "lutte_obligatoire",
+      "referenceReglementaire": "Décision 2002/757/CE de la Commission du 19 septembre 2002 ; arrêté du 15 décembre 2014 relatif à la liste des dangers sanitaires de première et deuxième catégorie pour les espèces végétales ; arrêté du 31 juillet 2000 établissant la liste des organismes nuisibles aux végétaux, produits végétaux et autres objets soumis à des mesures de lutte obligatoire. La page ajoute qu’en France, il a été un organisme de quarantaine, à éradiquer dès sa détection.",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "feuille",
+        "aiguille",
+        "tronc",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. Ne plantez pas de mélèze du Japon : c’est l’arbre le plus vulnérable en Europe, et il meurt vite après l’infection. Là où le climat est très favorable à Phytophthora ramorum, évitez les grandes plantations de mélèze d’Europe ou de mélèze hybride. Il figure sur la liste des organismes soumis à une lutte obligatoire, et en France les peuplements de mélèze du Japon touchés ont été abattus pour l’éradiquer.",
+      "prevention": "La page déconseille de planter du mélèze du Japon. Elle recommande de ne pas faire de grandes plantations de mélèze d’Europe ou de mélèze hybride dans les zones au climat très favorable à l’organisme.",
+      "commentCaArrive": "Les spores entrent dans les feuilles, les tiges ou les racines par les ouvertures naturelles de la plante, ou par des plaies comme les coupes de taille sur les plantes d’ornement. L’infection se fait surtout par temps humide. L’organisme pousse le mieux vers 20 °C ; il ne se développe plus en dessous de 2 °C ni au-dessus de 30 °C, mais il survit au grand froid. L’humidité l’aide à chaque étape : production des spores, transport, germination et infection.",
+      "gestion": "Il se transmet surtout par le vent, et de proche en proche par les gouttes d’eau qui portent les spores. Les arbustes touchés aux feuilles, comme le rhododendron, la viorne, le camélia ou le myrtillier, n’en meurent pas mais produisent des milliers de spores, que la pluie et le vent dispersent. Les arbres voisins s’infectent alors au tronc et aux branches. Les spores peuvent aussi survivre dans le sol et dans les débris de plantes malades.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Taches sèches, plus ou moins étendues, sur les feuilles. Leur aspect change selon la plante."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les arbustes d’ornement, les feuilles rougissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles se flétrissent, puis elles tombent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Taches sèches sur les tiges des arbustes, et tiges qui meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Branches mortes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge",
+            "brun",
+            "violet"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles rougissent et se flétrissent. Sur le mélèze, elles virent au brun ou au violet."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur le mélèze, le houppier jaunit puis rougit, sur des arbres groupés en foyer ou isolés."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "frequent",
+          "libelle": "La cime meurt en descendant depuis le haut."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Chancres et zones mortes sur le tronc, comme dans la maladie de l’encre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Écoulements bruns à noirs sur le tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur le mélèze, quand l’infection s’étend, taches noirâtres et chancres sur les branches et le tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur le mélèze, coulées de résine sur les branches et le tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur le mélèze, les nouvelles pousses se développent de façon anormale."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "rhododendron",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "viburnum",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "camellia",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pieris",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "vaccinium-myrtillus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "castanea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "quercus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "acer",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "aesculus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "betula",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "chamaecyparis-lawsoniana",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "corylus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "fraxinus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "ilex",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "picea-sitchensis",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "salix-caprea",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "sorbus-aucuparia",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les marques changent beaucoup d’une plante à l’autre.",
+        "Sur les arbustes d’ornement : feuilles qui rougissent, se flétrissent et tombent, taches sèches sur les feuilles et les tiges, tiges et branches qui meurent.",
+        "La plupart des arbustes touchés ne montrent que des marques sur les feuilles, peu frappantes.",
+        "Sur les arbres : aiguilles qui rougissent et se flétrissent, taches sèches sur les feuilles, cime qui meurt par le haut, chancres sur le tronc qui coulent brun à noir.",
+        "Sur le tronc, ce sont les marques classiques de la maladie de l’encre, très proches de celles des autres Phytophthora.",
+        "Le hêtre ne montre des marques que sur le tronc. Le châtaignier en montre sur le tronc et sur les feuilles.",
+        "Sur le mélèze : le houppier jaunit puis rougit, les branches meurent, la cime meurt par le haut, les nouvelles pousses se forment mal et les aiguilles virent au brun ou au violet. Ensuite viennent des chancres noirâtres et des coulées de résine sur les branches et le tronc."
+      ],
+      "criteresExclusion": [
+        "Toute autre cause, maladie, parasite ou problème qui ne vient pas d’un être vivant, qui fait mourir des branches, sécher des taches sur les feuilles ou couler des plaies sur les branches et le tronc, peut donner les mêmes marques.",
+        "Sur le tronc et les branches, les plaies ressemblent beaucoup à celles des autres espèces de Phytophthora."
+      ],
+      "facteursFavorisants": [
+        "Les périodes humides : l’humidité aide à produire les spores, à les transporter, à les faire germer et à infecter la plante.",
+        "Une température proche de 20 °C.",
+        "Des arbustes touchés aux feuilles (rhododendron, viorne, camélia, myrtillier) à proximité, qui produisent les spores.",
+        "Les coupes de taille, par lesquelles les spores peuvent entrer chez les plantes d’ornement.",
+        "En France, la page cite la Bretagne, la Normandie, le Limousin, le piémont pyrénéen, les Vosges et la Franche-Comté comme régions au climat favorable."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "sources": [
+        {
+          "source": "ephytia-phytophthora-ramorum",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "reference_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "prevention",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/CSFO7.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-ramorum-feuille.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Hrabetova, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Feuilles marquées de brun et tiges mortes sur un arbuste d’ornement en pot."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phythophthora%20ramorum%20UGA5202007.png?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-ramorum-feuille-camelia.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Jeffrey W. Lotz, Florida Department of Agriculture and Consumer Services, Bugwood.org, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Taches sèches brunes sur des feuilles de camélia."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sudden%20Oak%20Death.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phytophthora-ramorum-tronc.jpg",
+          "licence": "domaine public",
+          "credit": "Photo du Service des forêts des États-Unis (USDA Forest Service), via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Coulées sombres sur le tronc d’un chêne, aux États-Unis."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 3,
+      "noteFrequence": 0,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-08-08"
+    }
+  ]
+}

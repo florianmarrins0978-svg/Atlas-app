@@ -1,0 +1,197 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-fletrissement-americain-chene",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts et C. Husson (DSF/DGAL))",
+      "titre": "Flétrissement américain du chêne (Bretziella fagacearum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/26360/Forets-Fletrissement-americain-du-chene",
+      "nature": "officielle",
+      "publieeLe": "2025-08-12",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "fletrissement-americain-chene",
+      "nomCommun": "Flétrissement américain du chêne",
+      "nomScientifique": "Bretziella fagacearum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Bretziella fagacearum. Son ancien nom est Ceratocystis fagacearum.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "houppier",
+        "rameau",
+        "branche",
+        "tronc",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Les symptômes apparaissent d’abord en mai et durent toute la saison de croissance. Les fructifications se forment sous l’écorce, en général à la fin de l’automne ou au début du printemps, et vivent deux à trois semaines.",
+      "autresEssences": "La page ne nomme que des chênes. Ceux du groupe des chênes rouges sont très sensibles. Les chênes blancs d’Amérique résistent mieux. Les chênes d’Europe, chêne pédonculé, chêne sessile et chêne pubescent, sont très sensibles.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie des vaisseaux du chêne, due à un champignon. Le feuillage flétrit et brunit vite, à partir de la cime, et l’arbre peut mourir en un à deux ans. Elle n’existe qu’aux États-Unis, et c’est un organisme de quarantaine en Europe.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "L’arbre flétrit, et il meurt parfois. Les chênes du groupe des chênes rouges sont très sensibles : ils meurent un à deux ans après l’infection. Les chênes d’Europe (pédonculé, sessile, pubescent) sont très sensibles eux aussi. Lors d’essais aux États-Unis sur des chênes de 15 ans, tous étaient morts ou entièrement flétris un à deux ans après, sans reprise les années suivantes. Pour l’instant, la maladie n’est présente qu’aux États-Unis.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "quarantaine",
+      "referenceReglementaire": "Organisme de quarantaine en Europe : contrôle à l’importation, et éradication s’il est découvert. Règlement en santé des végétaux R2016/2031. Décision 2000/29/CE de la Commission du 8 mai 2000. Décision 2005/359/CE de la Commission du 29 avril 2005.",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "houppier",
+        "feuille",
+        "ecorce"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. C’est un organisme de quarantaine en Europe : il est contrôlé à l’importation, et il doit être éradiqué s’il est découvert. Un chêne qui flétrit ne suffit pas à conclure, car une sécheresse peut lui donner le même aspect.",
+      "methodeConfirmation": "Au moindre doute, sur un arbre debout ou abattu, il faut prélever des morceaux de branches flétries d’au moins 3 cm de diamètre.",
+      "informationsRequises": [],
+      "prevention": "Pour les grumes de chêne importées des États-Unis, la page rappelle qu’il faut respecter la réglementation : règlement R2016/2031 et décision 2005/359/CE.",
+      "commentCaArrive": "Le champignon vit dans les vaisseaux du bois, sur la partie externe de l’aubier (le bois jeune, sous l’écorce). L’arbre se défend en bouchant ses propres vaisseaux, et la sève ne passe plus : l’arbre flétrit. Aux États-Unis, de petits coléoptères, des scolytes et des nitidules, sont attirés par l’odeur fruitée du champignon. Sous l’écorce, ses spores collantes s’accrochent à eux, et ils les déposent dans les blessures de l’écorce d’arbres sains, à la fourche des ramilles et à l’aisselle des feuilles.",
+      "gestion": "Le champignon passe aussi très vite d’un arbre à l’autre par les racines soudées entre chênes voisins, et ce passage marche très bien chez les chênes d’Europe. Un scolyte d’Europe, Scolytus intricatus, le transporterait sans doute très bien s’il arrivait. Les grumes et les branches de chêne importées des États-Unis peuvent porter le champignon et ses insectes.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "cardinal",
+          "libelle": "Le feuillage flétrit et brunit vite, d’abord à la cime et au bout des branches, puis dans toute la couronne. Dès le mois de mai."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Chaque feuille brunit peu à peu, de la pointe vers la base. Une petite zone verte reste parfois à la base, autour de la nervure centrale."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent à tous les stades, même encore vertes, de plus en plus à mesure que la maladie avance."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "tache",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des taches et des stries dans la partie externe de l’aubier, avec un bois décoloré. Vues seulement sur les chênes blancs, aux États-Unis."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "fente",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des fentes, des fissures ou des boursouflures de l’écorce : ce sont les fructifications du champignon, en dessous."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Le feuillage flétrit et brunit vite, d’abord à la cime et au bout des branches, puis dans toute la couronne.",
+        "Chaque feuille brunit peu à peu, de la pointe vers la base. Une petite zone verte reste parfois à la base, le long de la nervure centrale.",
+        "Les feuilles tombent à tous les stades, même encore vertes, de plus en plus à mesure que la maladie avance.",
+        "Les signes apparaissent dès le mois de mai et durent toute la saison.",
+        "Sous l’écorce, des fentes, des fissures ou des boursouflures marquent les fructifications du champignon."
+      ],
+      "criteresExclusion": [
+        "Tout ce qui fait flétrir les branches et la cime peut y ressembler : une autre maladie, un autre parasite, ou une sécheresse."
+      ],
+      "facteursFavorisants": [
+        "Un chêne du groupe des chênes rouges, ou un chêne d’Europe (pédonculé, sessile, pubescent) : tous très sensibles.",
+        "Des chênes voisins dont les racines se sont soudées.",
+        "Des scolytes ou des nitidules, qui transportent les spores.",
+        "Des grumes ou des branches de chêne importées des États-Unis."
+      ],
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-08-12",
+      "sources": [
+        {
+          "source": "ephytia-fletrissement-americain-chene",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "reference_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "prevention"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Oak%20wilt%20symptoms.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/fletrissement-americain-chene-houppier.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Un chêne d’Amérique malade, aux États-Unis : le haut du feuillage brunit. En médaillon, des feuilles qui brunissent depuis la pointe."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Spore%20Mat%20on%20Northern%20Pin%20Oak%201997.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/fletrissement-americain-chene-ecorce.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Wood Geek, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Sous l’écorce fendue d’un chêne d’Amérique, un coussinet du champignon."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 3,
+      "noteFrequence": 0
+    }
+  ]
+}

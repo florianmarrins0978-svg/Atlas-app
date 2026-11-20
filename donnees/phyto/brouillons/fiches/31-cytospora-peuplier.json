@@ -1,0 +1,216 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-cytospora-peuplier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Cytospora du peuplier (Cytospora chrysosperma), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20408/Forets-Cytospora-du-peuplier",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "salix",
+      "nomScientifique": "Salix",
+      "nomCommun": "Saule",
+      "article": "un",
+      "synonymes": [
+        "saules"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "cytospora-peuplier",
+      "nomCommun": "Cytospora du peuplier",
+      "nomScientifique": "Cytospora chrysosperma",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Cytospora chrysosperma (Ascomycète).",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "ecorce",
+        "rameau",
+        "branche",
+        "tronc"
+      ],
+      "quandCaSeVoit": "Les petites fructifications noires apparaissent sur l’écorce à partir de février. Elles ont besoin d’une température assez basse pour bien se former. La page ne dit pas jusqu’à quand.",
+      "autresEssences": "La page nomme comme hôtes habituels les peupliers et les saules, et comme hôtes possibles les autres feuillus, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le peuplier et le saule. Il entre par une plaie de taille ou une cicatrice de feuille, et profite d’un arbre qui pousse dans de mauvaises conditions. L’écorce se tache de brun noir, se couvre de petits points noirs, puis sèche et part en lanières. Des branches et de jeunes plants peuvent mourir.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Le champignon profite d’un arbre affaibli ou en déséquilibre. Les gros dégâts se voient surtout sur de jeunes plants placés dans de mauvaises conditions, en pépinière comme en plantation. Des branches meurent, et de jeunes arbres peuvent mourir quand la contamination est forte. Quand l’arbre pousse dans de bonnes conditions, la maladie finit par rester limitée près de la blessure par où elle est entrée.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "ecorce",
+        "rameau",
+        "branche"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes plants qui poussent dans de mauvaises conditions, car c’est sur eux que la maladie fait le plus de dégâts. Sur un arbre qui pousse dans de bonnes conditions, elle finit par rester limitée autour de la blessure.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Le champignon a besoin d’une blessure pour entrer, plaie de taille ou cicatrice laissée par une feuille : il ne sait pas traverser des tissus sains. Les spores sont apportées par le vent et la pluie. Si l’arbre pousse dans de mauvaises conditions, le champignon finit par faire tout le tour de la branche ou de la tige. S’il pousse bien, la maladie reste limitée près de l’endroit où elle est entrée.",
+      "gestion": "À partir de février, de petites fructifications noires se forment en très grand nombre sur l’écorce malade. Elles contiennent une multitude de spores qui restent vivantes plusieurs mois, ce qui rend la contamination très facile. Quand l’air est très humide, elles laissent sortir de fins cordons gluants pleins de spores, que le vent et la pluie dispersent.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "tache",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Au début, des taches brun noirâtre sur l’écorce. Dessous, les tissus deviennent noirs, mats et uniformes."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Plus tard, de très nombreuses petites fructifications noires sur l’écorce, percées d’un petit trou au sommet."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "ecoulement",
+          "couleurs": [
+            "jaune",
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Par temps de pluie, de fins cordons gluants, jaune orangé à orange vif, sortent de ces fructifications."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "À la fin, l’écorce sèche et part en lanières."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des pousses se dessèchent et des branches meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "decoloration",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Le bois noircit peu à peu."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "populus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "salix",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Au début, des taches brun noirâtre sur l’écorce. Sous l’écorce, les tissus sont noirs, mats et d’une teinte uniforme.",
+        "Ensuite, de très nombreux petits points noirs sur l’écorce : ce sont les fructifications du champignon, percées d’un petit trou au sommet.",
+        "Par temps de pluie, il en sort de fins cordons gluants, jaune orangé à orange vif.",
+        "À la fin, l’écorce sèche et part en lanières, et le bois noircit peu à peu."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Une blessure, comme une plaie de taille ou la cicatrice d’une feuille tombée.",
+        "Un arbre qui pousse dans de mauvaises conditions, affaibli ou en déséquilibre.",
+        "De jeunes plants placés dans de mauvaises conditions, en pépinière comme en plantation.",
+        "Une forte humidité de l’air, qui fait sortir les spores.",
+        "Une température assez basse, dont les fructifications ont besoin pour bien se former."
+      ],
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-cytospora-peuplier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cytospora%20chrysosperma%20290132163.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cytospora-peuplier-ecorce.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de P Holroyd, iNaturalist, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Les cordons orange de spores sortent des fissures de l’écorce (Californie, arbre non précisé)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cytospora%20chrysosperma%20290133590.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cytospora-peuplier-ecorce-2.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de P Holroyd, iNaturalist, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "De près, les cordons de spores, orange vif, enroulés sur l’écorce."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

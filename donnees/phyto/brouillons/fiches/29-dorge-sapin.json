@@ -1,0 +1,183 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-dorge-sapin",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Dorge du sapin, ou chaudron (Melampsorella caryophyllacearum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19305/Forets-Dorge-du-sapin-chaudron",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "abies-alba",
+      "nomScientifique": "Abies alba",
+      "nomCommun": "Sapin pectiné",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "dorge-sapin",
+      "nomCommun": "Dorge du sapin (chaudron)",
+      "nomScientifique": "Melampsorella caryophyllacearum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon de la famille des rouilles, Melampsorella caryophyllacearum. Il vit tour à tour sur deux sortes de plantes : les sapins, et des plantes de la famille des caryophyllacées (stellaires, céraistes…).",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "rameau",
+        "aiguille",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Les fructifications apparaissent en juin, sous les aiguilles du balai de sorcière. Le balai de sorcière peut rester en place 15 à 20 ans.",
+      "autresEssences": "La page cite le sapin pectiné comme hôte habituel, et les autres sapins comme hôtes possibles, sauf Abies grandis (le sapin de Vancouver). Le champignon passe aussi une partie de sa vie sur des plantes de la famille des caryophyllacées, comme les stellaires et les céraistes.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par une rouille, sur le sapin. Elle fait pousser sur les branches un balai de sorcière, une touffe serrée de rameaux dressés. Quand ce balai est près du tronc, la tige enfle en forme de chancre : c’est le chaudron, ou dorge.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Le chaudron fait perdre de la valeur au bois du tronc. Quand il s’ouvre et que des agents qui abîment le bois s’y installent, l’arbre risque d’être cassé ou renversé par le vent.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Quand le chaudron s’ouvre et que des agents qui abîment le bois s’y installent, l’arbre risque d’être cassé ou renversé par le vent.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "aiguille"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les chaudrons du tronc, surtout ceux qui sont ouverts : quand des agents qui abîment le bois s’y installent, l’arbre risque d’être cassé ou renversé par le vent.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps, des spores formées sur les caryophyllacées (stellaires, céraistes…) sont portées par le vent et les insectes jusqu’aux bourgeons du sapin, où elles germent. Le champignon fait alors pousser le bourgeon de travers : une pousse verticale se forme et se ramifie beaucoup. Elle devient un balai de sorcière, une touffe de rameaux aux aiguilles peu vertes, qui tombent chaque année. Quand ce balai pousse près du tronc, la tige enfle en forme de chancre : c’est le chaudron.",
+      "gestion": "Le champignon fait son cycle sur deux plantes. En juin, sous les aiguilles du balai de sorcière, de petites vésicules blanches libèrent des spores orange, qui vont sur les feuilles des caryophyllacées. Sur ces plantes, la rouille se développe, et au printemps suivant elle produit les spores que le vent et les insectes portent aux bourgeons des sapins. C’est donc le balai de sorcière qui propage la maladie. Le chaudron, lui, ne la propage pas : le champignon n’y fructifie pas.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Un balai de sorcière : sur une branche latérale, une touffe serrée de rameaux dressés. Il pousse en général bas sur l’arbre, à moins de 10 m de haut, et peut durer 15 à 20 ans."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Le chaudron (ou dorge) : la tige enfle en forme de chancre, là où un balai de sorcière pousse près du tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les aiguilles du balai de sorcière sont peu vertes, et tombent chaque année."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "blanc",
+            "orange"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "frequent",
+          "libelle": "En juin, sous les aiguilles du balai de sorcière, de petites vésicules blanches d’où s’échappent des spores orange."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "abies-alba",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Un balai de sorcière : sur une branche latérale, une touffe serrée de rameaux dressés, aux aiguilles peu vertes qui tombent chaque année.",
+        "Le balai pousse en général bas sur l’arbre, à moins de 10 m de haut.",
+        "Un chaudron (ou dorge) : la tige enfle en forme de chancre, là où un balai de sorcière pousse près du tronc.",
+        "En juin, sous les aiguilles du balai, de petites vésicules blanches qui libèrent des spores orange."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-dorge-sapin",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "impact_mecanique"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsorella%20caryophyllacearum%20Italy.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-branche.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de GooseCanada, via Wikimedia Commons",
+          "partie": "branche",
+          "legende": "Un balai de sorcière sur un sapin pectiné : une touffe serrée de rameaux dressés, aux aiguilles jaune pâle."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsorella%20caryophyllacearum%20on%20trunk%20Italy.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de GooseCanada, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Le tronc d’un sapin pectiné enflé par le champignon, dans le bas de la photo."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

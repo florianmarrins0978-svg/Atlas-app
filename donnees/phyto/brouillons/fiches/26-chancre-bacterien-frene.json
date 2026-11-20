@@ -1,0 +1,201 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-bacterien-frene",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Chancre bactérien du frêne (Pseudomonas savastonoi fraxini), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19791/Forets-Chancre-bacterien-du-frene",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "fraxinus",
+      "nomScientifique": "Fraxinus",
+      "nomCommun": "Frêne",
+      "article": "un",
+      "synonymes": [
+        "frênes",
+        "frêne commun",
+        "frêne élevé",
+        "frêne oxyphylle"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "olea-europaea",
+      "nomScientifique": "Olea europaea",
+      "nomCommun": "Olivier",
+      "article": "un",
+      "synonymes": [
+        "oliviers"
+      ],
+      "rang": "espece",
+      "port": "feuillu"
+    },
+    {
+      "code": "nerium-oleander",
+      "nomScientifique": "Nerium oleander",
+      "nomCommun": "Laurier rose",
+      "article": "un",
+      "synonymes": [
+        "lauriers roses",
+        "laurier-rose"
+      ],
+      "rang": "espece",
+      "port": "arbuste"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-bacterien-frene",
+      "nomCommun": "Chancre bactérien du frêne",
+      "nomScientifique": "Pseudomonas savastonoi fraxini",
+      "categorie": "maladie",
+      "agentCausal": "Une bactérie, Pseudomonas savastonoi fraxini. C’est un être d’une seule cellule. Dans les vieux chancres, des champignons peuvent prendre le relais de la bactérie.",
+      "agentType": "bacterie",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "rameau",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Au printemps et au début de l’été, par temps humide, un liquide jaunâtre peut suinter des rameaux. Les chancres, eux, restent d’une année sur l’autre.",
+      "autresEssences": "La page cite le frêne comme hôte habituel, et l’olivier et le laurier rose comme hôtes possibles.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par une bactérie, sur le frêne. L’écorce des branches et du tronc se couvre de cloques brun-rouge, qui deviennent des chancres tourmentés, souvent nombreux le long de la tige. Par temps humide, un liquide jaune en suinte.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les chancres, très tourmentés, durent d’année en année sur les branches et le tronc, et font perdre beaucoup de valeur au bois. Les jeunes tiges s’affaiblissent, et elles risquent davantage de mourir.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Les chancres durent sur les branches et le tronc et gâtent le bois. Rien n’est dit de la solidité de l’arbre ni d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "rameau"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les jeunes frênes et les arbres voisins d’un frêne atteint : la bactérie passe d’un arbre à l’autre avec le vent et la pluie, et les jeunes tiges atteintes risquent davantage de mourir.",
+      "prevention": null,
+      "commentCaArrive": "La bactérie entre par une blessure naturelle (la cicatrice d’une feuille ou d’un bourgeon, une lenticelle, c’est-à-dire un des petits pores de l’écorce) ou accidentelle (une petite plaie de gel, une piqûre d’insecte). C’est l’eau de pluie ou de rosée qui l’apporte, en ruisselant le long du tronc depuis un chancre déjà là. Sous l’écorce, les tissus gonflent en petites cloques brun-rouge. Elles se multiplient, l’écorce se craquelle, et le tout prend l’aspect d’une tumeur.",
+      "gestion": "Au printemps et au début de l’été, par temps humide, les bactéries actives sortent des rameaux dans un liquide jaunâtre. La pluie et la rosée qui ruissellent les emportent le long du tronc. Le vent et la pluie les portent d’un arbre à l’autre, à partir d’un foyer.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [
+            "le_long_du_tronc"
+          ],
+          "poids": "cardinal",
+          "libelle": "Des chancres très tourmentés, souvent très nombreux tout le long de la tige."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les branches, des chancres tourmentés qui durent d’année en année."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [
+            "brun",
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur l’écorce des branches et des rameaux, des sortes de cloques brun-rouge. Elles se multiplient, font craqueler l’écorce et prennent l’aspect d’une tumeur."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "ecoulement",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Par temps humide, au printemps et au début de l’été, un liquide jaune suinte de lésions discrètes de l’écorce. Il contient les bactéries."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "fraxinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "olea-europaea",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "nerium-oleander",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur l’écorce des branches et des rameaux, des sortes de cloques brun-rouge.",
+        "Ces gonflements se multiplient, l’écorce se craquelle et prend l’aspect d’une tumeur.",
+        "Par temps humide, un liquide jaune suinte de lésions discrètes de l’écorce, et les tissus en dessous gonflent.",
+        "Des chancres très tourmentés, souvent très nombreux tout le long de la tige."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un temps humide, au printemps et au début de l’été.",
+        "Les blessures, naturelles (cicatrices de feuilles ou de bourgeons, lenticelles) ou accidentelles (petites plaies de gel, piqûres d’insectes).",
+        "L’eau de pluie et de rosée qui ruisselle le long du tronc depuis un chancre déjà là."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-bacterien-frene",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Canker%20on%20Ash.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-bacterien-frene-tronc.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Roger Griffith (Rosser1954), via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Chancres tourmentés sur le tronc d’un frêne, en Écosse."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

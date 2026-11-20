@@ -15,8 +15,19 @@ de recopier ses pages, et `appli/` est publié sur un site public. La capture
 de la page de l'INRAE ne va donc ni dans le dépôt ni en ligne. Chaque fiche y
 est l'écran de l'appli CODÉE (branche de ce jour), figé sur une base locale.
 
-**Les brouillons** : écrits dans le dossier de la session, à verser dans
-`donnees/phyto/fiches/` fiche par fiche **sur son oui**, jamais avant. Règles
+**Les brouillons : 57 fiches, dans `donnees/phyto/brouillons/`** (fiches et
+photos libres ; les notes de provenance, qui citent la page de l'INRAE, restent
+hors du dépôt public). 56 sont sur sa page de vérification ; « Rouilles
+(basidiomycètes) » est une page de groupe sans symptôme, gardée en brouillon.
+À verser dans `donnees/phyto/fiches/` fiche par fiche **sur son oui**, jamais
+avant. Ce que chaque fiche a d'incertain (photo d'un autre pays, nom latin mal
+écrit sur la page, statut réglementaire) est écrit sous son titre, sur la page.
+**Décisions à lui** : corriger ou non l'orthographe d'un nom latin fautif sur la
+page (gardée partout sauf la graphiose) ; le fomès garde sa prévention et son
+traitement validés (document de 2013, homologation du ROTSTOP à revérifier).
+**Reste à faire** : la passe photos (fiches sans photo, ou sans le champignon) ;
+les confusions entre fiches proches (vides) ; le défaut espèce et genre ci-dessous,
+que les nouvelles essences d'espèce rendent plus pressant. Règles
 ajoutées en écrivant : aucun conseil déduit d'un fait (« Que faire ? » ne dit
 que ce que la page conseille), l'INRAE seulement dans les détails, espace
 insécable avant les unités. Le « Surveillez l'arbre » du peuplier en est parti.

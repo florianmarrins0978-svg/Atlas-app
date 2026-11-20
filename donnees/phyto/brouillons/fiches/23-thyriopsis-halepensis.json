@@ -1,0 +1,209 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-thyriopsis-halepensis",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Thyriopsis halepensis (rougissement des pins pignons et d’Alep), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/22248/Forets-Thyriopsis-halepensis",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "thyriopsis-halepensis",
+      "nomCommun": "Rougissement des pins pignons et d’Alep",
+      "nomScientifique": "Thyriopsis halepensis",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Thyriopsis halepensis. Il fait tout son cycle en un an, sur les aiguilles vertes.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les fructifications du champignon se voient toute l’année, sur les aiguilles vertes ou un peu jaunies. Les aiguilles se contaminent au printemps et au début de l’été, et les cercles colorés apparaissent pendant ce même été. Les aiguilles malades tombent au printemps.",
+      "autresEssences": "La page parle des pins en général, et surtout du pin d’Alep et du pin pignon (Pinus pinea). Elle cite aussi le pin maritime, sur les aiguilles duquel les fructifications sont parfois alignées.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur les pins, surtout le pin d’Alep et le pin pignon. De petits cercles colorés apparaissent sur les aiguilles vertes, souvent près de leur base. Les aiguilles prennent une couleur paille puis tombent, et la cime s’éclaircit.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "On n’a observé la mort d’aucun pin d’Alep ni d’aucun pin pignon après une attaque de ce champignon. L’arbre pousse sans doute moins vite. Les aiguilles sèches et la cime clairsemée augmentent le risque d’incendie.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Pour la repérer, regardez les plus vieilles aiguilles encore sur l’arbre : c’est là que le champignon se voit le mieux quand il est abondant.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps et au début de l’été, les spores présentes sur les aiguilles malades contaminent les aiguilles vertes. Cela se passe au moment où sort la nouvelle pousse, qui peut donc être touchée elle aussi. Quand la maladie reste discrète, le champignon accompagne la chute normale des vieilles aiguilles. Quand elle devient épidémique, les aiguilles tombent plus jeunes, dès leur première ou leur deuxième année selon le pin.",
+      "gestion": "Le champignon reste toute l’année sur les aiguilles vertes ou un peu jaunies, où il fructifie. Les spores formées à l’automne font les premières contaminations du printemps suivant. Au début de l’été, il forme aussi d’autres spores, dont on ne sait pas si elles contaminent. Comme il se développe chaque année sur les aiguilles vertes, on le repère facilement, quand il est abondant, sur les plus vieilles aiguilles encore sur l’arbre.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "brun",
+            "rouge"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Pendant l’été de la contamination, de petites zones colorées disposées en cercle apparaissent sur les aiguilles vertes, le plus souvent près de la gaine. Le cercle grandit, et son centre pâlit puis prend une teinte brun-rouge. En bordure d’aiguille, on ne voit qu’un demi-cercle."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les fructifications du champignon dessinent le tour du cercle. Sur le pin maritime, elles sont parfois alignées."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Plus tard, le centre des cercles, qui est mort, devient noir."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "Les aiguilles prennent une couleur paille, puis elles tombent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "La cime des arbres attaqués s’éclaircit, et le feuillage vert ne reste que dans son tiers du haut. C’est très net sur le pin pignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Dans la cime, les aiguilles prennent une couleur anormale."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur les aiguilles vertes, de petites zones colorées disposées en cercle, le plus souvent près de la gaine.",
+        "Le centre du cercle pâlit et prend une teinte brun-rouge, puis il devient noir.",
+        "En bordure d’aiguille, on ne voit qu’un demi-cercle.",
+        "Les aiguilles prennent une couleur paille avant de tomber.",
+        "La cime s’éclaircit, et le feuillage vert ne reste que dans son tiers du haut. C’est très net sur le pin pignon."
+      ],
+      "criteresExclusion": [
+        "Un rougissement dû à un stress, comme une sécheresse, peut ressembler à cette maladie.",
+        "D’autres champignons des aiguilles, comme Sphaeropsis sapinea, donnent des symptômes qui peuvent se confondre avec ceux-ci."
+      ],
+      "facteursFavorisants": [],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-thyriopsis-halepensis",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

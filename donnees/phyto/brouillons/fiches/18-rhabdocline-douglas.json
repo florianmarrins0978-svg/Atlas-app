@@ -1,0 +1,178 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rhabdocline-douglas",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Rhabdocline du Douglas (Rhabdocline pseudotsugae), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18709/Forets-Rhabdocline-du-Douglas",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rhabdocline-douglas",
+      "nomCommun": "Rhabdocline du Douglas",
+      "nomScientifique": "Rhabdocline pseudotsugae",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Rhabdocline pseudotsugae.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les taches jaunâtres apparaissent au début de l’hiver, et les aiguilles restent marbrées de vert et de jaune tout l’hiver. Au printemps, des coussinets brun orange se forment sous les aiguilles : ils commencent en mars et mûrissent en mai et juin. Les nouvelles contaminations ont lieu en juin.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le douglas. Elle précise que la maladie ne touche presque pas le douglas vert (Pseudotsuga menziesii var. menziesii), mais qu’on la voit souvent sur le douglas bleu (Pseudotsuga menziesii var. glauca), surtout sur les provenances les plus au sud.",
+      "periodeDebutMois": 12,
+      "periodeFinMois": 6,
+      "explicationCourte": "Maladie des aiguilles du douglas, causée par un champignon. En hiver, les aiguilles sont marbrées de zones vertes et de zones jaunes. Au printemps, des coussinets brun orange se forment dessous, puis les aiguilles sèchent et une partie tombe. Elle touche surtout le douglas bleu.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les aiguilles sèchent et une partie tombe. L’arbre perd de sa vigueur et pousse moins. Des attaques fortes et répétées peuvent faire mourir l’arbre. Sur le douglas bleu, la maladie est si fréquente qu’on ne peut presque plus l’employer en France.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez l’arbre d’une année sur l’autre, car ce sont les attaques fortes et répétées qui peuvent le faire mourir.",
+      "prevention": null,
+      "commentCaArrive": "En juin, le vent emporte les spores, qui germent sur des aiguilles saines. Le champignon entre dans l’aiguille par les stomates (les petits pores de l’aiguille), puis il l’envahit tout entière. Les aiguilles des rameaux bien exposés au soleil ont une couche protectrice plus épaisse, et la maladie y reste plus limitée.",
+      "gestion": "Le champignon passe l’hiver dans les aiguilles qu’il a envahies. En mars, il y forme sous la surface de petits boutons jaunes. En mai et juin, ils arrivent à maturité : la surface de l’aiguille éclate et libère les spores. Le vent les emporte alors vers des aiguilles saines.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [
+            "en_plages"
+          ],
+          "poids": "cardinal",
+          "libelle": "En hiver, sur les aiguilles, des zones vertes qui alternent avec des zones jaunes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au début de l’hiver, des taches jaunâtres sur les aiguilles."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "brun",
+            "orange"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "cardinal",
+          "libelle": "Au printemps, sous les aiguilles, des coussinets veloutés brun orange, bien visibles par temps humide."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles sèchent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Une partie des aiguilles tombe, et l’arbre perd de sa vigueur."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "En hiver, les aiguilles sont marbrées : des zones vertes alternent avec des zones jaunes.",
+        "Au printemps, sous les aiguilles, des coussinets veloutés brun orange. Ils se voient bien par temps humide.",
+        "Les aiguilles sèchent, puis une partie tombe.",
+        "On la voit surtout sur le douglas bleu, presque jamais sur le douglas vert."
+      ],
+      "criteresExclusion": [
+        "La rouille suisse fait tomber les aiguilles de la même façon, mais on voit sous l’aiguille de petits points noirs alignés le long des rangées de stomates, et non des coussinets brun orange."
+      ],
+      "facteursFavorisants": [
+        "Le douglas bleu (Pseudotsuga menziesii var. glauca), surtout les provenances les plus au sud.",
+        "Des rameaux peu exposés au soleil : la page dit que les aiguilles bien exposées, plus protégées, sont moins atteintes."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30",
+      "sources": [
+        {
+          "source": "ephytia-rhabdocline-douglas",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rhabdocline%20pseudotsugae%20Syd.%202111016.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rhabdocline-douglas-aiguille.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "Sous des aiguilles de douglas, les coussinets bruns du champignon percent la surface."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

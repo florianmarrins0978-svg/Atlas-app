@@ -1,0 +1,212 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-phomopsis-douglas",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Phomopsis du Douglas (Allantophomopsiella pseudotsugae), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18693/Forets-Phomopsis-du-Douglas",
+      "nature": "officielle",
+      "publieeLe": "2026-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "phomopsis-douglas",
+      "nomCommun": "Phomopsis du Douglas",
+      "nomScientifique": "Allantophomopsiella pseudotsugae",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Allantophomopsiella pseudotsugae. Il porte aussi le nom de Phacidium coniferarum. La page appelle aussi la maladie « maladie en écusson de l’écorce ».",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "rameau",
+        "branche",
+        "tronc",
+        "ecorce"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Le douglas et le mélèze sont ses hôtes habituels. La page cite aussi les pins comme hôtes possibles. Chez le pin, le champignon entre aussi dans le bois, qu’il fait bleuir.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, surtout sur le douglas et le mélèze. Le plus souvent, il vit sur les rameaux déjà morts et les fait tomber. Sur de jeunes arbres qui manquent d’eau, il attaque l’écorce vivante : les aiguilles sèchent, les pousses ont l’air brûlées, et des chancres en losange se forment sur le tronc.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les aiguilles tombent, puis les jeunes pousses sèchent. Des chancres se forment sur le tronc et sur les grosses branches. Le plus souvent pourtant, le champignon ne vit que sur les rameaux déjà morts : il les fait tomber, comme un élagage naturel.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Le champignon fait tomber les rameaux morts. Il forme aussi des chancres sur le tronc et sur les grosses branches. Rien n’est dit d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "aiguille",
+        "rameau",
+        "tronc"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes arbres qui manquent d’eau ou dont l’écorce est blessée, car c’est sur eux que le champignon attaque l’écorce vivante.",
+      "methodeConfirmation": "Seule l’analyse d’un échantillon en laboratoire permet d’être sûr : beaucoup d’autres champignons donnent les mêmes symptômes.",
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Le plus souvent, le champignon vit sur les rameaux du douglas morts faute de lumière. Sur de jeunes arbres qui souffrent du manque d’eau, il peut attaquer l’écorce vivante. Il semble avoir besoin d’une blessure pour entrer : une fente due au gel, un coup de grêle, une écorce abîmée par le gibier ou les rongeurs.",
+      "gestion": "Le champignon se disperse en hiver, par ses spores.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les fines pousses, les aiguilles sèchent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les fines pousses, l’écorce a l’air brûlée."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les pousses plus âgées, une zone sèche et craquelée, où la pousse se rétrécit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, un chancre en forme d’écusson, c’est-à-dire de losange."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des chancres sur les grosses branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles tombent, puis les jeunes pousses sèchent."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "criteresDiscriminants": [
+        "Sur les fines pousses, les aiguilles sèchent et l’écorce a l’air brûlée.",
+        "Sur les pousses plus âgées, une zone sèche et craquelée, où la pousse se rétrécit.",
+        "Sur le tronc, un chancre en forme d’écusson, c’est-à-dire de losange."
+      ],
+      "criteresExclusion": [
+        "Beaucoup d’autres champignons peuvent donner ces symptômes. La page ne donne aucun moyen de les distinguer à l’œil : seule l’analyse en laboratoire tranche."
+      ],
+      "facteursFavorisants": [
+        "Le manque d’eau, chez les jeunes arbres.",
+        "Les blessures de l’écorce : fentes dues au gel, coups de grêle, dégâts du gibier ou des rongeurs.",
+        "Les rameaux morts faute de lumière, où le champignon s’installe."
+      ],
+      "hotesNonExhaustifs": false,
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phacidium%20coniferarum%20%28G.G.%20Hahn%29%20DiCosmo%2C%20Nag%20Raj%20%26%20W.B.%20Kendr.%202112096.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/phomopsis-douglas-tronc.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Des chancres en forme de losange sur l’écorce de la tige d’un douglas."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 2,
+      "confusions": [],
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2026-06-23",
+      "sources": [
+        {
+          "source": "ephytia-phomopsis-douglas",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "impact_mecanique"
+          ]
+        }
+      ]
+    }
+  ]
+}

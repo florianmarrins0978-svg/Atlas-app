@@ -1,0 +1,245 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-pathologies-foliaires-meleze",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Pathologies foliaires du mélèze (Meria laricis, Mycosphaerella laricina, Hypodermella laricis et Lophodermium laricinum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27452/Forets-Pathologies-foliaires-du-meleze",
+      "nature": "officielle",
+      "publieeLe": "2024-08-06",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "pathologies-foliaires-meleze",
+      "nomCommun": "Pathologies foliaires du mélèze",
+      "nomScientifique": "Meria laricis, Mycosphaerella laricina, Hypodermella laricis et Lophodermium laricinum",
+      "categorie": "maladie",
+      "agentCausal": "Quatre champignons, que la page regroupe : Meria laricis (le méria du mélèze), Mycosphaerella laricina (les taches brunes des aiguilles), Hypodermella laricis (le rouge du mélèze) et Lophodermium laricinum.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les bourgeons se contaminent au printemps. Les infections continuent pendant tout l’été, et c’est en été que les aiguilles se marquent et tombent.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le mélèze.",
+      "periodeDebutMois": 4,
+      "periodeFinMois": 9,
+      "explicationCourte": "Quatre champignons qui attaquent les aiguilles du mélèze. Les aiguilles jaunissent, rougissent ou brunissent, souvent en commençant par le bas de l’arbre, puis elles tombent. Les jeunes mélèzes peuvent en mourir ; les arbres adultes refont en général leurs aiguilles l’année suivante.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Les aiguilles tombent, ce qui peut freiner la croissance et affaiblir l’arbre. Chez les jeunes mélèzes (semis naturels, jeunes arbres, plants de pépinière), ces champignons peuvent faire mourir beaucoup d’arbres. Les arbres adultes résistent mieux : en général, ils refont des aiguilles neuves l’année qui suit l’infection.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes mélèzes, car ce sont eux que ces champignons peuvent faire mourir. Un mélèze adulte qui perd ses aiguilles refait en général des aiguilles neuves l’année suivante : attendez cette nouvelle pousse avant de le juger perdu.",
+      "prevention": null,
+      "commentCaArrive": "Au printemps, les bourgeons du mélèze se contaminent au contact des aiguilles malades restées au sol. Pendant tout l’été, de nouvelles infections se font sur les aiguilles. Un cycle complet prend de 2 à 4 semaines, selon la température et l’humidité de l’air. Un printemps pluvieux favorise beaucoup ces champignons.",
+      "gestion": "Ce sont les aiguilles malades tombées au sol qui contaminent les bourgeons au printemps. Ensuite, les champignons produisent des spores pendant tout l’été, et chaque cycle infecte de nouvelles aiguilles.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Méria du mélèze : les aiguilles prennent une couleur jaune-brun, puis brunissent et tombent. On ne voit à l’œil nu ni point noir, ni ligne en travers."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [
+            "sommet"
+          ],
+          "poids": "frequent",
+          "libelle": "Méria du mélèze : la pointe des aiguilles rougit."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "brun"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "frequent",
+          "libelle": "La couleur gagne d’abord le bas de l’arbre, puis tout l’arbre (méria du mélèze). Avec les taches brunes des aiguilles, c’est surtout le bas qui est touché, et le sommet reste souvent vert."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "rouge",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Taches brunes des aiguilles : des zones rouges à brunes sur les aiguilles, qui portent de petits points noirs."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Taches brunes des aiguilles : petits points noirs (les fructifications du champignon) sur les zones rouges à brunes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune",
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Rouge du mélèze : l’aiguille jaunit, puis rougit avant de tomber."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Rouge du mélèze : points noirs bien nets, en forme de lentille, alignés sur une seule ligne."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Rouge du mélèze : souvent, une ligne noire à la base de l’aiguille avant sa chute."
+        },
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "eparse"
+          ],
+          "poids": "possible",
+          "libelle": "Lophodermium laricinum : points noirs peu visibles, de forme irrégulière, éparpillés sans ordre sur l’aiguille."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "tache",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Lophodermium laricinum : plusieurs lignes noires fines en travers de l’aiguille."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles malades tombent."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "larix",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les aiguilles changent de couleur (jaune, rouge ou brun), puis elles tombent.",
+        "La maladie commence souvent par le bas de l’arbre.",
+        "Méria du mélèze (Meria laricis) : aiguilles jaune-brun, d’abord en bas puis sur tout l’arbre, et pointe des aiguilles rougie. Aucun point noir ni aucune ligne visible à l’œil nu sur l’aiguille.",
+        "Taches brunes des aiguilles (Mycosphaerella laricina) : le bas de l’arbre est touché et le sommet reste souvent vert. Les aiguilles portent des zones rouges à brunes avec de petits points noirs.",
+        "Rouge du mélèze (Hypodermella laricis) : points noirs bien nets, en forme de lentille, alignés sur une seule ligne. Souvent une ligne noire à la base de l’aiguille. L’aiguille jaunit puis rougit avant de tomber.",
+        "Lophodermium laricinum : points noirs peu visibles, irréguliers et en désordre, avec plusieurs lignes noires fines en travers de l’aiguille."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un printemps pluvieux.",
+        "Un arbre jeune (semis naturel, jeune plant, plant de pépinière), qui souffre bien plus qu’un arbre adulte."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "sources": [
+        {
+          "source": "ephytia-pathologies-foliaires-meleze",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-06"
+    }
+  ]
+}

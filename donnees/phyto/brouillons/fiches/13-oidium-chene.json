@@ -1,0 +1,242 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-oidium-chene",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Oïdium du chêne (Erysiphe alphitoides et Erysiphe quercicola), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19061/Forets-Oidium-du-chene",
+      "nature": "officielle",
+      "publieeLe": "2024-07-30",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "oidium-chene",
+      "nomCommun": "Oïdium du chêne",
+      "nomScientifique": "Erysiphe alphitoides et Erysiphe quercicola",
+      "categorie": "maladie",
+      "agentCausal": "Deux champignons, Erysiphe alphitoides et Erysiphe quercicola. La page appelle aussi la maladie le « blanc » du chêne.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Le feutrage blanc se voit à la fin du printemps. Le champignon se développe le mieux en été, par temps sec. Plus rarement, à l’automne, de petits points noirs apparaissent sur les feuilles tombées au sol.",
+      "autresEssences": "La page nomme aussi le hêtre et le châtaignier comme hôtes possibles. Parmi les chênes qui perdent leurs feuilles en hiver, le chêne tauzin et le chêne pédonculé sont les plus sensibles, et le chêne rouge serait résistant. Les chênes qui gardent leurs feuilles toute l’année sont peu sensibles.",
+      "periodeDebutMois": 5,
+      "periodeFinMois": 10,
+      "explicationCourte": "Maladie causée par un champignon, surtout sur le chêne. À la fin du printemps, un feutrage blanc couvre les deux faces des feuilles. Les feuilles sèchent, brunissent et tombent tôt. Les jeunes chênes sont les plus atteints.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les feuilles se dessèchent, plus ou moins vite, et surtout celles des pousses d’août. Dans les jeunes plantations, l’attaque peut être très forte et affaiblir beaucoup les jeunes arbres.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "feuille",
+        "rameau"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes chênes, car c’est sur eux que le champignon fait le plus de dégâts et qu’il peut les affaiblir fortement.",
+      "prevention": null,
+      "commentCaArrive": "Dès le début de la végétation, le champignon envahit les jeunes pousses. Il trouve ses meilleures conditions dans les jeunes plantations, en été, quand le temps est sec et coupé de pluies d’orage. Les endroits ensoleillés sont plus exposés. Les gelées tardives l’aident aussi.",
+      "gestion": "Le champignon passe l’hiver caché entre les écailles des bourgeons de la pousse d’août. Plus rarement, il le passe sous forme de petits points noirs sur les feuilles tombées au sol. Pendant la saison, il produit des spores en grande quantité, et c’est surtout le vent qui les emporte.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "feuille",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [
+            "face_superieure",
+            "face_inferieure"
+          ],
+          "poids": "cardinal",
+          "libelle": "À la fin du printemps, un feutrage blanc caractéristique sur les deux faces des feuilles."
+        },
+        {
+          "nature": "signe",
+          "partie": "rameau",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois, le même feutrage blanc sur les pousses."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles sèchent et brunissent sur l’arbre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le dessèchement, plus ou moins rapide, touche surtout les pousses d’août."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles desséchées tombent avant l’heure."
+        },
+        {
+          "nature": "signe",
+          "partie": "feuille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Plus rarement, à l’automne, de petits points noirs ronds sur les feuilles tombées au sol."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "occasionnel"
+        },
+        {
+          "taxon": "castanea",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Un feutrage blanc sur les deux faces des feuilles, et parfois sur les pousses. C’est le signe caractéristique de la maladie.",
+        "Les feuilles sèchent et brunissent sur l’arbre, puis elles tombent avant l’heure.",
+        "Les pousses d’août sont les plus touchées par le dessèchement.",
+        "Plus rarement, à l’automne, de petits points noirs ronds sur les feuilles tombées au sol."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un endroit ensoleillé.",
+        "Une jeune plantation, où le champignon est particulièrement virulent.",
+        "Un été sec, coupé de pluies d’orage.",
+        "Les gelées tardives.",
+        "Une essence sensible : le chêne tauzin et le chêne pédonculé sont les plus sensibles."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "sources": [
+        {
+          "source": "ephytia-oidium-chene",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants",
+            "gravite_selon_la_source",
+            "comment_ca_arrive",
+            "quand_ca_se_voit",
+            "autres_essences"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Oak%20Mildew.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/oidium-chene-feuille.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Roger Griffith, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Feutrage blanc sur les feuilles d’un chêne pédonculé."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Young%20oak%20with%20mildew%20%282144188229%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/oidium-chene-ensemble.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de Gilles San Martin, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Un jeune chêne entièrement couvert de feutrage blanc."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cleistothecium%20of%20powdery%20mildew%20fungi%20Microsphaera%20alphitoides%20on%20the%20leave%20of%20common%20oak.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/oidium-chene-feuille-fructification.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de Gubin Olexander, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Au microscope, une des petites fructifications noires du champignon, prise sur une feuille de chêne pédonculé."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 3,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-07-30"
+    }
+  ]
+}

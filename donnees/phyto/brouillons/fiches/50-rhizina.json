@@ -1,0 +1,206 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rhizina",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Rhizina (Rhizina undulata), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/24096/Forets-Rhizina",
+      "nature": "officielle",
+      "publieeLe": "2022-07-25",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rhizina",
+      "nomCommun": "Rhizina",
+      "nomScientifique": "Rhizina undulata",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Rhizina undulata, qui s’attaque aux racines.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "ensemble"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "Le champignon s’attaque surtout aux pins. La page cite aussi les autres conifères, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon des racines des pins et des autres conifères, surtout après un incendie. Les arbres meurent assez vite, par groupes en rond. On le reconnaît à des croûtes bosselées brun-fauve, au bord jaunâtre, posées sur le sol.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "L’arbre attaqué meurt assez vite. Les arbres meurent par groupes, en rond. Ces ronds couvrent parfois jusqu’à une dizaine d’ares, mais c’est exceptionnel. Le champignon peut aussi faire périr les jeunes semis.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "racine",
+        "ensemble"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. Après un incendie, attendez au moins deux ans avant de replanter des résineux, sinon les jeunes plants risquent de périr. Devant des arbres morts en rond, cherchez au sol les croûtes du champignon, ou ses cordons sur les racines, car d’autres maladies des racines tuent aussi les arbres en rond.",
+      "prevention": "Après un incendie, la page recommande d’attendre au moins deux ans avant de reboiser en résineux, pour éviter que les semis ne périssent.",
+      "commentCaArrive": "Les spores sortent du dessus du champignon. Elles germent quand elles sont chauffées un court moment, vers 40 à 45 °C : c’est sans doute pourquoi le champignon s’installe surtout là où il y a eu un feu. Il attaque de préférence des arbres de 20 à 30 ans, mais il peut aussi faire périr les semis.",
+      "gestion": null,
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "racine",
+          "motif": "carpophore",
+          "couleurs": [
+            "brun",
+            "jaune",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Posées sur le sol, parfois à plusieurs mètres des troncs, des croûtes bosselées de forme irrégulière, brun-fauve, au bord jaunâtre, jusqu’à 10 cm de large. Elles noircissent en vieillissant."
+        },
+        {
+          "nature": "signe",
+          "partie": "racine",
+          "motif": "carpophore",
+          "couleurs": [
+            "blanc",
+            "jaune"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "frequent",
+          "libelle": "Le dessous de ces croûtes, blanc jaunâtre, est collé au sol et relié aux racines malades par de fins cordons blanchâtres."
+        },
+        {
+          "nature": "signe",
+          "partie": "racine",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Parfois, sur les racines atteintes, des cordons jaunâtres formés par le champignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ensemble",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [
+            "en_plages"
+          ],
+          "poids": "frequent",
+          "libelle": "Des arbres morts groupés en rond. L’arbre attaqué meurt assez vite."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des arbres morts groupés en rond.",
+        "Posées sur le sol, parfois à plusieurs mètres des troncs, des croûtes bosselées de forme irrégulière, brun-fauve, au bord jaunâtre. Elles atteignent 10 cm de large et noircissent en vieillissant.",
+        "Leur dessous, blanc jaunâtre, est collé au sol et relié aux racines malades par de fins cordons blanchâtres.",
+        "Parfois, sur les racines atteintes, des cordons jaunâtres formés par le champignon."
+      ],
+      "criteresExclusion": [
+        "D’autres maladies des racines tuent aussi les arbres en rond, comme l’armillaire ou le fomès. La page conseille de chercher les fructifications ou le champignon sur les racines pour les distinguer."
+      ],
+      "facteursFavorisants": [
+        "Un sol acide.",
+        "Une zone passée par le feu : le champignon y semble plus agressif.",
+        "Des arbres de 20 à 30 ans."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2022-07-25",
+      "sources": [
+        {
+          "source": "ephytia-rhizina",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "prevention"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2006-10-19%20Rhizina%20undulata%201.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rhizina-racine.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Andreas Kunze, via Wikimedia Commons",
+          "partie": "racine",
+          "legende": "Les croûtes brunes et bosselées du champignon, posées sur le sol au pied d’un épicéa."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rhizina%20undulata.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rhizina-racine-2.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Sasata, via Wikimedia Commons",
+          "partie": "racine",
+          "legende": "Le champignon sur un sol brûlé, au Canada : les croûtes noircissent en vieillissant."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

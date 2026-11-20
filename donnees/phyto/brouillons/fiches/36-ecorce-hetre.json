@@ -1,0 +1,196 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-ecorce-hetre",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Maladie de l’écorce du hêtre (Neonectria coccinea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20414/Forets-Maladie-de-l-ecorce-du-hetre",
+      "nature": "officielle",
+      "publieeLe": "2025-07-31",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "ecorce-hetre",
+      "nomCommun": "Maladie de l’écorce du hêtre",
+      "nomScientifique": "Neonectria coccinea",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Neonectria coccinea. Sous sa forme asexuée, il porte le nom de Cylindrocarpon candidum.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "ecorce",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les fructifications se voient sur l’écorce dès l’automne. La contamination se fait pendant le repos de la végétation, et les spores de l’autre forme du champignon apparaissent dès le printemps.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le hêtre.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie du hêtre causée par un champignon qui profite des blessures de l’écorce, souvent après une attaque de cochenille. Le tronc porte des taches qui suintent un liquide noirâtre, puis de petites boules rouge orangé groupées sur l’écorce. Sur un arbre affaibli, il peut faire le tour du tronc et tuer l’arbre.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "L’arbre peut flétrir et mourir quand le champignon s’installe en masse : après une forte attaque de cochenilles, sur un arbre déjà affaibli par la sécheresse ou par des problèmes de nutrition minérale, ou sur un vieil arbre. Sur un arbre affaibli, il peut faire tout le tour du tronc sous l’écorce. Une fois l’écorce abîmée, des champignons de pourriture risquent fort de s’installer et de déprécier vite le tronc sur pied.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "L’écorce abîmée ouvre la porte à des champignons de pourriture, qui peuvent vite abîmer le bois du tronc encore debout.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "ecorce",
+        "tronc"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les hêtres attaqués par la cochenille, ceux qui souffrent de la sécheresse et les vieux arbres, car c’est sur eux que le champignon peut tuer l’arbre.",
+      "prevention": null,
+      "commentCaArrive": "C’est un parasite des arbres affaiblis. Il s’installe dans l’écorce à la faveur de blessures, par exemple après une attaque de la cochenille Cryptococcus fagisuga. La contamination se fait pendant le repos de la végétation. Sous l’écorce, il tue la couche vivante, et la sève s’accumule puis suinte en noir sur le tronc. Quand l’arbre se défend, il forme des chancres.",
+      "gestion": "Les fructifications se forment dans les creux de l’écorce. Par temps humide, elles libèrent leurs spores toute l’année. Dès le printemps, l’autre forme du champignon produit d’autres spores, qui ruisselleraient le long du tronc et feraient de nouvelles plaies sur le même arbre.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Taches qui suintent un liquide noirâtre sur le tronc : c’est de la sève qui s’accumule là où le champignon a tué la couche vivante sous l’écorce."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "necrose",
+          "couleurs": [
+            "brun",
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sous la tache, les tissus sont brun orangé et ont une odeur caractéristique."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [
+            "rouge",
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Dès l’automne, petites boules rouge orangé de 0,3 mm, groupées par 5 à 35 sur un coussinet orangé : ce sont les fructifications du champignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Des chancres dans l’écorce, là où l’arbre s’est défendu."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "L’arbre flétrit et peut mourir quand le champignon s’installe en masse."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "fagus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des taches qui suintent un liquide noirâtre sur le tronc.",
+        "Sous ces taches, les tissus sont brun orangé, avec une odeur caractéristique.",
+        "Dès l’automne, de petites boules rouge orangé de 0,3 mm sur l’écorce, groupées par 5 à 35 sur un coussinet orangé : ce sont les fructifications du champignon.",
+        "Le suintement noirâtre seul ne suffit pas : il faut voir ces fructifications, et aucune galerie sous l’écorce."
+      ],
+      "criteresExclusion": [
+        "Un écoulement noirâtre sur le tronc peut avoir d’autres causes. La page demande de vérifier la présence des fructifications et l’absence d’autres dégâts, comme des galeries sous l’écorce.",
+        "D’autres Neonectria lui ressemblent, en particulier Neonectria ditissima, qui cause le chancre de l’écorce du tronc."
+      ],
+      "facteursFavorisants": [
+        "Les blessures de l’écorce, en particulier après une attaque de la cochenille Cryptococcus fagisuga.",
+        "Un arbre affaibli par la sécheresse ou par des problèmes de nutrition minérale.",
+        "Les vieux arbres.",
+        "Le temps humide, qui permet aux spores de se disperser."
+      ],
+      "informationsRequises": [
+        "Une photo rapprochée de l’écorce qui montre les fructifications : de petites boules rouge orangé groupées.",
+        "Savoir s’il y a d’autres dégâts sur le tronc, comme des galeries sous l’écorce."
+      ],
+      "methodeConfirmation": "Seul un laboratoire de pathologie peut dire avec certitude de quelle espèce il s’agit.",
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-07-31",
+      "sources": [
+        {
+          "source": "ephytia-ecorce-hetre",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants",
+            "impact_mecanique",
+            "methode_confirmation",
+            "informations_requises"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nectria%20coccinea%20a1%20(1).jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/ecorce-hetre-ecorce.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Les fructifications rouges du champignon sur l’écorce d’une branche de hêtre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nectria%20coccinea%201.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/ecorce-hetre-ecorce-2.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "De très près, les petites boules rouge orangé du champignon, groupées sur l’écorce. L’auteur ne précise pas l’essence de l’arbre."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

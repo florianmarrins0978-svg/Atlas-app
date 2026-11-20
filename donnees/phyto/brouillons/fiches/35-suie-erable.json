@@ -1,0 +1,216 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-suie-erable",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Maladie de la suie de l’érable (Cryptostroma corticale), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20413/Forets-Maladie-de-la-suie-de-l-erable",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "suie-erable",
+      "nomCommun": "Maladie de la suie de l’érable",
+      "nomScientifique": "Cryptostroma corticale",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Cryptostroma corticale.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "ecorce",
+        "rameau",
+        "feuille",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les feuilles tombent en été. Les poussées de la maladie arrivent 1 à 3 ans après un été chaud et sec.",
+      "autresEssences": "La page cite l’érable sycomore comme hôte habituel, et indique que d’autres érables peuvent être atteints.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie de l’érable, surtout du sycomore, causée par un champignon. Sous l’écorce qui se boursoufle et se détache, on trouve une couche de spores noires, comme de la suie. Des rameaux sèchent et les feuilles tombent en été. Elle frappe les arbres les plus exposés à la sécheresse et à la chaleur.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Des rameaux sèchent, et l’arbre perd ses feuilles en été, sur une partie ou sur tout le houppier. Dans un arbre mort, ou dans les parties mortes d’un arbre, le champignon envahit tout le bois. Le bois d’un arbre vivant lui résiste plus ou moins, et un arbre vivant infecté peut survivre à la maladie. Le bois atteint change de couleur.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "ecorce",
+        "tronc",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Après un été chaud et sec, surveillez pendant trois ans les érables les plus exposés à la sécheresse et à la chaleur, car c’est là que la maladie repart.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon entre sans doute par de petites blessures, puis il se développe dans le bois. La maladie frappe les arbres les plus exposés à la sécheresse et à la chaleur. Le bois atteint ne bloque pas la sève : la chute des feuilles vient sans doute de toxines du champignon.",
+      "gestion": "La maladie se répand surtout par les spores, que le vent transporte. Juste sous l’écorce, le champignon forme une couche de spores sèches, comme de la suie, d’environ 1 mm d’épaisseur. Quand l’écorce se craquelle, elle libère ces spores dans l’air.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "L’écorce se détache facilement et laisse voir une couche de « suie noire » : ce sont les spores du champignon, d’un noir verdâtre à brunâtre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’écorce se boursoufle."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Chancres et boursouflures sur le tronc."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des rameaux sèchent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "face_superieure"
+          ],
+          "poids": "frequent",
+          "libelle": "Sur les rameaux qui sèchent, les feuilles brunissent sur le dessus."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur les rameaux qui sèchent, les feuilles s’enroulent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "En été, les feuilles tombent sur une partie du houppier ou sur tout le houppier."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun",
+            "vert_anormal",
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Le bois change de couleur : il vire au brun verdâtre ou au jaune."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "acer",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sous l’écorce qui se boursoufle et se détache facilement, une couche de « suie noire » : ce sont les spores du champignon.",
+        "Cette couche sèche fait environ 1 mm d’épaisseur, d’un noir verdâtre à brunâtre.",
+        "Des rameaux sèchent, et leurs feuilles s’enroulent et brunissent sur le dessus.",
+        "En été, les feuilles tombent sur une partie ou sur la totalité du houppier.",
+        "Le bois change de couleur : il vire au brun verdâtre ou au jaune."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "La sécheresse et la chaleur : la maladie touche les arbres qui y sont le plus exposés.",
+        "Un été chaud et sec : les poussées de la maladie arrivent 1 à 3 ans après.",
+        "Les petites blessures, par où le champignon entre sans doute."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-suie-erable",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cryptostroma%20corticale%20(Duisburg,%20Deutschland)%201.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/suie-erable-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Björn Sothmann (bjoerns, iNaturalist), via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Sur le tronc d’un érable, l’écorce est tombée et laisse voir la couche noire de spores, comme de la suie."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cryptostroma%20corticale%20(Duisburg,%20Deutschland)%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/suie-erable-ecorce.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Björn Sothmann (bjoerns, iNaturalist), via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "De près, le champignon : la couche de spores sombres, entre les morceaux d’écorce d’un érable."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

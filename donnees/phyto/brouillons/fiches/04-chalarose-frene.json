@@ -1,0 +1,227 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chalarose-frene",
+      "organisme": "INRAE, Ephytia (auteurs : Département de la santé des forêts, et C. Husson, DSF et DGAL)",
+      "titre": "Chalarose du frêne (Hymenoscyphus fraxineus), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20407/Forets-Chalarose-du-frene",
+      "nature": "officielle",
+      "publieeLe": "2025-05-22",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "fraxinus",
+      "nomScientifique": "Fraxinus",
+      "nomCommun": "Frêne",
+      "article": "un",
+      "synonymes": [
+        "frênes",
+        "frêne commun",
+        "frêne élevé",
+        "frêne oxyphylle"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chalarose-frene",
+      "nomCommun": "Chalarose du frêne",
+      "nomScientifique": "Hymenoscyphus fraxineus",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Hymenoscyphus fraxineus, qui porte aussi le nom de Chalara fraxinea. Il vient d’Asie de l’Est. Il s’est répandu en Europe depuis les années 1990, et en France on l’a vu pour la première fois en 2008, dans le Nord-Est. Il a ensuite gagné l’ouest et le sud d’environ 60 km par an.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "rameau",
+        "branche",
+        "collet",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les spores partent avec le vent à partir de mai et juin. Les taches sèches sur les feuilles se voient en été, et le champignon gagne les pousses et les rameaux à partir de la fin de l’été. Au printemps suivant, de petites fructifications blanchâtres apparaissent sur les restes de feuilles au sol.",
+      "autresEssences": "La page ne nomme que des frênes. En Asie de l’Est, d’où vient le champignon, il vit sur le frêne de Mandchourie et le frêne de Chine. En Europe, le frêne commun et le frêne oxyphylle sont très sensibles. Le frêne à fleurs (Fraxinus ornus), lui, résiste bien. Les frênes du pourtour méditerranéen ne sont pas malades : l’été y est trop chaud et trop sec pour que les rameaux s’infectent.",
+      "periodeDebutMois": 5,
+      "periodeFinMois": 10,
+      "explicationCourte": "Maladie causée par un champignon venu d’Asie, sur le frêne. Les feuilles ont des taches sèches en été, les rameaux et les branches meurent, et le houppier se dégrade. Les jeunes arbres en meurent souvent.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Les dégâts sont sévères. Les arbres de tous âges sont touchés, du jeune semis au vieil arbre, et plus l’arbre est jeune, plus il est fragile. Là où la maladie est très présente, environ 30 % des arbres de moins de 5 cm de diamètre meurent chaque année, et 10 % de ceux qui font de 5 à 25 cm. Les dégâts augmentent avec les années de présence de la maladie dans la région. Les frênes de haie, de bord de rivière, ou isolés dans un parc ou un jardin, sont en bien meilleur état, et le long des rues l’impact est très faible. Le frêne commun peut se maintenir s’il est mélangé à d’autres arbres et en fait moins de 20 %.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Des rameaux et des branches meurent. Les parties mortes au collet sont le signe d’un arbre très affaibli. L’armillaire, un champignon des racines, s’y installe souvent et abîme le bois plus vite. Rien n’est dit du risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "rameau",
+        "collet",
+        "houppier",
+        "feuille"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. Les conseils donnés visent la forêt : ne plus planter de frêne commun, et remplacer les peuplements de frêne pur, qui sont voués à l’échec. Le frêne ne disparaîtra pas, parce que certains arbres tolèrent la maladie : ceux-là se gardent, ce sont eux qui feront les frênes de demain. Et les frênes de haie, de bord de rivière ou de jardin s’en sortent bien mieux que ceux de la forêt.",
+      "prevention": null,
+      "commentCaArrive": "Les spores sont portées par le vent à partir de mai et juin. Elles se posent sur les feuilles, y germent, et font des taches sèches en été. À partir de la fin de l’été, le champignon passe de la feuille à la pousse puis au rameau, et la partie morte démarre à l’endroit où la feuille s’attache. Les spores peuvent aussi entrer au collet de l’arbre par les lenticelles, les petits pores de l’écorce, et y faire une partie morte en forme de flamme, surtout dans les frênaies denses et les sols humides. Ce qui favorise la maladie, ce sont les sols humides, les étés tempérés et arrosés, et les bois où le frêne dépasse 20 % des arbres. À l’inverse, le champignon supporte mal les étés chauds et secs : au-delà de 30 à 35 °C, il survit mal.",
+      "gestion": "Le champignon passe l’hiver au sol, sur la nervure principale et la queue des feuilles tombées (ce qu’on appelle le rachis). Il y forme une plaque noire qui le protège. Au printemps, de petites fructifications blanchâtres poussent sur ces rachis et libèrent les spores, que le vent emporte. Là où les feuilles ne s’accumulent pas au pied de l’arbre, comme le long d’une rue sur un sol artificiel, le cycle ne se fait pas en entier : sans feuilles au sol, il ne se forme presque plus de spores.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "En été, des taches sèches brunâtres sur les feuilles."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Des parties mortes de l’écorce sur les rameaux, qui démarrent à l’endroit où une feuille s’attache."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "decoloration",
+          "couleurs": [
+            "orange",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les jeunes pousses et les rameaux atteints prennent une couleur brun orangé."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Un aspect de chancre sur les rameaux atteints."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Des rameaux et des branches qui meurent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Un houppier très abîmé, quand les feuilles et les rameaux s’infectent en grand nombre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "collet",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "possible",
+          "libelle": "Au collet, une partie morte en forme de flamme. Elle se voit sur des arbres déjà grands, dans les frênaies denses et très infectées, et c’est le signe d’une maladie très avancée."
+        },
+        {
+          "nature": "signe",
+          "partie": "feuille",
+          "motif": "pustule",
+          "couleurs": [
+            "blanc",
+            "noir"
+          ],
+          "localisations": [
+            "nervure"
+          ],
+          "poids": "possible",
+          "libelle": "Au printemps, de petites fructifications blanchâtres sur les restes de feuilles au sol, posées sur une plaque noire."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "fraxinus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les jeunes pousses atteintes prennent une couleur brun orangé.",
+        "Sur le rameau, la partie morte démarre à l’endroit où une feuille s’attache.",
+        "Au printemps, de petites fructifications blanchâtres sur les restes de feuilles au sol, posées sur une plaque noire.",
+        "Au collet d’un arbre déjà grand, une partie morte en forme de flamme."
+      ],
+      "criteresExclusion": [
+        "Le frêne à fleurs résiste bien à la maladie.",
+        "Sur le pourtour méditerranéen, la page indique que les frênes ne sont pas malades, l’été y étant trop chaud et trop sec."
+      ],
+      "facteursFavorisants": [
+        "Les sols humides.",
+        "Les étés tempérés et arrosés.",
+        "Les bois où le frêne dépasse 20 % des arbres.",
+        "La jeunesse de l’arbre : plus il est jeune, plus il est fragile.",
+        "Les feuilles qui s’accumulent au pied de l’arbre, d’où repartent les spores au printemps.",
+        "Une maladie présente depuis longtemps dans la région : les dégâts augmentent avec les années."
+      ],
+      "informationsRequises": [
+        "Une photo du collet de l’arbre, pour chercher une partie morte en forme de flamme.",
+        "Une photo du houppier, pour voir combien de rameaux et de branches sont morts."
+      ],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-05-22",
+      "sources": [
+        {
+          "source": "ephytia-chalarose-frene",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "impact_mecanique",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hymenoscyphus%20fraxineus%2085692473.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chalarose-frene-rachis.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de Calum McLennan, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "De petites fructifications blanchâtres sur la nervure noircie d’une feuille tombée au sol."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 3,
+      "noteFrequence": 3
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-necroses-cecidomyies",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Nécroses chancreuses à cécidomyies (Resseliella), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27472/Forets-Necroses-chancreuses-a-cecidomyies",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "necroses-cecidomyies",
+      "nomCommun": "Nécroses chancreuses à cécidomyies",
+      "nomScientifique": "Resseliella",
+      "categorie": "ravageur",
+      "agentCausal": "Une suite d’attaques. D’abord des pics, surtout le pic épeiche et le pic tridactyle, creusent des rangées de petits trous dans l’écorce. Puis une cécidomyie, un insecte diptère (de l’ordre des mouches) du genre Resseliella, pond dans ces encoches, et ses larves forment la partie morte sous l’écorce. Des champignons peuvent ensuite entrer par la plaie, mais la page juge leur rôle facultatif et très secondaire.",
+      "agentType": "insecte",
+      "partiesAtteintes": [
+        "tronc",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Les pics creusent leurs trous surtout au printemps, quand la sève coule, et peut-être aussi en été. Les plaies se referment en général en 4 à 5 ans.",
+      "autresEssences": "La page ne nomme aucun autre arbre que le chêne sessile et le chêne pédonculé.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Plaies sur le tronc des jeunes chênes, dues à une suite d’attaques. Des pics creusent des rangées de petits trous autour du tronc, puis une cécidomyie pond dans ces trous et ses larves forment une partie morte sous l’écorce. Les plaies se referment en 4 à 5 ans, et l’arbre n’en meurt pas.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Les arbres n’en meurent pas, et leur vigueur ne semble pas vraiment touchée. Comme seuls les jeunes arbres sont atteints, la trace reste au cœur du futur tronc, où le bois peut changer de couleur. Ces marques abîment peu la qualité du bois. L’avenir des jeunes peuplements ne semble pas compromis.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "tronc",
+        "ecorce"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour ces dégâts. Regardez si la plaie se referme : une fois cicatrisée, sans chancre actif, il n’y a plus de risque que ça se propage.",
+      "prevention": null,
+      "commentCaArrive": "Des pics creusent de petits trous, souvent en losange, en rangées tout autour du tronc des jeunes chênes vivants. Au printemps, ils font ainsi couler la sève pour la lécher et attraper les insectes qu’elle attire. Une cécidomyie peut ensuite pondre dans ces encoches. Ses larves entrent dans la couche vivante sous l’écorce et y forment souvent une partie morte, en forme de chancre. Comme toute blessure, la plaie peut aussi laisser entrer des champignons qui aggravent les choses.",
+      "gestion": "La cécidomyie ne vient pas à chaque fois après les pics. Son passage est très rapide, et on l’observe rarement. Quand la plaie est refermée et qu’aucun chancre n’est actif, rien ne se propage plus.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "perforation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Rangées horizontales assez régulières de petits trous, souvent en losange, tout autour du tronc de jeunes chênes : ce sont les trous des pics."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sous ces trous, une partie morte de la couche vivante, souvent en forme de chancre, formée par les larves de la cécidomyie."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Au printemps, la sève coule des trous creusés par les pics."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "deformation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "En 4 à 5 ans, des bourrelets referment la plaie et laissent une cicatrice d’écorce tourmentée."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "decoloration",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur une coupe de la tige, la trace forme un « T », et le bois du cœur peut avoir changé de couleur."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur le tronc de jeunes chênes, des rangées horizontales assez régulières de petits trous, souvent en losange, tout autour du tronc : ce sont les trous des pics.",
+        "À ces endroits, des parties mortes sous l’écorce, en forme de chancre.",
+        "On les trouve surtout dans les jeunes peuplements serrés, nés de semis naturels.",
+        "En 4 à 5 ans, des bourrelets referment la plaie et ne laissent qu’une cicatrice d’écorce tourmentée.",
+        "Sur une coupe de la tige, la trace forme un « T »."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Les peuplements serrés : les semis naturels très denses sont les plus touchés, alors que les plantations peu denses ne le sont jamais.",
+        "Les jeunes arbres (stades fourré, gaulis et bas perchis). Sur des arbres plus âgés, c’est rare, et moins visible sur une écorce plus crevassée.",
+        "Les trous creusés par les pics, où la cécidomyie vient pondre."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-necroses-cecidomyies",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ringelbaum%20(Kirkel)%202017-001.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/necroses-cecidomyies-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Simon Mannweiler, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Des rangées de petits trous de pic tout autour d’un tronc, en Allemagne. L’auteur ne précise pas l’essence de l’arbre."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 2
+    }
+  ]
+}

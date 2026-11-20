@@ -1,0 +1,319 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-rhizosphaera-resineux",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Rhizophaera sp. des résineux (Rhizosphaera sp.), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18700/Forets-Rhizophaera-sp-des-resineux",
+      "nature": "officielle",
+      "publieeLe": "2024-12-09",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "abies",
+      "nomScientifique": "Abies",
+      "nomCommun": "Sapin",
+      "article": "un",
+      "synonymes": [
+        "sapins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-alba",
+      "nomScientifique": "Abies alba",
+      "nomCommun": "Sapin pectiné",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "abies-grandis",
+      "nomScientifique": "Abies grandis",
+      "nomCommun": "Sapin de Vancouver",
+      "article": "un",
+      "synonymes": [
+        "sapin grandissime"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "picea",
+      "nomScientifique": "Picea",
+      "nomCommun": "Épicéa",
+      "article": "un",
+      "synonymes": [
+        "épicéas"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-abies",
+      "nomScientifique": "Picea abies",
+      "nomCommun": "Épicéa commun",
+      "article": "un",
+      "synonymes": [
+        "épicéa"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "picea-sitchensis",
+      "nomScientifique": "Picea sitchensis",
+      "nomCommun": "Épicéa de Sitka",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pseudotsuga-menziesii",
+      "nomScientifique": "Pseudotsuga menziesii",
+      "nomCommun": "Douglas",
+      "article": "un",
+      "synonymes": [
+        "sapin de Douglas"
+      ],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-pinaster",
+      "nomScientifique": "Pinus pinaster",
+      "nomCommun": "Pin maritime",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "pinus-strobus",
+      "nomScientifique": "Pinus strobus",
+      "nomCommun": "Pin weymouth",
+      "article": "un",
+      "synonymes": [],
+      "rang": "espece",
+      "port": "conifere"
+    },
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    },
+    {
+      "code": "cedrus",
+      "nomScientifique": "Cedrus",
+      "nomCommun": "Cèdre",
+      "article": "un",
+      "synonymes": [
+        "cèdres"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "rhizosphaera-resineux",
+      "nomCommun": "Rhizosphaera des résineux",
+      "nomScientifique": "Rhizosphaera sp.",
+      "categorie": "maladie",
+      "agentCausal": "Des champignons du genre Rhizosphaera. La page cite trois espèces : Rhizosphaera kalkhoffii, Rhizosphaera oudemansii et Rhizosphaera pini. On ne leur connaît que leur forme asexuée.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "aiguille",
+        "houppier"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "La page nomme six groupes d’hôtes habituels, tous des résineux : les sapins, les épicéas, le douglas, les pins, les mélèzes et les cèdres.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignons des aiguilles des résineux, qui s’installent surtout sur des aiguilles déjà affaiblies. Les aiguilles brunissent puis tombent. Dessous, alignés le long des stomates, on voit de petits points noirs ronds avec un point blanc au centre.",
+      "gravite": "faible",
+      "graviteSelonLaSource": "Ces champignons accompagnent souvent des aiguilles qui rougissent, brunissent et sèchent, sans en être forcément la cause de départ. Les aiguilles tombent, en général en partie seulement. L’arbre peut s’en trouver affaibli, et il devient alors plus exposé aux ravageurs qui s’attaquent aux arbres en mauvais état.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "aiguille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Cherchez aussi ce qui affaiblit l’arbre (manque de lumière, manque d’eau, carence), car ces champignons s’installent surtout sur des aiguilles déjà en difficulté et ne sont souvent pas la cause de départ.",
+      "prevention": null,
+      "commentCaArrive": "Ces champignons vivent souvent dans l’aiguille sans la rendre malade, et profitent d’un arbre en difficulté. Ils s’installent surtout sur les aiguilles les plus vieilles, ou sur celles qui manquent de lumière, qui souffrent d’une carence en éléments minéraux ou de la pollution de l’air. Les extrêmes du climat, en particulier le manque d’eau, peuvent aussi les faire apparaître. Une fois installé, le champignon envahit vite l’aiguille.",
+      "gestion": "Les spores sortent des points noirs sous la forme d’une pâte blanche. La pluie et le vent les dispersent. Ces champignons vivent aussi sur les aiguilles mortes : on les trouve très souvent sur les aiguilles tombées au sol. Ils s’installent volontiers sur les branches basses, dans les peuplements peu éclaircis.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "aiguille",
+          "motif": "pustule",
+          "couleurs": [
+            "noir",
+            "blanc"
+          ],
+          "localisations": [
+            "face_inferieure"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sous l’aiguille, le long des stomates, de petits points noirs et ronds, avec au centre un point blanc par où sortent les spores."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles brunissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "aiguille",
+          "motif": "dessechement",
+          "couleurs": [
+            "rouge",
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les aiguilles rougissent ou brunissent, puis elles sèchent. Ces champignons y sont souvent associés sans en être forcément la cause."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les aiguilles tombent, en général en partie seulement."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-alba",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "abies-grandis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-abies",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "picea-sitchensis",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pseudotsuga-menziesii",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-pinaster",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "pinus-strobus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "larix",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "cedrus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Les aiguilles brunissent, puis elles tombent.",
+        "Sous l’aiguille, alignés le long des stomates (les petits pores de l’aiguille), de petits points noirs et ronds.",
+        "Au centre de chaque point noir, un petit point blanc : c’est par là que sortent les spores.",
+        "On les trouve surtout sur les aiguilles les plus vieilles, sur celles qui manquent de lumière, et sur les branches basses."
+      ],
+      "criteresExclusion": [
+        "Un brunissement des aiguilles peut venir d’un autre champignon, comme la rouille suisse sur le douglas.",
+        "Il peut aussi venir d’une cause qui n’est pas un parasite, comme le brunissement physiologique."
+      ],
+      "facteursFavorisants": [
+        "Des aiguilles âgées, ou qui manquent de lumière.",
+        "Une carence en éléments minéraux.",
+        "La pollution de l’air.",
+        "Les extrêmes du climat, surtout le manque d’eau.",
+        "Un peuplement peu éclairci, pour les branches basses."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-12-09",
+      "sources": [
+        {
+          "source": "ephytia-rhizosphaera-resineux",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 1
+    }
+  ]
+}

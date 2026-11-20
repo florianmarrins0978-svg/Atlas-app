@@ -1,0 +1,181 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-encre-chene",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Encre du chêne (Phytophthora cinnamomi ou Phytophthora cambivora), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19129/Forets-Encre-du-chene",
+      "nature": "officielle",
+      "publieeLe": "2024-04-19",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "encre-chene",
+      "nomCommun": "Encre du chêne",
+      "nomScientifique": "Phytophthora cinnamomi ou Phytophthora cambivora",
+      "categorie": "maladie",
+      "agentCausal": "Un organisme qui vit dans le sol, du groupe des oomycètes : Phytophthora cinnamomi ou Phytophthora cambivora. La page le range parmi les Chromista, et non parmi les champignons.",
+      "agentType": "inconnu",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "tronc",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Les coulures noires sur le tronc se voient mieux pendant la période de végétation.",
+      "autresEssences": "La page nomme le châtaignier comme hôte possible. Parmi les chênes, le chêne rouge semble le plus sensible. On connaît aussi quelques cas récents sur le chêne pédonculé, et quelques-uns sur le chêne liège, dans le Midi.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie des racines du chêne, causée par un organisme du sol. Elle monte dans le tronc depuis la base. Sur le tronc, on voit des coulures noires et une écorce bosselée de bourrelets, comme un chancre. Le chêne ne meurt pas, mais le bois du bas du tronc perd sa valeur.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les chênes atteints ne meurent pas. Mais à partir de l’âge de 20 ans, le bas du tronc perd sa valeur comme bois. La maladie peut monter à plus de 3 m dans le tronc : le cœur du bois se retrouve entouré d’une zone abîmée, brun foncé ou noire, qui ne vaut plus que pour le bois de chauffage. Le chêne rouge semble le plus sensible.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Le bois du tronc est abîmé jusqu’à plus de 3 m de haut. Rien n’est dit sur la tenue de l’arbre.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "tronc",
+        "ecorce",
+        "collet"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Le chêne n’en meurt pas : surveillez le bas du tronc d’une année sur l’autre, de préférence pendant la période de végétation, car c’est là que les coulures noires se voient le mieux.",
+      "prevention": null,
+      "commentCaArrive": "L’organisme se conserve dans le sol. Quand le sol est assez humide et assez chaud, il libère de minuscules spores qui nagent dans l’eau du sol et meurent au bout de quelques heures. Elles germent sur les jeunes racines en train de pousser. L’organisme entre dans les tissus vivants de la racine et les tue. Il s’installe dans la couche vivante sous l’écorce, celle qui fait grossir l’arbre, et il peut monter dans le tronc.",
+      "gestion": "L’organisme tient plusieurs années dans le sol, sous la forme de petits organes à paroi épaisse. Ses spores se déplacent dans l’eau du sol pour gagner les racines. En France, la plupart des cas connus sont dans le Sud-Ouest. Le froid de l’hiver semble limiter les régions où on le trouve.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [
+            "noir"
+          ],
+          "localisations": [
+            "base",
+            "le_long_du_tronc"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, des coulures noires, plus visibles pendant la période de végétation."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [
+            "base",
+            "au_collet"
+          ],
+          "poids": "cardinal",
+          "libelle": "L’écorce se bosselle de bourrelets de cicatrisation, et finit par ressembler à un chancre. Ce chancre démarre toujours au pied de l’arbre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "necrose",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les jeunes racines meurent : l’organisme tue leurs tissus vivants."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "possible",
+          "libelle": "Dans le bois du tronc, le cœur est entouré d’une zone abîmée de lésions et de cicatrices, brun foncé ou noire. Elle peut monter à plus de 3 m."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "castanea",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur le tronc, des coulures noires, qui se voient mieux pendant la période de végétation.",
+        "L’écorce est bosselée de bourrelets de cicatrisation, et prend l’aspect d’un chancre.",
+        "Ce chancre démarre toujours au pied de l’arbre.",
+        "Le chêne ne meurt pas."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Un sol assez humide et assez chaud.",
+        "Le chêne rouge, qui semble le plus sensible des chênes."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-04-19",
+      "sources": [
+        {
+          "source": "ephytia-encre-chene",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 2,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

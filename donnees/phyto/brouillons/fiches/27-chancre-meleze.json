@@ -1,0 +1,160 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-meleze",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Chancre du mélèze (Lachnellula wilkommii), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20423/Forets-Chancre-du-meleze",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "larix",
+      "nomScientifique": "Larix",
+      "nomCommun": "Mélèze",
+      "article": "un",
+      "synonymes": [],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-meleze",
+      "nomCommun": "Chancre du mélèze",
+      "nomScientifique": "Lachnellula wilkommii",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Lachnellula wilkommii.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "ecorce"
+      ],
+      "quandCaSeVoit": "Les spores sortent presque toute l’année, selon l’humidité et la température, et s’arrêtent quand il gèle. Au printemps, les branches atteintes sortent leurs aiguilles plus tard que les autres.",
+      "autresEssences": "La page cite le mélèze d’Europe comme hôte habituel, et ne nomme aucun autre arbre.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le mélèze. Il forme sur le tronc et les branches des chancres d’où coule de la résine, avec de petites coupes orangées sur leur pourtour. Un jeune mélèze meurt quand le chancre fait le tour de sa tige.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Un jeune mélèze meurt quand le chancre fait le tour de sa tige. Sur le tronc, les chancres gâtent la qualité du bois, et ces plaies se referment rarement. Les mélèzes plantés à basse altitude, sous un climat humide, sont les plus touchés.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Les chancres du tronc gâtent le bois et se referment rarement. Rien n’est dit de la solidité de l’arbre ni d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "tronc",
+        "branche"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez surtout les jeunes mélèzes, et ceux plantés à basse altitude sous un climat humide, qui sont les plus exposés : un chancre qui fait le tour d’une jeune tige la tue.",
+      "prevention": null,
+      "commentCaArrive": "Les spores germent dans une blessure de l’écorce : une fente due au gel, une piqûre d’insecte (de puceron surtout), un dégât de gibier. Le champignon pousse pendant les périodes douces de l’hiver. Au printemps, l’arbre forme autour de lui un bourrelet de liège qu’il ne peut pas traverser, mais qu’il contourne pour gagner les tissus voisins. Un nouveau bourrelet se forme chaque année, et au lieu de se refermer, la plaie devient un chancre.",
+      "gestion": "Les spores viennent des petites coupes orangées qui poussent sur le pourtour des chancres. Elles sortent presque toute l’année, selon l’humidité et la température, et s’arrêtent quand il gèle.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, des chancres d’où coule de la résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur les branches, des chancres d’où coule de la résine."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "ecoulement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "De la résine coule des chancres."
+        },
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "carpophore",
+          "couleurs": [
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur le pourtour des chancres, de petites fructifications en forme de coupe, orangées : c’est par elles que la maladie se propage."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "larix",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur le tronc et les branches, des chancres d’où coule de la résine.",
+        "Sur le pourtour des chancres, de petites fructifications en forme de coupe, orangées.",
+        "Au printemps, les branches atteintes sortent leurs aiguilles plus tard que les autres."
+      ],
+      "criteresExclusion": [
+        "Une déformation qui referme une blessure, quelle qu’en soit l’origine, peut ressembler à ce chancre."
+      ],
+      "facteursFavorisants": [
+        "Un mélèze planté à basse altitude, sous un climat humide.",
+        "Les blessures de l’écorce : fentes de gel, piqûres d’insectes (de pucerons surtout), dégâts de gibier.",
+        "Des périodes douces en hiver, pendant lesquelles le champignon pousse."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-meleze",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lehisev%C3%A4hk.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-meleze-ecorce.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Svencapoeira, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Les petites coupes du champignon, au cœur orangé, sur une écorce de mélèze."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

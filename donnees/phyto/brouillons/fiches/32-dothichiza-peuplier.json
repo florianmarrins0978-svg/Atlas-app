@@ -1,0 +1,167 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-dothichiza-peuplier",
+      "organisme": "INRAE, Ephytia",
+      "titre": "Dothichiza du peuplier (Discosporium populeum), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/20850/Forets-Dothichiza-du-peuplier",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "dothichiza-peuplier",
+      "nomCommun": "Dothichiza du peuplier",
+      "nomScientifique": "Discosporium populeum",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Discosporium populeum (Ascomycète, Sphaeropsidale). Les légendes des photos de la page l’appellent aussi Dothichiza.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "ecorce",
+        "tronc",
+        "branche"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "La page ne nomme aucun autre arbre que le peuplier.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le peuplier. Il entre par une blessure de l’écorce et forme une tache brune et sèche, un peu creusée, où l’écorce se fendille. Si la tache fait le tour de la tige, celle-ci meurt. Le champignon ne s’installe que sur un arbre stressé.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Les parties mortes peuvent faire tout le tour de la tige atteinte et la faire mourir. Le champignon profite d’un arbre affaibli : il ne s’installe que si l’arbre subit un stress, comme la sécheresse, un arbre mal adapté à son terrain ou un problème de racines. Quand ces conditions cessent, la maladie arrête en général de s’étendre.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "ecorce",
+        "tronc",
+        "branche"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Le champignon ne s’installe que sur un arbre stressé (sécheresse, terrain mal adapté, problème de racines), et la maladie arrête en général de s’étendre quand ce stress cesse : regardez d’abord ce qui affaiblit l’arbre.",
+      "methodeConfirmation": null,
+      "informationsRequises": [],
+      "prevention": null,
+      "commentCaArrive": "Le champignon entre par une blessure ou une lésion de l’écorce. Il envahit les tissus du dessous et les tue, ce qui creuse souvent l’écorce. Il ne s’installe que si l’arbre subit un stress : sécheresse, arbre mal adapté à son terrain, problème d’enracinement.",
+      "gestion": "Le champignon forme ses fructifications sur la partie morte. Les spores qui en sortent sont transportées par le vent ou la pluie.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Une tache brune et sèche sur l’écorce, un peu creusée par rapport au reste."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "fente",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’écorce se fendille sur la partie morte."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur les branches, la même tache brune, sèche et creusée."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "necrose",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "La partie morte peut faire tout le tour de la tige, qui meurt alors."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Les fructifications du champignon apparaissent sur la partie morte."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "populus",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Une tache brune et sèche sur l’écorce du tronc ou des branches, un peu creusée par rapport au reste.",
+        "L’écorce se fendille sur cette tache.",
+        "Les fructifications du champignon apparaissent sur la partie morte.",
+        "La tache peut faire tout le tour de la tige, qui meurt alors."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Une blessure ou une lésion de l’écorce.",
+        "Un stress de l’arbre : sécheresse, arbre mal adapté à son terrain, problème d’enracinement."
+      ],
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-dothichiza-peuplier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

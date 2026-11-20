@@ -1,0 +1,183 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-javart",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Javart (Diplodina castanea), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19059/Forets-Javart",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "javart",
+      "nomCommun": "Javart",
+      "nomScientifique": "Diplodina castanea",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Diplodina castanea.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "ecorce",
+        "tronc",
+        "branche"
+      ],
+      "quandCaSeVoit": null,
+      "autresEssences": "La page ne nomme aucun autre arbre que le châtaignier. Elle parle surtout des brins de taillis et des jeunes perches.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le châtaignier, surtout les brins de taillis et les jeunes perches. Des taches brunes allongées apparaissent sur l’écorce, au pied des tiges. L’écorce se fend puis tombe, et la tige peut sécher et mourir.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Les brins de taillis et les jeunes perches sèchent et meurent. Quand l’arbre arrive à se défendre, il forme des bourrelets autour de la plaie, et le chancre reste en place d’année en année. Quand il n’y arrive pas, le champignon fait tout le tour de la tige, qui sèche.",
+      "impactMecanique": "inconnu",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "ecorce",
+        "tronc"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les autres brins de la cépée, car la maladie passe d’un brin à l’autre.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon s’installe dans l’écorce des jeunes tiges et des brins de taillis, au pied des perches. Sous la tache, la couche vivante qui fait grossir la tige meurt. Il pourrait aussi rester caché dans les bourgeons sans donner de signe. Les peuplements affaiblis sont les plus exposés.",
+      "gestion": "Dans une cépée de taillis, la maladie passe d’un brin à l’autre. Au centre des taches, les fructifications mûres libèrent les spores. Ce sont surtout les blessures et les coupes de taille qui répandent la maladie, dans les peuplements affaiblis.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "tache",
+          "couleurs": [
+            "brun"
+          ],
+          "localisations": [
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Taches brunes allongées sur l’écorce, au pied des jeunes tiges et des brins de taillis."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "fente",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur la tache, l’écorce perd son éclat, se creuse et se fend."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "exfoliation_ecorce",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’écorce finit par se détacher et laisse le bois à nu."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au centre de la tache, petites pustules d’environ 1 mm sous l’écorce : ce sont les fructifications du champignon."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Une fois mûres, les fructifications laissent sortir un filament jaunâtre très fin, chargé de spores."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Quand l’arbre se défend, des bourrelets se forment l’un après l’autre autour de la plaie, et le chancre dure d’année en année."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Quand le champignon a fait le tour de la tige, le brin ou la jeune perche sèche et meurt."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "castanea",
+          "specificite": "strict"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Des taches brunes allongées sur l’écorce, au pied des jeunes tiges et des brins de taillis.",
+        "Sur ces taches, l’écorce devient terne, se creuse et se fend, puis elle tombe et laisse le bois à nu.",
+        "Au centre de la tache, de petites pustules d’environ 1 mm, sous l’écorce.",
+        "Une fois mûres, ces pustules laissent sortir un filament jaunâtre très fin, qui porte les spores."
+      ],
+      "criteresExclusion": [
+        "On trouve souvent avec lui un autre parasite des branches, Cryptodiaporthe castaneae (appelé Discella castaneae sous son autre forme). La page indique que certains auteurs le tiennent pour la même espèce."
+      ],
+      "facteursFavorisants": [
+        "Les blessures et les coupes de taille.",
+        "Les peuplements affaiblis."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-javart",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

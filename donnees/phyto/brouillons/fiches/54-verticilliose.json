@@ -1,0 +1,162 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-verticilliose",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Verticilliose (Verticillium dahliae), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/27454/Forets-Verticilliose",
+      "nature": "officielle",
+      "publieeLe": "2024-08-06",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "verticilliose",
+      "nomCommun": "Verticilliose",
+      "nomScientifique": "Verticillium dahliae",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon du sol, Verticillium dahliae.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "feuille",
+        "branche",
+        "tronc",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les feuilles jaunissent au printemps et tombent tôt. Les branches flétrissent en été.",
+      "autresEssences": "Parmi les arbres, la page ne nomme que les érables. Elle dit que la maladie touche aussi beaucoup de plantes herbacées, de vivaces et d’autres plantes à bois, sans les nommer.",
+      "periodeDebutMois": 3,
+      "periodeFinMois": 9,
+      "explicationCourte": "Maladie causée par un champignon du sol, qui touche surtout les érables. Il entre par les racines et bouche les vaisseaux de la sève. Les feuilles jaunissent au printemps et tombent tôt, et des branches flétrissent en été. Dans le bois d’une branche, on voit des stries brun-vert.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "L’arbre perd de sa vigueur. Des branches meurent, et l’arbre entier peut mourir, surtout quand c’est un jeune arbre planté.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Des branches meurent. Rien n’est dit sur la tenue de l’arbre ni sur la chute de ces branches.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "branche",
+        "feuille",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour cette maladie. Le champignon survit longtemps dans le sol : ne replantez pas d’arbres là où il y a déjà eu de la verticilliose, surtout sur d’anciennes terres agricoles. Avant de planter des érables, renseignez-vous sur ce qui a été cultivé avant sur le terrain. Vérifiez aussi l’état sanitaire des plants à leur sortie de pépinière.",
+      "prevention": "Ne pas replanter d’arbres là où il y a déjà eu de la verticilliose, en particulier sur d’anciennes terres agricoles. Vérifier ce qui a été cultivé sur le terrain avant d’y planter des érables. Surveiller l’état sanitaire des plants à leur sortie de pépinière.",
+      "commentCaArrive": "Le champignon vit dans le sol, où il survit plusieurs années. Quand il fait doux et humide, il forme des spores et des filaments qui entrent dans l’arbre par des blessures des racines. Il monte ensuite par les vaisseaux de la sève jusqu’aux branches. Les vaisseaux se bouchent, à cause de toxines faites par le champignon ou par l’arbre lui-même : le bois se colore en brun-vert, la sève ne passe plus, et l’arbre flétrit.",
+      "gestion": "Il passe d’un arbre à l’autre quand leurs racines se soudent entre elles. Sur les débris de plantes restés dans le sol, il tient de nombreuses années, sous la forme de petits amas de filaments. Transporter de la terre contaminée le disperse donc très bien vers des endroits sains.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "decoloration",
+          "couleurs": [
+            "brun",
+            "vert_anormal"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Dans le bois d’une branche, juste sous l’écorce, des stries brun-vert qui suivent les cernes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "En été, des branches flétrissent, en partie ou en entier, et elles peuvent mourir."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [
+            "jaune"
+          ],
+          "localisations": [
+            "toute_la_surface"
+          ],
+          "poids": "frequent",
+          "libelle": "Au printemps, les feuilles jaunissent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "defoliation",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les feuilles tombent tôt."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "acer",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Au printemps, les feuilles jaunissent et tombent tôt.",
+        "En été, des branches flétrissent, en partie ou en entier.",
+        "Dans le bois d’une branche, juste sous l’écorce, des stries brun-vert qui suivent les cernes."
+      ],
+      "criteresExclusion": [
+        "Une sécheresse peut donner des signes qui ressemblent."
+      ],
+      "facteursFavorisants": [
+        "Des températures douces et de l’humidité.",
+        "Des blessures sur les racines.",
+        "Un terrain où il y a déjà eu de la verticilliose, car le champignon survit longtemps dans le sol."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2024-08-06",
+      "sources": [
+        {
+          "source": "ephytia-verticilliose",
+          "champs": [
+            "conduite_recommandee",
+            "prevention",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [],
+      "noteImpact": 1,
+      "noteAgressivite": 2,
+      "noteFrequence": 1
+    }
+  ]
+}

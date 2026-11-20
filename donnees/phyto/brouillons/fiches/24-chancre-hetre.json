@@ -1,0 +1,180 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-hetre",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Chancre du hêtre (Neonectria ditissima), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18707/Forets-Chancre-du-hetre",
+      "nature": "officielle",
+      "publieeLe": "2025-07-31",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-hetre",
+      "nomCommun": "Chancre du hêtre",
+      "nomScientifique": "Neonectria ditissima",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Neonectria ditissima. Sous son autre forme de reproduction, il porte un second nom, Cylindrocarpon heteronema.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "ecorce",
+        "rameau",
+        "feuille"
+      ],
+      "quandCaSeVoit": "Le chancre se voit en toute saison, et le champignon peut fructifier toute l’année quand les conditions lui conviennent. Au printemps, les branches atteintes sortent leurs feuilles plus tôt. À l’automne, les feuilles sèchent au bout du rameau atteint. En hiver, les feuilles sèches restées sur l’arbre pendent.",
+      "autresEssences": "La page cite les hêtres comme hôtes habituels. Elle ajoute que d’autres feuillus peuvent être atteints, sans les nommer.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon, sur le hêtre. Il forme sur le tronc et les branches des chancres : des zones creusées et rougeâtres, bordées d’un bourrelet. Sur une jeune tige, un chancre qui grandit vite peut faire le tour de la tige et la tuer.",
+      "gravite": "vigilance",
+      "graviteSelonLaSource": "Un chancre sur le tronc gâte la qualité du bois. Sur une jeune tige, quand le chancre grandit vite, il peut en faire le tour et la tuer. Un chancre se referme rarement.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Un chancre sur le tronc gâte le bois. Rien n’est dit de la solidité de l’arbre ni d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "tronc",
+        "branche"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Surveillez les jeunes hêtres, surtout ceux qui poussent sous un arbre aux branches chancreuses : la pluie qui ruisselle y apporte souvent les spores, et un chancre qui grandit vite peut faire le tour d’une jeune tige et la tuer.",
+      "prevention": null,
+      "commentCaArrive": "Les spores entrent dans l’arbre par une ouverture naturelle (la cicatrice laissée par une feuille, une fente de l’écorce à l’ouverture des bourgeons) ou par une blessure (plaie d’élagage, grêle, fente de gel, frottement, piqûre d’insecte, dent de rongeur). Le champignon envahit les tissus vivants juste sous l’écorce. L’arbre réagit en formant un bourrelet autour de la partie morte, et c’est ce qui donne le chancre. Un air très humide favorise le champignon.",
+      "gestion": "Le vent et l’eau de pluie transportent les spores. Le champignon en forme autour des chancres, toute l’année si les conditions lui conviennent. La pluie qui ruisselle d’un arbre aux branches chancreuses contamine souvent les jeunes hêtres qui poussent dessous.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, une zone creusée et rougeâtre, bordée d’un bourrelet, qui déforme la tige « en col de Naja »."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur une branche, le même chancre : une zone creusée et rougeâtre, bordée d’un bourrelet."
+        },
+        {
+          "nature": "signe",
+          "partie": "tronc",
+          "motif": "pustule",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur le pourtour du chancre, de petits coussinets blanchâtres de 1 à 2 mm : les fructifications du champignon."
+        },
+        {
+          "nature": "symptome",
+          "partie": "rameau",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "À l’automne, les feuilles sèchent au bout du rameau atteint."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "En hiver, les feuilles sèches restées accrochées pendent, ce qui n’est pas leur position habituelle."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "fagus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sur le tronc ou une branche, une zone creusée et rougeâtre, bordée d’un bourrelet. La tige se déforme « en col de Naja ».",
+        "Sur le pourtour du chancre, de petits coussinets blanchâtres de 1 à 2 mm.",
+        "Au printemps, les branches qui portent un chancre sortent leurs feuilles plus tôt que les autres.",
+        "À l’automne, les feuilles sèchent au bout du rameau atteint.",
+        "En hiver, les feuilles sèches restées sur l’arbre pendent, ce qui n’est pas leur position habituelle."
+      ],
+      "criteresExclusion": [
+        "Une déformation qui referme une blessure, quelle qu’en soit l’origine, peut ressembler à ce chancre."
+      ],
+      "facteursFavorisants": [
+        "Un air très humide.",
+        "Les blessures de l’écorce : plaies d’élagage, grêle, fentes de gel, frottements, piqûres d’insectes, dents de rongeurs.",
+        "De jeunes hêtres qui poussent sous un arbre aux branches chancreuses : la pluie qui ruisselle y apporte les spores."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-07-31",
+      "sources": [
+        {
+          "source": "ephytia-chancre-hetre",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Neonectria%20ditissima%20sur%20Fagus%20sylvatica.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-hetre-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jean.claude, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Chancre sur le tronc d’un hêtre : l’écorce se boursoufle autour de la plaie."
+        }
+      ],
+      "noteImpact": 1,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-lignivores-feuillus",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Champignons lignivores des feuillus, rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18710/Forets-Champignons-lignivores-des-feuillus",
+      "nature": "officielle",
+      "publieeLe": "2015-11-10",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fagus",
+      "nomScientifique": "Fagus",
+      "nomCommun": "Hêtre",
+      "article": "un",
+      "synonymes": [
+        "hêtre commun",
+        "fayard"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "robinia",
+      "nomScientifique": "Robinia",
+      "nomCommun": "Robinier",
+      "article": "un",
+      "synonymes": [
+        "robiniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "populus",
+      "nomScientifique": "Populus",
+      "nomCommun": "Peuplier",
+      "article": "un",
+      "synonymes": [
+        "peupliers",
+        "peuplier noir",
+        "peuplier deltoïde",
+        "peuplier hybride",
+        "peuplier euraméricain"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "fraxinus",
+      "nomScientifique": "Fraxinus",
+      "nomCommun": "Frêne",
+      "article": "un",
+      "synonymes": [
+        "frênes",
+        "frêne commun",
+        "frêne élevé",
+        "frêne oxyphylle"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "tilia",
+      "nomScientifique": "Tilia",
+      "nomCommun": "Tilleul",
+      "article": "un",
+      "synonymes": [
+        "tilleuls"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "acer",
+      "nomScientifique": "Acer",
+      "nomCommun": "Érable",
+      "article": "un",
+      "synonymes": [
+        "érables"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "platanus",
+      "nomScientifique": "Platanus",
+      "nomCommun": "Platane",
+      "article": "un",
+      "synonymes": [
+        "platanes",
+        "platane commun",
+        "platane à feuilles d’érable"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "juglans",
+      "nomScientifique": "Juglans",
+      "nomCommun": "Noyer",
+      "article": "un",
+      "synonymes": [
+        "noyers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "betula",
+      "nomScientifique": "Betula",
+      "nomCommun": "Bouleau",
+      "article": "un",
+      "synonymes": [
+        "bouleaux"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "lignivores-feuillus",
+      "nomCommun": "Champignons lignivores des feuillus",
+      "nomScientifique": null,
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Plusieurs champignons, surtout des polypores (Basidiomycètes, Polyporales). La page nomme la fistuline hépatique (Fistulina hepatica), le ganoderme aplani (Ganoderma applanatum), le phellin robuste (Phellinus robustus), l’amadouvier (Fomes fomentarius), le polypore hérissé (Inonotus hispidus), le polypore écailleux (Polyporus squamosus), le polypore du bouleau (Piptoporus betulinus), la pholiote destructrice (Pholiota populnea), la collybie visqueuse (Oudemansiella mucida), l’armillaire (Armillaria spp.), la stérée hirsute (Stereum hirsutum), la stérée pourpre (Chondrostereum purpureum), le schizophylle commun (Schizophyllum commune), la tramète à couleur changeante (Coriolus versicolor), le polypore en touffe (Grifola frondosa) et le polypore géant (Meripilus giganteus). Son tableau ajoute le polypore soufré (Laetiporus sulfureus), Inonotus dryadeus, la dédalée du chêne (Daedalea quercina) et le pleurote en huître (Pleurotus ostreatus).",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "champignon_sur_bois",
+        "tronc",
+        "branche",
+        "collet"
+      ],
+      "quandCaSeVoit": "La page ne donne pas de saison. Le bois pourrit lentement, pendant des mois ou des années, et rien ne se voit de l’extérieur tant que le champignon n’est pas sorti.",
+      "autresEssences": "Le tableau de la page (sa figure 1) nomme comme hôtes principaux les chênes, le châtaignier, le hêtre, le robinier, les peupliers, le frêne, les tilleuls, les érables, le platane, le noyer et les bouleaux. Il ajoute que l’armillaire s’attaque à toutes les essences, que la stérée pourpre touche aussi d’autres feuillus, et que la tramète à couleur changeante vit sur les feuillus comme sur les résineux.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Plusieurs champignons qui pourrissent le bois des feuillus. Leurs spores entrent par une blessure ou une fissure de l’écorce, puis le bois pourrit lentement sans rien montrer. On les repère quand ils sortent, souvent en forme de console sur le tronc, sur les branches ou au pied de l’arbre.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Le tronc pourri perd énormément de sa valeur. Les dégâts dépendent du champignon, selon qu’il pourrit le cœur du bois ou l’aubier (le bois jeune, juste sous l’écorce), et du temps pendant lequel il a agi. Les pertes d’argent dues à ces champignons sont considérables.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Le bois pourrit, au cœur ou juste sous l’écorce selon le champignon, sans rien montrer de l’extérieur pendant des mois ou des années.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "certitudeMax": "probable",
+      "photosUtiles": [
+        "champignon_sur_bois",
+        "tronc",
+        "collet"
+      ],
+      "conduiteRecommandee": "Aucun traitement pour ces champignons. La lutte est préventive : limitez les blessures faites aux arbres, surtout pendant l’abattage et le débardage, car une écorce intacte est leur meilleure protection. Quand le champignon sort, le bois pourrit souvent depuis longtemps déjà.",
+      "methodeConfirmation": "Pour repérer la pourriture avant que le champignon sorte, il faut sonder le bois à la tarière et faire une mise en culture en laboratoire.",
+      "informationsRequises": [],
+      "prevention": "La page indique que la lutte est préventive : limiter les blessures des arbres, en particulier pendant l’abattage et le débardage. Pour elle, rien ne protège mieux un arbre contre ces champignons qu’une écorce intacte.",
+      "commentCaArrive": "Les spores entrent dans l’arbre par une blessure ou une fissure de l’écorce. Elles germent et pénètrent dans le bois. Le champignon le décompose alors : selon l’espèce, il s’attaque à l’un ou l’autre des composants du bois, ou aux deux. Cela donne une pourriture blanche, une pourriture rouge cubique ou une pourriture alvéolaire. Rien ne se voit de l’extérieur pendant des mois, parfois des années.",
+      "gestion": "Le champignon sort sur le tronc et les branches, le plus souvent en forme de console. Ces fructifications lâchent dans l’air une très grande quantité de spores. Elles vont contaminer un arbre là où son écorce est blessée ou fissurée.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [],
+          "localisations": [
+            "le_long_du_tronc"
+          ],
+          "poids": "cardinal",
+          "libelle": "Des champignons sortis sur le bois, le plus souvent en forme de console, sur le tronc ou les branches."
+        },
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "carpophore",
+          "couleurs": [],
+          "localisations": [
+            "au_collet"
+          ],
+          "poids": "frequent",
+          "libelle": "Plusieurs de ces champignons sortent au pied de l’arbre, à la base du tronc : la fistuline hépatique, le ganoderme aplani, la pholiote destructrice, l’armillaire, le polypore en touffe."
+        },
+        {
+          "nature": "signe",
+          "partie": "branche",
+          "motif": "carpophore",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le champignon peut aussi sortir sur les branches."
+        },
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "pourriture_bois",
+          "couleurs": [
+            "blanc",
+            "rouge",
+            "brun",
+            "jaune"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Le bois pourrit, au cœur ou dans l’aubier selon le champignon. La pourriture est blanche, rouge cubique ou alvéolaire. Elle ne se voit pas de l’extérieur."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "quercus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "castanea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fagus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "robinia",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "populus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "fraxinus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "tilia",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "acer",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "platanus",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "juglans",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "betula",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Un champignon sorti sur le bois, le plus souvent en forme de console, sur le tronc ou les branches d’un feuillu.",
+        "Plusieurs de ces champignons sortent au pied de l’arbre, à la base du tronc.",
+        "Avant que le champignon sorte, la pourriture ne se voit pas de l’extérieur. Elle avance lentement, pendant des mois ou des années.",
+        "Selon le champignon, la pourriture est blanche, rouge cubique ou alvéolaire."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Une blessure ou une fissure de l’écorce, par où les spores entrent.",
+        "Les blessures faites pendant l’exploitation du bois, à l’abattage et au débardage."
+      ],
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2015-11-10",
+      "sources": [
+        {
+          "source": "ephytia-lignivores-feuillus",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants",
+            "methode_confirmation",
+            "prevention"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Fomes%20fomentarius%20Fagus%20sylvatica%202024-05-01%20Wle%C5%84%2001.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/lignivores-feuillus-champignon.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo d’Agnieszka Kwiecień (Nova), via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Un amadouvier (Fomes fomentarius), en forme de sabot, sur le tronc d’un hêtre."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 1,
+      "noteFrequence": 2
+    }
+  ]
+}

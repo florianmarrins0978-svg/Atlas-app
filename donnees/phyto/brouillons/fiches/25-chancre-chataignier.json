@@ -1,0 +1,233 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-chancre-chataignier",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Chancre du châtaignier (Cryphonectria parasitica), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/19080/Forets-Chancre-du-chataignier",
+      "nature": "officielle",
+      "publieeLe": "2025-06-23",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "castanea",
+      "nomScientifique": "Castanea",
+      "nomCommun": "Châtaignier",
+      "article": "un",
+      "synonymes": [
+        "châtaigniers"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    },
+    {
+      "code": "quercus",
+      "nomScientifique": "Quercus",
+      "nomCommun": "Chêne",
+      "article": "un",
+      "synonymes": [
+        "chênes",
+        "chêne pédonculé",
+        "chêne sessile",
+        "chêne vert"
+      ],
+      "rang": "genre",
+      "port": "feuillu"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "chancre-chataignier",
+      "nomCommun": "Chancre du châtaignier",
+      "nomScientifique": "Cryphonectria parasitica",
+      "categorie": "maladie",
+      "agentCausal": "Un champignon, Cryphonectria parasitica. La maladie s’appelle aussi l’endothiose. Le champignon vient d’Asie. Il est arrivé aux États-Unis en 1904 avec des plants de châtaignier asiatique. En France, on l’a repéré pour la première fois en 1956, et il est aujourd’hui partout où pousse le châtaignier, comme dans toute l’Europe.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "tronc",
+        "branche",
+        "ecorce",
+        "rameau",
+        "feuille"
+      ],
+      "quandCaSeVoit": "Les fructifications rouges se voient sur le chancre pendant une grande partie de l’année. Les feuilles qui ont séché au-dessus d’un chancre restent accrochées à l’automne.",
+      "autresEssences": "La page cite les châtaigniers comme hôtes habituels, et les chênes comme hôtes possibles : le champignon les attaque aussi, mais y fait peu de dégâts. Parmi les châtaigniers, l’américain est le plus sensible, l’européen assez sensible, et le japonais peut assez bien le supporter.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Maladie causée par un champignon venu d’Asie, sur le châtaignier. Il forme sur le tronc et les branches des chancres à l’écorce rougeâtre et craquelée, avec des fructifications rouges ou orangées. Ce qui pousse au-dessus du chancre sèche, et l’arbre peut en mourir.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Le chancre peut faire dépérir gravement l’arbre, jusqu’à le tuer. Il grandit plus ou moins vite sur le tronc, les branches ou les rejets, et ce qui pousse au-dessus sèche souvent. Le châtaignier européen y est assez sensible. Aux États-Unis, la maladie a presque fait disparaître le châtaignier américain. Dans la moitié sud de la France, là où un virus du champignon est bien installé, les chancres se referment et ne tuent plus.",
+      "impactMecanique": "inconnu",
+      "impactMecaniqueNote": "Le champignon gagne le bois, et ce qui pousse au-dessus du chancre sèche souvent. Rien n’est dit de la solidité de l’arbre ni d’un risque de casse.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "possible",
+      "photosUtiles": [
+        "tronc",
+        "branche",
+        "ecorce"
+      ],
+      "conduiteRecommandee": "Aucun traitement n’est donné pour cette maladie, mais une lutte biologique existe : un virus qui parasite le champignon et le rend peu agressif. Le chancre reste alors en surface et le bois n’est pas attaqué. Dans la moitié sud de la France, où ce virus est bien installé, les chancres se referment et ne tuent plus les arbres. Surveillez les jeunes plants : le chancre s’y développe aussi, et ses taches orange sur l’écorce s’y voient bien.",
+      "prevention": null,
+      "commentCaArrive": "Les spores germent dans une blessure de l’écorce : une petite fente naturelle, à la base d’une branche, ou une plaie faite par l’homme. Le champignon pousse d’abord dans l’écorce vivante, puis il gagne le bois. Entre le bois et l’écorce, il étale un tapis de filaments jaunâtres, souvent en éventail. L’arbre réagit en formant des bourrelets, et peu à peu le chancre apparaît.",
+      "gestion": "Le champignon fait deux sortes de spores, qui donnent les mêmes chancres. Les premières sortent toute l’année, dans une gelée qui les protège du dessèchement : la pluie surtout, mais aussi le vent, les insectes et les animaux les emportent. Les secondes sortent surtout du printemps à l’automne : la pluie les fait jaillir des fructifications, puis le vent les porte facilement à 500 m, et jusqu’à 1 000 m. Les chancres placés haut viendraient peut-être plutôt de ces secondes spores, et ceux du bas des premières. Une forte humidité aide les spores à se libérer.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "symptome",
+          "partie": "tronc",
+          "motif": "chancre",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur le tronc, l’écorce rougit par endroits, se fend et se craquelle, puis elle meurt. Des bourrelets se forment autour et donnent au chancre un aspect tourmenté."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "chancre",
+          "couleurs": [
+            "rouge"
+          ],
+          "localisations": [],
+          "poids": "cardinal",
+          "libelle": "Sur une branche ou un rejet, le même chancre à l’écorce rougeâtre, fendue et craquelée, entouré de bourrelets."
+        },
+        {
+          "nature": "signe",
+          "partie": "ecorce",
+          "motif": "pustule",
+          "couleurs": [
+            "rouge",
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Sur l’écorce du chancre, de petites fructifications rouges ou orangées, visibles une grande partie de l’année."
+        },
+        {
+          "nature": "symptome",
+          "partie": "branche",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Au-dessus du chancre, le rameau, la branche ou la tige sèche quand la sève ne passe plus."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "decoloration",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Au-dessus du chancre, des feuilles plus petites et un peu moins vertes."
+        },
+        {
+          "nature": "symptome",
+          "partie": "feuille",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Au-dessus du chancre, des feuilles entièrement sèches, qui ne tombent pas à l’automne."
+        },
+        {
+          "nature": "symptome",
+          "partie": "ecorce",
+          "motif": "tache",
+          "couleurs": [
+            "orange"
+          ],
+          "localisations": [],
+          "poids": "possible",
+          "libelle": "Sur un jeune plant, des taches orange sur l’écorce, bien visibles."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "castanea",
+          "specificite": "frequent"
+        },
+        {
+          "taxon": "quercus",
+          "specificite": "occasionnel"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "L’écorce rougit par endroits, puis elle se fend et se craquelle. Elle sèche et meurt, et des bourrelets se forment autour : le chancre prend un aspect tourmenté.",
+        "Sur le chancre, de petites fructifications rouges ou orangées, visibles une grande partie de l’année.",
+        "Entre l’écorce et le bois, un tapis de filaments jaunâtres, souvent en éventail.",
+        "Au-dessus du chancre, les feuilles sont plus petites, un peu moins vertes, ou tout à fait sèches quand la sève ne passe plus. Ces feuilles sèches ne tombent pas à l’automne.",
+        "Sous un chancre du tronc, des rejets vigoureux poussent souvent.",
+        "Sur un jeune plant, des taches orange sur l’écorce, bien visibles."
+      ],
+      "criteresExclusion": [],
+      "facteursFavorisants": [
+        "Une forte humidité, au moment où les spores sont mûres.",
+        "Les blessures de l’écorce, naturelles (petites fentes à la base des branches) ou faites par l’homme.",
+        "L’espèce de châtaignier : l’américain est le plus sensible, l’européen assez sensible, le japonais assez tolérant."
+      ],
+      "informationsRequises": [],
+      "methodeConfirmation": null,
+      "hotesNonExhaustifs": false,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2025-06-23",
+      "sources": [
+        {
+          "source": "ephytia-chancre-chataignier",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "facteurs_favorisants"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cryphonectria%20parasitica%20tree.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-chataignier-tronc.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Chancre sur le tronc d’un châtaignier d’Amérique : l’écorce est fendue et craquelée."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cryphonectria%20parasitica%20chestnut%20blight.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-chataignier-ecorce.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "ecorce",
+          "legende": "Les fructifications du champignon, en petits amas orangés, sur l’écorce d’un châtaignier d’Amérique."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cryphonectria%20parasitica%20279182947.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-chataignier-rameau.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de Hill Craddock, iNaturalist, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Taches orange sur l’écorce de jeunes rejets de châtaignier, aux États-Unis."
+        }
+      ],
+      "noteImpact": 3,
+      "noteAgressivite": 3,
+      "noteFrequence": 3
+    }
+  ]
+}

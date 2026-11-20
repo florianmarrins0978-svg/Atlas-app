@@ -1,0 +1,186 @@
+{
+  "version": "ephytia-2026-11-19",
+  "sources": [
+    {
+      "code": "ephytia-armillaire-ostoyae",
+      "organisme": "INRAE, Ephytia (auteur : Département de la santé des forêts)",
+      "titre": "Armillaire à Armillaria ostoyae (Armillaria ostoyae), rubrique Forêts",
+      "url": "https://ephytia.inrae.fr/fr/C/18532/Forets-Armillaire-a-Armillaria-ostoyae",
+      "nature": "officielle",
+      "publieeLe": "2026-06-12",
+      "consulteeLe": "2026-11-19"
+    }
+  ],
+  "taxons": [
+    {
+      "code": "pinus",
+      "nomScientifique": "Pinus",
+      "nomCommun": "Pin",
+      "article": "un",
+      "synonymes": [
+        "pins"
+      ],
+      "rang": "genre",
+      "port": "conifere"
+    }
+  ],
+  "fiches": [
+    {
+      "code": "armillaire-ostoyae",
+      "nomCommun": "Armillaire obscure",
+      "nomScientifique": "Armillaria ostoyae",
+      "categorie": "champignon_lignivore",
+      "agentCausal": "Un champignon, Armillaria ostoyae, qu’on appelle aussi l’armillaire obscure.",
+      "agentType": "champignon",
+      "partiesAtteintes": [
+        "racine",
+        "collet",
+        "tronc",
+        "champignon_sur_bois",
+        "houppier"
+      ],
+      "quandCaSeVoit": "Les champignons sortent à l’automne, en touffes. La page ne donne pas de saison pour les autres signes.",
+      "autresEssences": "La page dit que cette armillaire s’attaque aux résineux, et ne nomme que les pins.",
+      "periodeDebutMois": null,
+      "periodeFinMois": null,
+      "explicationCourte": "Champignon des racines et du collet des résineux, surtout des pins. Il pourrit les racines, l’arbre se dessèche et peut mourir, même s’il était en bonne santé. Le signe qui prouve l’attaque est un feutre blanc en lames sous l’écorce du pied et des racines.",
+      "gravite": "importante",
+      "graviteSelonLaSource": "Chez les résineux, et surtout chez les pins, ce champignon peut à lui seul faire dépérir et mourir les arbres. Il pourrit les racines : l’arbre reçoit moins d’eau et moins d’éléments nutritifs, et il se dessèche. C’est la plus agressive des armillaires. Elle peut tuer un arbre adulte qui n’était pas affaibli avant. Quand elle passe de racine en racine, les arbres meurent en rond.",
+      "impactMecanique": "possible",
+      "impactMecaniqueNote": "Les racines pourrissent. Rien n’est dit sur la tenue de l’arbre ni sur un risque de chute.",
+      "risqueHumainAnimal": "inconnu",
+      "statutReglementaire": "aucun",
+      "diagnosticPhoto": "indicatif",
+      "photosUtiles": [
+        "collet",
+        "racine",
+        "champignon_sur_bois",
+        "houppier"
+      ],
+      "conduiteRecommandee": "Aucun traitement ni aucune méthode de lutte pour cette maladie. Regardez sous l’écorce du pied de l’arbre et des grosses racines, car seul un feutre blanc en lames prouve que l’armillaire l’attaque. Surveillez aussi les arbres voisins, car le champignon passe d’un arbre à l’autre par les racines.",
+      "prevention": null,
+      "commentCaArrive": "Le champignon vit d’abord sur les souches et sur les morceaux de bois mort, puis il s’attaque aux arbres vivants. Ses spores germent dans le sol. Il s’installe dans les racines et au collet, entre l’écorce et le bois, sous la forme d’un feutre blanc en lames, les palmettes : c’est sous cette forme qu’il rend l’arbre malade.",
+      "gestion": "Les spores sortent des lamelles du chapeau à l’automne, et le vent les emporte. Dans le sol, le champignon forme des cordons noirs, les rhizomorphes : ils lui servent à se conserver et à se déplacer. Il passe d’un arbre à l’autre de deux façons. Soit par ces cordons, qui s’étalent sur les racines et sur le pied des arbres. Soit quand la racine d’un arbre malade touche celle d’un arbre sain.",
+      "traitement": null,
+      "symptomes": [
+        {
+          "nature": "signe",
+          "partie": "collet",
+          "motif": "feutrage_blanc",
+          "couleurs": [
+            "blanc"
+          ],
+          "localisations": [
+            "au_collet",
+            "base"
+          ],
+          "poids": "cardinal",
+          "libelle": "Sous l’écorce des racines et du pied de l’arbre, un feutre blanc en lames, comme une peau de chamois : ce sont les palmettes, le seul signe qui prouve que l’armillaire attaque l’arbre."
+        },
+        {
+          "nature": "symptome",
+          "partie": "racine",
+          "motif": "pourriture_bois",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "Les racines pourrissent."
+        },
+        {
+          "nature": "signe",
+          "partie": "champignon_sur_bois",
+          "motif": "carpophore",
+          "couleurs": [
+            "brun",
+            "noir"
+          ],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "À l’automne, des champignons en touffes sur du bois mort. Le chapeau est foncé et couvert de petites écailles brunes. L’anneau est épais et cotonneux, bordé de flocons marron. Le pied porte des flocons noirs qui le rayent."
+        },
+        {
+          "nature": "symptome",
+          "partie": "houppier",
+          "motif": "dessechement",
+          "couleurs": [],
+          "localisations": [],
+          "poids": "frequent",
+          "libelle": "L’arbre se dessèche, dépérit et peut mourir. Quand la maladie passe de racine en racine, les arbres morts forment un rond."
+        }
+      ],
+      "hotes": [
+        {
+          "taxon": "pinus",
+          "specificite": "frequent"
+        }
+      ],
+      "confusions": [],
+      "criteresDiscriminants": [
+        "Sous l’écorce des racines et du pied de l’arbre, un feutre blanc en lames qui fait penser à une peau de chamois. Ce sont les palmettes.",
+        "Seules ces palmettes blanches prouvent que l’armillaire attaque l’arbre.",
+        "Sous l’écorce, des cordons aplatis, brun-noir et ramifiés.",
+        "Dans le sol, des cordons noirs, plus ou moins ronds : les rhizomorphes.",
+        "À l’automne, des champignons en touffes. Le chapeau est foncé, couvert de petites écailles brunes. L’anneau est épais et cotonneux, bordé de flocons marron. Le pied porte des flocons noirs.",
+        "Des cordons noirs ou des champignons montrent que l’armillaire est là, mais ils ne prouvent pas qu’elle attaque cet arbre-là.",
+        "Quand la maladie passe d’un arbre à l’autre par les racines, les arbres meurent en rond."
+      ],
+      "criteresExclusion": [
+        "Les champignons de l’armillaire obscure peuvent se confondre avec ceux des autres armillaires.",
+        "Les cordons noirs et les palmettes sont les mêmes chez toutes les armillaires. La page dit que seul un test PCR distingue l’espèce."
+      ],
+      "facteursFavorisants": [],
+      "informationsRequises": [
+        "Ce qu’il y a sous l’écorce du pied de l’arbre et des grosses racines : un feutre blanc en lames, ou rien."
+      ],
+      "methodeConfirmation": "Seules des palmettes blanches sous l’écorce des racines ou du pied confirment que l’armillaire attaque l’arbre. Seul un test PCR en laboratoire dit avec certitude de quelle armillaire il s’agit.",
+      "certitudeMax": "probable",
+      "hotesNonExhaustifs": true,
+      "niveauValidation": "validee",
+      "origine": "reelle",
+      "version": 1,
+      "sourcesAJourLe": "2026-06-12",
+      "sources": [
+        {
+          "source": "ephytia-armillaire-ostoyae",
+          "champs": [
+            "conduite_recommandee",
+            "gravite",
+            "statut_reglementaire",
+            "symptomes",
+            "hotes",
+            "explication_courte",
+            "gestion",
+            "agent_causal",
+            "parties_atteintes",
+            "criteres_discriminants",
+            "criteres_exclusion",
+            "impact_mecanique",
+            "methode_confirmation",
+            "informations_requises"
+          ]
+        }
+      ],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Armillaria%20mycelium%20felts%20under%20the%20bark%20of%20a%20live%20infected%20tree%20-%20The%20Malheur%20National%20Forest%20Location%20of%20the%20World%27s%20Largest%20Living%20Organism%20%28The%20Humongous%20Fungus%29%20-%20fsbdev3%20033146%20%28page%207%20crop%29.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-ostoyae-collet.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Craig L. Schmitt et Michael L. Tatum, USDA Forest Service, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Le feutre blanc de l’armillaire sous l’écorce du pied d’un arbre vivant, en Oregon (États-Unis)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dunkler%20Hallimasch%20%28Armillaria%20ostoyae%29.jpg?width=960",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-ostoyae-champignon_sur_bois.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Met.salis, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Une touffe de champignons de l’armillaire obscure, en automne, dans une forêt d’Allemagne."
+        }
+      ],
+      "noteImpact": 2,
+      "noteAgressivite": 3,
+      "noteFrequence": 3
+    }
+  ]
+}
