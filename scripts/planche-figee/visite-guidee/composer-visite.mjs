@@ -52,7 +52,7 @@ const ETAPES = [
   { etat: "09-avant-de-chiffrer-rempli", titre: "25 mètres", dit: "La longueur de la haie est notée.", cible: 'button:has-text("Continuer")', geste: "Touchez Continuer." },
   { etat: "10-devis", titre: "Le devis est rédigé", dit: "Votre entreprise, le client, les prestations et vos prix. Une correction ? Pas besoin d'écrire.", cible: 'button[aria-label="Dicter dans le devis"]', geste: "Touchez le micro, en haut à droite." },
   { etat: "10b-devis-micro", titre: "Corriger à la voix", dit: "« Ajoute le désherbage de l'allée. » Cause l'écrit dans le devis, sans rien taper." },
-  { etat: "11-devis-totaux", titre: "À vous d'essayer", dit: "Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : touchez, essayez.", essais: true },
+  { etat: "11-devis-totaux", titre: "À vous d'essayer", dit: "Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : touchez, essayez.", essais: "devis" },
   { etat: "11-devis-totaux", titre: "L'aperçu", dit: "Voyons ce que reçoit votre client.", cible: '[data-atlas="apercu-pdf"]', geste: "Touchez Aperçu du PDF." },
   { etat: "12-apercu-pdf", titre: "Le PDF", dit: "Le devis tel que votre client le recevra.", cible: 'a[aria-label="Retour"]', geste: "Revenez au devis." },
   { etat: "11-devis-totaux", titre: "Le devis est prêt", dit: "Il ne reste qu'à proposer une date.", cible: 'button:has-text("Choisir la date")', geste: "Touchez Choisir la date." },
@@ -77,7 +77,7 @@ const ETAPES = [
   { etat: "25b-retours", titre: "Retours d'intervention", dit: "Chaque soir, l'équipe dit ce qui a été fait. Rangé client par client.", cible: '[data-atlas="carte-de-retour"]', geste: "Touchez le retour." },
   { etat: "25c-retour", titre: "Le retour du jour", dit: "Les travaux faits, et ce qu'il faut savoir." },
   { etat: "25-termines", titre: "Le chantier est passé", dit: "Celui de M. Lefèvre attend sa facture.", cible: '[data-atlas="ligne-terminee"]:has-text("Lef")', geste: "Touchez le chantier." },
-  { etat: "27-facture", titre: "La facture", dit: "Elle reprend le devis, ligne par ligne. Rien à retaper." },
+  { etat: "27-facture", titre: "La facture", dit: "Elle reprend le devis, ligne par ligne. À vous d'essayer : Voir le PDF, Travaux en plus, Facture acquittée.", essais: "facture" },
   { etat: "28-facture-envoi", titre: "L'envoi", dit: "Par SMS ou par e-mail.", cible: '[data-atlas="envoyer-la-facture"]', geste: "Touchez Envoyer la facture." },
   { etat: "29-facture-envoyee", titre: "Elle est partie", dit: "Arrêtée et numérotée. Une correction passerait par un avoir." },
   { etat: "30-client-facture", titre: "Chez votre client", dit: "Sa facture, l'IBAN et le numéro à écrire sur son virement.", chez: "client", cible: 'button:has-text("J\'ai bien reçu")', geste: "Touchez J'ai bien reçu cette facture." },
@@ -104,7 +104,7 @@ const ETAPES = [
 
 // Les boutons du devis, à essayer librement : chacun ouvre sa vraie feuille, et
 // son bouton pose sur le devis ce que l'appli y pose (figés par s3.mjs).
-const ESSAIS = [
+const ESSAIS_DU_DEVIS = [
   { ouvre: '[data-atlas="poser-prix-accorde"]', feuille: "11-remise-feuille", pose: "11-remise-pose", applique: 'button:has-text("Appliquer la remise")', titre: "Une remise", geste: "Touchez Appliquer la remise.", fait: "La remise est posée, le total suit." },
   { ouvre: '[data-atlas="poser-main-doeuvre"]', feuille: "11-main-doeuvre-feuille", pose: "11-main-doeuvre-pose", applique: 'button:has-text("Ajouter la main")', titre: "La main d'œuvre", geste: "Touchez Ajouter la main d'œuvre.", fait: "Les hommes, les jours, votre tarif : la ligne est posée." },
   { ouvre: '[data-atlas="ajouter-acompte"]', feuille: "11-acompte-feuille", pose: "11-acompte-pose", applique: 'button:has-text("Ajouter l’acompte")', titre: "Un acompte", geste: "Touchez Ajouter l'acompte.", fait: "Versé à la signature, le reste après les travaux." },
@@ -112,10 +112,18 @@ const ESSAIS = [
   { ouvre: 'button:has-text("+ Ajouter une ligne")', pose: "11-ligne-pose", titre: "Une ligne", fait: "Une ligne vide, à remplir ou à dicter." },
 ];
 
+// Sur la facture, tout s'essaie sauf l'envoi (sa demande du 20 novembre).
+const ESSAIS_DE_LA_FACTURE = [
+  { ouvre: '[data-atlas="voir-facture"]', pose: "27-facture-pdf", titre: "La facture en PDF", fait: "Telle que votre client la recevra, l'attestation d'assurance jointe." },
+  { ouvre: '[data-atlas="ajouter-travaux-supplementaires"]', pose: "27-travaux-en-plus", titre: "Des travaux en plus", fait: "Ce qui s'est ajouté sur place : un travail, de la main d'œuvre, un autre taux." },
+  { ouvre: '[data-atlas="facture-acquittee"]', pose: "27-facture-acquittee", titre: "Facture acquittée", fait: "Payée sur place ? Un geste, et elle part acquittée." },
+];
+const ESSAIS = { devis: ESSAIS_DU_DEVIS, facture: ESSAIS_DE_LA_FACTURE };
+
 // Les rubriques des Réglages, ouvertes librement à la fin.
 const RUBRIQUES = Object.keys(etats).filter((n) => n.startsWith("r-"));
 
-const besoin = new Set([...ETAPES.map((e) => e.etat), ...RUBRIQUES, ...ESSAIS.flatMap((x) => [x.feuille, x.pose].filter(Boolean))]);
+const besoin = new Set([...ETAPES.map((e) => e.etat), ...RUBRIQUES, ...Object.values(ESSAIS).flat().flatMap((x) => [x.feuille, x.pose].filter(Boolean))]);
 const manquent = [...besoin].filter((n) => !etats[n]);
 if (manquent.length) { console.error("écrans manquants :", manquent); process.exit(1); }
 
@@ -337,7 +345,7 @@ const SCRIPT = `
     }
     if (essai?.phase === "pose") { if (el) { ev.preventDefault(); secouer(); } return; }
     if (C.etapes[rang].essais && el) {
-      const x = C.essais.find((x) => touche(x.ouvre));
+      const x = C.essais[C.etapes[rang].essais].find((x) => touche(x.ouvre));
       if (x) { ev.preventDefault(); essayer(x, x.feuille ? "feuille" : "pose"); return; }
     }
     const c = cibleDe(C.etapes[rang].cible);
@@ -361,6 +369,8 @@ const SCRIPT = `
     requestAnimationFrame(suivre);
   };
   requestAnimationFrame(suivre);
+  // Lu par le parcours de vérification : quels boutons s'essaient, et où.
+  window.visite = { etapes: C.etapes, essais: C.essais, etape: () => rang };
   montrer(C.etapes[0].etat); dire();
 })();
 `;

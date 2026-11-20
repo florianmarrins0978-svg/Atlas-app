@@ -50,8 +50,9 @@ for (let k = 0; k < 150; k++) {
     await page.evaluate(() => window.scrollTo(0, 0));
   }
   // L'étape des essais : chaque bouton du devis s'ouvre, se pose, et l'on revient.
-  if (etat.titre === "À vous d'essayer") {
-    for (const ouvre of ['[data-atlas="poser-prix-accorde"]', '[data-atlas="poser-main-doeuvre"]', '[data-atlas="ajouter-acompte"]', 'button:has-text("+ Ajouter une TVA")', 'button:has-text("+ Ajouter une ligne")']) {
+  const essais = await page.evaluate(() => { const e = window.visite.etapes[window.visite.etape()].essais; return e ? window.visite.essais[e].map((x) => x.ouvre) : []; });
+  if (essais.length) {
+    for (const ouvre of essais) {
       const b = page.locator(`.visite-ecran:not([hidden]) ${ouvre}`).first();
       await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(900);
       const e1 = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);

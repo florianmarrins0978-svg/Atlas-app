@@ -14,6 +14,24 @@ try {
   const creer = page.getByRole("button", { name: "Créer la facture" });
   if (await creer.count()) { await fige("26-facture-realise"); await creer.click(); await pas(6000); }
   await fige("27-facture");
+  // Ce qui s'essaie sur la facture, sauf l'envoi : le PDF, les travaux en plus,
+  // « Facture acquittée » (posé puis retiré : le paiement viendra de la banque).
+  await page.click('[data-atlas="voir-facture"]');
+  await page.waitForURL(/documents\/pdf/, { timeout: 60000 });
+  await page.waitForSelector("canvas", { timeout: 60000 }); await pas(5000);
+  await fige("27-facture-pdf");
+  await va(`/chantiers/${id}/facture`);
+  await page.click('[data-atlas="ajouter-travaux-supplementaires"]');
+  await page.waitForURL(/travaux-supplementaires/, { timeout: 60000 }); await pas(2000);
+  await fige("27-travaux-en-plus");
+  await va(`/chantiers/${id}/facture`);
+  await page.locator('[data-atlas="facture-acquittee"]').scrollIntoViewIfNeeded();
+  await page.click('[data-atlas="facture-acquittee"]'); await pas(3000);
+  await page.locator('[data-atlas="reglements-recus"]').scrollIntoViewIfNeeded(); await page.evaluate(() => window.scrollBy(0, 120)); await pas(700);
+  await fige("27-facture-acquittee");
+  await page.click('[data-atlas="facture-acquittee"]'); await pas(3000);
+  await va(`/chantiers/${id}/facture`);
+  console.log("net à payer après l'essai :", await page.locator('[data-atlas="net-a-payer"]').innerText());
   await page.locator('[data-atlas="envoyer-la-facture"]').scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, 120));
   await pas(800);
