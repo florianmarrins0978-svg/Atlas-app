@@ -17,7 +17,7 @@ const J = readFileSync(`${TRAVAIL}/jeton-facture.txt`, "utf8").trim();
   try {
     await va("/");
     const vu = page.locator('[data-atlas="j-ai-vu"]');
-    for (let i = 0; i < 3 && !(await page.locator('[data-atlas="carte-virement"]').first().isVisible().catch(() => false)); i++) {
+    for (let i = 0; i < 6 && !(await page.locator('[data-atlas="carte-virement"]').first().isVisible().catch(() => false)); i++) {
       await vu.first().click(); await page.waitForTimeout(2000);
     }
     await fige("32-accueil-virement");

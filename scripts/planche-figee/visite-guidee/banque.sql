@@ -1,5 +1,6 @@
 -- Appel : psql -v num=<numéro de la facture de M. Lefèvre> -f banque.sql
 -- Une banque de démonstration, tout inventé : la liaison (lue à l'instant, donc aucun appel au prestataire) et un mois de lignes.
+-- Le virement de M. Lefèvre arrive le jour même (heure de Paris) : daté d'avant sa facture, Cause ne le rapprocherait pas.
 \set ent '(select id from entreprises limit 1)'
 delete from virements_recus; delete from mouvements_bancaires; delete from liaisons_bancaires;
 insert into liaisons_bancaires (entreprise_id, session_id, comptes, banque, accord_jusqu_au, lu_le, historique_jours)
@@ -12,6 +13,6 @@ insert into mouvements_bancaires (entreprise_id, cle, jour, montant, sens, contr
  (:ent,'m05','2026-11-12',38.50,'sortie','Quincaillerie du Port','CB QUINCAILLERIE DU PORT',null,null,null,null),
  (:ent,'m06','2026-11-15',312.00,'sortie','URSSAF','PRLV URSSAF COTISATIONS','motif','impots','patron',now()),
  (:ent,'m07','2026-11-17',72.40,'sortie','Station du Rond-Point','CB STATION DU ROND POINT',null,null,null,null),
- (:ent,'m08','2026-11-20',924.00,'entree','M. Lefèvre','VIR M LEFEVRE ' || :'num',null,null,null,null);
+ (:ent,'m08',(now() at time zone 'Europe/Paris')::date,924.00,'entree','M. Lefèvre','VIR M LEFEVRE ' || :'num',null,null,null,null);
 insert into virements_recus (entreprise_id, cle, jour, montant, payeur, libelle, etat)
-values (:ent, 'm08', '2026-11-20', 924.00, 'M. Lefèvre', 'VIR M LEFEVRE ' || :'num', 'nouveau');
+values (:ent, 'm08', (now() at time zone 'Europe/Paris')::date, 924.00, 'M. Lefèvre', 'VIR M LEFEVRE ' || :'num', 'nouveau');

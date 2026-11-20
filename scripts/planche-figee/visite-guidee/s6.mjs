@@ -2,6 +2,9 @@ import { session, TRAVAIL } from "./fige.mjs";
 const { page, va, fige, fin } = await session();
 const pas = (t = 700) => page.waitForTimeout(t);
 try {
+  // Le client vient de signer : l'accueil le dit, avant le planning.
+  await va("/");
+  await fige("19b-accueil-accepte");
   await va("/planning");
   await fige("20-planning");
   await page.locator('button[aria-label^="25 novembre"]:visible').first().click();
