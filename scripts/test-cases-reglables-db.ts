@@ -19,7 +19,8 @@ import { nettoyerBase } from "./_test-db";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as brouillonsRepo from "../src/server/repositories/brouillons-informations";
 import * as prestationsRepo from "../src/server/repositories/prestations";
-import { listerLignesPrix } from "../src/server/repositories/lignes-prix";
+import { liensDesLignesDuChantier, listerLignesPrix } from "../src/server/repositories/lignes-prix";
+import { reponsesSousLesLignes } from "../src/lib/reponses-sous-le-travail";
 import { confirmerBrouillon } from "../src/server/ai/services/brouillon-service";
 import { brouillonVide } from "../src/server/ai/schemas/extraction";
 import { questionsRestantes, enregistrerPrecisionsEtReprendre } from "../src/server/services/devis-depuis-dictee";
@@ -294,10 +295,15 @@ async function main() {
       { sujet: diametre!.id, libellePrestation: diametre!.libellePrestation, valeur: "80", lisible: precisionLisible(diametre!, "80") },
     ]);
 
-    // Le texte en base garde ses réponses : les moteurs y relisent encore le
-    // diamètre (`mesures-arbre.ts`). Sans elles, ce contrôle ne prouverait rien.
+    // **Ses réponses ne s'écrivent plus dans le nom du travail** (§594) : elles
+    // vivent dans leurs cases, et c'est de là que la ligne ci-dessous tire ses
+    // 1 100 €. Le nom reste celui qu'il a dicté.
     const [prestation] = await prestationsRepo.listerPrestations(D, c.id);
-    assert.match(prestation.libelle, /abattage entre 10 et 20 m, ⌀ 80 cm/, `en base : « ${prestation.libelle} »`);
+    assert.deepEqual(
+      { libelle: prestation.libelle, methode: prestation.methode, diametre: (prestation.caracteristiques as { diametreCm?: number } | null)?.diametreCm },
+      { libelle: "Abattage d'un chêne", methode: cle, diametre: 80 },
+      `en base : « ${prestation.libelle} »`
+    );
 
     const lignes = await listerLignesPrix(D, c.id);
     assert.deepEqual(
@@ -305,6 +311,15 @@ async function main() {
       [["Abattage d'un chêne", "1100.00"]],
       "la ligne doit être chiffrée par sa case, et ne dire que le travail"
     );
+
+    // **Et ses réponses reviennent SOUS le travail, pour lui seul** (sa planche
+    // du 20 novembre 2026) : lues dans leurs cases, nommées dans SA grille,
+    // sous `atlas_app`, par les deux lectures que le devis fait.
+    const reponses = reponsesSousLesLignes(
+      await liensDesLignesDuChantier(D, c.id),
+      await prestationsRepo.listerPrestationsDuDevis(D, c.id)
+    );
+    assert.deepEqual(reponses, { [lignes[0].id]: ["Abattage entre 10 et 20 m, ⌀ 80 cm"] });
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

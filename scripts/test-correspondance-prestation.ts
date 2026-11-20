@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { prestationCorrespondante, enrichissementPossible } from "../src/lib/correspondance-prestation";
-import { libelleEnrichi } from "../src/lib/questions-chiffrage";
 
 // **Reconnaître la même prestation, et ne jamais écraser ce qui y est déjà.**
 //
@@ -38,12 +37,12 @@ cas("le libellé identique", () => {
 
 cas("le libellé enrichi par ses réponses — LE cas du doublon", () => {
   const trouve = prestationCorrespondante("Abattage d'un érable", [
-    p("1", libelleEnrichi("Abattage d'un érable", ["démontage avec rétention", "⌀ 45 cm"])),
+    p("1", "Abattage d'un érable (démontage avec rétention, ⌀ 45 cm)"),
   ]);
   assert.equal(trouve?.id, "1", "le rejeu créerait un doublon pour le même arbre");
 });
 
-// **Le 28 octobre 2026, `libelleEnrichi` a quitté le tiret pour les parenthèses**
+// **Le 28 octobre 2026, les réponses collées ont quitté le tiret pour les parenthèses**
 // (sa règle des tirets). Les libellés écrits avant vivent encore en base, et le
 // rapprochement, qui coupait le dernier caractère du libellé enrichi pour en
 // faire un préfixe, n'en reconnaissait plus aucun : un rejeu créait un second

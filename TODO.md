@@ -289,7 +289,7 @@ ligne renommée. Joués : types, style, gardes, `test-feuille-main-oeuvre.ts`,
 (quatre vus rouges). **Pas joués** : `test-feuille-main-oeuvre-e2e.ts` (ses
 deux gestes par l'écran) et la batterie (niveau 3 : argent), sur son « oui ».
 
-## ⏳ UNE PLANCHE À REGARDER : SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
+## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : CODÉ, SUITES SUR SON « OUI » (20 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -319,7 +319,22 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-l
 
 **Sa réponse du 20 novembre, sur Informations** : *« la page information, je n'y
 ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
-que sur le devis. Reste à savoir si la ligne sous le travail lui convient.
+que sur le devis. Puis son « oui » à la ligne sous le travail.
+
+**Temps 1 codé le 20 novembre** (`ARCHITECTURE.md` §593) : la ligne sous le
+travail, lue dans les cases. Joués : types, style, gardes,
+`test-reponses-sous-le-travail.ts`. **Pas joués** : `test-cases-reglables-db.ts`
+(son chêne, sous `atlas_app`), l'écran regardé, puis le contrôle de son niveau ;
+il a refusé la batterie le 20 (*« Aucune batterie !!! »*), le lot attend donc
+hors de `main`.
+
+**Temps 2 codé le même jour** (son « ok tu peux le faire », §594) : plus rien ne
+s'écrit dans le nom, la migration 0188 rend leur nom aux travaux d'avant.
+Éprouvée sur base habitée (`test-migration-0188-base-habitee.ts`, vert). **Pas
+joués** : `test-cases-reglables-db.ts` (le prix du chêne sans le texte),
+`test-questions-chiffrage-db` et voisines, le contrôle du niveau 3. **Reste,
+plus tard** : retirer `debutsDUnLibelleEnrichi` et l'effacement de
+`libelleClient` une fois 0188 passée sur SA base (contract).
 
 **Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
 la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme

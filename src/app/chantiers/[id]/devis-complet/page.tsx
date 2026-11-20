@@ -8,7 +8,9 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
-import { listerLignesPrix } from "@/server/repositories/lignes-prix";
+import { liensDesLignesDuChantier, listerLignesPrix } from "@/server/repositories/lignes-prix";
+import { listerPrestationsDuDevis } from "@/server/repositories/prestations";
+import { reponsesSousLesLignes } from "@/lib/reponses-sous-le-travail";
 import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getAcomptesDevis } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
@@ -76,7 +78,7 @@ export default async function DevisCompletPage({
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon, note, acomptes, mainOeuvre] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note, acomptes, mainOeuvre, liens, prestationsDuDevis] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
@@ -86,7 +88,12 @@ export default async function DevisCompletPage({
     // La feuille « Main d'œuvre » (planche du 1er novembre 2026) : sa dictée,
     // son prix du jour par homme, et les prix de ses partenaires avec sa marge.
     donneesDeLaMainOeuvre(ctx, chantier),
+    // Ses réponses à la grille, sous chaque travail (sa planche du 20 novembre
+    // 2026) : lues dans leurs cases, nommées dans SES grilles.
+    liensDesLignesDuChantier(ctx, id),
+    listerPrestationsDuDevis(ctx, id),
   ]);
+  const reponses = reponsesSousLesLignes(liens, prestationsDuDevis);
 
   // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
   // 2026 : il dicte chez sa cliente, ferme l'application, revient, ouvre le
@@ -233,6 +240,7 @@ export default async function DevisCompletPage({
           partAncienne: l.partAncienne,
           partGrille: l.partGrille,
           hommesMainDoeuvre: l.hommesMainDoeuvre,
+          reponses: reponses[l.id] ?? [],
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}

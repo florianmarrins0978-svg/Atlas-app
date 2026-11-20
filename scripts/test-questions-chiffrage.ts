@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import {
-  libelleEnrichi,
   precisionLisible,
   questionsAvantChiffrage,
   type LignePourQuestions,
@@ -284,28 +283,6 @@ cas("la réponse se relit sur le devis, en clair", () => {
   const diametre = q.find((x) => x.id.startsWith("abattage.diametre"))!;
   assert.equal(precisionLisible(technique, "demontage_retention"), "démontage avec rétention");
   assert.equal(precisionLisible(diametre, "70"), "⌀ 70 cm");
-});
-
-cas("la précision s'écrit sur la prestation, telle qu'il la relira", () => {
-  assert.equal(
-    libelleEnrichi("Abattage d'un chêne mort", ["démontage avec rétention", "⌀ 70 cm"]),
-    "Abattage d'un chêne mort (démontage avec rétention, ⌀ 70 cm)"
-  );
-});
-
-cas("rejouer l'enchaînement n'allonge pas le libellé", () => {
-  // Le patron rejoue souvent. Un libellé qui grossit à chaque essai finirait
-  // sur le devis de son client : « ... — démontage, ⌀ 70 cm — démontage, ⌀ 70 cm ».
-  const une = libelleEnrichi("Abattage d'un chêne mort", ["démontage", "⌀ 70 cm"]);
-  const deux = libelleEnrichi(une, ["démontage", "⌀ 70 cm"]);
-  assert.equal(deux, une);
-  const trois = libelleEnrichi(deux, ["démontage", "⌀ 70 cm"]);
-  assert.equal(trois, une);
-});
-
-cas("sans réponse, le libellé reste intact", () => {
-  assert.equal(libelleEnrichi("Fendage du bois", []), "Fendage du bois");
-  assert.equal(libelleEnrichi("Fendage du bois", ["", "  "]), "Fendage du bois");
 });
 
 cas("une prestation sans libellé ne produit rien", () => {

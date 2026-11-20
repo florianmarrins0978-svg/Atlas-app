@@ -37716,3 +37716,37 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Rouverte après « Répartis »**, sa planche du 20 novembre 2026 (`appli/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html`), son « code ça » : la feuille repart de ses parts (`equipeDeSesParts` : leurs jours d'homme, au centième, au prix qu'ils ont coûté, les hommes comme pour sa ligne), « Repris de vos travaux », sur « Répartis » avec chaque part, et dit « Changer la main d’œuvre » dans les deux modes. Les travaux s'y montrent à leur prix SANS sa part, base d'où la nouvelle repart ; le serveur rend les jours qu'il pose, pour que l'écran les reconnaisse sans recharger.
 
 `test-feuille-main-oeuvre.ts` (la part posée puis retirée au centime, la part sans jours qui reste), `test-proposition-au-detail.ts` (renommée, partenaire), `test-main-oeuvre-change-sa-ligne-db.ts` (répartir deux fois, reposer en ligne, le partenaire qui reste, rejouer, renommée : quatre vus rouges), `test-feuille-main-oeuvre-e2e.ts` (les deux gestes par l'écran).
+
+## §593 : Ses réponses à la grille reviennent sous le travail du devis, pour lui seul
+
+*20 novembre 2026, sa planche (`appli/soignee/devis-reponses-sous-le-travail.html`) et son « oui » ; sur Informations, sa réponse : « la page information, je n'y ai jamais accès ».*
+
+Depuis §588, ce qu'il a choisi dans sa grille ne s'écrit plus sur la désignation, et il ne le relisait plus nulle part. Premier temps du rangement qu'il a demandé (*« on a empilé des règles sur des règles »*).
+
+| Décision | Pourquoi |
+|---|---|
+| lues dans leurs CASES (`methode` nommée dans SA grille, `caracteristiques`), jamais dans le libellé (`reponsesDuTravail`) | le second temps pourra cesser d'écrire ses réponses dans le libellé sans que cette ligne change |
+| la même phrase que le libellé enrichi d'hier (`mesureLisible`, sortie de `precisionLisibleParId`) | une seconde écriture de « ⌀ 80 cm » finirait par dire autre chose |
+| une phrase par travail que la ligne vend (`lignes_prix_prestations`, `liensDesLignesDuChantier`), sans doublon | trois chênes abattus pareil n'en font qu'une |
+| la longueur d'une haie ne s'y redit pas | c'est la quantité de sa ligne |
+| sous la description, discrète ; le toucher dit « Pour vous seul : ni le PDF, ni le client ne le voient. » (`ReponsesSousLeTravail`) | la planche ; une phrase permanente sous chaque travail serait du bruit (sa règle du moins de mots) |
+| Informations ne change pas | il n'y va jamais |
+
+**Le second temps suit dans le même lot** (§594) : plus rien ne s'écrit dans le libellé.
+
+`test-reponses-sous-le-travail.ts` (cinq cas purs), `test-cases-reglables-db.ts` (son chêne : la ligne à 1 100 € dit « Abattage entre 10 et 20 m, ⌀ 80 cm » dessous).
+
+## §594 : Ses réponses à la grille ne s'écrivent plus dans le nom du travail
+
+*20 novembre 2026, son « ok tu peux le faire », après l'explication : ses réponses rangées deux fois, dans leurs cases et collées au nom, « Abattage d'un chêne (abattage entre 10 et 20 m, ⌀ 80 cm) ».*
+
+**Ce qui le permettait** : le prix ne relit pas le nom. `mesuresResolues` prend les cases d'abord, puis ses réponses enregistrées (`precisions_chantier.lisible`), qui portent le même « ⌀ 80 cm » ; les noms des travaux (`membres`) n'étaient qu'un troisième repli. Le commentaire d'`ecrirePrecisionsSurLesPrestations` qui disait le contraire datait d'avant `mesuresResolues`.
+
+| Décision | Pourquoi |
+|---|---|
+| `ecrirePrecisionsSurLesPrestations` ne range plus que les cases ; `libelleEnrichi` et `renommerPrestation` (leur seul usage) partent | trois règles pour coller, reconnaître et effacer un texte que personne ne lisait ; la parenthèse du 18 novembre sur sa désignation en venait |
+| la migration 0188 rend leur nom aux travaux d'avant, boucle par entreprise sous FORCE RLS, en comptant | sans elle, deux formes vivraient en base, et la règle qui les reconnaît ne pourrait jamais partir |
+| elle ne retire que ce que l'ancien code ajoutait : après le nom de la question, « (…) » ou « — … », et CHAQUE morceau doit être une de ses réponses enregistrées | « Haie (tout genre) (800 ml) », le nom latin, une parenthèse tapée, un tiret dicté ne bougent pas (`test-migration-0188-base-habitee.ts`) |
+| `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` RESTENT | contract plus tard (`deployment-safety.md`) : ils ne partent qu'une fois 0188 passée sur sa base ; un rejeu de dictée sur un nom d'avant créerait sinon un second arbre |
+
+`test-cases-reglables-db.ts` (son chêne : le nom reste « Abattage d'un chêne », ses cases portent la technique et 80 cm, la ligne vaut toujours 1 100 €), `test-migration-0188-base-habitee.ts` (cinq cas, dont la RLS qui mord sans la boucle), `test-questions-chiffrage.ts`, `test-correspondance-prestation.ts` (les noms d'avant, écrits en toutes lettres).
