@@ -1010,6 +1010,36 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cIc.close();
   }
 
+  // ── Le fournisseur depuis son devis : chaque rond suit sa ligne ─────────
+  //
+  // Sa remarque du 20 novembre 2026 : « j'ai décoché les deux, il y avait
+  // marqué aucun prix coché, sauf que le dernier restait coché ». Le script
+  // de la planche peignait le premier `span[aria-hidden]` de chaque ligne :
+  // à partir de la deuxième, c'est le filet qui la sépare de la précédente,
+  // et le rond ne bougeait plus. Le compte, lui, était juste : seule l'image
+  // mentait. Le contrôle décoche toutes les lignes et regarde chaque rond.
+  {
+    const cFo = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cFo.newPage();
+    await page.goto(`${B}/fournisseur-depuis-son-devis.html`, { waitUntil: 'domcontentloaded' });
+    for (const etat of ['nouveau', 'connu']) {
+      await page.click(`.planche-etapes [data-va="${etat}"]`);
+      const lignes = page.locator(`[data-planche="${etat}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`);
+      const n = await lignes.count();
+      for (let i = 0; i < n; i++) await lignes.nth(i).click();
+      const ronds = await page.evaluate((e) => [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)]
+        .map((b) => ({ presse: b.getAttribute('aria-pressed'), plein: /7px/.test((b.querySelector('span[aria-hidden].rounded-full') || {}).style?.boxShadow || '') })), etat);
+      ok(`fournisseur depuis son devis (${etat}) : les ${n} lignes décochées ont toutes un rond vide`,
+         n > 1 && ronds.every((r) => r.presse === 'false' && !r.plein), JSON.stringify(ronds));
+      const bouton = (await page.textContent(`[data-planche="${etat}"] [data-atlas="prendre-les-prix"]`)).trim();
+      ok(`fournisseur depuis son devis (${etat}) : le bouton dit qu'aucun prix n'est pris`, /sans les prix|Aucun prix/.test(bouton), bouton);
+      await lignes.nth(n - 1).click();
+      const dernier = await page.evaluate((e) => { const b = [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)].pop(); return /7px/.test(b.querySelector('span[aria-hidden].rounded-full').style.boxShadow); }, etat);
+      ok(`fournisseur depuis son devis (${etat}) : la dernière ligne recochée remplit son rond`, dernier);
+    }
+    await cFo.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }
