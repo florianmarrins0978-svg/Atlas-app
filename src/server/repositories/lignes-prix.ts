@@ -102,6 +102,8 @@ export async function ajouterLignePrix(
     partGrille?: string | null;
     /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
     hommesMainDoeuvre?: number | null;
+    /** Le prix d'achat qui la chiffre, en mots (migration 0188), pour lui seul : le serveur seul le pose. */
+    achatRetenu?: string | null;
   }
 ) {
   exigerNombresDeLigne(
@@ -136,6 +138,7 @@ export async function ajouterLignePrix(
         partAncienne: options?.partAncienne ?? null,
         partGrille: options?.partGrille ?? null,
         hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
+        achatRetenu: options?.achatRetenu ?? null,
         ordre: existantes.length,
       })
       .returning();

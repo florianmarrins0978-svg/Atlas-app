@@ -42,7 +42,7 @@ import { ligneDuChoix, poserLaMainDoeuvreDeLaFeuille } from "@/server/chiffrage/
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
-import { chiffrerLesAjouts } from "@/server/chiffrage/ajouts-dictes";
+import { achatQuiChiffreLAjout, chiffrerLesAjouts } from "@/server/chiffrage/ajouts-dictes";
 import type { Changement } from "@/lib/retouches-devis";
 import type { CiviliteClient } from "@/lib/civilite";
 import { tauxTvaValide } from "@/lib/reduction-devis";
@@ -459,6 +459,9 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
           // mètres linéaires » écrit sans elle donnerait une ligne « 20 × … »
           // qui ne dit pas vingt de quoi — et c'est le client qui la lit.
           unite: c.unite ?? undefined,
+          // Le fournisseur sous la ligne, pour lui seul : relu par le serveur,
+          // jamais pris de l'écran (`achatQuiChiffreLAjout`).
+          achatRetenu: c.prixUnitaire === null ? null : await achatQuiChiffreLAjout(ctx, { libelle: c.libelle, quantite, unite: c.unite, prixUnitaire: prix }),
         });
         break;
       }

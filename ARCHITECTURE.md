@@ -37819,3 +37819,31 @@ démonstration, réponse de lecture simulée : 15 vérifications (création,
 téléphone refusé puis corrigé sur la fiche, rangement chez un autre).
 Batterie pas jouée.
 
+## §595 : Le fournisseur reste écrit sous une ligne dictée, pour lui seul
+
+*20 novembre 2026, sa réponse « 2, tu peux la coder aussi » sur
+`appli/devis-fournisseur-pour-vous-seul.html`.*
+
+Une ligne que le devis DICTÉ chiffre par un prix d'achat × sa marge garde le
+fournisseur sous elle (« Matériaux Garnier, 9,40 € HT le sac »), dans la même
+colonne que le devis tapé à la main (`lignes_prix.achat_retenu`, migration
+0188, §593). « Chez le client » de la planche est l'aperçu PDF qui existait :
+le PDF ne la porte pas (`devis.ts` recopie ses champs un à un).
+
+| Chemin | Comment la mention arrive |
+|---|---|
+| la dictée du chantier | `prixDUneLigneDictee` rend `achatRetenu` quand l'achat a donné le prix ; `completerParSesAchats` le garde sur la ligne proposée, `appliquerPropositionPrix` l'écrit |
+| le micro du devis | l'écran renvoie le prix coché, jamais le fournisseur ; le serveur repasse la même règle (`achatQuiChiffreLAjout`) et ne retient l'achat que s'il donne exactement ce prix et cette quantité |
+| son prix de vente, sa grille, une ligne à chiffrer | aucune mention : aucun fournisseur ne l'a chiffrée |
+
+**Limite connue** : sur le micro, si sa grille donnait par hasard au centime
+le même prix que l'achat × marge, la mention nommerait le fournisseur. Une
+ligne sans mention vaut mieux qu'une mention fausse, mais ce cas-là n'est pas
+écarté.
+
+Contrôles : `test-prix-achat` (pur, vu rouge : la mention sur un achat, aucune
+sur une vente ou sans marge), `test-devis-prix-achat-db` (la proposition
+appliquée écrit la mention ; **écrit, pas encore joué**). Regardé sur la base
+de démonstration : deux lignes dictées portent leur fournisseur à l'écran, le
+PDF du même devis n'en nomme aucun.
+

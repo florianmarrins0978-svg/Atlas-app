@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-20
 
+- **Le fournisseur reste écrit sous une ligne dictée, pour lui seul** (sa planche 2, « tu peux la coder aussi »). Une ligne que le devis dicté chiffre par un prix d'achat garde « Matériaux Garnier, 9,40 € HT le sac » sous elle ; le PDF du client ne le porte pas. Au micro du devis, le serveur relit lui-même le fournisseur, jamais l'écran. Batterie pas jouée. `ARCHITECTURE.md` §595.
 - **Un fournisseur se crée depuis son devis** (sa planche, « oui, code-la »). Sous « Ajouter » de Ce que je paie, un devis se prend en photo ou se dépose sans choisir la société ; Cause lit son nom, son mail, son téléphone et ses prix, propose « Nouveau fournisseur » prérempli ou reconnaît celui qu'il a déjà. « Ne rien créer » ne laisse aucune trace. Téléphone du fournisseur : migration 0189. Lecture réelle de l'en-tête pas vérifiable ici (pas de clé). Batterie pas jouée. `ARCHITECTURE.md` §594.
 - **« ml » s'ajoute aux unités des pièces** (sa demande, à côté de « m »). Un devis fournisseur lu en « ml » le garde ; le plan d'arrosage retrouve le prix d'un tube vendu au m ou au ml, une seule règle (`auMetreLineaire`). Tests vus rouges avant.
 - **La marge se tape en pour cent, et 0 % veut dire sans marge** (sa réponse : « la B en % »). Ce que je paie, la feuille Main d'œuvre, la liste de ses partenaires et l'explication des prix disent « 30 % » ou « sans marge » au lieu de « × 1,30 ». La case vide reste « Marge à donner ». La base garde le coefficient : aucune migration. `ARCHITECTURE.md` §593.

@@ -397,6 +397,13 @@ export type PrixDUneLigne = {
   detail: string;
   /** Le tarif de vente retenu, quand c'en est un : il dit si l'engin part avec son homme. */
   tarif?: TarifDeVente;
+  /**
+   * Le prix d'achat qui a chiffré la ligne, en mots (« Point P, 8,00 € HT le
+   * sac »), quand c'en est un : il reste écrit sous la ligne, pour lui seul
+   * (migration 0188, sa planche du 19 novembre 2026,
+   * `appli/devis-fournisseur-pour-vous-seul.html`).
+   */
+  achatRetenu?: string;
 };
 
 /**
@@ -490,5 +497,6 @@ export function prixDUneLigneDictee(
     unite: achat.unite,
     prixUnitaire: p.venteHt === null ? "0" : new Decimal(p.venteHt).div(q).toDecimalPlaces(2).toFixed(2),
     detail: `${achat.nom} : ${p.source}`,
+    ...(p.venteHt === null ? {} : { achatRetenu: achatRetenuEnMots(achat) }),
   };
 }

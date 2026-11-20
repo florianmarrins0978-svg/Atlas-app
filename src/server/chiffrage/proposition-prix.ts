@@ -91,6 +91,11 @@ export type LigneProposee = {
    */
   prestationIds: string[];
   /**
+   * Le prix d'achat qui l'a chiffrée, en mots (migration 0188) : écrit sous la
+   * ligne du devis, pour lui seul, jamais sur le papier.
+   */
+  achatRetenu?: string;
+  /**
    * La ligne EST la main d'œuvre dictée (« sur une ligne Main d'œuvre ») :
    * « dont main d'œuvre HT » la compte entière, comme une ligne posée par
    * « + Main d'œuvre » (migration 0130). Absent : un travail.
@@ -1635,7 +1640,7 @@ async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: Propos
     const p = prixDUneLigneDictee(membresDuLibelle(l.libelle)[0] ?? l.libelle, q, { ...sources, tarifs: deVente }, l.unite, hommesDictes);
     if (p.montant === null) return l;
     calcul.push({ libelle: p.origine === "vente" ? "Tarif appliqué" : "Prix d'achat", detail: p.detail });
-    return { ...l, montant: p.montant, quantite: p.quantite, unite: p.unite, prixUnitaire: p.prixUnitaire };
+    return { ...l, montant: p.montant, quantite: p.quantite, unite: p.unite, prixUnitaire: p.prixUnitaire, achatRetenu: p.achatRetenu };
   });
 
   const dejaLa = new Set(lignes.map((l) => l.libelle.trim().toLowerCase()));
@@ -1664,6 +1669,7 @@ async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: Propos
       unite: p.unite,
       prixUnitaire: p.prixUnitaire,
       prestationIds: [],
+      achatRetenu: p.achatRetenu,
     });
   }
 

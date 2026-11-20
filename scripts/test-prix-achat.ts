@@ -209,6 +209,18 @@ test("son prix de vente passe TOUJOURS avant l'achat × marge (« le A »)", () 
   assert.equal(r.montant, null);
 });
 
+test("une ligne dictée chiffrée par un achat garde son fournisseur, pour lui seul (sa planche 2 du 19 novembre 2026)", () => {
+  const marges = { materiel: "1.30", mainOeuvre: null };
+  const a = prixDUneLigneDictee("3 sacs de ciment", 3, { tarifs: [], achats: [ciment], marges });
+  assert.equal(a.achatRetenu?.replace(/\s/g, " "), "Point P, 8,00 € HT le sac");
+  // Son prix de vente ne vient d'aucun fournisseur ; une ligne à chiffrer non plus.
+  const vente = prixDUneLigneDictee("3 sacs de ciment", 3, { tarifs: [{ tarifId: "t", intitule: "Sac de ciment", prix: "12.00", unite: "sac" }], achats: [ciment], marges });
+  assert.equal(vente.achatRetenu, undefined);
+  const sansMarge = prixDUneLigneDictee("3 sacs de ciment", 3, { tarifs: [], achats: [ciment], marges: { materiel: null, mainOeuvre: null } });
+  assert.equal(sansMarge.origine, "a_chiffrer");
+  assert.equal(sansMarge.achatRetenu, undefined);
+});
+
 test("« 3 sacs de ciment » retrouve son tarif « Sac de ciment » comme il retrouve l'achat", () => {
   const vente = { tarifId: "t", intitule: "Sac de ciment", prix: "12.00", unite: "sac" };
   const autre = { tarifId: "u", intitule: "Tonte de pelouse", prix: "40.00", unite: null };
