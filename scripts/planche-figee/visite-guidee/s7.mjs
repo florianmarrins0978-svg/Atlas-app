@@ -6,6 +6,10 @@ const pas = (t = 700) => page.waitForTimeout(t);
 try {
   await va("/termines");
   await fige("25-termines");
+  await page.click('[data-atlas="onglet-retours"]'); await page.waitForURL(/retours/); await pas(2000);
+  await fige("25b-retours");
+  await page.locator('[data-atlas="carte-de-retour"]').first().click(); await pas(2000);
+  await fige("25c-retour");
   await va(`/chantiers/${id}/facture`);
   const creer = page.getByRole("button", { name: "Créer la facture" });
   if (await creer.count()) { await fige("26-facture-realise"); await creer.click(); await pas(6000); }

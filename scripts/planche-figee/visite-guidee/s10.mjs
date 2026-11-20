@@ -11,7 +11,7 @@ try {
     await fige("42-checkup");
     await essai(async () => { await ligne("Quincaillerie").getByRole("button", { name: "Ticket perdu" }).click(); await pas(1000); await page.click('[data-atlas="valider-ticket-perdu"]'); await pas(2500); });
     await essai(async () => { await ligne("Mutuelle").locator('[data-atlas="autre-chose"]').click(); await pas(1000); await page.locator('[data-atlas="choix-motif"]', { hasText: "Un fournisseur" }).first().click(); await pas(2500); });
-    await essai(async () => { await ligne("Costa").locator('[data-atlas="autre-chose"]').click(); await pas(1000); await page.locator('[data-atlas="choix-motif"]').first().click(); await pas(2500); });
+    await essai(async () => { await ligne("Remise").locator('[data-atlas="autre-chose"]').click(); await pas(1000); await page.locator('[data-atlas="choix-motif"]').first().click(); await pas(2500); });
     await va("/termines/comptable");
   }
   await fige("43-comptable-justifie");

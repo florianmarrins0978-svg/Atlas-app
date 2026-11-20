@@ -28,14 +28,15 @@ python3 "$ICI/ticket.py" "$VISITE_TRAVAIL/ticket-carburant.jpg"
 $P -f "$ICI/fictif.sql"
 rm -f "$VISITE_TRAVAIL/etat.json"
 cd "$ICI"
-node s0.mjs; node s1.mjs; node s2.mjs; node s3.mjs; node s4.mjs; node s3b.mjs
+node s0.mjs; node histoire.mjs; node s1.mjs; node s1b.mjs; node s2.mjs; node s3.mjs; node s4.mjs; node s3b.mjs
 C=$(cat "$VISITE_TRAVAIL/chantier.txt")
 $P -c "select jeton from envois_devis where chantier_id='$C' order by envoye_at desc limit 1" > "$VISITE_TRAVAIL/jeton-devis.txt"
 node s5.mjs; node s6.mjs
 bash passe.sh
 node s7.mjs
 $P -c "select jeton from envois_factures order by envoye_at desc limit 1" > "$VISITE_TRAVAIL/jeton-facture.txt"
-psql -q postgresql://postgres@localhost:5432/atlas_test -f banque.sql
+NUM=$($P -c "select numero_commercial from factures where chantier_id='$C'")
+psql -q postgresql://postgres@localhost:5432/atlas_test -v num="$NUM" -f banque.sql
 node s8.mjs; node s9.mjs; node s10.mjs; node s11.mjs
 # « Ma banque » se fige avant l'arrêt du dossier : après, son relevé repart de zéro.
 $P -c "begin; delete from envois_comptable; delete from attestations_comptable; delete from verdicts_comptable; delete from retours_comptable; delete from bilans_comptables; delete from dossiers_comptables; commit;"
