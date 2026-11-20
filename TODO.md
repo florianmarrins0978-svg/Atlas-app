@@ -588,9 +588,12 @@ le vrai écran du plan tourne dans le téléphone, compilé depuis `src/` par
 change dans l'appli**, sans quoi le site montre une version d'avant. Le jardin
 (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change vraiment les
 réseaux : sa pelouse à 4 turbines sur un seul réseau n'en changeait pas.
-**Reste à faire, sa demande : « pareil avec les autres outils »** (le
-diagnostic végétal et les fiches de chantier, écrans qui lisent la base : à
-monter avec des données d'exemple à la place).
+**Fait le même soir, sa demande : « pareil avec les autres outils »** :
+« Essayez le diagnostic » (la fiche du platane, publiable, composée par le
+vrai moteur) et « Essayez la fiche » (M. Bernard, ses cases reprises, l'envoi,
+le retour chez le client). Les trois démonstrations se reconstruisent par
+`npx tsx appli/scripts/demo-outils/construire.ts`, **à relancer dès qu'un de
+ces écrans change dans l'appli**.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 

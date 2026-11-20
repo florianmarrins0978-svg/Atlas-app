@@ -8,7 +8,7 @@
  * L'écran est monté exactement comme src/app/paysage/arrosage/page.tsx le
  * monte, dans le cadre de l'appli (CadreApplication, sa barre d'onglets) :
  * mêmes composants, même calcul, même feuille de style. Le croquis « lu » est
- * celui du jardin de la démonstration (bouchons.ts) ; on l'envoie au premier
+ * celui du jardin de la démonstration (bouchons/arrosage.ts) ; on l'envoie au premier
  * rendu, comme si la photo venait d'être lue.
  */
 import { createRoot } from "react-dom/client";

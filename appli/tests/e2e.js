@@ -805,6 +805,32 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cDe.close();
   }
 
+  // Les deux autres outils, même principe (sa demande du même soir :
+  // « pareil avec les autres outils »). On touche une étape du guide et l'on
+  // attend que l'APPLI réponde dans le téléphone : la photo d'exemple rend la
+  // fiche de l'anthracnose du platane ; nommer M. Bernard sur une fiche neuve
+  // recoche les cases de son dernier compte rendu (la reprise de l'appli).
+  for (const [section, demo, etape, attendu, nom] of [
+    ['#essai-diagnostic', 'demo-diagnostic', 'photo', 'Anthracnose du platane', 'la photo rend la fiche du platane'],
+    ['#essai-fiches', 'demo-fiches', 'bernard', 'celles du dernier chantier', 'M. Bernard nommé, ses cases de la dernière fois reviennent'],
+  ]) {
+    const cAu = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cAu.newPage();
+    await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate((s) => { const el = document.querySelector(s + ' .essai-visuel'); scrollTo(0, el.getBoundingClientRect().top + scrollY - 70); }, section);
+    const pret = await page.waitForFunction((d) => document.querySelector('#' + d + '.pret'), demo, { timeout: 30000 }).then(() => true, () => false);
+    ok('vente, les outils : ' + demo + ' se charge dans le téléphone', pret);
+    if (pret) {
+      await page.locator(section + ' .guide button[data-etape="' + etape + '"]').evaluate((b) => b.click());
+      const vu = await page.waitForFunction(([d, t]) => {
+        const f = document.querySelector('#' + d + ' iframe');
+        return f && f.contentDocument && f.contentDocument.body.textContent.includes(t);
+      }, [demo, attendu], { timeout: 15000 }).then(() => true, () => false);
+      ok('vente, les outils : ' + nom, vu);
+    }
+    await cAu.close();
+  }
+
   // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
   //
   // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés

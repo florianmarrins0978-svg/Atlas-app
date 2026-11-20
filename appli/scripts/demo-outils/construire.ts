@@ -12,7 +12,8 @@
  *
  * **Ce qui est remplacé, et rien d'autre :**
  *   · chaque fichier qui commence par « use server » devient, export par
- *     export, ce que bouchons.ts lui donne (un refus en clair sinon) ;
+ *     export, ce que bouchons/<outil>.ts lui donne (un refus en clair
+ *     sinon) ; les modules de src/server/ de même, sauf SERVEUR_GARDE ;
  *   · next/link, next/image et next/navigation deviennent next.tsx.
  * Un module du serveur qu'un écran importerait pour de vrai (une base, une
  * clé) ferait échouer la construction : c'est voulu, la démonstration ne doit
@@ -34,7 +35,26 @@ const ICI = __dirname;
 const RACINE = join(ICI, "../../..");
 const SORTIE = join(RACINE, "appli/vente/demo");
 
-const OUTILS: { nom: string; titre: string }[] = [{ nom: "arrosage", titre: "Plan d’arrosage" }];
+const OUTILS: { nom: string; titre: string }[] = [
+  { nom: "arrosage", titre: "Plan d’arrosage" },
+  { nom: "diagnostic", titre: "Diagnostic végétal" },
+  { nom: "fiches", titre: "Fiche de chantier" },
+];
+
+/**
+ * Les modules du serveur que la démonstration fait tourner POUR DE VRAI :
+ * ceux qui ne touchent ni base ni clé, et dont l'écran a besoin pour être
+ * le même. Le résultat d'un diagnostic se compose avec la fonction même du
+ * moteur, qui lit sa fiche par un dépôt, lui remplacé.
+ */
+const SERVEUR_GARDE = new Set(["src/server/diagnostic/moteur.ts"]);
+
+/**
+ * Hors du serveur, ce qui ferait quitter la démonstration : ouvrir la
+ * messagerie de l'artisan (sms:, mailto:). Remplacé comme un module du
+ * serveur ; la fiche dit alors, à côté du téléphone, ce qui s'ouvrirait.
+ */
+const AUSSI_REMPLACES = new Set(["src/lib/ouvrir-messagerie.ts"]);
 
 /**
  * Les photos des pièces, que l'appli sert depuis public/ à la racine de son
@@ -47,10 +67,13 @@ const PHOTOS: [string, string][] = [
   ['"/arrosage-robinet-photos/', '"../../arrosage-robinet-photos/'],
   // src/lib/arrosage/photos.ts : un fichier rangé dans un sous-dossier.
   ["`/${fichier}`", "`../../${fichier}`"],
+  // Les photos de référence d'une fiche, servies par une route de l'appli :
+  // ici, l'identifiant de l'image EST son chemin (bouchons/diagnostic.ts).
+  ["`/api/phyto/image/${image.id}`", "image.id"],
 ];
 
 
-const remplacer: Plugin = {
+const remplacer = (outil: string): Plugin => ({
   name: "demonstration",
   setup(b) {
     const next = join(ICI, "next.tsx");
@@ -58,27 +81,46 @@ const remplacer: Plugin = {
       "next/link": `export { default } from ${JSON.stringify(next)};`,
       "next/image": `export { Image as default } from ${JSON.stringify(next)};`,
       "next/navigation": `export * from ${JSON.stringify(next)};`,
+      "next/headers": `export async function headers() { return new Headers(); }`,
     };
-    b.onResolve({ filter: /^next\/(link|image|navigation)$/ }, (a) => ({ path: a.path, namespace: "next-demo" }));
+    b.onResolve({ filter: /^next\/(link|image|navigation|headers)$/ }, (a) => ({ path: a.path, namespace: "next-demo" }));
     b.onLoad({ filter: /.*/, namespace: "next-demo" }, (a) => ({ contents: virtuels[a.path], loader: "tsx", resolveDir: ICI }));
 
     b.onLoad({ filter: /[\\/]src[\\/].*\.tsx?$/ }, (a) => {
       const texte = readFileSync(a.path, "utf8");
-      if (!/^\s*["']use server["']/.test(texte)) {
+      const fichier = relative(RACINE, a.path).replace(/\\/g, "/");
+      const action = /^\s*["']use server["']/.test(texte);
+      const serveur = (fichier.startsWith("src/server/") && !SERVEUR_GARDE.has(fichier)) || AUSSI_REMPLACES.has(fichier);
+      if (!action && !serveur) {
         if (!PHOTOS.some(([de]) => texte.includes(de))) return undefined;
         let contents = texte;
         for (const [de, vers] of PHOTOS) contents = contents.split(de).join(vers);
         return { contents, loader: a.path.endsWith("x") ? "tsx" : "ts" };
       }
-      const fichier = relative(RACINE, a.path).replace(/\\/g, "/");
-      const noms = Array.from(texte.matchAll(/export\s+async\s+function\s+(\w+)/g), (m) => m[1]);
+      // Une action, ou un module du serveur (une base, une clé, un journal) :
+      // chaque export devient ce que bouchons/<outil>.ts lui donne. Les types
+      // s'effacent d'eux-mêmes à la compilation.
+      const fonctions = Array.from(texte.matchAll(/export\s+(?:async\s+)?function\s+(\w+)/g), (m) => m[1]);
+      const constantes = Array.from(texte.matchAll(/export\s+const\s+(\w+)/g), (m) => m[1]);
+      // **Résolus à l'appel, jamais au chargement** : un bouchon peut se
+      // servir d'un module de l'appli (le moteur du diagnostic) qui importe
+      // lui-même des modules remplacés. Lus au chargement, ils trouvaient
+      // le fichier des bouchons pas encore exécuté (« bouchon is not a
+      // function »).
+      const f = JSON.stringify(fichier);
       const contents =
-        `import { bouchon } from ${JSON.stringify(join(ICI, "bouchons.ts"))};\n` +
-        noms.map((n) => `export const ${n} = bouchon(${JSON.stringify(fichier)}, ${JSON.stringify(n)});`).join("\n");
+        `import { bouchon, constante } from ${JSON.stringify(join(ICI, "bouchons", `${outil}.ts`))};\n` +
+        fonctions.map((n) => `export const ${n} = (...a) => bouchon(${f}, ${JSON.stringify(n)}, ${action})(...a);`).join("\n") + "\n" +
+        constantes
+          .map((n) => {
+            const v = `constante(${f}, ${JSON.stringify(n)})`;
+            return `export const ${n} = new Proxy(function () {}, { get: (_c, k) => Reflect.get(Object(${v}), k), apply: (_c, t, a) => Reflect.apply(${v}, t, a) });`;
+          })
+          .join("\n");
       return { contents, loader: "ts", resolveDir: ICI };
     });
   },
-};
+});
 
 /**
  * Tailwind compilé depuis la feuille de l'appli, sur les classes que src/
@@ -109,11 +151,12 @@ async function construire() {
     format: "iife",
     platform: "browser",
     target: ["es2020", "safari15"],
-    minify: true,
+    // DEMO_LISIBLE=1 : le code non réduit, pour lire une erreur.
+    minify: !process.env.DEMO_LISIBLE,
     jsx: "automatic",
     tsconfig: join(RACINE, "tsconfig.json"),
     define: { "process.env.NODE_ENV": '"production"' },
-    plugins: [remplacer],
+    plugins: [remplacer(outil.nom)],
     logLevel: "warning",
   });
   const code = r.outputFiles[0].text;
