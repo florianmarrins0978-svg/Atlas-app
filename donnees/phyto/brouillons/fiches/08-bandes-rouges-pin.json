@@ -184,6 +184,22 @@
           "credit": "Photo de Robert L. James, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
           "partie": "aiguille",
           "legende": "Aiguilles de pin jaunies, marquées de bandes brun rouge et de petits points noirs. L’espèce du pin n’est pas précisée : ce n’est pas forcément un pin laricio."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/2111013",
+          "fichier": "donnees/phyto/brouillons/images/bandes-rouges-pin-aiguille-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org",
+          "partie": "aiguille",
+          "legende": "Les bandes rouges et les fructifications noires du champignon sur des aiguilles mortes de pin noir d’Autriche."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/1470122",
+          "fichier": "donnees/phyto/brouillons/images/bandes-rouges-pin-houppier.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de A. Steven Munson, USDA Forest Service, Bugwood.org",
+          "partie": "houppier",
+          "legende": "À gauche, un jeune pin noir d’Autriche dégarni par le bas : seules les extrémités des branches restent vertes."
         }
       ],
       "noteImpact": 2,

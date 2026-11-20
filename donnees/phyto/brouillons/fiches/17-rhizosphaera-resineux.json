@@ -310,7 +310,32 @@
           ]
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://www.forestryimages.org/browse/image/2634062",
+          "fichier": "donnees/phyto/brouillons/images/rhizosphaera-resineux-branche.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de USDA Forest Service, Bugwood.org",
+          "partie": "branche",
+          "legende": "Sur des branches basses d’épicéa, les aiguilles ont bruni et seules les extrémités restent vertes."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5190099",
+          "fichier": "donnees/phyto/brouillons/images/rhizosphaera-resineux-aiguille.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Michael Kangas, NDSU, North Dakota Forest Service, Bugwood.org",
+          "partie": "aiguille",
+          "legende": "À la loupe, les petits points noirs du champignon en lignes sur une aiguille brunie d’épicéa du Colorado, au-dessus d’une aiguille saine."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/1406191",
+          "fichier": "donnees/phyto/brouillons/images/rhizosphaera-resineux-houppier.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de USDA Forest Service, North Central Research Station, Bugwood.org",
+          "partie": "houppier",
+          "legende": "Un épicéa du Colorado bruni et dégarni par le bas, le haut restant vert."
+        }
+      ],
       "noteImpact": 1,
       "noteAgressivite": 1,
       "noteFrequence": 1

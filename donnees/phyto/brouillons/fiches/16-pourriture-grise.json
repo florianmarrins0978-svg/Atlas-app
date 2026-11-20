@@ -243,12 +243,28 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Botrytis%20cinerea.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/pourriture-grise-rameau.jpg",
-          "licence": "CC BY-SA 2.0",
-          "credit": "Photo de Flowersabc, via Wikimedia Commons",
+          "url": "https://www.forestryimages.org/browse/image/2110095",
+          "fichier": "donnees/phyto/brouillons/images/pourriture-grise-rameau-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org",
           "partie": "rameau",
-          "legende": "La moisissure grise du champignon, ici sur un bouton de rosier et non sur un résineux."
+          "legende": "Sur un épicéa commun, des pousses tuées par le champignon se courbent et pendent."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/2110100",
+          "fichier": "donnees/phyto/brouillons/images/pourriture-grise-rameau-3.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org",
+          "partie": "rameau",
+          "legende": "Des pousses mortes, brunies et recourbées, sur un sapin pectiné."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/2111001",
+          "fichier": "donnees/phyto/brouillons/images/pourriture-grise-bourgeon.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org",
+          "partie": "bourgeon",
+          "legende": "La moisissure grise du champignon sur des bourgeons de sapin pectiné."
         }
       ],
       "noteImpact": 1,
