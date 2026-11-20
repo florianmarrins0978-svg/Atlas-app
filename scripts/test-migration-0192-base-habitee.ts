@@ -4,14 +4,14 @@ import path from "node:path";
 import { Pool } from "pg";
 
 /**
- * LA MIGRATION 0190 SUR UNE BASE QUI A DÉJÀ VÉCU.
+ * LA MIGRATION 0192 SUR UNE BASE QUI A DÉJÀ VÉCU.
  *
  * Elle réécrit des libellés existants (ses réponses quittent le nom du
  * travail, `ARCHITECTURE.md` §598), donc elle s'éprouve sur une base HABITÉE,
  * sous FORCE RLS, et sous le rôle qui migre, sans BYPASSRLS
  * (`.claude/rules/migrations.md`, la leçon de 0087).
  *
- * Dans un schéma à part, tables réduites à ce que 0190 lit et écrit, RLS
+ * Dans un schéma à part, tables réduites à ce que 0192 lit et écrit, RLS
  * forcée comme en vrai, deux entreprises :
  *
  *   A. elle s'applique ;
@@ -23,11 +23,11 @@ import { Pool } from "pg";
  *   E. sans la boucle par entreprise, la même écriture ne toucherait RIEN :
  *      la suite sait échouer, c'est la RLS qui la rend vraie.
  *
- *   npx tsx scripts/test-migration-0190-base-habitee.ts
+ *   npx tsx scripts/test-migration-0192-base-habitee.ts
  */
 
-const FICHIER = path.join(__dirname, "..", "drizzle", "0190_reponses_hors_du_nom.sql");
-const SCHEMA = `epreuve_0190_${process.pid}`;
+const FICHIER = path.join(__dirname, "..", "drizzle", "0192_reponses_hors_du_nom.sql");
+const SCHEMA = `epreuve_0192_${process.pid}`;
 const E1 = "11111111-1111-1111-1111-111111111111";
 const E2 = "22222222-2222-2222-2222-222222222222";
 const C1 = "aaaaaaaa-1111-1111-1111-111111111111";
@@ -53,7 +53,7 @@ const isolation = (table: string) => `
     WITH CHECK ("entreprise_id" = NULLIF(current_setting('app.entreprise_id', true), '')::uuid);
 `;
 
-/** Les tables telles que 0189 les laisse, réduites à ce que 0190 touche, RLS forcée. */
+/** Les tables telles que 0189 les laisse, réduites à ce que 0192 touche, RLS forcée. */
 const TABLES_EN_0187 = `
   CREATE TABLE "entreprises" ("id" uuid PRIMARY KEY);
   CREATE TABLE "prestations" (
@@ -129,7 +129,7 @@ async function main() {
     await prestation(E2, C2, "Frêne — démontage en rétention");
     await reponse(E2, C2, "Frêne", "⌀ 30 cm");
 
-    console.log("=== 0190 sur une base qui a déjà vécu ===");
+    console.log("=== 0192 sur une base qui a déjà vécu ===");
 
     await cas("E. sans la boucle par entreprise, la même écriture ne toucherait rien", async () => {
       const r = await client.query(`UPDATE "prestations" SET "libelle" = "libelle" WHERE "libelle" LIKE '%(%'`);
@@ -173,7 +173,7 @@ async function main() {
     await pool.end();
   }
 
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} 0190 sur une base habitée — ${echecs} échec(s).`);
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} 0192 sur une base habitée — ${echecs} échec(s).`);
   if (echecs > 0) process.exit(1);
 }
 

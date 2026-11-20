@@ -27,7 +27,7 @@
 -- `prestations` et `precisions_chantier` sont sous FORCE ROW LEVEL SECURITY, et
 -- le rôle qui migre n'a pas BYPASSRLS : sans contexte, l'UPDATE ne toucherait
 -- rien, sans un mot. On boucle par entreprise (modèle 0037), et l'on compte.
--- Éprouvée sur une base habitée : `scripts/test-migration-0190-base-habitee.ts`.
+-- Éprouvée sur une base habitée : `scripts/test-migration-0192-base-habitee.ts`.
 
 DO $$
 DECLARE

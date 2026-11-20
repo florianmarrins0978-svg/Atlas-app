@@ -102,6 +102,13 @@ const eslintConfig = defineConfig([
     // Constaté le 6 novembre 2026 : `media-use/scripts/recipe.mjs` faisait
     // rougir le lint sur une règle React qui ne le concerne pas.
     ...SKILLS_DE_TIERS,
+    // Les dossiers de travail que l'outil des sessions pose pour une copie
+    // isolée (`isolation: "worktree"`) : un dépôt entier, avec son `.next`, ses
+    // skills et son code généré, rangé DANS celui-ci. Le 20 novembre 2026, deux
+    // planches faites en parallèle ont laissé le leur, et le lint de la batterie
+    // a rougi sur une étape sans rapport avec le lot ; cinquante minutes à
+    // rejouer. Ce qui s'y écrit se contrôle dans son propre dossier.
+    ".claude/worktrees/**",
   ]),
 ]);
 

@@ -6,7 +6,7 @@ Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, repo
 
 ## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL DU DEVIS : CODÉES, PAS ENCORE SUR `main` (20 novembre 2026)
 
-« Abattage entre 10 et 20 m, ⌀ 80 cm » sous la description, lu dans les cases, pour lui seul ; et plus rien dans le nom du travail (migration 0190 pour ceux d'avant). Suite base, écran et contrôle de niveau sur son « oui ». `ARCHITECTURE.md` §597 et §598.
+« Abattage entre 10 et 20 m, ⌀ 80 cm » sous la description, lu dans les cases, pour lui seul ; et plus rien dans le nom du travail (migration 0192 pour ceux d'avant). Suite base, écran et contrôle de niveau sur son « oui ». `ARCHITECTURE.md` §597 et §598.
 
 ## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE, « ML », LE FOURNISSEUR DEPUIS SON DEVIS ET SOUS LA LIGNE DICTÉE : SUR `main` (20 novembre 2026)
 
