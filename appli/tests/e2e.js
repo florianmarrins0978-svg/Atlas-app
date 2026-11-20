@@ -718,6 +718,56 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cVe.close();
   }
 
+  // ── Le site de vente : la porte des outils de paysage ───────────────────
+  //
+  // Sa demande du 20 novembre 2026 : « qu'on puisse cliquer sur l'abonnement
+  // de 6 € pour les outils, et que ça soit une porte » vers une page qui les
+  // montre. La carte « Les outils de paysage », sous les trois formules de
+  // cause-2.html, s'ouvre donc d'un doigt posé n'importe où sur elle, pas
+  // seulement sur son bouton : on la touche au milieu de sa liste. Puis la
+  // page derrière la porte : chacune de ses images est là (leurs noms ne se
+  // composent pas, mais une image absente laisserait un téléphone vide), et
+  // son bouton d'essai, caché au bas, ne dépasse pas (le défaut du
+  // 7 novembre, vu plus haut).
+  {
+    const cPo = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cPo.route((url) => url.pathname.endsWith('/vente/outils.html'), async (route) => {
+      const r = await route.fetch();
+      route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
+    });
+    const page = await cPo.newPage();
+    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'domcontentloaded' });
+    const carte = page.locator('.option-outils');
+    await carte.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1600);
+    const prix = await page.evaluate(() => { const c = document.querySelector('.option-outils'); return c && c.querySelector('.montant').textContent + ' ' + c.querySelector('.rythme').textContent; });
+    ok('vente, en mouvement : la carte des outils dit 6 € HT par mois', prix === '6 € HT par mois', prix);
+    // Sur un téléphone la carte est plus haute que l'écran : on amène la
+    // ligne touchée à l'écran, sans quoi le doigt tombe hors de la page.
+    await page.locator('.outils-liste li').nth(1).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const ligne = await page.locator('.outils-liste li').nth(1).boundingBox();
+    if (ligne) {
+      await Promise.all([page.waitForURL(/\/vente\/outils\.html$/, { timeout: 8000 }).catch(() => {}), page.mouse.click(ligne.x + ligne.width / 2, ligne.y + ligne.height / 2)]);
+    }
+    ok('vente, en mouvement : toucher la carte des outils ouvre leur page', /\/vente\/outils\.html$/.test(page.url()), page.url());
+    if (!/\/vente\/outils\.html$/.test(page.url())) await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
+    const images = await page.evaluate(() => Array.from(document.images).filter((i) => !(i.complete && i.naturalWidth)).map((i) => i.getAttribute('src')));
+    ok('vente, les outils : chaque image de la page est là', images.length === 0, images.join(', '));
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(1200);
+    const pouce = await page.evaluate(() => {
+      const el = document.getElementById('pouce'), r = el.getBoundingClientRect();
+      return { cache: !el.classList.contains('vu'), haut: r.top, ecran: innerHeight, visible: getComputedStyle(el).visibility };
+    });
+    ok('vente, les outils : au bas de la page, le bouton d\'essai est caché', pouce.cache);
+    ok('vente, les outils : caché, il ne dépasse pas du bas de l\'écran',
+       pouce.visible === 'hidden' || pouce.haut >= pouce.ecran,
+       'il dépasse de ' + Math.round(pouce.ecran - pouce.haut) + ' px');
+    await cPo.close();
+  }
+
   // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
   //
   // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés
@@ -958,6 +1008,36 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok(N + ' : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
     ok(N + ' : aucune erreur de page', errs.length === 0, errs.join(' | '));
     await cIc.close();
+  }
+
+  // ── Le fournisseur depuis son devis : chaque rond suit sa ligne ─────────
+  //
+  // Sa remarque du 20 novembre 2026 : « j'ai décoché les deux, il y avait
+  // marqué aucun prix coché, sauf que le dernier restait coché ». Le script
+  // de la planche peignait le premier `span[aria-hidden]` de chaque ligne :
+  // à partir de la deuxième, c'est le filet qui la sépare de la précédente,
+  // et le rond ne bougeait plus. Le compte, lui, était juste : seule l'image
+  // mentait. Le contrôle décoche toutes les lignes et regarde chaque rond.
+  {
+    const cFo = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cFo.newPage();
+    await page.goto(`${B}/fournisseur-depuis-son-devis.html`, { waitUntil: 'domcontentloaded' });
+    for (const etat of ['nouveau', 'connu']) {
+      await page.click(`.planche-etapes [data-va="${etat}"]`);
+      const lignes = page.locator(`[data-planche="${etat}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`);
+      const n = await lignes.count();
+      for (let i = 0; i < n; i++) await lignes.nth(i).click();
+      const ronds = await page.evaluate((e) => [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)]
+        .map((b) => ({ presse: b.getAttribute('aria-pressed'), plein: /7px/.test((b.querySelector('span[aria-hidden].rounded-full') || {}).style?.boxShadow || '') })), etat);
+      ok(`fournisseur depuis son devis (${etat}) : les ${n} lignes décochées ont toutes un rond vide`,
+         n > 1 && ronds.every((r) => r.presse === 'false' && !r.plein), JSON.stringify(ronds));
+      const bouton = (await page.textContent(`[data-planche="${etat}"] [data-atlas="prendre-les-prix"]`)).trim();
+      ok(`fournisseur depuis son devis (${etat}) : le bouton dit qu'aucun prix n'est pris`, /sans les prix|Aucun prix/.test(bouton), bouton);
+      await lignes.nth(n - 1).click();
+      const dernier = await page.evaluate((e) => { const b = [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)].pop(); return /7px/.test(b.querySelector('span[aria-hidden].rounded-full').style.boxShadow); }, etat);
+      ok(`fournisseur depuis son devis (${etat}) : la dernière ligne recochée remplit son rond`, dernier);
+    }
+    await cFo.close();
   }
 
   await browser.close();
