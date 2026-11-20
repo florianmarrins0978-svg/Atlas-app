@@ -56,6 +56,7 @@ relues à chaque session) :
 31. [Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?](#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-)
 32. [Si je supprime un client, où reste sa facture ?](#32-si-je-supprime-un-client-où-reste-sa-facture-)
 33. [Si un artisan supprime son compte, Atlas peut-il garder ses factures ?](#33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-)
+34. [Que se passe-t-il quand je rattache un diagnostic à un chantier ?](#34-que-se-passe-t-il-quand-je-rattache-un-diagnostic-à-un-chantier-)
 
 ---
 
@@ -2226,4 +2227,40 @@ effacer ».
   envoyé ;
 - **un avis d'avocat** avant l'ouverture au public : ce qui précède est une
   lecture des textes, pas une consultation.
+
+---
+
+## 34. Que se passe-t-il quand je rattache un diagnostic à un chantier ?
+
+*Votre question du 19 novembre 2026, devant « Rattacher à un chantier », en bas
+de la fiche de diagnostic.*
+
+### La réponse courte
+
+Aujourd'hui, rattacher sert surtout à **garder les photos**. Rien ne s'affiche
+du côté du chantier.
+
+### Ce qui se passe
+
+| | |
+|---|---|
+| le diagnostic est noté sur le chantier | l'écran dit « Déjà rattaché » puis « Rattaché. » |
+| ses photos sont gardées tant que le chantier existe | sans chantier, elles s'effacent au bout de 90 jours |
+| l'assistant le retrouve | quand vous lui parlez de ce chantier |
+| le chantier est supprimé | le diagnostic reste, et redevient libre |
+
+### Ce qui ne se passe pas
+
+- **Rien n'apparaît sur le chantier.** Le geste a été joué le 19 novembre :
+  un diagnostic rattaché à « Terrasse bois », puis ce chantier ouvert. Aucune
+  trace. Le code ne le montre sur aucun autre écran : seuls l'écran du
+  diagnostic, l'assistant et l'export de vos données lisent ce lien.
+- **On ne retrouve plus la fiche une fois sortie.** Aucun écran ne liste les
+  anciens diagnostics, seul l'assistant peut les retrouver.
+
+### Ce qui pourrait changer
+
+Montrer le diagnostic sur la fiche du chantier, ou une liste des diagnostics
+passés. Rien n'est décidé : une planche sur le vrai écran d'abord, si vous le
+voulez.
 

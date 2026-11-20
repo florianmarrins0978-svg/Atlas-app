@@ -46,8 +46,12 @@ function ecrire(flux, tampon) {
  * film  : { l, h }, la taille du film. Les deux images fixes gardent celle
  *         de la photographie, plus fine.
  * x264, vp9 : ce qui est propre à ce film (qualité, niveau, images clés).
+ * cadre : { x, y, width, height }, la part de l'écran qu'on photographie,
+ *         quand la composition n'en occupe qu'un coin (l'écran garde alors la
+ *         largeur du tournage, dont dépend ce que l'appli peint). Sans lui,
+ *         tout l'écran.
  */
-async function tourner({ page, base, film, ips, duree, x264, vp9 }) {
+async function tourner({ page, base, film, ips, duree, x264, vp9, cadre }) {
   const images = Math.round(duree * ips);
   const entree = ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(ips), '-c:v', 'png', '-i', 'pipe:0', '-vf', versLeFilm(film)];
   const encodeurs = [
@@ -60,7 +64,7 @@ async function tourner({ page, base, film, ips, duree, x264, vp9 }) {
   let premiere = null, derniere = null;
   for (let k = 0; k < images; k++) {
     await page.evaluate((t) => window.poser(t), k / ips);
-    const png = await page.screenshot({ type: 'png' });
+    const png = await page.screenshot(cadre ? { type: 'png', clip: cadre } : { type: 'png' });
     if (k === 0) premiere = png;
     derniere = png;
     await Promise.all(encodeurs.map((e) => ecrire(e.p.stdin, png)));
