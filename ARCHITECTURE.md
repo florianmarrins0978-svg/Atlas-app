@@ -37695,3 +37695,24 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce que ce lot ne règle pas, et que le relevé a trouvé** : répartir une seconde fois AJOUTE aux parts posées (`partsAppliquees` part de la part d'avant) ; et préparer le devis à nouveau repart de la dictée (2 hommes), pas de la ligne qu'il a changée. Les deux sont dans `TODO.md`.
 
 `test-feuille-main-oeuvre.ts` (sept cas, vus rouges avant), `test-main-oeuvre-change-sa-ligne-db.ts` (sa dictée, « Changer », le partenaire, les refus, « Répartis »), `test-feuille-main-oeuvre-e2e.ts` (son geste : rouvrir, un homme de plus, une seule ligne).
+
+## §592 : La main d'œuvre de son équipe n'a qu'une forme par TVA, sa ligne ou ses parts
+
+*20 novembre 2026, sur son « oui corrige les 2 défauts ». Les deux rencontres relevées en codant §591.*
+
+**Répartie, sa main d'œuvre n'avait plus de ligne**, et la feuille rouverte ne la voyait plus (`saLigne` cherche une ligne). Deux gestes la comptaient alors deux fois : la répartir encore AJOUTAIT à la part déjà dans les travaux (`partsAppliquees` part de la part d'avant, à raison pour un partenaire), et la reposer sur une ligne la laissait aussi dans les travaux.
+
+| Décision | Pourquoi |
+|---|---|
+| la part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`, migration 0173) | une part de partenaire n'en a pas ; une part mêlée ou d'avant 0173 non plus, et personne ne sait ce qui est à lui : elle reste, plutôt que d'enlever ce qui revient au partenaire |
+| poser son équipe, en ligne ou répartie, fait d'abord SORTIR sa part des travaux de cette TVA (`sansLaPartDeSonEquipe`) | une seule main d'œuvre de son équipe par TVA, la règle qu'il a validée pour la ligne |
+| l'écran désigne les travaux de la TVA (`travauxDeSaTva`), le serveur relit chacun | même patron que `saLigne` : l'écran connaît la TVA où il a appuyé, le serveur décide de ce qui est à son équipe |
+| ligne et parts s'écrivent dans UNE transaction (`poserLaLigneDeSonEquipe`) | des parts sorties sans la ligne la perdraient, une ligne posée sans qu'elles sortent la compterait deux fois ; d'où `insererLigne` et `reecrireLigne`, le corps d'`ajouterLignePrix` et `modifierLignePrix` dans la transaction qu'on leur donne |
+| la part d'un partenaire répartie s'ajoute toujours | sa main d'œuvre vient en plus de celle de son équipe |
+| la ligne proposée de son équipe est un doublon de la sienne, même renommée (`ligneDejaAuDetail`, `estLaLigneDeSonEquipe`) | renommée « Main d’œuvre de l’équipe », la dictée rejouée en posait une seconde ; la même règle pour l'écran Prix et le serveur |
+
+**Ce que le relevé de §591 disait de faux** : « préparer le devis à nouveau repart de la dictée ». Rejouer la préparation n'écrit jamais sur une ligne déjà là (le doublon se refuse ligne par ligne) : sa ligne changée à 3 hommes reste la sienne. Le vrai trou était la ligne renommée.
+
+**Ce qui reste** : rouverte après « Répartis », la feuille repart de la dictée et non de ses parts (aucun écran ne les relit en hommes et en jours) ; « Ajouter » y vaut désormais « changer », sans le dire. Une planche d'abord (`TODO.md`).
+
+`test-feuille-main-oeuvre.ts` (la part posée puis retirée au centime, la part sans jours qui reste), `test-proposition-au-detail.ts` (renommée, partenaire), `test-main-oeuvre-change-sa-ligne-db.ts` (répartir deux fois, reposer en ligne, le partenaire qui reste, rejouer, renommée : quatre vus rouges), `test-feuille-main-oeuvre-e2e.ts` (les deux gestes par l'écran).

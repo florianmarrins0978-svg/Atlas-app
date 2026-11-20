@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE N'A QU'UNE FORME PAR TVA (20 novembre 2026), PAS ENCORE SUR `main`
+
+La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Reste : la feuille rouverte après « Répartis » (planche, `TODO.md`). `ARCHITECTURE.md` §592.
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE SUR `main` (20 novembre 2026)
 
 Une ligne de son équipe se reconnaît à `main_doeuvre` et à « jour/homme » (`estLaLigneDeSonEquipe`), jamais à son libellé. L'écran désigne celle de la TVA où il a appuyé ; `poserLaMainDoeuvreDeLaFeuille` la revérifie et la change, ou ajoute. Les hommes vivent dans `lignes_prix.hommes_main_doeuvre` (migration 0187) et ne passent que par le paramètre `duServeur` de `modifierLignePrix`. Deux rencontres restent ouvertes (répartir deux fois, rejeu de la dictée) : `TODO.md`. `ARCHITECTURE.md` §591.

@@ -1,5 +1,9 @@
 # État du projet
 
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : CODÉE, PAS ENCORE SUR `main` (20 novembre 2026)
+
+Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, reposer en ligne fait sortir ses parts des travaux (celle d'un partenaire reste), et sa ligne renommée n'en reçoit plus une seconde au rejeu de la dictée. Sur `claude/sleepy-sagan-gq6c0x` ; suite navigateur et batterie sur son « oui ». `ARCHITECTURE.md` §592.
+
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.

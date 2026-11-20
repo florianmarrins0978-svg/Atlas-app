@@ -156,16 +156,25 @@ range son virement à `CURRENT_DATE` de PostgreSQL (UTC) ; à l'heure où Paris 
 déjà changé de jour, les deux dates diffèrent. À vérifier si elle retombe à la
 même heure (confiance moyenne).
 
-## DEUX RENCONTRES DE LA MAIN D'ŒUVRE TROUVÉES EN CODANT §591 (19 novembre 2026)
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : CODÉ, BATTERIE SUR SON « OUI » (20 novembre 2026)
 
-1. **Répartir une seconde fois AJOUTE** aux parts déjà posées
-   (`partsAppliquees` part de la part d'avant) : la même main d'œuvre répartie
-   deux fois compterait deux fois. Pas vu chez lui ; lu dans le code.
-2. **Préparer le devis à nouveau repart de la dictée** (2 hommes), pas de la
-   ligne qu'il a changée à 3 : sa correction se perd au rejeu. Lu dans le code.
+Son « oui corrige les 2 défauts » du 20. `ARCHITECTURE.md` §592. Répartir une
+seconde fois remplace, reposer en ligne fait sortir ses parts, la ligne
+renommée reste un doublon. **Le relevé du 19 se trompait sur le second** :
+rejouer la préparation garde déjà sa ligne changée ; le vrai trou était la
+ligne renommée. Joués : types, style, gardes, `test-feuille-main-oeuvre.ts`,
+`test-proposition-au-detail.ts`, `test-main-oeuvre-change-sa-ligne-db.ts`
+(quatre vus rouges). **Pas joués** : `test-feuille-main-oeuvre-e2e.ts` (ses
+deux gestes par l'écran) et la batterie (niveau 3 : argent), sur son « oui ».
 
-Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
-son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
+## ⏳ À DESSINER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
+
+Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repart de
+la dictée, pas de ses parts, et « Ajouter la main d’œuvre » la CHANGE sans le
+dire (ses parts sortent des travaux, §592). L'argent est juste, l'écran ne
+l'est pas tout à fait. Une planche d'abord : ce que la feuille montre quand sa
+main d'œuvre est dans les travaux (hommes et jours repris de leurs jours
+d'homme ? « Répartis » déjà choisi ?).
 
 ## RANGER SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
 

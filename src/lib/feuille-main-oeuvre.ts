@@ -295,6 +295,42 @@ export type TravailRepris = {
  * CE chiffre qui est gardé et compté dans « dont main d'œuvre HT », jamais le
  * voulu : la somme dite au client tombe juste avec ses lignes.
  */
+/**
+ * **La part de SON équipe dans un travail**, quand ses jours d'homme la disent
+ * (migration 0173) : posée par la feuille ou par sa dictée, au prix du jour
+ * par homme. `null` sinon.
+ *
+ * Une part de partenaire n'a pas de jours (`joursDeLaPart` les tait sans prix
+ * du jour) ; une part qui mêle les deux non plus, ni une part d'avant 0173.
+ * Personne ne sait alors ce qui est à lui : elle reste où elle est, plutôt
+ * que d'en retirer ce qui revient à un partenaire.
+ */
+export function partDeSonEquipe(t: { partMainDoeuvre?: string | null; joursMainDoeuvre?: string | null }): Decimal | null {
+  if (t.joursMainDoeuvre === null || t.joursMainDoeuvre === undefined) return null;
+  const part = new Decimal(t.partMainDoeuvre || "0");
+  return part.greaterThan(0) ? part : null;
+}
+
+/**
+ * Le travail SANS la part de son équipe : le prix qu'il portait avant qu'elle
+ * y entre, la quantité inchangée. C'est la base d'où la feuille repart quand
+ * son équipe change de forme (sa ligne, ou ses parts) : la même main d'œuvre
+ * ne compte qu'une fois (`ARCHITECTURE.md` §592). `null` quand il n'en porte
+ * pas.
+ */
+export function sansLaPartDeSonEquipe(t: {
+  quantite: string;
+  montant: string;
+  partMainDoeuvre?: string | null;
+  joursMainDoeuvre?: string | null;
+}): { prixUnitaire: string; montant: string } | null {
+  const part = partDeSonEquipe(t);
+  const q = new Decimal(t.quantite || "0");
+  if (part === null || !q.greaterThan(0)) return null;
+  const prixUnitaire = new Decimal(t.montant).minus(part).div(q).toDecimalPlaces(2);
+  return { prixUnitaire: prixUnitaire.toFixed(2), montant: montantDeLaLigne(t.quantite, prixUnitaire.toFixed(2)) };
+}
+
 export function partsAppliquees(
   travaux: readonly TravailQuiRecoit[],
   parts: Readonly<Record<string, string>>

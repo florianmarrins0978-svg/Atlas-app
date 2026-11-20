@@ -65,6 +65,8 @@ export default async function PrixPage({
             // levée par une action serveur n'arrive jamais jusqu'au patron
             // (`AGENTS.md`). Il doit voir POURQUOI avant d'appuyer.
             aChiffrer: l.aChiffrer,
+            mainDoeuvre: l.mainDoeuvre,
+            unite: l.unite,
           }))}
           propositionInitiale={proposition}
           saisieManuelle={saisieManuelle}

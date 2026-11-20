@@ -26,6 +26,9 @@ type Ligne = {
   montant: string;
   /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
   aChiffrer?: boolean | null;
+  /** De quoi reconnaître la ligne de son équipe, même renommée (`ligneDejaAuDetail`). */
+  mainDoeuvre?: boolean | null;
+  unite?: string | null;
 };
 
 

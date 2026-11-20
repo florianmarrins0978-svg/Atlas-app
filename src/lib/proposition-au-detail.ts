@@ -16,7 +16,13 @@
 // grise le bouton ; le serveur refuse quand même — une page restée ouverte, un
 // second appui pendant que le premier voyage, et l'écran ne protège plus rien.
 
-export type LigneDetail = { libelle: string; montant: string };
+import { estLaLigneDeSonEquipe } from "@/lib/feuille-main-oeuvre";
+
+/** `mainDoeuvre` et `unite` : de quoi reconnaître la ligne de son équipe, même renommée. */
+export type LigneDetail = { libelle: string; montant: string; mainDoeuvre?: boolean | null; unite?: string | null };
+
+/** La ligne qu'on s'apprête à poser : un tarif n'a que son nom, une ligne proposée dit aussi ce qu'elle est. */
+export type LigneVisee = { libelle: string | null; mainDoeuvre?: boolean | null; unite?: string | null };
 
 /** Comparaison sur le libellé seul, volontairement. */
 function normaliser(libelle: string): string {
@@ -35,10 +41,17 @@ function normaliser(libelle: string): string {
  * Un libellé vide ne rapproche rien : une ligne encore anonyme (ajoutée à la
  * main, pas encore nommée) ne doit pas bloquer une proposition.
  */
-export function ligneDejaAuDetail(
-  libelle: string | null,
-  lignes: readonly LigneDetail[]
-): LigneDetail | null {
+export function ligneDejaAuDetail(vise: LigneVisee, lignes: readonly LigneDetail[]): LigneDetail | null {
+  // **La main d'œuvre de son équipe se reconnaît à ce qu'elle est, pas à son
+  // nom** (19 novembre 2026). Il renomme sa ligne au doigt, « Main d’œuvre de
+  // l’équipe » ; comparée au libellé, la dictée rejouée posait alors une
+  // seconde ligne de son équipe à côté, et la même main d'œuvre comptait deux
+  // fois. Une seule par devis, quel que soit son nom (`estLaLigneDeSonEquipe`).
+  if (estLaLigneDeSonEquipe(vise)) {
+    const sienne = lignes.find(estLaLigneDeSonEquipe);
+    if (sienne) return sienne;
+  }
+  const libelle = vise.libelle;
   if (!libelle) return null;
   const cible = normaliser(libelle);
   if (!cible) return null;

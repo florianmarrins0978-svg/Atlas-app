@@ -15,12 +15,14 @@ import {
   ligneDeSonPartenaire,
   mainOeuvreDUnPartenaire,
   montantDeLaMainOeuvre,
+  partDeSonEquipe,
   partsAppliquees,
   prixDesPartenaires,
   prixEnMots,
   quantiteDuPartenaire,
   quantiteTapee,
   rangDeLaDuree,
+  sansLaPartDeSonEquipe,
 } from "../src/lib/feuille-main-oeuvre";
 import { ecrireChoix, lireChoix, questionDeLaMainOeuvre } from "../src/lib/main-oeuvre-dictee";
 import type { PrixAchatCandidat } from "../src/lib/prix-achat";
@@ -299,6 +301,22 @@ cas("sans dictée, une demi-journée d'un homme se relit telle quelle", () => {
 cas("la ligne de son équipe dit ses hommes, celle d'un partenaire n'en a pas", () => {
   assert.equal(ligneDeSonEquipe(3, 2, "400").hommes, 3);
   assert.equal(ligneDeSonPartenaire(prixDesPartenaires([candidat({})], { materiel: null, mainOeuvre: "1.20" })[0], 2).hommes, undefined);
+});
+
+// **Une seule forme par TVA** (`ARCHITECTURE.md` §592) : la part de son équipe
+// sort d'un travail quand elle change de forme, celle d'un partenaire reste.
+cas("sa part, posée puis retirée, rend le travail à son prix d'avant, au centime", () => {
+  // 150 € sur 7 m² à 18 € : 149,99 € posés (le prix n'a que deux décimales).
+  const [posee] = partsAppliquees([{ id: "t", quantite: "7", prixUnitaire: "18.00", partMainDoeuvre: null }], { t: "150" });
+  const sans = sansLaPartDeSonEquipe({ quantite: "7", montant: posee.montant, partMainDoeuvre: posee.partMainDoeuvre, joursMainDoeuvre: "0.375" });
+  assert.deepEqual(sans, { prixUnitaire: "18.00", montant: "126.00" });
+});
+
+cas("une part sans jours d'homme (partenaire, mêlée, d'avant 0173) n'est pas la sienne : elle reste", () => {
+  assert.equal(partDeSonEquipe({ partMainDoeuvre: "1080.00", joursMainDoeuvre: null }), null);
+  assert.equal(sansLaPartDeSonEquipe({ quantite: "50", montant: "1830.00", partMainDoeuvre: "1080.00", joursMainDoeuvre: null }), null);
+  assert.equal(partDeSonEquipe({ partMainDoeuvre: null, joursMainDoeuvre: "6" }), null, "sans part, il n'y a rien à retirer");
+  assert.equal(partDeSonEquipe({ partMainDoeuvre: "2400.00", joursMainDoeuvre: "6.000000" })?.toFixed(2), "2400.00");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

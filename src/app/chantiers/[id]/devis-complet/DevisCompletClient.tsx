@@ -928,6 +928,23 @@ export default function DevisCompletClient(props: Props) {
       !estLigneOuverte(l.id) &&
       (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
   );
+  // Les travaux de cette TVA : ceux qui peuvent recevoir sa main d'œuvre, et
+  // ceux d'où la part de son équipe sort quand elle change de forme (le
+  // serveur relit chacun, et ne retire que la sienne, `ARCHITECTURE.md` §592).
+  const travauxDeSaTva = lignesVisibles.filter(
+    (l) =>
+      !l.mainDoeuvre &&
+      !estLigneOuverte(l.id) &&
+      (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+  );
+
+  /** Les travaux que le serveur a rendus à leur prix sans la part de son équipe. */
+  function sansSaPart(sorties: readonly { id: string; prixUnitaire: string; montant: string }[]) {
+    return (l: Ligne): Ligne => {
+      const t = sorties.find((x) => x.id === l.id);
+      return t ? { ...l, prixUnitaire: t.prixUnitaire, montant: t.montant, partMainDoeuvre: null } : l;
+    };
+  }
 
   /**
    * « Répartis sur les travaux » : chaque travail reçoit sa part dans son prix.
@@ -938,7 +955,9 @@ export default function DevisCompletClient(props: Props) {
     setFeuille(null);
     setRefusMainOeuvre(null);
     const remplace = saLigneDeMainOeuvre?.id ?? null;
-    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts, remplace));
+    const pose = await aLaSuite(() =>
+      repartirMainDoeuvreAction(props.chantierId, choix, parts, remplace, travauxDeSaTva.map((l) => l.id))
+    );
     if (!pose) return;
     if (!pose.ok) {
       setRefusMainOeuvre(pose.raison);
@@ -953,6 +972,7 @@ export default function DevisCompletClient(props: Props) {
           const r = pose.lignes.find((x) => x.id === l.id);
           return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
         })
+        .map(sansSaPart(pose.sorties))
     );
     annoncer(...pose.lignes.map((r) => `ligne:${r.id}`));
   }
@@ -965,9 +985,10 @@ export default function DevisCompletClient(props: Props) {
     // Sa planche du 18 novembre 2026 : son équipe CHANGE sa ligne ; un
     // partenaire pose la sienne, à son nom.
     const saLigne = choix.qui === "equipe" ? (saLigneDeMainOeuvre?.id ?? null) : null;
+    const sesTravaux = choix.qui === "equipe" ? travauxDeSaTva.map((l) => l.id) : [];
     const pose = await aLaSuite(async () => {
       if (ouverte) await idEnBase(ouverte);
-      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix, saLigne);
+      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix, saLigne, sesTravaux);
     });
     if (!pose) return;
     if (!pose.ok) {
@@ -988,7 +1009,9 @@ export default function DevisCompletClient(props: Props) {
       mainDoeuvre: true,
       hommesMainDoeuvre: posee.hommesMainDoeuvre,
     };
-    setLignes((cur) => (pose.changee ? cur.map((l) => (l.id === posee.id ? { ...l, ...aLEcran } : l)) : [...cur, aLEcran]));
+    setLignes((cur) =>
+      (pose.changee ? cur.map((l) => (l.id === posee.id ? { ...l, ...aLEcran } : l)) : [...cur, aLEcran]).map(sansSaPart(pose.sorties))
+    );
     annoncer(`ligne:${posee.id}`);
   }
 
@@ -2051,14 +2074,8 @@ export default function DevisCompletClient(props: Props) {
         repartition={{
           // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
           // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
-          travaux: lignesVisibles
-            .filter(
-              (l) =>
-                !l.mainDoeuvre &&
-                !estLigneOuverte(l.id) &&
-                montantDeLaLigne(l) > 0 &&
-                (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
-            )
+          travaux: travauxDeSaTva
+            .filter((l) => montantDeLaLigne(l) > 0)
             .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: montantDeLaLigne(l).toFixed(2) })),
           onRepartir: (choix, parts) => void repartirMainDoeuvre(choix, parts),
         }}

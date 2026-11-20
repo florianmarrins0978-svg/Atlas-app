@@ -13,7 +13,7 @@ import { ecrireChoix, repartirMainOeuvre, SUJET_MAIN_OEUVRE } from "../src/lib/m
 import { appliquerPropositionPrix } from "../src/server/chiffrage/appliquer-proposition";
 import { poserLaMainDoeuvreDeLaFeuille } from "../src/server/chiffrage/main-oeuvre-choisie";
 import { equipeDeSaLigne, estLaLigneDeSonEquipe } from "../src/lib/feuille-main-oeuvre";
-import { listerLignesPrix, poserLesPartsDeMainDoeuvre } from "../src/server/repositories/lignes-prix";
+import { listerLignesPrix, modifierLignePrix, poserLesPartsDeMainDoeuvre } from "../src/server/repositories/lignes-prix";
 import { ajouterPrixAchat, creerSociete, reglerMarge } from "../src/server/repositories/fournisseurs-partenaires";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -158,6 +158,104 @@ async function main() {
     const r = await poserLesPartsDeMainDoeuvre(A, c.id, repartirMainOeuvre("400.00", [taille.id], {}), "400.00", partenaire.id);
     assert.ok(!r.ok, "la ligne d'un partenaire a été prise pour celle de son équipe");
     assert.deepEqual((await lignes()).map((l) => [l.id, l.montant]), avant, "un refus a écrit");
+  });
+
+  // **Répartie, sa main d'œuvre n'a plus de ligne** : elle vit dans le prix des
+  // travaux. Le défaut relevé en codant §591 : la répartir une seconde fois
+  // l'AJOUTAIT à la première, et la reposer sur une ligne la laissait aussi
+  // dans les travaux. Deux fois la même main d'œuvre, sur un devis qui part.
+  const taille = async () => (await lignes()).find((l) => l.libelle.startsWith("Taille"))!;
+
+  await test("répartir une seconde fois REMPLACE ses parts : 2 400 € restent 2 400 €", async () => {
+    const t = await taille();
+    const r = await poserLesPartsDeMainDoeuvre(A, c.id, repartirMainOeuvre("2400.00", [t.id], {}), "400.00", null, [t.id]);
+    assert.ok(r.ok, `la répartition refuse : ${JSON.stringify(r)}`);
+    const apres = await taille();
+    assert.deepEqual(
+      { montant: Number(apres.montant), part: Number(apres.partMainDoeuvre), jours: Number(apres.joursMainDoeuvre) },
+      { montant: 3150, part: 2400, jours: 6 },
+      "la même main d'œuvre compte deux fois"
+    );
+  });
+
+  await test("reposée sur sa ligne, sa main d'œuvre SORT des travaux : la taille revient à 750 €", async () => {
+    const t = await taille();
+    const r = await poserLaMainDoeuvreDeLaFeuille(A, c.id, null, { qui: "equipe", hommes: 3, jours: 2, tarif: "400" }, null, [t.id]);
+    assert.ok(r.ok, `la feuille refuse : ${JSON.stringify(r)}`);
+    const apres = await taille();
+    assert.deepEqual(
+      { montant: Number(apres.montant), part: apres.partMainDoeuvre === null ? 0 : Number(apres.partMainDoeuvre) },
+      { montant: 750, part: 0 },
+      "sa main d'œuvre est restée dans la taille, à côté de sa ligne"
+    );
+    const siennes = await deSonEquipe();
+    assert.deepEqual(siennes.map((l) => Number(l.montant)), [2400]);
+  });
+
+  await test("la part d'un partenaire, elle, reste dans le travail quand son équipe change", async () => {
+    const t = await taille();
+    const sesPrix = await poserLesPartsDeMainDoeuvre(A, c.id, repartirMainOeuvre("1080.00", [t.id], {}), null);
+    assert.ok(sesPrix.ok, `la part du partenaire refuse : ${JSON.stringify(sesPrix)}`);
+    const [sienne] = await deSonEquipe();
+    const r = await poserLaMainDoeuvreDeLaFeuille(A, c.id, null, { qui: "equipe", hommes: 2, jours: 2, tarif: "400" }, sienne.id, [t.id]);
+    assert.ok(r.ok, `la feuille refuse : ${JSON.stringify(r)}`);
+    const apres = await taille();
+    assert.deepEqual(
+      { montant: Number(apres.montant), part: Number(apres.partMainDoeuvre) },
+      { montant: 1830, part: 1080 },
+      "changer son équipe a retiré la main d'œuvre du partenaire"
+    );
+  });
+
+  // **Préparer le devis à nouveau** (rejouer la dictée) : il ne réécrit jamais
+  // une ligne déjà là, il la refuse comme doublon. Sa ligne changée à 3 hommes
+  // reste donc la sienne, et une ligne renommée au doigt reste la ligne de son
+  // équipe : elle se reconnaît à `estLaLigneDeSonEquipe`, pas à son nom.
+  const c2 = await chantiersRepo.creerChantier(A, { nom: "Rejouer la dictée" });
+  await brouillonsRepo.enregistrerGeneration(
+    A,
+    c2.id,
+    {
+      ...brouillonVide(),
+      prestations: [{ ...base, libelle: "Taille de photinias", nature: "haie", quantite: "50", unite: "ml" }],
+      dureePrevue: "2 jours",
+      tailleEquipe: "2 hommes",
+    },
+    "dictée"
+  );
+  assert.ok((await confirmerBrouillon(A, c2.id)).succes);
+  await enregistrerPrecisions(A, c2.id, [
+    {
+      sujet: SUJET_MAIN_OEUVRE,
+      libellePrestation: "Main d'œuvre",
+      valeur: ecrireChoix({ mode: "ligne", parts: {}, retires: [] }),
+      lisible: "main d'œuvre",
+    },
+  ]);
+  assert.ok((await appliquerPropositionPrix(A, c2.id)).succes);
+  const deSonEquipe2 = async () => (await listerLignesPrix(A, c2.id)).filter(estLaLigneDeSonEquipe);
+
+  await test("préparer le devis à nouveau garde sa ligne changée à 3 hommes", async () => {
+    const [l] = await deSonEquipe2();
+    assert.ok((await poserLaMainDoeuvreDeLaFeuille(A, c2.id, null, { qui: "equipe", hommes: 3, jours: 2, tarif: "400" }, l.id, [])).ok);
+    await appliquerPropositionPrix(A, c2.id);
+    assert.deepEqual(
+      (await deSonEquipe2()).map((x) => ({ q: Number(x.quantite), hommes: x.hommesMainDoeuvre })),
+      [{ q: 6, hommes: 3 }],
+      "la dictée a repris le dessus sur sa ligne"
+    );
+  });
+
+  await test("renommée au doigt, sa ligne reste la sienne : préparer à nouveau n'en pose pas une seconde", async () => {
+    const [l] = await deSonEquipe2();
+    await modifierLignePrix(A, l.id, { libelle: "Main d’œuvre de l’équipe" });
+    await appliquerPropositionPrix(A, c2.id);
+    const siennes = await deSonEquipe2();
+    assert.deepEqual(
+      siennes.map((x) => [x.libelle, Number(x.quantite)]),
+      [["Main d’œuvre de l’équipe", 6]],
+      "deux lignes de son équipe : la dictée a posé la sienne à côté"
+    );
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

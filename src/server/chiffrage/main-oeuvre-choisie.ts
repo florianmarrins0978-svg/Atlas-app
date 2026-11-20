@@ -1,11 +1,10 @@
 import type { Ctx } from "../repositories/context";
 import { lireMarges, prixAchatCandidats } from "../repositories/fournisseurs-partenaires";
 import { listerTarifs } from "../repositories/tarifs";
-import { ajouterLignePrix, listerLignesPrix, modifierLignePrix } from "../repositories/lignes-prix";
+import { ajouterLignePrix, poserLaLigneDeSonEquipe, type TravailSansSaPart } from "../repositories/lignes-prix";
 import { parseNombreFrancais } from "./parse";
 import { tarifJourHomme } from "@/lib/tarif-main-oeuvre";
 import {
-  estLaLigneDeSonEquipe,
   ligneDeSonEquipe,
   ligneDeSonPartenaire,
   montantDeLaMainOeuvre,
@@ -66,24 +65,27 @@ export async function ligneDuChoix(ctx: Ctx, choix: ChoixDeMainOeuvre): Promise<
  * Ce que « Valider » de la feuille écrit sur le devis — sa planche du
  * 18 novembre 2026, *« changer ma ligne »*.
  *
- * **Son équipe a UNE ligne par TVA.** Quand l'écran l'a trouvée (`saLigne`),
- * la feuille la CHANGE : 3 hommes × 2 jours font 6 jour/homme et 2 400 €, pas
- * une seconde ligne à côté des 1 600 €. Sans elle, la ligne s'ajoute, comme
- * avant. **Un partenaire garde toujours sa propre ligne**, à son nom : sa
- * réponse du même jour, *« il faudrait qu'elle se mette sur une autre ligne »*.
+ * **Son équipe a UNE main d'œuvre par TVA**, sur sa ligne ou dans le prix des
+ * travaux (`ARCHITECTURE.md` §592). Quand l'écran a trouvé sa ligne
+ * (`saLigne`), la feuille la CHANGE : 3 hommes × 2 jours font 6 jour/homme et
+ * 2 400 €, pas une seconde ligne à côté des 1 600 €. Sans elle, la ligne
+ * s'ajoute. Et la part que son équipe avait dans les travaux de cette TVA
+ * (`sesTravaux`) en sort dans le même geste, ou elle compterait deux fois.
+ * **Un partenaire garde toujours sa propre ligne**, à son nom : sa réponse du
+ * même jour, *« il faudrait qu'elle se mette sur une autre ligne »*.
  *
- * **La ligne désignée se revérifie en base** : l'écran a pu vieillir, et une
- * ligne qui n'est plus celle de son équipe (un travail, un partenaire, une
- * ligne effacée) ne se réécrit pas. Le refus se dit en mots.
+ * Ce que l'écran désigne se revérifie en base (`poserLaLigneDeSonEquipe`) :
+ * l'écran a pu vieillir. Le refus se dit en mots.
  */
 export async function poserLaMainDoeuvreDeLaFeuille(
   ctx: Ctx,
   chantierId: string,
   tauxTva: string | null,
   choix: ChoixDeMainOeuvre,
-  saLigne: string | null
+  saLigne: string | null,
+  sesTravaux: readonly string[] = []
 ): Promise<
-  | { ok: true; ligne: Awaited<ReturnType<typeof ajouterLignePrix>>; changee: boolean }
+  | { ok: true; ligne: Awaited<ReturnType<typeof ajouterLignePrix>>; changee: boolean; sorties: TravailSansSaPart[] }
   | { ok: false; raison: string }
 > {
   const ligne = await ligneDuChoix(ctx, choix);
@@ -93,19 +95,23 @@ export async function poserLaMainDoeuvreDeLaFeuille(
   // le même drapeau que « + Main d'œuvre » d'avant (`ligneAttendSonPrix`).
   const aChiffrer = ligne.prixUnitaire === null;
 
-  if (choix.qui === "equipe" && saLigne !== null) {
-    const sienne = (await listerLignesPrix(ctx, chantierId)).find((l) => l.id === saLigne);
-    if (!sienne || !estLaLigneDeSonEquipe(sienne)) {
-      return { ok: false, raison: "Votre ligne Main d’œuvre n’est plus sur le devis. Rechargez l’écran." };
-    }
-    // Son libellé reste le sien : il a pu la renommer au doigt.
-    const changee = await modifierLignePrix(
+  if (choix.qui === "equipe") {
+    return poserLaLigneDeSonEquipe(
       ctx,
-      sienne.id,
-      { quantite: ligne.quantite, prixUnitaire: ligne.prixUnitaire ?? "0.00", aChiffrer },
-      { hommesMainDoeuvre: ligne.hommes ?? null }
+      chantierId,
+      {
+        libelle: ligne.libelle,
+        montant: montant ?? "0.00",
+        quantite: ligne.quantite,
+        prixUnitaire: ligne.prixUnitaire ?? "0.00",
+        unite: ligne.unite,
+        aChiffrer,
+        tauxTva,
+        hommes: ligne.hommes ?? null,
+      },
+      saLigne,
+      sesTravaux
     );
-    return { ok: true, ligne: changee, changee: true };
   }
 
   const creee = await ajouterLignePrix(ctx, chantierId, ligne.libelle, montant ?? "0.00", {
@@ -115,7 +121,6 @@ export async function poserLaMainDoeuvreDeLaFeuille(
     aChiffrer,
     tauxTva,
     mainDoeuvre: true,
-    hommesMainDoeuvre: ligne.hommes ?? null,
   });
-  return { ok: true, ligne: creee, changee: false };
+  return { ok: true, ligne: creee, changee: false, sorties: [] };
 }

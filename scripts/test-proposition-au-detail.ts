@@ -32,7 +32,7 @@ console.log("=== Une proposition déjà au détail ne s'ajoute pas deux fois ===
 
 cas("le cas du patron : la ligne est retrouvée, donc refusée", () => {
   const detail = [{ libelle: "Élagage", montant: "1674.00" }];
-  const deja = ligneDejaAuDetail("Élagage", detail);
+  const deja = ligneDejaAuDetail({ libelle: "Élagage" }, detail);
   assert.ok(deja, "La ligne déjà présente n'a pas été reconnue : le devis doublerait.");
   assert.equal(deja.montant, "1674.00");
 });
@@ -41,20 +41,20 @@ cas("le montant ne compte pas — un tarif révisé reste un doublon", () => {
   // Comparer les montants laisserait passer le doublon au centime près
   // différent : précisément le cas où le patron ne verrait rien.
   const detail = [{ libelle: "Élagage", montant: "1674.00" }];
-  assert.ok(ligneDejaAuDetail("Élagage", detail), "Un tarif révisé doit rester un doublon.");
+  assert.ok(ligneDejaAuDetail({ libelle: "Élagage" }, detail), "Un tarif révisé doit rester un doublon.");
 });
 
 cas("la casse, les accents d'espacement et les espaces en trop ne trompent pas", () => {
   const detail = [{ libelle: "  élagage   d'un tilleul ", montant: "800.00" }];
   assert.ok(
-    ligneDejaAuDetail("Élagage d'un tilleul", detail),
+    ligneDejaAuDetail({ libelle: "Élagage d'un tilleul" }, detail),
     "Un même libellé écrit différemment a échappé au rapprochement."
   );
 });
 
 cas("une prestation réellement différente passe", () => {
   const detail = [{ libelle: "Élagage", montant: "1674.00" }];
-  assert.equal(ligneDejaAuDetail("Abattage", detail), null, "Une autre prestation a été bloquée à tort.");
+  assert.equal(ligneDejaAuDetail({ libelle: "Abattage" }, detail), null, "Une autre prestation a été bloquée à tort.");
 });
 
 cas("une ligne encore anonyme ne bloque rien", () => {
@@ -62,13 +62,13 @@ cas("une ligne encore anonyme ne bloque rien", () => {
   // vide, la proposition serait bloquée par une ligne que le patron vient
   // d'ouvrir — un blocage incompréhensible.
   const detail = [{ libelle: "", montant: "0.00" }];
-  assert.equal(ligneDejaAuDetail("Élagage", detail), null);
-  assert.equal(ligneDejaAuDetail("", detail), null, "Deux libellés vides ne sont pas un doublon.");
-  assert.equal(ligneDejaAuDetail(null, detail), null, "Une proposition sans libellé ne bloque rien.");
+  assert.equal(ligneDejaAuDetail({ libelle: "Élagage" }, detail), null);
+  assert.equal(ligneDejaAuDetail({ libelle: "" }, detail), null, "Deux libellés vides ne sont pas un doublon.");
+  assert.equal(ligneDejaAuDetail({ libelle: null }, detail), null, "Une proposition sans libellé ne bloque rien.");
 });
 
 cas("un détail vide n'empêche jamais le premier ajout", () => {
-  assert.equal(ligneDejaAuDetail("Élagage", []), null, "Le premier ajout a été refusé.");
+  assert.equal(ligneDejaAuDetail({ libelle: "Élagage" }, []), null, "Le premier ajout a été refusé.");
 });
 
 cas("le doublon est retrouvé où qu'il soit dans le détail", () => {
@@ -77,7 +77,25 @@ cas("le doublon est retrouvé où qu'il soit dans le détail", () => {
     { libelle: "Broyage", montant: "200.00" },
     { libelle: "Élagage", montant: "1674.00" },
   ];
-  assert.ok(ligneDejaAuDetail("élagage", detail), "Un doublon en fin de liste est passé au travers.");
+  assert.ok(ligneDejaAuDetail({ libelle: "élagage" }, detail), "Un doublon en fin de liste est passé au travers.");
+});
+
+cas("la ligne de son équipe, renommée au doigt, reste un doublon de la main d'œuvre proposée", () => {
+  // Le 19 novembre 2026 : « Main d’œuvre » renommée « Main d’œuvre de
+  // l’équipe », et la dictée rejouée en posait une seconde. Elle se reconnaît
+  // à ce qu'elle est (`estLaLigneDeSonEquipe`), pas à son nom.
+  const detail = [
+    { libelle: "Taille de photinias", montant: "750.00" },
+    { libelle: "Main d’œuvre de l’équipe", montant: "2400.00", mainDoeuvre: true, unite: "jour/homme" },
+  ];
+  const proposee = { libelle: "Main d’œuvre", mainDoeuvre: true, unite: "jour/homme" };
+  assert.equal(ligneDejaAuDetail(proposee, detail)?.libelle, "Main d’œuvre de l’équipe", "une seconde ligne de son équipe passerait");
+});
+
+cas("la ligne d'un partenaire n'est pas celle de son équipe : la sienne reste proposable", () => {
+  const detail = [{ libelle: "Main d’œuvre : Élagage Durand", montant: "1080.00", mainDoeuvre: true, unite: "journée" }];
+  const proposee = { libelle: "Main d’œuvre", mainDoeuvre: true, unite: "jour/homme" };
+  assert.equal(ligneDejaAuDetail(proposee, detail), null, "le partenaire a bloqué la main d'œuvre de son équipe");
 });
 
 if (echecs > 0) {

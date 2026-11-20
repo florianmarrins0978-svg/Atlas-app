@@ -94,10 +94,10 @@ export default function PropositionPrixSection({
       : null;
   const dejaAuDetail =
     origine === "tarifs_ambigus"
-      ? ligneDejaAuDetail(libelleVise, lignesDetail)
+      ? ligneDejaAuDetail({ libelle: libelleVise }, lignesDetail)
       : proposition.lignes.length > 0 &&
-          proposition.lignes.every((l) => ligneDejaAuDetail(l.libelle, lignesDetail))
-        ? ligneDejaAuDetail(proposition.lignes[0].libelle, lignesDetail)
+          proposition.lignes.every((l) => ligneDejaAuDetail(l, lignesDetail))
+        ? ligneDejaAuDetail(proposition.lignes[0], lignesDetail)
         : null;
 
   const peutAppliquer =
