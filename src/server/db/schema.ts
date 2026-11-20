@@ -3345,7 +3345,7 @@ export const taxons = pgTable(
     /** Sert au rapprochement quand l'essence exacte n'est pas reconnaissable. */
     port: text("port", { enum: ["feuillu", "conifere", "arbuste", "palmier", "autre"] }),
     /** « un », « une », « des » : l'écran écrit « Probable sur un peuplier. ».
-     *  Nul = l'écran n'en invente aucun (migration 0187). */
+     *  Nul = l'écran n'en invente aucun (migration 0188). */
     article: text("article", { enum: ["un", "une", "des"] }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -3431,7 +3431,7 @@ export const fichesPhyto = pgTable("fiches_phyto", {
   /** « La détection en laboratoire est nécessaire. » Quand c'est rempli,
    *  l'écran le dit et le mot « confirmé » n'apparaît nulle part. */
   methodeConfirmation: text("methode_confirmation"),
-  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0188) ──
   /** Ce que la SOURCE dit de la gravité, en phrases. `gravite` reste interne. */
   graviteSelonLaSource: text("gravite_selon_la_source"),
   /** Les trois notes sur 3 de la source, toutes ou aucune (contrainte en base). */
@@ -3618,6 +3618,26 @@ export const imagesPhyto = pgTable(
 // --- B. Ses diagnostics, isolés par RLS ------------------------------------
 
 /**
+ * Ses dossiers à lui (« Mes observations »), où il range un diagnostic qu'il
+ * veut retrouver sans le rechercher (sa demande du 20 novembre 2026,
+ * migration 0189). **Un chantier est déjà un dossier** : ceux-ci servent à ce
+ * qui n'a pas de chantier. Le nom est unique par entreprise, sans égard à la
+ * casse, pour que deux lignes de la feuille ne se confondent pas.
+ */
+export const dossiersDiagnostic = pgTable(
+  "dossiers_diagnostic",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    nom: text("nom").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("dossiers_diagnostic_id_entreprise_uk").on(t.id, t.entrepriseId)]
+);
+
+/**
  * Une demande de diagnostic.
  *
  * **`chantierId` est NULLABLE, et c'est une décision produit.** Sa règle du
@@ -3686,6 +3706,14 @@ export const diagnostics = pgTable(
     /** Ce que le fournisseur a dit quand personne n'a regardé — une trace,
      *  pas une donnée du dépôt. Affichée en petit, pour qui dépanne. */
     panne: text("panne"),
+    /** Son dossier à lui, quand il ne l'a pas rangé dans un chantier : UNE
+     *  place par diagnostic, la base le tient (`diagnostics_une_seule_place_ck`). */
+    dossierId: uuid("dossier_id"),
+    /** Sa note, au clavier seulement (sa réponse du 20 novembre 2026). */
+    note: text("note"),
+    /** Nul pour un rattachement d'avant la migration 0189 : l'écran tait
+     *  alors la date plutôt que d'en inventer une. */
+    rangeLe: timestamp("range_le", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     renduAt: timestamp("rendu_at", { withTimezone: true }),
@@ -3696,6 +3724,11 @@ export const diagnostics = pgTable(
       columns: [t.chantierId, t.entrepriseId],
       foreignColumns: [chantiers.id, chantiers.entrepriseId],
       name: "diagnostics_chantier_entreprise_fk",
+    }),
+    foreignKey({
+      columns: [t.dossierId, t.entrepriseId],
+      foreignColumns: [dossiersDiagnostic.id, dossiersDiagnostic.entrepriseId],
+      name: "diagnostics_dossier_entreprise_fk",
     }),
   ]
 );

@@ -12,8 +12,12 @@ import {
   lireDiagnostic,
   lirePhotos,
   listerDiagnostics,
+  lireClePhotoDiagnostic,
+  lireMesDossiersDeDiagnostics,
+  lireRangement,
+  lireUnDossierDeDiagnostics,
   ouvrirDiagnostic,
-  rattacherAUnChantier,
+  rangerDansUnDossier,
 } from "../src/server/repositories/diagnostics";
 import { purgerPhotosDiagnostic } from "../src/server/repositories/retention";
 import {
@@ -435,7 +439,7 @@ async function main() {
     assert.match(rows[0].def, /complements_demandes <= 1/);
   });
 
-  console.log("\n=== Rattachement à un chantier, et ce qu'il change à la purge ===");
+  console.log("\n=== Ranger dans un dossier, et ce que cela change à la purge ===");
 
   let diagnosticRattache = "";
   let chantierId = "";
@@ -449,24 +453,102 @@ async function main() {
     const avant = await lireDiagnostic(a, diagnosticRattache);
     assert.equal(avant!.chantierId, null, "le diagnostic est autonome par défaut");
 
-    const r = await rattacherAUnChantier(a, diagnosticRattache, chantierId, {
+    const r = await rangerDansUnDossier(a, diagnosticRattache, { genre: "chantier", id: chantierId }, "Côté portail.", {
       libreJours: 90,
       chantierJours: 0,
     });
     assert.equal(r.ok, true);
     const apres = await lireDiagnostic(a, diagnosticRattache);
     assert.equal(apres!.chantierId, chantierId);
+    assert.equal(apres!.note, "Côté portail.");
+    assert.ok(apres!.rangeLe, "le jour du rangement est noté");
   });
 
-  await cas("B ne peut pas rattacher un diagnostic de A à son propre chantier", async () => {
-    const r = await rattacherAUnChantier(b, diagnosticRattache, chantierId, {
+  await cas("B ne peut pas ranger un diagnostic de A dans le chantier de A", async () => {
+    const r = await rangerDansUnDossier(b, diagnosticRattache, { genre: "chantier", id: chantierId }, null, {
       libreJours: 90,
       chantierJours: 0,
     });
     assert.equal(r.ok, false);
   });
 
-  await cas("le rattachement RECALCULE l'échéance de purge des photos", async () => {
+  let dossierDeA = "";
+  await cas("un dossier à lui se crée en rangeant, et le diagnostic quitte le chantier", async () => {
+    const r = await rangerDansUnDossier(a, diagnosticRattache, { genre: "nouveau", nom: "Mes observations" }, null, {
+      libreJours: 90,
+      chantierJours: 0,
+    });
+    assert.equal(r.ok, true);
+    const apres = await lireDiagnostic(a, diagnosticRattache);
+    assert.equal(apres!.chantierId, null, "une seule place : ranger ailleurs déplace");
+    assert.ok(apres!.dossierId);
+    dossierDeA = apres!.dossierId!;
+    const rangement = await lireRangement(a, diagnosticRattache);
+    assert.equal(rangement!.nom, "Mes observations");
+  });
+
+  await cas("le même nom, en d'autres lettres, désigne le même dossier", async () => {
+    const autre = await ouvrirDiagnostic(a);
+    await rangerDansUnDossier(a, autre, { genre: "nouveau", nom: "MES OBSERVATIONS" }, null, {
+      libreJours: 90,
+      chantierJours: 0,
+    });
+    assert.equal((await lireDiagnostic(a, autre))!.dossierId, dossierDeA);
+  });
+
+  await cas("corriger sa note ne change pas le jour du rangement", async () => {
+    const avant = (await lireDiagnostic(a, diagnosticRattache))!.rangeLe;
+    await rangerDansUnDossier(a, diagnosticRattache, { genre: "dossier", id: dossierDeA }, "Revu en mars.", {
+      libreJours: 90,
+      chantierJours: 0,
+    });
+    const apres = await lireDiagnostic(a, diagnosticRattache);
+    assert.equal(apres!.note, "Revu en mars.");
+    assert.equal(apres!.rangeLe?.getTime(), avant?.getTime());
+  });
+
+  await cas("B ne voit ni ne remplit le dossier de A", async () => {
+    assert.equal(await lireUnDossierDeDiagnostics(b, dossierDeA), null);
+    assert.equal((await lireMesDossiersDeDiagnostics(b)).some((d) => d.id === dossierDeA), false);
+    const sien = await ouvrirDiagnostic(b);
+    const r = await rangerDansUnDossier(b, sien, { genre: "dossier", id: dossierDeA }, null, {
+      libreJours: 90,
+      chantierJours: 0,
+    });
+    assert.deepEqual(r, { ok: false, refus: "dossier_absent" });
+  });
+
+  await cas("« Mes dossiers » compte ce que chaque dossier porte", async () => {
+    const lus = await lireMesDossiersDeDiagnostics(a);
+    const mien = lus.find((d) => d.id === dossierDeA);
+    assert.equal(mien?.genre, "dossier");
+    assert.equal(mien?.nombre, 2);
+    const dossier = await lireUnDossierDeDiagnostics(a, dossierDeA);
+    assert.equal(dossier!.diagnostics.length, 2);
+  });
+
+  await cas("la base refuse un diagnostic à deux places", async () => {
+    // Une connexion à part, rendue après ROLLBACK : un refus laisse la
+    // transaction avortée, et `lireSousContexte` la rendrait au pool ainsi.
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("SELECT set_config('app.entreprise_id', $1, true)", [a.entrepriseId]);
+      await assert.rejects(
+        client.query("UPDATE diagnostics SET chantier_id = $1, dossier_id = $2 WHERE id = $3", [
+          chantierId,
+          dossierDeA,
+          diagnosticRattache,
+        ]),
+        /diagnostics_une_seule_place_ck/
+      );
+    } finally {
+      await client.query("ROLLBACK");
+      client.release();
+    }
+  });
+
+  await cas("ranger RECALCULE l'échéance de purge des photos", async () => {
     const id = await ouvrirDiagnostic(a);
     await ajouterPhoto(
       a,
@@ -489,7 +571,7 @@ async function main() {
     );
     assert.equal(avant[0].n, 1, "une photo libre est programmée pour disparaître");
 
-    await rattacherAUnChantier(a, id, chantierId, { libreJours: 90, chantierJours: 0 });
+    await rangerDansUnDossier(a, id, { genre: "chantier", id: chantierId }, null, { libreJours: 90, chantierJours: 0 });
     const apres = await lireSousContexte<{ n: number }>(
       a,
       "SELECT count(*)::int AS n FROM photos_diagnostic_a_purger p JOIN photos_diagnostic d ON d.id = p.photo_id WHERE d.diagnostic_id = $1",
@@ -498,6 +580,28 @@ async function main() {
     // Sans ce recalcul, la pièce d'un dossier toujours en cours disparaîtrait
     // au bout de trois mois sans que personne l'ait demandé.
     assert.equal(apres[0].n, 0, "versée au dossier, la photo ne doit plus être programmée");
+  });
+
+  await cas("la vignette d'un dossier : A lit la clé de SA photo, B jamais", async () => {
+    const id = await ouvrirDiagnostic(a);
+    const cle = `essai/${randomUUID()}.jpg`;
+    const photoId = await ajouterPhoto(
+      a,
+      id,
+      {
+        storageKey: cle,
+        mimeType: "image/jpeg",
+        tailleOctets: 100,
+        checksum: "abc",
+        role: "initiale",
+        partieDemandee: null,
+        exifRetire: true,
+      },
+      { libreJours: 90, chantierJours: 0 }
+    );
+    assert.ok(photoId);
+    assert.equal(await lireClePhotoDiagnostic(a, photoId!), cle);
+    assert.equal(await lireClePhotoDiagnostic(b, photoId!), null, "la photo d'un jardin ne sort pas chez une autre société");
   });
 
   console.log("\n=== La purge planifiée, SANS contexte d'entreprise ===");

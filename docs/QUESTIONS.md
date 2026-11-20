@@ -2256,11 +2256,22 @@ du côté du chantier.
   trace. Le code ne le montre sur aucun autre écran : seuls l'écran du
   diagnostic, l'assistant et l'export de vos données lisent ce lien.
 - **On ne retrouve plus la fiche une fois sortie.** Aucun écran ne liste les
-  anciens diagnostics, seul l'assistant peut les retrouver.
+  anciens diagnostics, seul l'assistant peut les retrouver. *(Vrai jusqu'au
+  lot du 20 novembre, voir plus bas.)*
 
-### Ce qui pourrait changer
+### Ce qui a changé le 20 novembre
 
-Montrer le diagnostic sur la fiche du chantier, ou une liste des diagnostics
-passés. Rien n'est décidé : une planche sur le vrai écran d'abord, si vous le
-voulez.
+Votre demande : ranger la photo dans un dossier, avec une note, pour ne plus
+rechercher une maladie déjà vue. « Rattacher à un chantier » devient **« Ranger
+dans un dossier »**, sous « Nouvelle photo ».
+
+| | |
+|---|---|
+| où ranger | un chantier, un dossier à vous, ou un dossier créé sur place |
+| la note | au clavier, comme vous l'avez choisi |
+| où retrouver | « Mes dossiers », sur l'écran Diagnostic végétal |
+| la fiche du chantier | rien n'y change, comme vous l'avez choisi |
+| les photos | gardées, dans un chantier comme dans un de vos dossiers |
+
+**Codé, pas encore chez vous** : il reste la batterie, avec votre accord.
 

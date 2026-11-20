@@ -7,7 +7,7 @@ jouer de batterie [...] et tu me fais la fiche et à côté la page de l'INRAE q
 tu as utilisée, que je puisse vérifier les infos ; une photo de la page suffit,
 elle n'ira jamais dans l'appli »*. Les 55 pages maladies de la rubrique Forêts
 d'Ephytia (champignons des feuilles, du tronc et des branches, des racines,
-des vaisseaux) sont lues ; les fiches sont écrites au nouveau modèle (§591).
+des vaisseaux) sont lues ; les fiches sont écrites au nouveau modèle (§592).
 
 **Où il vérifie : une page PRIVÉE** (https://claude.ai/artifact/8PX6o5pUoNqJg9syfyrB78),
 et non une planche dans `appli/` : les mentions légales d'Ephytia interdisent
@@ -49,7 +49,7 @@ espèce, une fiche au genre), puis l'hôte reconnu quand l'espèce appartient au
 genre (le nom latin le dit : « Pinus pinaster » est dans « Pinus »), dans une
 fonction pure. Niveau 3 (le moteur).
 
-## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
+## LE DOSSIER DES DIAGNOSTICS, AVEC SES NOTES : CODÉ LE 20 NOVEMBRE SUR LA BRANCHE, PAS SUR `main` (19 novembre 2026)
 
 Sa proposition : *« une fois que quelqu'un a photographié un champignon ou une
 maladie, qu'il puisse le rattacher à un chantier ou se créer un dossier avec
@@ -73,14 +73,19 @@ maladie, date, début de la note), « Ranger dans un dossier » sous « Nouvelle
 photo », la feuille (chantiers, mes dossiers, « Nouveau dossier », « Ma
 note », « Ranger »), la fiche rangée (« Rangée dans X, le … », la note,
 « Modifier »). « Rattacher à un chantier » des détails disparaît : « Ranger »
-le remplace. **À trancher par lui** : le dossier d'un chantier se montre-t-il
-aussi sur la fiche du chantier ; la note s'écrit seulement, ou se dicte aussi.
-Avant de la lui redemander : chercher `Ranger dans un dossier` dans `src/`.
+le remplace. **Ses réponses du 20 novembre** : le dossier d'un chantier ne se
+montre PAS sur la fiche du chantier ; la note s'écrit au clavier seulement.
+
+**Codé le 20 novembre** (`ARCHITECTURE.md` §593, migration 0189) sur
+`claude/vigilant-ramanujan-kxr0np`, par-dessus la fiche soignée (§592), dont il
+dépend. **Reste** : `test-diagnostic-base.ts` et `test-diagnostic-ecrans-e2e.ts`
+(écrits, non joués : ils vident la base), puis la batterie de niveau 3, sur son
+« oui », avant `main`. Vu sur les vrais écrans de la session.
 
 ## LA FICHE DE DIAGNOSTIC SOIGNÉE : CODÉE LE 19 NOVEMBRE SUR LA BRANCHE, PAS SUR `main` (19 novembre 2026)
 
 **Sa réponse : « oui code la, pas de batterie ».** Codée (`ARCHITECTURE.md`
-§591, migration 0187) sur `claude/vigilant-ramanujan-kxr0np`. **Reste** : la
+§592, migration 0188) sur `claude/vigilant-ramanujan-kxr0np`. **Reste** : la
 batterie de niveau 3 (migration, gravité), à lancer sur son oui seulement, puis
 `main`. Joué ici : types, lint, suites pures, et l'écran regardé sur une base
 locale (Origine et Nuit). Pas joué : les suites base et navigateur, dont
@@ -2681,7 +2686,7 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | **six photos de face à refaire pour la nourrice éclatée** (électrovanne MM 9, électrovanne FF 11, vanne 3/4" 5, union 6, raccord Plasson 7, té 1" MMF) : prises de trois quarts, elles restent de biais quel que soit l'angle, et on ne déforme jamais une image (`ARCHITECTURE.md` §475). Consignes données le 18 octobre : pièce à plat sur une feuille blanche, axe d'écoulement horizontal, appareil à hauteur de la pièce, à 1 m avec le zoom, aucun filetage vu de l'intérieur, rien d'autre dans le cadre. À la réception : remesurer les deux bouts sur le rendu 3x, planche de comparaison ancienne/nouvelle AVANT tout remplacement | lui pour les photos, puis une session |
 | **pousser sur `main`** le grisé de la nourrice, les blocs supprimés, les prix : son « oui » est donné, mais il faut le contrôle de niveau 2 (`verifier:avant-fusion`) et il a dit « aucune batterie » ; à lui demander quand le lancer | lui |
 | ~~**le montage au robinet** : à coder quand il aura validé la planche~~ **CODÉ le 18 octobre au soir** sur son « tu peux coder, pas de batterie » (`ARCHITECTURE.md` §471) : ses deux montages, la double sortie, le départ, la pile des pièces. ~~Reste à lui demander : au nez de robinet, la pression se calcule encore avec l'amenée et le trajet du croquis~~ **tranché le 19 octobre** : *« ça ne change rien »*, le calcul de perte de charge au robinet est celui du compteur, avec la pression et le débit mesurés, dans les deux montages (`.claude/rules/arrosage.md`, `test-regles-du-patron.ts`) | fait |
-| **la photo de pièce en `<img>`, pas en `next/image`** : sept `pansement assumé` dans les écrans du plan (`Vignette`, `FeuillePiece`, `PiecesDuReseau`, `NourriceEclatee`, `MontageAuRobinet`, `LePlanDuJardin`), et un huitième depuis le 19 novembre 2026 sur la photo de référence du diagnostic (`src/app/paysage/diagnostic/[id]/page.tsx`, déjà en `<img>` avant, son aveu manquait : la route est authentifiée, l'optimiseur ne la traverse pas). `next/image` n'a rien à optimiser sur une photo servie telle quelle depuis `public/`, et il exige des dimensions que la pile du robinet (hauteur fixe, largeur libre) n'a pas. À trancher un jour : `next/image` avec `unoptimized`, ou la règle éteinte pour ce dossier dans la configuration du lint | nous |
+| **la photo de pièce en `<img>`, pas en `next/image`** : sept `pansement assumé` dans les écrans du plan (`Vignette`, `FeuillePiece`, `PiecesDuReseau`, `NourriceEclatee`, `MontageAuRobinet`, `LePlanDuJardin`), et un huitième depuis le 19 novembre 2026 sur la photo de référence du diagnostic (`src/app/paysage/diagnostic/[id]/page.tsx`, déjà en `<img>` avant, son aveu manquait : la route est authentifiée, l'optimiseur ne la traverse pas). Un neuvième le 20 novembre 2026 : la vignette de SA photo dans un dossier de diagnostics (`src/app/paysage/diagnostic/dossier/[id]/page.tsx`, route privée `/api/diagnostic/photo/[id]`). `next/image` n'a rien à optimiser sur une photo servie telle quelle depuis `public/`, et il exige des dimensions que la pile du robinet (hauteur fixe, largeur libre) n'a pas. À trancher un jour : `next/image` avec `unoptimized`, ou la règle éteinte pour ce dossier dans la configuration du lint | nous |
 | ~~**une suite navigateur de l'écran du plan** : aucune n'ouvre l'écran avec un plan, il faut un croquis lu par l'IA~~ **en partie résolu le 18 octobre** : le plan dessiné au doigt ne passe pas par l'IA, et `test-arrosage-e2e.ts` (« le plan dessiné au doigt se calcule ») ouvre désormais l'écran AVEC un plan. Elle ne vérifie encore que la présence des réseaux : les gestes sur le plan lui-même (pièces, robinet) restent à y jouer | nous |
 | **le plan dessiné, ce qu'il reste** : ~~les arbres et les dalles (à lui demander)~~ **tranché et codé le 19 octobre** : l'arbre ne change rien, les dalles qu'on n'arrose pas et la maison coupent la zone ; ~~les formes courbes ne se dessinent pas~~ **codé le 19 octobre** : elles se dessinent et partent comme le rectangle qui les entoure. **Reste** : le calcul des pelouses en forme libre (têtes le long de la courbe, couverture vérifiée), à lui proposer quand il le voudra ; une photo de croquis se lit toujours en rectangles ; ~~**pousser sur `main`** le dessin codé le 19 octobre~~ **livré le 20 octobre** (`3ae91cb3`) ; les instantanés des planches (`arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`) ne sont pas reconstruits pour la haie à plus de deux lignes | lui, puis nous |
 | **`public/arrosage-photos/` doit suivre `appli/arrosage-photos/`** pour chaque photo de `photos.ts` ; la suite le vérifie, mais la copie reste un geste (une photo validée entre dans les deux dossiers, et dans `photos.ts`) | nous |

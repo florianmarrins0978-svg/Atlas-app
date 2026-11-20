@@ -213,19 +213,24 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "Sur le résultat, la gravité et « Que faire ? » s'affichent d'emblée. Touchez « Voir les détails » " +
       "pour le nom scientifique, la prévention, le traitement et les sources.",
     source: DIAG,
-    preuves: ['cle="Gravité"', 'cle="Que faire ?"', "Voir les détails", 'cle="Traitement"', 'cle="Prévention"'],
+    preuves: ["Est-ce grave pour l’arbre ?", "Que faire ?", "Voir les détails", 'cle="Traitement"', 'cle="Prévention"'],
   },
   {
-    id: "diagnostic-rattacher",
+    id: "diagnostic-ranger",
     ecran: "Diagnostic végétal",
-    ou: "« Paysage », Diagnostic végétal, résultat, puis Voir les détails",
-    intitule: "Rattacher un diagnostic à un chantier",
-    motsCles: ["rattacher", "lier", "associer", "chantier", "diagnostic", "joindre", "relier"],
-    geste: "Ouvrez « Voir les détails », choisissez le chantier sous « Rattacher à un chantier », puis touchez « Rattacher ».",
-    reserve: "Il faut un chantier ouvert. Sans lui, le diagnostic reste indépendant.",
-    source: "src/app/paysage/diagnostic/[id]/RattacherAUnChantier.tsx",
-    preuves: ["Rattacher à un chantier", '"Rattacher"', "Aucun chantier ouvert"],
-    ailleurs: [{ source: DIAG, preuves: ["Voir les détails", "<RattacherAUnChantier"] }],
+    ou: "« Paysage », Diagnostic végétal, résultat",
+    intitule: "Ranger un diagnostic dans un dossier, avec une note",
+    motsCles: ["ranger", "dossier", "rattacher", "lier", "associer", "chantier", "joindre", "relier", "note", "annoter", "retrouver", "garder"],
+    geste:
+      "Sur le résultat, touchez « Ranger dans un dossier », choisissez un chantier ou un de vos dossiers, " +
+      "écrivez votre note si vous voulez, puis touchez « Ranger ». Vos dossiers se retrouvent sous « Mes dossiers », " +
+      "sur l'écran Diagnostic végétal.",
+    source: "src/app/paysage/diagnostic/[id]/RangerDansUnDossier.tsx",
+    preuves: ["Ranger dans un dossier", "Ranger cette photo", "Nouveau dossier", "Ma note", '"Ranger"'],
+    ailleurs: [
+      { source: DIAG, preuves: ["<RangerDansUnDossier"] },
+      { source: "src/app/paysage/diagnostic/page.tsx", preuves: ["Mes dossiers"] },
+    ],
   },
   {
     id: "diagnostic-nouvelle-photo",
@@ -235,7 +240,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     motsCles: ["autre", "nouveau", "nouvelle", "diagnostic", "photo", "recommencer", "encore"],
     geste: "Sur le résultat, touchez « Nouvelle photo ».",
     source: DIAG,
-    preuves: ['"Nouvelle photo"'],
+    preuves: ["Nouvelle photo"],
   },
   {
     id: "diagnostic-photo-de-plus",
@@ -257,7 +262,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     geste:
       "Lisez « Vu sur la photo » et « Pourquoi ça ne suffit pas », puis touchez « Recommencer » pour une nouvelle photo.",
     source: DIAG,
-    preuves: ['"Sans conclusion"', "Vu sur la photo", "Pourquoi ça ne suffit pas", '"Recommencer"'],
+    preuves: ['"Sans conclusion"', "Vu sur la photo", "Pourquoi ça ne suffit pas", ">Recommencer<"],
   },
   {
     id: "diagnostic-echoue",

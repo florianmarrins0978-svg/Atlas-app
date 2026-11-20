@@ -88,7 +88,7 @@ export const TaxonSchema = z.object({
   rang: z.enum(["genre", "espece", "famille", "groupe"]).default("espece"),
   port: z.enum(PORTS).nullable().default(null),
   /** « un », « une », « des » : l'écran écrit « Probable sur un peuplier. ».
-   *  Le genre d'un nom d'essence ne se devine pas (migration 0187). */
+   *  Le genre d'un nom d'essence ne se devine pas (migration 0188). */
   article: z.enum(["un", "une", "des"]).nullable().default(null),
 });
 export type TaxonImporte = z.infer<typeof TaxonSchema>;
@@ -159,7 +159,7 @@ export const FicheSchema = z.object({
   informationsRequises: z.array(z.string().min(5)).default([]),
   /** « La détection en laboratoire est nécessaire. » Recopié de la source. */
   methodeConfirmation: z.string().min(5).nullable().default(null),
-  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0188) ──
   /** Ce que la SOURCE dit de la gravité, en phrases. Sa question : « Gravité
    *  vigilance, ça veut rien dire ? Que dit l'INRAE ? ». `gravite` reste interne. */
   graviteSelonLaSource: z.string().min(10).nullable().default(null),

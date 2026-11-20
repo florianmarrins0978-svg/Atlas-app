@@ -4,7 +4,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import IconeTrait from "@/components/atlas/IconeTrait";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { lireDiagnostic } from "@/server/repositories/diagnostics";
+import { lireDiagnostic, lireRangement, listerMesDossiers } from "@/server/repositories/diagnostics";
 import { compterFichesServables, lireEssence, lireImagesFiche } from "@/server/repositories/fiches-phyto";
 import { listerChantiers } from "@/server/repositories/chantiers";
 import {
@@ -24,8 +24,9 @@ import {
   type ResultatFige,
 } from "@/lib/diagnostic-vegetal";
 import { dateCitee } from "@/lib/mois";
+import { phraseRangee } from "@/lib/dossiers-diagnostic";
 import PrendreUnePhoto from "../PrendreUnePhoto";
-import RattacherAUnChantier from "./RattacherAUnChantier";
+import RangerDansUnDossier from "./RangerDansUnDossier";
 import Reessayer from "./Reessayer";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -91,7 +92,6 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
             ficheId={diagnostic.ficheId}
             essence={essenceDeLaBase}
             diagnosticId={id}
-            chantierId={diagnostic.chantierId}
             ctx={ctx}
           />
         ) : (
@@ -176,14 +176,12 @@ async function FicheRendue({
   ficheId,
   essence,
   diagnosticId,
-  chantierId,
   ctx,
 }: {
   resultat: ResultatFige;
   ficheId: string | null;
   essence: { nom: string; article: "un" | "une" | "des" | null } | null;
   diagnosticId: string;
-  chantierId: string | null;
   ctx: { utilisateurId: string; entrepriseId: string };
 }) {
   // **Les images sont lues EN DIRECT, pas figées dans le résultat.** Le
@@ -193,6 +191,30 @@ async function FicheRendue({
   // sont remplacées, donc renumérotées), et une image morte est pire qu'une
   // image un peu différente.
   const images = ficheId ? await lireImagesFiche(ficheId) : [];
+  const [rangement, chantiers, dossiers] = await Promise.all([
+    lireRangement(ctx, diagnosticId),
+    listerChantiers(ctx),
+    listerMesDossiers(ctx),
+  ]);
+  // Le même composant, à deux places : la carte « Rangée dans… » avant
+  // « Nouvelle photo », le bouton creux après (sa planche du 20 novembre).
+  const ranger = (
+    <RangerDansUnDossier
+      diagnosticId={diagnosticId}
+      rangement={
+        rangement
+          ? {
+              phrase: phraseRangee(rangement.nom, rangement.rangeLe, new Date()),
+              note: rangement.note,
+              chantierId: rangement.chantierId,
+              dossierId: rangement.dossierId,
+            }
+          : null
+      }
+      chantiers={chantiers.map((c) => ({ id: c.id, nom: c.nom }))}
+      dossiers={dossiers}
+    />
+  );
   const parties = partiesEnPhrase(resultat.details.partiesAtteintes);
   const notes = resultat.notesSource ?? null;
   const graviteTexte = resultat.graviteSelonLaSource ?? null;
@@ -381,6 +403,8 @@ async function FicheRendue({
           <MentionAffichee key={i} mention={mention} />
         ))}
 
+        {rangement && ranger}
+
         <Link
           href="/paysage/diagnostic"
           // Le bouton plein des pages soignées : 56 px, coins de 14 px, le vert
@@ -392,13 +416,9 @@ async function FicheRendue({
           Nouvelle photo
         </Link>
 
-        <DetailsDeLaFiche
-          resultat={resultat}
-          images={images}
-          diagnosticId={diagnosticId}
-          chantierId={chantierId}
-          ctx={ctx}
-        />
+        {!rangement && ranger}
+
+        <DetailsDeLaFiche resultat={resultat} images={images} />
       </div>
     </div>
   );
@@ -644,26 +664,19 @@ function EnAnalyse() {
  * « Voir les détails » : une ligne de 64 px qu'on touche du pouce, et son
  * chevron qui se retourne une fois ouverte.
  *
- * **Tout en bas, sous « Rattacher à un chantier », sa demande du 19 novembre
- * 2026** : la légende de la photo, son auteur et sa licence, puis la source
+ * **Tout en bas, sa demande du 19 novembre 2026** : la légende de la photo,
+ * son auteur et sa licence, puis la source
  * (« comme ça, c'est quand même mentionné dans la fiche, mais c'est tout à la
  * fin »). Le crédit reste ainsi sur la fiche, ce que la licence d'une photo
  * libre demande.
  */
-async function DetailsDeLaFiche({
+function DetailsDeLaFiche({
   resultat,
   images,
-  diagnosticId,
-  chantierId,
-  ctx,
 }: {
   resultat: ResultatFige;
   images: { id: string; legende: string | null; credit: string; licence: string }[];
-  diagnosticId: string;
-  chantierId: string | null;
-  ctx: { utilisateurId: string; entrepriseId: string };
 }) {
-  const chantiers = await listerChantiers(ctx);
   const d = resultat.details;
 
   return (
@@ -701,14 +714,6 @@ async function DetailsDeLaFiche({
             Fiche version {d.versionFiche}
             {d.sourcesAJourLe ? `, à jour au ${dateCitee(d.sourcesAJourLe)}` : ""}.
           </p>
-        </div>
-
-        <div className="mt-[22px] pt-[18px]" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
-          <RattacherAUnChantier
-            diagnosticId={diagnosticId}
-            chantierId={chantierId}
-            chantiers={chantiers.map((c) => ({ id: c.id, nom: c.nom }))}
-          />
         </div>
 
         <div

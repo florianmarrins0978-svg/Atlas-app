@@ -17,8 +17,10 @@ import {
   lireDiagnostic,
   lirePhotos,
   ouvrirDiagnostic,
-  rattacherAUnChantier,
+  rangerDansUnDossier,
+  type DestinationLue,
 } from "@/server/repositories/diagnostics";
+import { lireNomDeDossier, lireNote, PHRASES_DE_REFUS, type Destination } from "@/lib/dossiers-diagnostic";
 import type { Partie } from "@/lib/diagnostic-vegetal";
 
 /**
@@ -298,23 +300,53 @@ async function executerAnalyse(
 export type ResultatSimple = { ok: true } | { ok: false; phrase: string };
 
 /**
- * Rattacher le diagnostic à un chantier — **après coup, et facultativement**.
+ * Ranger le diagnostic dans un dossier, avec sa note : un chantier, un de ses
+ * dossiers, ou un dossier qu'il crée là (sa demande du 20 novembre 2026).
  *
- * Sa règle du 20 août : aucun chantier n'est nécessaire pour diagnostiquer.
- * Ce geste-là vient ensuite, quand il sait chez qui il est.
+ * Le nom et la note se relisent ICI avec la même règle que la feuille
+ * (`lireNomDeDossier`, `lireNote`) : ce que l'écran envoie ne se croit pas.
  */
-export async function rattacherAction(diagnosticId: string, chantierId: string): Promise<ResultatSimple> {
+export async function rangerAction(
+  diagnosticId: string,
+  destination: Destination,
+  noteBrute: string
+): Promise<ResultatSimple> {
   const ctx = await getCurrentCtx();
-  await exigerEcran(ctx, "/paysage", "rattacher un diagnostic à un chantier");
-  await exigerFonction(ctx, "diagnostic", "rattacher un diagnostic à un chantier");
-  const r = await rattacherAUnChantier(ctx, diagnosticId, chantierId, politique());
+  await exigerEcran(ctx, "/paysage", "ranger un diagnostic dans un dossier");
+  await exigerFonction(ctx, "diagnostic", "ranger un diagnostic dans un dossier");
+
+  // Un identifiant qui n'est pas un UUID ne désigne rien : refusé ici, plutôt
+  // que de laisser la base lever sur une conversion que l'écran ne verrait pas.
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID.test(diagnosticId)) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
+  if (destination.genre !== "nouveau" && !UUID.test(destination.id)) {
+    return { ok: false, phrase: "Ce dossier n’existe plus." };
+  }
+
+  const note = lireNote(noteBrute);
+  if (!note.ok) return { ok: false, phrase: PHRASES_DE_REFUS[note.refus] };
+  let lue: DestinationLue;
+  if (destination.genre === "nouveau") {
+    const nom = lireNomDeDossier(destination.nom);
+    if (!nom.ok) return { ok: false, phrase: PHRASES_DE_REFUS[nom.refus] };
+    lue = { genre: "nouveau", nom: nom.nom };
+  } else {
+    lue = destination;
+  }
+
+  const r = await rangerDansUnDossier(ctx, diagnosticId, lue, note.note, politique());
   if (!r.ok) {
     return {
       ok: false,
       phrase:
-        r.refus === "chantier_absent" ? "Ce chantier n’existe plus." : "Ce diagnostic n’existe plus.",
+        r.refus === "chantier_absent"
+          ? "Ce chantier n’existe plus."
+          : r.refus === "dossier_absent"
+            ? "Ce dossier n’existe plus."
+            : "Ce diagnostic n’existe plus.",
     };
   }
   revalidatePath(`/paysage/diagnostic/${diagnosticId}`);
+  revalidatePath("/paysage/diagnostic");
   return { ok: true };
 }

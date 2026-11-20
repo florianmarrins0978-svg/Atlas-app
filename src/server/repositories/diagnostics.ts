@@ -7,11 +7,12 @@
  * contournement de la RLS pour se simplifier la vie (§4).
  */
 
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
   diagnostics,
+  dossiersDiagnostic,
   hypothesesDiagnostic,
   photosDiagnostic,
   photosDiagnosticAPurger,
@@ -59,7 +60,7 @@ export async function ajouterPhoto(
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [diagnostic] = await tx
-      .select({ chantierId: diagnostics.chantierId })
+      .select({ chantierId: diagnostics.chantierId, dossierId: diagnostics.dossierId })
       .from(diagnostics)
       .where(eq(diagnostics.id, diagnosticId))
       .limit(1);
@@ -70,7 +71,8 @@ export async function ajouterPhoto(
       .values({ entrepriseId: ctx.entrepriseId, diagnosticId, ...photo })
       .returning({ id: photosDiagnostic.id, createdAt: photosDiagnostic.createdAt });
 
-    const echeance = echeanceDePurge(row.createdAt, diagnostic.chantierId !== null, politique);
+    const rangee = diagnostic.chantierId !== null || diagnostic.dossierId !== null;
+    const echeance = echeanceDePurge(row.createdAt, rangee, politique);
     if (echeance) {
       await tx.insert(photosDiagnosticAPurger).values({
         photoId: row.id,
@@ -235,45 +237,96 @@ export async function listerDiagnostics(ctx: Ctx, limite = 20) {
   );
 }
 
-export type RefusRattachement = "diagnostic_absent" | "chantier_absent";
+export type RefusRangement = "diagnostic_absent" | "chantier_absent" | "dossier_absent";
+
+/** Où il range, une fois le nom d'un dossier neuf relu par `lireNomDeDossier`. */
+export type DestinationLue =
+  | { genre: "chantier"; id: string }
+  | { genre: "dossier"; id: string }
+  | { genre: "nouveau"; nom: string };
 
 /**
- * Rattacher un diagnostic à un chantier — **après coup, et facultativement**.
+ * Ranger un diagnostic dans un dossier, avec sa note — **après coup, et
+ * facultativement** (sa demande du 20 novembre 2026, migration 0189).
  *
- * Sa règle du 20 août : le diagnostic fonctionne de manière totalement
- * autonome ; aucun chantier n'est nécessaire. C'est la même objection qu'il
- * avait faite pour le plan d'arrosage : un outil qui exige un chantier ne sert
- * pas en visite de devis, quand le client n'existe pas encore.
+ * Sa règle du 20 août tient toujours : le diagnostic fonctionne seul, aucun
+ * dossier n'est nécessaire. **Un chantier est un dossier** ; ses dossiers à
+ * lui servent à ce qui n'en a pas. UNE place par diagnostic : ranger ailleurs
+ * déplace, la base refuse les deux à la fois (`diagnostics_une_seule_place_ck`).
  *
  * **L'échéance de purge des photos est RECALCULÉE**, et c'est le vrai travail
  * de cette fonction. Une photo prise libre était programmée pour disparaître
- * dans trois mois ; versée au dossier d'un chantier, elle devient une pièce du
- * dossier et suit sa règle. L'oublier viderait le dossier d'un client toujours
- * en cours, sans que personne ait rien demandé.
+ * dans trois mois ; rangée, elle devient une pièce du dossier et suit la règle
+ * d'un chantier. Un dossier à lui suit la même : il range pour retrouver, et
+ * un dossier qui se viderait seul trahirait exactement ce qu'il a demandé.
  *
- * L'existence du chantier est revérifiée SOUS RLS : elle ne se déduit pas de ce
- * que l'écran a envoyé.
+ * **La date du rangement ne bouge que si la place change** : corriger sa note
+ * ne doit pas faire croire qu'il a rangé la photo aujourd'hui.
+ *
+ * L'existence du chantier ou du dossier est revérifiée SOUS RLS : elle ne se
+ * déduit pas de ce que l'écran a envoyé.
  */
-export async function rattacherAUnChantier(
+export async function rangerDansUnDossier(
   ctx: Ctx,
   diagnosticId: string,
-  chantierId: string,
+  destination: DestinationLue,
+  note: string | null,
   politique: PolitiqueRetentionPhotos
-): Promise<{ ok: true } | { ok: false; refus: RefusRattachement }> {
+): Promise<{ ok: true } | { ok: false; refus: RefusRangement }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [chantier] = await tx
-      .select({ id: chantiers.id })
-      .from(chantiers)
-      .where(eq(chantiers.id, chantierId))
-      .limit(1);
-    if (!chantier) return { ok: false as const, refus: "chantier_absent" as const };
+    let chantierId: string | null = null;
+    let dossierId: string | null = null;
 
-    const misAJour = await tx
-      .update(diagnostics)
-      .set({ chantierId, updatedAt: new Date() })
+    if (destination.genre === "chantier") {
+      const [chantier] = await tx
+        .select({ id: chantiers.id })
+        .from(chantiers)
+        .where(and(eq(chantiers.id, destination.id), isNull(chantiers.deletedAt)))
+        .limit(1);
+      if (!chantier) return { ok: false as const, refus: "chantier_absent" as const };
+      chantierId = chantier.id;
+    } else if (destination.genre === "dossier") {
+      const [dossier] = await tx
+        .select({ id: dossiersDiagnostic.id })
+        .from(dossiersDiagnostic)
+        .where(eq(dossiersDiagnostic.id, destination.id))
+        .limit(1);
+      if (!dossier) return { ok: false as const, refus: "dossier_absent" as const };
+      dossierId = dossier.id;
+    } else {
+      // Un nom déjà pris désigne le dossier qui le porte : deux dossiers du
+      // même nom se confondraient dans la feuille (`dossiers_diagnostic_nom_uk`).
+      await tx
+        .insert(dossiersDiagnostic)
+        .values({ entrepriseId: ctx.entrepriseId, nom: destination.nom })
+        .onConflictDoNothing();
+      const [dossier] = await tx
+        .select({ id: dossiersDiagnostic.id })
+        .from(dossiersDiagnostic)
+        .where(sql`lower(btrim(${dossiersDiagnostic.nom})) = lower(btrim(${destination.nom}))`)
+        .limit(1);
+      if (!dossier) return { ok: false as const, refus: "dossier_absent" as const };
+      dossierId = dossier.id;
+    }
+
+    const [avant] = await tx
+      .select({ chantierId: diagnostics.chantierId, dossierId: diagnostics.dossierId, rangeLe: diagnostics.rangeLe })
+      .from(diagnostics)
       .where(eq(diagnostics.id, diagnosticId))
-      .returning({ id: diagnostics.id });
-    if (misAJour.length === 0) return { ok: false as const, refus: "diagnostic_absent" as const };
+      .limit(1);
+    if (!avant) return { ok: false as const, refus: "diagnostic_absent" as const };
+    const memePlace = avant.chantierId === chantierId && avant.dossierId === dossierId;
+
+    await tx
+      .update(diagnostics)
+      .set({
+        chantierId,
+        dossierId,
+        note,
+        rangeLe: memePlace ? avant.rangeLe : new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(diagnostics.id, diagnosticId));
 
     const photos = await tx
       .select({ id: photosDiagnostic.id, storageKey: photosDiagnostic.storageKey, createdAt: photosDiagnostic.createdAt })
@@ -294,5 +347,173 @@ export async function rattacherAUnChantier(
       }
     }
     return { ok: true as const };
+  });
+}
+
+/** Où le diagnostic est rangé, pour la fiche : le nom du chantier ou du
+ *  dossier, et le jour. Nul tant qu'il n'est rangé nulle part. */
+export async function lireRangement(ctx: Ctx, diagnosticId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx
+      .select({
+        chantierId: diagnostics.chantierId,
+        dossierId: diagnostics.dossierId,
+        note: diagnostics.note,
+        rangeLe: diagnostics.rangeLe,
+        nomChantier: chantiers.nom,
+        nomDossier: dossiersDiagnostic.nom,
+      })
+      .from(diagnostics)
+      .leftJoin(chantiers, and(eq(chantiers.id, diagnostics.chantierId), isNull(chantiers.deletedAt)))
+      .leftJoin(dossiersDiagnostic, eq(dossiersDiagnostic.id, diagnostics.dossierId))
+      .where(eq(diagnostics.id, diagnosticId))
+      .limit(1);
+    const nom = d?.nomChantier ?? d?.nomDossier ?? null;
+    if (!d || !nom) return null;
+    return {
+      nom,
+      note: d.note,
+      rangeLe: d.rangeLe,
+      chantierId: d.nomChantier ? d.chantierId : null,
+      dossierId: d.nomDossier ? d.dossierId : null,
+    };
+  });
+}
+
+/** Ses dossiers à lui, pour la feuille « Ranger cette photo ». */
+export async function listerMesDossiers(ctx: Ctx) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ id: dossiersDiagnostic.id, nom: dossiersDiagnostic.nom })
+      .from(dossiersDiagnostic)
+      .orderBy(dossiersDiagnostic.nom)
+  );
+}
+
+export type DossierDeDiagnostics = {
+  id: string;
+  genre: "chantier" | "dossier";
+  nom: string;
+  nombre: number;
+  derniere: Date | null;
+};
+
+/**
+ * « Mes dossiers » sur l'écran Diagnostic : les chantiers qui portent au moins
+ * un diagnostic, et ses dossiers à lui, le plus récent d'abord. Un chantier
+ * sans diagnostic n'y figure pas : la liste de ses chantiers existe ailleurs.
+ */
+export async function lireMesDossiersDeDiagnostics(ctx: Ctx): Promise<DossierDeDiagnostics[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const desChantiers = await tx
+      .select({
+        id: chantiers.id,
+        nom: chantiers.nom,
+        nombre: sql<number>`count(${diagnostics.id})::int`,
+        derniere: sql<Date | null>`max(${diagnostics.createdAt})`,
+      })
+      .from(diagnostics)
+      .innerJoin(chantiers, and(eq(chantiers.id, diagnostics.chantierId), isNull(chantiers.deletedAt)))
+      .groupBy(chantiers.id, chantiers.nom);
+    const lesSiens = await tx
+      .select({
+        id: dossiersDiagnostic.id,
+        nom: dossiersDiagnostic.nom,
+        nombre: sql<number>`count(${diagnostics.id})::int`,
+        derniere: sql<Date | null>`max(${diagnostics.createdAt})`,
+      })
+      .from(dossiersDiagnostic)
+      .leftJoin(diagnostics, eq(diagnostics.dossierId, dossiersDiagnostic.id))
+      .groupBy(dossiersDiagnostic.id, dossiersDiagnostic.nom);
+    const date = (v: Date | string | null) => (v === null ? null : new Date(v));
+    return [
+      ...desChantiers.map((c) => ({ ...c, genre: "chantier" as const, derniere: date(c.derniere) })),
+      ...lesSiens.map((d) => ({ ...d, genre: "dossier" as const, derniere: date(d.derniere) })),
+    ].sort((a, b) => (b.derniere?.getTime() ?? 0) - (a.derniere?.getTime() ?? 0));
+  });
+}
+
+/**
+ * Un dossier et ses diagnostics : le chantier ou le dossier à lui que désigne
+ * cet identifiant (deux UUID ne se rencontrent pas), revérifié sous RLS. Chaque
+ * diagnostic porte sa première photo encore gardée, pour la vignette.
+ */
+export async function lireUnDossierDeDiagnostics(ctx: Ctx, id: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [chantier] = await tx
+      .select({ nom: chantiers.nom })
+      .from(chantiers)
+      .where(and(eq(chantiers.id, id), isNull(chantiers.deletedAt)))
+      .limit(1);
+    const [dossier] = chantier
+      ? []
+      : await tx.select({ nom: dossiersDiagnostic.nom }).from(dossiersDiagnostic).where(eq(dossiersDiagnostic.id, id)).limit(1);
+    if (!chantier && !dossier) return null;
+    const genre = chantier ? ("chantier" as const) : ("dossier" as const);
+
+    const lignes = await tx
+      .select({
+        id: diagnostics.id,
+        statut: diagnostics.statut,
+        resultat: diagnostics.resultat,
+        note: diagnostics.note,
+        createdAt: diagnostics.createdAt,
+      })
+      .from(diagnostics)
+      .where(genre === "chantier" ? eq(diagnostics.chantierId, id) : eq(diagnostics.dossierId, id))
+      .orderBy(desc(diagnostics.createdAt));
+
+    const photos =
+      lignes.length === 0
+        ? []
+        : await tx
+            .select({ id: photosDiagnostic.id, diagnosticId: photosDiagnostic.diagnosticId })
+            .from(photosDiagnostic)
+            .where(
+              and(
+                inArray(
+                  photosDiagnostic.diagnosticId,
+                  lignes.map((l) => l.id)
+                ),
+                isNull(photosDiagnostic.purgeeLe)
+              )
+            )
+            .orderBy(photosDiagnostic.createdAt);
+    const premiere = new Map<string, string>();
+    for (const p of photos) if (!premiere.has(p.diagnosticId)) premiere.set(p.diagnosticId, p.id);
+
+    return {
+      genre,
+      nom: (chantier ?? dossier).nom,
+      diagnostics: lignes.map((l) => ({
+        id: l.id,
+        statut: l.statut,
+        nomDeLaFiche: (l.resultat as ResultatFige | null)?.nom ?? null,
+        note: l.note,
+        createdAt: l.createdAt,
+        photoId: premiere.get(l.id) ?? null,
+      })),
+    };
+  });
+}
+
+/** La clé de stockage d'une de SES photos de diagnostic, encore gardée. Par
+ *  identifiant seulement : une clé reçue de l'extérieur ne se sert jamais. */
+export async function lireClePhotoDiagnostic(ctx: Ctx, photoId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [photo] = await tx
+      .select({ storageKey: photosDiagnostic.storageKey })
+      .from(photosDiagnostic)
+      .where(
+        and(
+          eq(photosDiagnostic.id, photoId),
+          // En défense en profondeur, comme `/api/fichiers` : la RLS suffit
+          // sous `atlas_app`, plus dès que le rôle change.
+          eq(photosDiagnostic.entrepriseId, ctx.entrepriseId),
+          isNull(photosDiagnostic.purgeeLe)
+        )
+      )
+      .limit(1);
+    return photo?.storageKey ?? null;
   });
 }

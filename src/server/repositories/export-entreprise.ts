@@ -48,6 +48,7 @@ import {
   achatsTva,
   notesVocales,
   diagnostics,
+  dossiersDiagnostic,
   photosDiagnostic,
   photosDiagnosticAPurger,
   hypothesesDiagnostic,
@@ -220,6 +221,7 @@ export async function exporterEntreprise(
       sesPassages,
       sesLignesPassage,
       sesMotsCatalogue,
+      sesDossiersDiagnostic,
       sesDiagnostics,
       sesPhotosDiagnostic,
       sesHypotheses,
@@ -408,6 +410,9 @@ export async function exporterEntreprise(
       // sont nées — avant qu'on y pense. Ce sont des données personnelles à part
       // entière : une photo de diagnostic est prise chez quelqu'un, et le
       // diagnostic dit ce qu'on a trouvé dans son jardin.
+      // Ses dossiers à lui (migration 0189), AVANT les diagnostics qui les
+      // désignent : rejoué ligne à ligne, le renvoi trouve son parent.
+      tx.select().from(dossiersDiagnostic).where(eq(dossiersDiagnostic.entrepriseId, e)),
       tx.select().from(diagnostics).where(eq(diagnostics.entrepriseId, e)),
       tx.select().from(photosDiagnostic).where(eq(photosDiagnostic.entrepriseId, e)),
       tx.select().from(hypothesesDiagnostic).where(eq(hypothesesDiagnostic.entrepriseId, e)),
@@ -603,6 +608,7 @@ export async function exporterEntreprise(
       passages_entretien: sesPassages,
       lignes_passage: sesLignesPassage,
       mots_catalogue: sesMotsCatalogue,
+      dossiers_diagnostic: sesDossiersDiagnostic,
       diagnostics: sesDiagnostics,
       photos_diagnostic: sesPhotosDiagnostic,
       // Les hypothèses internes du moteur. Jamais affichées, mais elles sont à

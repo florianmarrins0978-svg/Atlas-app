@@ -218,8 +218,8 @@ async function main() {
   await cas("le crédit et la licence restent sur la fiche, tout en bas des détails", async () => {
     // La plupart des licences libres l'exigent : une photo sous CC-BY sans son
     // auteur est une photo employée hors licence. **Sa demande du 19 novembre
-    // 2026** les a déplacés sous « Rattacher à un chantier » (« c'est quand
-    // même mentionné dans la fiche, mais c'est tout à la fin ») : rien sous la
+    // 2026** les a déplacés tout en bas des détails (« c'est quand même
+    // mentionné dans la fiche, mais c'est tout à la fin ») : rien sous la
     // photo, et le crédit toujours là, détails ouverts.
     assert.equal(
       await page.locator('[data-atlas="diagnostic-photos-reference"] figcaption').count(),
@@ -232,9 +232,13 @@ async function main() {
     const texte = await credit.innerText();
     assert.match(texte, /, sous licence \S+/, "le crédit et la licence doivent être tous deux lisibles");
     assert.doesNotMatch(texte, /\.\./, "deux points de suite après la légende");
-    const rattacher = await page.locator('[data-atlas="diagnostic-rattacher"]').boundingBox();
-    const bas = await credit.boundingBox();
-    assert.ok(rattacher && bas && bas.y > rattacher.y, "le crédit doit venir sous « Rattacher à un chantier »");
+    // « Rattacher à un chantier » a quitté les détails le 20 novembre 2026
+    // (« Ranger dans un dossier », sous « Nouvelle photo ») : le crédit reste
+    // le DERNIER bloc des détails, ce que sa demande disait vraiment.
+    const dernier = await page.evaluate(
+      () => document.querySelector('[data-atlas="diagnostic-details"] > div')?.lastElementChild?.getAttribute("data-atlas") ?? null
+    );
+    assert.equal(dernier, "diagnostic-sources", "le crédit et la source doivent fermer les détails");
     await page.locator('[data-atlas="diagnostic-details"] summary').click();
   });
 
@@ -266,6 +270,62 @@ async function main() {
     await dernier.scrollIntoViewIfNeeded();
     await dernier.click({ timeout: 5000 });
     assert.ok(await page.locator('[data-atlas="diagnostic-details"][open]').count() > 0);
+  });
+
+  console.log("\n=== Ranger le diagnostic dans un dossier, avec une note (20 novembre 2026) ===");
+
+  const NOM_DU_DOSSIER = "Dossier de la suite";
+  const NOTE = "Feutre blanc sur les jeunes pousses, côté portail.";
+
+  await cas("« Ranger dans un dossier » vient sous « Nouvelle photo »", async () => {
+    await page.goto(`${BASE}/paysage/diagnostic/${diagnosticId}`, { waitUntil: "networkidle" });
+    const ranger = await page.locator('[data-atlas="diagnostic-ranger"]').boundingBox();
+    const photo = await page.locator('a[href="/paysage/diagnostic"]', { hasText: "Nouvelle photo" }).boundingBox();
+    assert.ok(ranger && photo && ranger.y > photo.y, "le bouton creux doit suivre « Nouvelle photo »");
+  });
+
+  await cas("on range dans un dossier neuf, avec sa note, et la fiche le dit", async () => {
+    await page.click('[data-atlas="diagnostic-ranger"]');
+    await page.locator('[data-atlas="feuille-ranger"]').waitFor({ state: "visible", timeout: 5000 });
+    await page.click('[data-atlas="ranger-nouveau-dossier"]');
+    await page.fill('[data-atlas="ranger-nom-dossier"]', NOM_DU_DOSSIER);
+    await page.fill('[data-atlas="ranger-note"]', NOTE);
+    await page.screenshot({ path: `${CAPTURES}/diagnostic-ranger-feuille.png` });
+    await page.click('[data-atlas="ranger-valider"]');
+    const range = page.locator('[data-atlas="diagnostic-range"]');
+    await range.waitFor({ state: "visible", timeout: 10000 });
+    const texte = (await range.innerText()).replace(/\s+/g, " ");
+    assert.match(texte, new RegExp(`Rangée dans ${NOM_DU_DOSSIER}, le \\d`));
+    assert.match(texte, /Feutre blanc sur les jeunes pousses/);
+    assert.equal(await page.locator('[data-atlas="diagnostic-ranger"]').count(), 0, "rangé, le bouton creux laisse place à la carte");
+
+    // En base, et non à l'écran seulement : un rangement qui ne s'écrit pas
+    // s'affiche une fois, puis disparaît au rechargement.
+    const { rows } = await getPool().query(
+      "SELECT d.note, d.chantier_id, o.nom FROM diagnostics d JOIN dossiers_diagnostic o ON o.id = d.dossier_id WHERE d.id = $1",
+      [diagnosticId]
+    );
+    assert.equal(rows[0]?.nom, NOM_DU_DOSSIER);
+    assert.equal(rows[0]?.note, NOTE);
+    assert.equal(rows[0]?.chantier_id, null);
+    await page.screenshot({ path: `${CAPTURES}/diagnostic-range.png`, fullPage: true });
+  });
+
+  await cas("« Mes dossiers » sur l'écran Diagnostic mène au dossier, et le dossier au diagnostic", async () => {
+    await page.goto(`${BASE}/paysage/diagnostic`, { waitUntil: "networkidle" });
+    const ligne = page.locator('[data-atlas="diagnostic-mes-dossiers"] a', { hasText: NOM_DU_DOSSIER });
+    await ligne.waitFor({ state: "visible", timeout: 10000 });
+    assert.match((await ligne.innerText()).replace(/\s+/g, " "), /Mon dossier, 1 photo\./);
+    await page.screenshot({ path: `${CAPTURES}/diagnostic-mes-dossiers.png`, fullPage: true });
+    await ligne.click();
+    await page.waitForURL(/\/paysage\/diagnostic\/dossier\/[0-9a-f-]{36}$/, { timeout: 10000 });
+    const diag = page.locator('[data-atlas="dossier-diagnostic"]');
+    await diag.first().waitFor({ state: "visible", timeout: 10000 });
+    assert.equal(await diag.count(), 1);
+    assert.match((await diag.innerText()).replace(/\s+/g, " "), /Feutre blanc sur les jeunes pousses/);
+    await page.screenshot({ path: `${CAPTURES}/diagnostic-dossier.png`, fullPage: true });
+    await diag.click();
+    await page.waitForURL(`${BASE}/paysage/diagnostic/${diagnosticId}`, { timeout: 10000 });
   });
 
   await browser.close();

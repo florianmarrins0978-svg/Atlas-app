@@ -590,7 +590,7 @@ cas("la même fiche, plafonnée à « probable », passe", () => {
   assert.equal(verdict.ok, true, verdict.ok ? "" : JSON.stringify(verdict.problemes));
 });
 
-console.log("\n=== Son ordre du 22 septembre : les champs neufs (migration 0187) ===");
+console.log("\n=== Son ordre du 22 septembre : les champs neufs (migration 0188) ===");
 
 cas("une fiche portant les champs neufs passe, et les garde", () => {
   const brut = lot({

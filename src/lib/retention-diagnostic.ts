@@ -29,9 +29,10 @@
  */
 
 export type PolitiqueRetentionPhotos = {
-  /** Jours de conservation d'une photo NON rattachée à un chantier. 0 = jamais purger. */
+  /** Jours de conservation d'une photo rangée nulle part. 0 = jamais purger. */
   libreJours: number;
-  /** Jours de conservation d'une photo rattachée à un chantier. 0 = jamais purger. */
+  /** Jours de conservation d'une photo rangée dans un chantier ou dans un de
+   *  ses dossiers (migration 0189 : il range pour retrouver). 0 = jamais purger. */
   chantierJours: number;
 };
 
@@ -63,10 +64,10 @@ const JOUR_MS = 24 * 60 * 60 * 1000;
  */
 export function echeanceDePurge(
   creeLe: Date,
-  rattacheeAUnChantier: boolean,
+  rangee: boolean,
   politique: PolitiqueRetentionPhotos = POLITIQUE_PAR_DEFAUT
 ): Date | null {
-  const jours = rattacheeAUnChantier ? politique.chantierJours : politique.libreJours;
+  const jours = rangee ? politique.chantierJours : politique.libreJours;
   if (jours <= 0) return null;
   return new Date(creeLe.getTime() + jours * JOUR_MS);
 }

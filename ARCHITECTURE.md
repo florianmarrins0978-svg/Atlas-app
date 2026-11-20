@@ -37676,7 +37676,7 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
 
 
-## §591 : La fiche de diagnostic suit son ordre et l'allure soignée ; l'organisme ne se nomme que dans les détails
+## §592 : La fiche de diagnostic suit son ordre et l'allure soignée ; l'organisme ne se nomme que dans les détails
 
 *19 novembre 2026, sa planche (`appli/soignee/fiche-de-diagnostic.html`) et son « code la, pas de batterie ».*
 
@@ -37691,4 +37691,21 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | Plusieurs photos de référence (la feuille ET le champignon, sa demande du 20 novembre) | elles défilent de gauche à droite : défilement du navigateur aimanté (`snap-x`), aucun script, la suivante dépasse au bord et chaque photo dit « 2 sur 3 ». Le geste se voit, il ne s'apprend pas (`PRODUCT.md`, rien de caché) |
 | Les trois autres issues (une photo de plus, sans conclusion, personne n'a regardé) | inchangées : la planche ne les montrait pas |
 
-Migration 0187, expand seul (colonnes NULL, aucune ligne réécrite). Les fiches 1 à 3 gardent ces colonnes vides jusqu'à les recevoir de leurs sources ; elles ont reçu leur article. Suites pures : `test-diagnostic-vegetal.ts` (les phrases, la légende), `test-import-fiches-phyto.ts` (champs neufs, contrôles 9 et 10). `test-diagnostic-ecrans-e2e.ts` adaptée (le crédit en bas des détails, l'organisme absent hors détails), **non jouée** : il a demandé de ne lancer aucune batterie.
+Migration 0188, expand seul (colonnes NULL, aucune ligne réécrite). Les fiches 1 à 3 gardent ces colonnes vides jusqu'à les recevoir de leurs sources ; elles ont reçu leur article. Suites pures : `test-diagnostic-vegetal.ts` (les phrases, la légende), `test-import-fiches-phyto.ts` (champs neufs, contrôles 9 et 10). `test-diagnostic-ecrans-e2e.ts` adaptée (le crédit en bas des détails, l'organisme absent hors détails), **non jouée** : il a demandé de ne lancer aucune batterie.
+
+## §593 : Un diagnostic se range dans un dossier, avec une note ; un chantier est un dossier
+
+*20 novembre 2026, sa demande : « qu'il puisse l'enregistrer dans l'application sous un dossier et pouvoir se faire des annotations, pour qu'il ne soit pas obligé à chaque fois de rechercher un champignon ou une maladie qu'il a déjà vu ». Sa planche : `appli/soignee/diagnostic-dossiers.html`. Ses deux réponses : le dossier d'un chantier ne se montre pas sur la fiche du chantier ; la note s'écrit au clavier seulement.*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| « Rattacher à un chantier » vivait en bas des détails, et rien ne listait les diagnostics passés | « Ranger dans un dossier », bouton creux sous « Nouvelle photo » ; rangé, la carte verte « Rangée dans X, le … », la note et « Modifier ». `RattacherAUnChantier.tsx` et `rattacherAUnChantier` sont remplacés, pas doublés |
+| Un chantier est déjà un dossier (`diagnostics.chantier_id`, 0056) | ses dossiers à lui seulement : `dossiers_diagnostic` (nom unique par entreprise, sans égard à la casse), `diagnostics.dossier_id`, `note`, `range_le` (migration 0189, expand seul) |
+| UNE place par diagnostic | `diagnostics_une_seule_place_ck` : un chantier OU un dossier ; ranger ailleurs déplace |
+| Une photo libre s'efface au bout de 90 jours | rangée dans un de ses dossiers, elle suit la règle d'un chantier (`echeanceDePurge(…, rangee)`) : il range pour retrouver, un dossier qui se viderait seul le trahirait |
+| Corriger sa note ne doit pas dater le rangement d'aujourd'hui | `range_le` ne bouge que si la place change ; nul pour un rattachement d'avant 0189, et l'écran tait alors la date |
+| Ses photos n'étaient servies nulle part | `/api/diagnostic/photo/[id]` : par identifiant, sous RLS et contre l'entreprise du contexte, type tiré de l'extension posée par le serveur, garde de rôle avant lecture |
+| « Mes dossiers » | sous « Prendre une photo » : les chantiers qui portent au moins un diagnostic, et ses dossiers, le plus récent d'abord ; rien tant qu'il n'a rien rangé. L'écran d'un dossier : sa photo, la maladie (jamais devinée pour un diagnostic sans conclusion), le jour, le début de la note |
+| Les règles | `src/lib/dossiers-diagnostic.ts` (nom, note, phrases), éprouvées sans base (`test-dossiers-diagnostic.ts`) ; la feuille et l'action relisent avec les mêmes chiffres que la base |
+
+Vu sur les vrais écrans de la session (ranger dans un dossier neuf avec une note, « Mes dossiers », le dossier, la vignette d'une vraie photo servie en 200, une photo inconnue en 404). Suites pures, types, lint, cloisonnement des tables : verts. **Non joués**, faute de son « oui » : `test-diagnostic-base.ts` (isolation entre entreprises, une seule place, purge recalculée, clé de photo) et `test-diagnostic-ecrans-e2e.ts` (le geste au navigateur).

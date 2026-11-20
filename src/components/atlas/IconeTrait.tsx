@@ -58,6 +58,10 @@ const TRACES = {
   // La note du devis, « À savoir » (planche du 3 novembre 2026) : trois lignes
   // d'écriture, la dernière plus courte, comme `note` dans le kit des planches.
   note: <path d="M5 5.5h14M5 10h14M5 14.5h9" />,
+  // Le dossier où il range un diagnostic (sa planche du 20 novembre 2026,
+  // `appli/soignee/diagnostic-dossiers.html`), et le chantier qui en est un.
+  dossier: <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" />,
+  chantier: <path d="M4 20V9l8-5 8 5v11M9.5 20v-6h5v6" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

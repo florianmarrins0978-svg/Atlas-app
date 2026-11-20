@@ -285,7 +285,7 @@ export async function versionBase(): Promise<string> {
 
 /**
  * Le nom commun d'un taxon reconnu, et son article : l'écran écrit « Probable
- * sur un peuplier. » (`phrasesDeConfiance`, migration 0187).
+ * sur un peuplier. » (`phrasesDeConfiance`, migration 0188).
  *
  * **C'est le seul nom d'essence qui a le droit d'atteindre l'écran.** Le
  * modèle écrit aussi un `nom_commun`, en texte libre : celui-là reste dans

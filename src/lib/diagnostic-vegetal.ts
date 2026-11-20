@@ -979,7 +979,7 @@ export type ResultatFige = {
   informationsRequises: string[];
   /** Ce qui permet de reconnaître ce problème plutôt qu'un autre. Recopié. */
   criteresDiscriminants: string[];
-  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0187) ──
+  // ── Son ordre du 22 septembre 2026, codé le 19 novembre (migration 0188) ──
   //
   // **Absents des résultats figés avant cette date**, d'où le `?` : un
   // diagnostic rendu hier ne se réécrit pas (son gel est la règle de 0056), et
@@ -1081,7 +1081,7 @@ export const LIBELLE_PARTIE: Record<Partie, string> = {
 /** Les trois notes sur 3 que donne la source (impact, agressivité, fréquence). */
 export type NotesSource = { impact: number; agressivite: number; frequence: number };
 
-/** Toutes les trois ou aucune : une jauge sur trois ne se lit pas (migration 0187). */
+/** Toutes les trois ou aucune : une jauge sur trois ne se lit pas (migration 0188). */
 export function notesDeLaSource(
   impact: number | null,
   agressivite: number | null,
