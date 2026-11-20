@@ -265,7 +265,16 @@ async function FicheRendue({
               className={`mt-3.5 flex gap-2.5 ${
                 images.length > 1 ? "-mx-[22px] snap-x snap-mandatory scroll-px-[22px] overflow-x-auto px-[22px]" : ""
               }`}
-              style={images.length > 1 ? { scrollbarWidth: "none" } : undefined}
+              // **Fixe en hauteur**, sa remarque du 20 novembre 2026 : « on peut
+              // les bouger d'en haut en bas ». Un défilement horizontal rend
+              // l'autre axe défilable aussi (`overflow-x: auto` fait passer
+              // `overflow-y` à `auto`), et le moindre pixel de trop suffisait :
+              // la rangée bougeait sous le doigt. Le vertical revient à la page.
+              style={
+                images.length > 1
+                  ? { scrollbarWidth: "none", overflowY: "hidden", overscrollBehaviorX: "contain" }
+                  : undefined
+              }
               data-atlas="diagnostic-photos-defilement"
             >
               {images.map((image, rang) => (
