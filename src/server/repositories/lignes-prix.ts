@@ -737,7 +737,13 @@ export async function poserLesPartsDeMainDoeuvre(
    */
   sesTravaux: readonly string[] = []
 ): Promise<
-  | { ok: true; lignes: TravailRepris[]; retiree: string | null; sorties: TravailSansSaPart[] }
+  | {
+      ok: true;
+      /** Chaque travail tel que posé, avec les jours d'homme de sa part : l'écran y reconnaît celle de son équipe. */
+      lignes: (TravailRepris & { joursMainDoeuvre: string | null })[];
+      retiree: string | null;
+      sorties: TravailSansSaPart[];
+    }
   | { ok: false; raison: string }
 > {
   const ids = Object.keys(parts);
@@ -772,16 +778,19 @@ export async function poserLesPartsDeMainDoeuvre(
     if (repris.some((r) => !nombreDeLigneAdmis(r.montant) || !nombreDeLigneAdmis(r.prixUnitaire))) {
       return { ok: false, raison: "Cette main d'œuvre ferait un prix démesuré. Vérifiez le calcul." };
     }
+    const posees: (TravailRepris & { joursMainDoeuvre: string | null })[] = [];
     for (const r of repris) {
       const lue = lues.find((l) => l.id === r.id);
       const avant = lue ? base(lue) : undefined;
+      const jours = joursDeLaPart(avant?.partMainDoeuvre ?? null, avant?.joursMainDoeuvre ?? null, r.partPosee, prixJourHomme);
+      posees.push({ ...r, joursMainDoeuvre: jours });
       await tx
         .update(lignesPrix)
         .set({
           prixUnitaire: r.prixUnitaire,
           montant: r.montant,
           partMainDoeuvre: r.partMainDoeuvre,
-          joursMainDoeuvre: joursDeLaPart(avant?.partMainDoeuvre ?? null, avant?.joursMainDoeuvre ?? null, r.partPosee, prixJourHomme),
+          joursMainDoeuvre: jours,
           // **Une main d'œuvre posée aujourd'hui sort la ligne de la reprise**,
           // comme un prix tapé : un « Mettre à jour » suivant repartirait de
           // l'ancien prix et lui retirerait ce qu'il vient d'ajouter.
@@ -797,7 +806,7 @@ export async function poserLesPartsDeMainDoeuvre(
     const sorties = [...sansSaPart.values()].filter((t) => !repris.some((r) => r.id === t.id));
     for (const t of sorties) await ecrireSansSaPart(tx, t);
     if (remplace !== null) await tx.delete(lignesPrix).where(eq(lignesPrix.id, remplace));
-    return { ok: true, lignes: repris, retiree: remplace, sorties };
+    return { ok: true, lignes: posees, retiree: remplace, sorties };
   });
 }
 

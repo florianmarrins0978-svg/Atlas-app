@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import {
   DUREES_MAIN_OEUVRE,
   equipeDeSaLigne,
+  equipeDeSesParts,
   estLaLigneDeSonEquipe,
   ligneDeSonEquipe,
   ligneDeSonPartenaire,
@@ -317,6 +318,38 @@ cas("une part sans jours d'homme (partenaire, mêlée, d'avant 0173) n'est pas l
   assert.equal(sansLaPartDeSonEquipe({ quantite: "50", montant: "1830.00", partMainDoeuvre: "1080.00", joursMainDoeuvre: null }), null);
   assert.equal(partDeSonEquipe({ partMainDoeuvre: null, joursMainDoeuvre: "6" }), null, "sans part, il n'y a rien à retirer");
   assert.equal(partDeSonEquipe({ partMainDoeuvre: "2400.00", joursMainDoeuvre: "6.000000" })?.toFixed(2), "2400.00");
+});
+
+// **Répartie, la feuille se rouvre sur ses parts** (sa planche du 20 novembre 2026).
+cas("ses parts redisent son équipe : 2 hommes × 2 jours à 280 €, chaque travail avec la sienne", () => {
+  const travaux = [
+    { id: "taille", partMainDoeuvre: "560.00", joursMainDoeuvre: "2.000000" },
+    { id: "broyage", partMainDoeuvre: "560.00", joursMainDoeuvre: "2.000000" },
+    { id: "sans", partMainDoeuvre: null, joursMainDoeuvre: null },
+  ];
+  assert.deepEqual(equipeDeSesParts(travaux, { hommes: 2 }), {
+    hommes: 2,
+    jours: 2,
+    tarif: "280.00",
+    parts: { taille: 560, broyage: 560 },
+  });
+});
+
+cas("des parts arrondies au centime retombent sur le compteur", () => {
+  // 1 120 € au prorata : 746,67 € et 373,33 €, soit 2,666679 et 1,333321 jours.
+  const r = equipeDeSesParts(
+    [
+      { id: "a", partMainDoeuvre: "746.67", joursMainDoeuvre: "2.666679" },
+      { id: "b", partMainDoeuvre: "373.33", joursMainDoeuvre: "1.333321" },
+    ],
+    { hommes: 2 }
+  );
+  assert.deepEqual({ hommes: r?.hommes, jours: r?.jours, tarif: r?.tarif }, { hommes: 2, jours: 2, tarif: "280.00" });
+});
+
+cas("sans part de son équipe (rien, ou un partenaire), la feuille repart de sa dictée", () => {
+  assert.equal(equipeDeSesParts([], { hommes: 2 }), null);
+  assert.equal(equipeDeSesParts([{ id: "p", partMainDoeuvre: "1080.00", joursMainDoeuvre: null }], { hommes: 2 }), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

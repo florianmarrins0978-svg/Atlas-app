@@ -223,7 +223,14 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
 
-## ⏳ UNE PLANCHE À REGARDER : LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » (20 novembre 2026)
+## LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » : CHOISIE ET CODÉE, SUITES SUR SON « OUI » (20 novembre 2026)
+
+**Son « code ça » du 20 novembre**, sans batterie. Codée sur la branche du lot
+§592 (même sujet), `ARCHITECTURE.md` §592. Joués : types, style, gardes,
+`test-feuille-main-oeuvre.ts` (ses parts redisent son équipe, l'arrondi au
+centime, le partenaire). **Pas joué** : `test-feuille-main-oeuvre-e2e.ts`, qui
+porte maintenant son geste (rouvrir sur « Répartis », la changer, la reposer en
+ligne), sur son « oui ».
 
 Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repartait de
 la dictée (ici 1 homme, 1 journée), sur « Sur une ligne », avec « Ajouter la

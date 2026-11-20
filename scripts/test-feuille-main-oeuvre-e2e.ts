@@ -342,9 +342,21 @@ async function main() {
       await page.fill('[data-atlas="mo-tarif"]', "280");
     };
 
+    await cas("rouverte, la feuille repart de ses PARTS : « Repris de vos travaux », sur « Répartis », et la change", async () => {
+      await ouvrir();
+      // Sa planche du 20 novembre 2026 : 1 homme × 1 journée × 280 €, en
+      // 140 € et 140 €, repris des travaux et non de la dictée.
+      assert.equal(await texte('[data-atlas="mo-hommes"]'), "1");
+      assert.equal(await texte('[data-atlas="mo-duree"]'), "1 journée");
+      assert.equal(await page.locator('[data-atlas="mo-tarif"]').inputValue(), "280");
+      assert.ok((await texte('[data-atlas="feuille-mo"]')).includes("Repris de vos travaux"), "la feuille ne dit pas qu'elle repart des travaux");
+      await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
+      assert.equal(await texte('[data-atlas="mo-valider"]'), "Changer la main d’œuvre");
+      await page.getByRole("button", { name: "Annuler", exact: true }).click();
+    });
+
     await cas("répartie une seconde fois, sa main d'œuvre REMPLACE la première : les travaux gardent leurs 140 €", async () => {
       await sonEquipeAUneJournee();
-      await page.getByRole("button", { name: "Répartis sur les travaux" }).click();
       await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
       const avant = await ecrite();
       await page.click('[data-atlas="mo-valider"]');
@@ -361,6 +373,13 @@ async function main() {
 
     await cas("reposée sur une ligne, sa main d'œuvre SORT des travaux : ils reviennent à 200 € et 180 €", async () => {
       await sonEquipeAUneJournee();
+      // Sur une ligne, chaque travail montre déjà son prix SANS elle.
+      await page.getByRole("button", { name: "Sur une ligne Main d'œuvre" }).click();
+      assert.deepEqual(
+        (await page.locator('[data-atlas="mo-ou"] [data-atlas="prix-du-travail"]').allInnerTexts()).map((p) => p.replace(/\s+/g, " ")),
+        ["200 €", "180 €"],
+        "les travaux montrent encore leur prix part comprise"
+      );
       const avant = await ecrite();
       await page.click('[data-atlas="mo-valider"]');
       await apresLAppui(avant);

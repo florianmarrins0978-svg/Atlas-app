@@ -2,7 +2,7 @@
 
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : CODÉE, PAS ENCORE SUR `main` (20 novembre 2026)
 
-Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, reposer en ligne fait sortir ses parts des travaux (celle d'un partenaire reste), et sa ligne renommée n'en reçoit plus une seconde au rejeu de la dictée. Sur `claude/sleepy-sagan-gq6c0x` ; suite navigateur et batterie sur son « oui ». `ARCHITECTURE.md` §592.
+Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, reposer en ligne fait sortir ses parts des travaux (celle d'un partenaire reste), et sa ligne renommée n'en reçoit plus une seconde au rejeu de la dictée. Répartie, la feuille se rouvre sur ses travaux (sa planche du 20). Sur `claude/sleepy-sagan-gq6c0x` ; suite navigateur et batterie sur son « oui ». `ARCHITECTURE.md` §592.
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 

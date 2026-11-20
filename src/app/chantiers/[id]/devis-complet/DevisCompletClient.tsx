@@ -50,7 +50,13 @@ import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
 import FeuilleDuTaux from "@/components/atlas/FeuilleDuTaux";
 import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
 import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
-import { estLaLigneDeSonEquipe, type ChoixDeMainOeuvre, type DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
+import {
+  estLaLigneDeSonEquipe,
+  partDeSonEquipe,
+  sansLaPartDeSonEquipe,
+  type ChoixDeMainOeuvre,
+  type DonneesMainOeuvre,
+} from "@/lib/feuille-main-oeuvre";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
@@ -150,6 +156,8 @@ type Ligne = {
   mainDoeuvre?: boolean | null;
   /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
   partMainDoeuvre?: string | null;
+  /** Les jours d'homme de cette part (migration 0173) : ce qui dit qu'elle est celle de son équipe (`partDeSonEquipe`). */
+  joursMainDoeuvre?: string | null;
   /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
@@ -938,11 +946,21 @@ export default function DevisCompletClient(props: Props) {
       (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
   );
 
+  // Sa main d'œuvre répartie, quand elle n'a pas de ligne : la feuille repart
+  // de ces parts-là (sa planche du 20 novembre 2026).
+  const sesPartsDeMainDoeuvre = saLigneDeMainOeuvre ? [] : travauxDeSaTva.filter((l) => partDeSonEquipe(l) !== null);
+  /** Ce qu'un travail vaut sans la part de son équipe : ce qu'il redeviendra quand elle change. */
+  const sansSaMainDoeuvre = (l: Ligne) =>
+    Number(
+      sansLaPartDeSonEquipe({ quantite: l.quantite, montant: montantDeLaLigne(l).toFixed(2), partMainDoeuvre: l.partMainDoeuvre, joursMainDoeuvre: l.joursMainDoeuvre })
+        ?.montant ?? montantDeLaLigne(l)
+    );
+
   /** Les travaux que le serveur a rendus à leur prix sans la part de son équipe. */
   function sansSaPart(sorties: readonly { id: string; prixUnitaire: string; montant: string }[]) {
     return (l: Ligne): Ligne => {
       const t = sorties.find((x) => x.id === l.id);
-      return t ? { ...l, prixUnitaire: t.prixUnitaire, montant: t.montant, partMainDoeuvre: null } : l;
+      return t ? { ...l, prixUnitaire: t.prixUnitaire, montant: t.montant, partMainDoeuvre: null, joursMainDoeuvre: null } : l;
     };
   }
 
@@ -970,7 +988,9 @@ export default function DevisCompletClient(props: Props) {
         .filter((l) => l.id !== pose.retiree)
         .map((l) => {
           const r = pose.lignes.find((x) => x.id === l.id);
-          return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
+          return r
+            ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre, joursMainDoeuvre: r.joursMainDoeuvre }
+            : l;
         })
         .map(sansSaPart(pose.sorties))
     );
@@ -2071,12 +2091,15 @@ export default function DevisCompletClient(props: Props) {
         ouverte={feuille === "mo"}
         donnees={props.mainOeuvre}
         saLigne={saLigneDeMainOeuvre}
+        sesParts={sesPartsDeMainDoeuvre}
         repartition={{
           // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
           // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
+          // Leur prix sans la part de son équipe : c'est la base d'où la
+          // nouvelle part repart (`ARCHITECTURE.md` §592).
           travaux: travauxDeSaTva
-            .filter((l) => montantDeLaLigne(l) > 0)
-            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: montantDeLaLigne(l).toFixed(2) })),
+            .filter((l) => sansSaMainDoeuvre(l) > 0)
+            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: sansSaMainDoeuvre(l).toFixed(2) })),
           onRepartir: (choix, parts) => void repartirMainDoeuvre(choix, parts),
         }}
         onValider={(choix) => void ajouterMainDoeuvre(choix)}

@@ -37713,6 +37713,6 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 
 **Ce que le relevé de §591 disait de faux** : « préparer le devis à nouveau repart de la dictée ». Rejouer la préparation n'écrit jamais sur une ligne déjà là (le doublon se refuse ligne par ligne) : sa ligne changée à 3 hommes reste la sienne. Le vrai trou était la ligne renommée.
 
-**Ce qui reste** : rouverte après « Répartis », la feuille repart de la dictée et non de ses parts (aucun écran ne les relit en hommes et en jours) ; « Ajouter » y vaut désormais « changer », sans le dire. Une planche d'abord (`TODO.md`).
+**Rouverte après « Répartis »**, sa planche du 20 novembre 2026 (`appli/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html`), son « code ça » : la feuille repart de ses parts (`equipeDeSesParts` : leurs jours d'homme, au centième, au prix qu'ils ont coûté, les hommes comme pour sa ligne), « Repris de vos travaux », sur « Répartis » avec chaque part, et dit « Changer la main d’œuvre » dans les deux modes. Les travaux s'y montrent à leur prix SANS sa part, base d'où la nouvelle repart ; le serveur rend les jours qu'il pose, pour que l'écran les reconnaisse sans recharger.
 
 `test-feuille-main-oeuvre.ts` (la part posée puis retirée au centime, la part sans jours qui reste), `test-proposition-au-detail.ts` (renommée, partenaire), `test-main-oeuvre-change-sa-ligne-db.ts` (répartir deux fois, reposer en ligne, le partenaire qui reste, rejouer, renommée : quatre vus rouges), `test-feuille-main-oeuvre-e2e.ts` (les deux gestes par l'écran).

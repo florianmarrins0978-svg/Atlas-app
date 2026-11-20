@@ -229,6 +229,7 @@ export default async function DevisCompletPage({
           prixGrille: l.prixGrille,
           mainDoeuvre: l.mainDoeuvre,
           partMainDoeuvre: l.partMainDoeuvre,
+          joursMainDoeuvre: l.joursMainDoeuvre,
           partAncienne: l.partAncienne,
           partGrille: l.partGrille,
           hommesMainDoeuvre: l.hommesMainDoeuvre,
