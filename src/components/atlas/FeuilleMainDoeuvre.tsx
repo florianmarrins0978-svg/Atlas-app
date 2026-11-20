@@ -11,6 +11,7 @@ import { enEuros } from "@/lib/euros";
 import {
   DUREES_MAIN_OEUVRE,
   aLaJournee,
+  equipeDeSaLigne,
   ligneDeSonEquipe,
   mainOeuvreDUnPartenaire,
   montantDeLaMainOeuvre,
@@ -45,6 +46,13 @@ type Props = {
   ouverte: boolean;
   donnees: DonneesMainOeuvre;
   /**
+   * La ligne de son équipe déjà sur la pièce (sa planche du 18 novembre 2026) :
+   * la feuille s'ouvre sur elle, et « Changer la main d’œuvre » la change au
+   * lieu d'en poser une seconde. Absente (la facture, un devis sans elle) : la
+   * feuille repart de la dictée, et la ligne s'ajoute.
+   */
+  saLigne?: { quantite: string; prixUnitaire: string; aChiffrer?: boolean | null; hommesMainDoeuvre?: number | null };
+  /**
    * La répartition, quand la pièce sait la garder (le devis) : les travaux de
    * la TVA où il a appuyé qui ont leur prix, et ce qui pose les parts.
    * Absente, la feuille ne propose que la ligne.
@@ -59,8 +67,8 @@ type Props = {
 };
 
 export default function FeuilleMainDoeuvre(props: Props) {
-  // Le contenu ne vit que feuille ouverte : chaque ouverture repart de la
-  // dictée et de ses tarifs, jamais d'un essai abandonné.
+  // Le contenu ne vit que feuille ouverte : chaque ouverture repart de sa
+  // ligne, sinon de la dictée et de ses tarifs, jamais d'un essai abandonné.
   return (
     <BottomSheet open={props.ouverte} onBackdropClick={props.onFermer}>
       <Contenu {...props} />
@@ -132,13 +140,16 @@ function Rang({ titre, sous, children }: { titre: string; sous: string; children
   );
 }
 
-function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
+function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) {
   const travaux = repartition?.travaux ?? [];
+  // Sa ligne d'abord : ce qu'il a déjà posé sur la pièce, puis la dictée.
+  const [depart] = useState(() => (saLigne ? equipeDeSaLigne(saLigne, { hommes: donnees.hommes }) : null));
+  const tarifDeDepart = depart?.tarif ?? donnees.tarifJour;
   const [vue, setVue] = useState<"calcul" | "liste">("calcul");
   const [qui, setQui] = useState<PrixDePartenaire | null>(null);
-  const [hommes, setHommes] = useState(Math.min(20, Math.max(1, donnees.hommes ?? 1)));
-  const [rang, setRang] = useState(rangDeLaDuree(donnees.jours));
-  const [tarif, setTarif] = useState(donnees.tarifJour ? virgule(Number(donnees.tarifJour)) : "");
+  const [hommes, setHommes] = useState(depart?.hommes ?? Math.min(20, Math.max(1, donnees.hommes ?? 1)));
+  const [rang, setRang] = useState(rangDeLaDuree(depart?.jours ?? donnees.jours));
+  const [tarif, setTarif] = useState(tarifDeDepart ? virgule(Number(tarifDeDepart)) : "");
   const [quantite, setQuantite] = useState("1");
   // « Où la mettre » : la barre de l'appli, celle d'« Avant de chiffrer »
   // (`RepartirLaMainOeuvre`), et non une seconde barre. Sur une ligne d'abord,
@@ -216,7 +227,7 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
           )}
 
           {qui === null && (
-            <Rang titre="Hommes" sous={donnees.hommes ? "Repris de votre dictée" : "Votre équipe"}>
+            <Rang titre="Hommes" sous={depart ? "Repris de votre ligne" : donnees.hommes ? "Repris de votre dictée" : "Votre équipe"}>
               <Compteur
                 nom="Hommes"
                 repere="mo-hommes"
@@ -229,7 +240,10 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
           )}
 
           {qui === null || alaJournee ? (
-            <Rang titre="Durée" sous={qui === null && donnees.jours ? "Repris de votre dictée" : "À poser"}>
+            <Rang
+              titre="Durée"
+              sous={qui === null && depart ? "Repris de votre ligne" : qui === null && donnees.jours ? "Repris de votre dictée" : "À poser"}
+            >
               <Compteur
                 nom="Durée"
                 repere="mo-duree"
@@ -254,7 +268,16 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
           )}
 
           {qui === null ? (
-            <Rang titre="Le jour par homme" sous={donnees.tarifJour ? "Vos tarifs" : "Aucun tarif au jour par homme"}>
+            <Rang
+              titre="Le jour par homme"
+              sous={
+                depart?.tarif && Number(depart.tarif) !== Number(donnees.tarifJour)
+                  ? "Repris de votre ligne"
+                  : donnees.tarifJour
+                    ? "Vos tarifs"
+                    : "Aucun tarif au jour par homme"
+              }
+            >
               <input
                 inputMode="decimal"
                 value={tarif}
@@ -322,7 +345,7 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
                 }
               }}
             >
-              {reparti ? "Répartir la main d’œuvre" : "Ajouter la main d’œuvre"}
+              {reparti ? "Répartir la main d’œuvre" : depart && qui === null ? "Changer la main d’œuvre" : "Ajouter la main d’œuvre"}
             </PrimaryButton>
           </div>
           <button

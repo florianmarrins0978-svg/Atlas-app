@@ -36,7 +36,7 @@ import { logger } from "@/server/logger";
 import { marquerAideNoteDevisVue } from "@/server/repositories/aide-note-devis";
 import { montantDeLaMainOeuvre, type ChoixDeMainOeuvre, type TravailRepris } from "@/lib/feuille-main-oeuvre";
 import { repartirMainOeuvre } from "@/lib/main-oeuvre-dictee";
-import { ligneDuChoix } from "@/server/chiffrage/main-oeuvre-choisie";
+import { ligneDuChoix, poserLaMainDoeuvreDeLaFeuille } from "@/server/chiffrage/main-oeuvre-choisie";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -192,24 +192,13 @@ export async function ajouterLigneAction(chantierId: string, tauxTva?: string | 
 export async function ajouterMainDoeuvreChoisieAction(
   chantierId: string,
   tauxTva: string | null,
-  choix: ChoixDeMainOeuvre
-): Promise<{ ok: true; ligne: Awaited<ReturnType<typeof ajouterLignePrix>> } | { ok: false; raison: string }> {
+  choix: ChoixDeMainOeuvre,
+  /** La ligne de son équipe que la feuille change (sa planche du 18 novembre 2026) ; `null` : elle s'ajoute. */
+  saLigne: string | null = null
+): ReturnType<typeof poserLaMainDoeuvreDeLaFeuille> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter une main d'œuvre au devis");
-  const ligne = await ligneDuChoix(ctx, choix);
-  if ("raison" in ligne) return { ok: false, raison: ligne.raison };
-  const montant = montantDeLaMainOeuvre(ligne);
-  const creee = await ajouterLignePrix(ctx, chantierId, ligne.libelle, montant ?? "0.00", {
-    quantite: ligne.quantite,
-    prixUnitaire: ligne.prixUnitaire ?? "0.00",
-    unite: ligne.unite,
-    // Sans prix, la ligne retient le devis tant qu'il n'a pas posé le sien —
-    // le même drapeau que « + Main d'œuvre » d'avant (`ligneAttendSonPrix`).
-    aChiffrer: ligne.prixUnitaire === null,
-    tauxTva,
-    mainDoeuvre: true,
-  });
-  return { ok: true, ligne: creee };
+  return poserLaMainDoeuvreDeLaFeuille(ctx, chantierId, tauxTva, choix, typeof saLigne === "string" ? saLigne : null);
 }
 
 /**
@@ -222,8 +211,10 @@ export async function ajouterMainDoeuvreChoisieAction(
 export async function repartirMainDoeuvreAction(
   chantierId: string,
   choix: ChoixDeMainOeuvre,
-  parts: Record<string, number>
-): Promise<{ ok: true; lignes: TravailRepris[] } | { ok: false; raison: string }> {
+  parts: Record<string, number>,
+  /** La ligne de son équipe que la répartition remplace (sa planche du 18 novembre 2026). */
+  saLigne: string | null = null
+): Promise<{ ok: true; lignes: TravailRepris[]; retiree: string | null } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "répartir une main d'œuvre sur le devis");
   const ligne = await ligneDuChoix(ctx, choix);
@@ -235,7 +226,10 @@ export async function repartirMainDoeuvreAction(
   // Son équipe : le prix du jour par homme de la feuille, celui qui a fait ce
   // total ; un partenaire n'en a pas (`poserLesPartsDeMainDoeuvre`).
   const prixJourHomme = choix.qui === "equipe" ? ligne.prixUnitaire : null;
-  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts), prixJourHomme);
+  // Répartie, la main d'œuvre de SON équipe remplace sa ligne ; celle d'un
+  // partenaire laisse la sienne, qui ne la compte pas.
+  const remplace = choix.qui === "equipe" && typeof saLigne === "string" ? saLigne : null;
+  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts), prixJourHomme, remplace);
 }
 
 /**

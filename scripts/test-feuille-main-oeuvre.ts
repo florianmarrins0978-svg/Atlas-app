@@ -9,6 +9,8 @@
 import assert from "node:assert/strict";
 import {
   DUREES_MAIN_OEUVRE,
+  equipeDeSaLigne,
+  estLaLigneDeSonEquipe,
   ligneDeSonEquipe,
   ligneDeSonPartenaire,
   mainOeuvreDUnPartenaire,
@@ -65,7 +67,7 @@ cas("la durée dictée trouve son cran, et sans dictée c'est une journée", () 
 
 cas("son équipe : des jours d'homme au prix du jour, comme la préparation l'écrit", () => {
   const l = ligneDeSonEquipe(2, 2, "280");
-  assert.deepEqual(l, { libelle: "Main d’œuvre", quantite: "4", unite: "jour/homme", prixUnitaire: "280.00" });
+  assert.deepEqual(l, { libelle: "Main d’œuvre", quantite: "4", unite: "jour/homme", prixUnitaire: "280.00", hommes: 2 });
   assert.equal(montantDeLaMainOeuvre(l), "1120.00");
 });
 
@@ -253,6 +255,54 @@ cas("son choix garde le partenaire, et ce qui ne se lit pas n'y entre pas", () =
 cas("la question dit le total qu'elle partage, et se tait quand il n'y en a pas", () => {
   assert.match(questionDeLaMainOeuvre("1215.00"), /^Où mettre les 1\s?215\s€ de main d'œuvre \?$/);
   assert.equal(questionDeLaMainOeuvre(null), "Où mettre la main d'œuvre ?");
+});
+
+// ── LA FEUILLE CHANGE LA LIGNE DE SON ÉQUIPE — sa planche du 18 novembre 2026 ──
+// Sa capture : « Main d'œuvre » posait une seconde ligne (2 400 € à côté des
+// 1 600 €). Sa réponse : la feuille CHANGE sa ligne, et se rouvre sur elle.
+
+cas("la ligne de son équipe se reconnaît à ses jours d'homme, jamais celle d'un partenaire ni un travail", () => {
+  assert.equal(estLaLigneDeSonEquipe({ mainDoeuvre: true, unite: "jour/homme" }), true);
+  assert.equal(estLaLigneDeSonEquipe({ mainDoeuvre: true, unite: "jour" }), false, "un partenaire à la journée");
+  assert.equal(estLaLigneDeSonEquipe({ mainDoeuvre: true, unite: "h" }), false, "un partenaire à l'heure");
+  assert.equal(estLaLigneDeSonEquipe({ mainDoeuvre: false, unite: "jour/homme" }), false, "un travail");
+  assert.equal(estLaLigneDeSonEquipe({ mainDoeuvre: null, unite: null }), false);
+});
+
+cas("sa capture : 4 jour/homme à 400 €, dictés 2 hommes, la feuille se rouvre sur 2 hommes × 2 jours", () => {
+  assert.deepEqual(
+    equipeDeSaLigne({ quantite: "4.00", prixUnitaire: "400.00", aChiffrer: false, hommesMainDoeuvre: null }, { hommes: 2 }),
+    { hommes: 2, jours: 2, tarif: "400.00" }
+  );
+});
+
+cas("après « 3 hommes », sa ligne garde ses hommes : la feuille se rouvre sur 3 × 2, pas sur 2 × 3", () => {
+  assert.deepEqual(
+    equipeDeSaLigne({ quantite: "6.00", prixUnitaire: "400.00", aChiffrer: false, hommesMainDoeuvre: 3 }, { hommes: 2 }),
+    { hommes: 3, jours: 2, tarif: "400.00" }
+  );
+});
+
+cas("5 jour/homme tapés à la main, dictés 2 hommes : 1 homme × 5 jours, le total ne bouge pas", () => {
+  const e = equipeDeSaLigne({ quantite: "5", prixUnitaire: "400", aChiffrer: false, hommesMainDoeuvre: null }, { hommes: 2 });
+  assert.deepEqual(e, { hommes: 1, jours: 5, tarif: "400.00" });
+  assert.equal(ligneDeSonEquipe(e.hommes, e.jours, e.tarif).quantite, "5");
+});
+
+cas("une ligne à chiffrer ne prête pas son zéro : la feuille reprend ses tarifs", () => {
+  assert.equal(equipeDeSaLigne({ quantite: "4", prixUnitaire: "0.00", aChiffrer: true, hommesMainDoeuvre: 2 }, { hommes: 2 }).tarif, null);
+});
+
+cas("sans dictée, une demi-journée d'un homme se relit telle quelle", () => {
+  assert.deepEqual(
+    equipeDeSaLigne({ quantite: "0.50", prixUnitaire: "400", aChiffrer: false, hommesMainDoeuvre: null }, { hommes: null }),
+    { hommes: 1, jours: 0.5, tarif: "400.00" }
+  );
+});
+
+cas("la ligne de son équipe dit ses hommes, celle d'un partenaire n'en a pas", () => {
+  assert.equal(ligneDeSonEquipe(3, 2, "400").hommes, 3);
+  assert.equal(ligneDeSonPartenaire(prixDesPartenaires([candidat({})], { materiel: null, mainOeuvre: "1.20" })[0], 2).hommes, undefined);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

@@ -231,6 +231,7 @@ export default async function DevisCompletPage({
           partMainDoeuvre: l.partMainDoeuvre,
           partAncienne: l.partAncienne,
           partGrille: l.partGrille,
+          hommesMainDoeuvre: l.hommesMainDoeuvre,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}

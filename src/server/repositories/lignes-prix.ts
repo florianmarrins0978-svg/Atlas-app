@@ -13,7 +13,7 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { nombreDeLigneAdmis } from "../../lib/montant-ecrivable";
-import { partsAppliquees, type TravailRepris } from "../../lib/feuille-main-oeuvre";
+import { estLaLigneDeSonEquipe, partsAppliquees, type TravailRepris } from "../../lib/feuille-main-oeuvre";
 import { ActionRefuseeError } from "../garde-action";
 
 /** Refuse avant toute écriture un nombre qu'aucun écran n'envoie (`nombreDeLigneAdmis`). */
@@ -100,6 +100,8 @@ export async function ajouterLignePrix(
     /** Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173). */
     partAncienne?: string | null;
     partGrille?: string | null;
+    /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
+    hommesMainDoeuvre?: number | null;
   }
 ) {
   exigerNombresDeLigne(
@@ -133,6 +135,7 @@ export async function ajouterLignePrix(
         joursMainDoeuvre: options?.joursMainDoeuvre ?? null,
         partAncienne: options?.partAncienne ?? null,
         partGrille: options?.partGrille ?? null,
+        hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -158,7 +161,14 @@ export async function modifierLignePrix(
      * catégorie, plutôt que de supprimer les lignes qu'elle portait.
      */
     tauxTva?: string | null;
-  }
+  },
+  /**
+   * Ce que seul le serveur pose, jamais l'écran : les actions d'édition passent
+   * `data` tel que la page l'envoie, et ce qui n'est pas dans la liste de
+   * `seulement` ne doit pas pouvoir s'y glisser. Les hommes de son équipe
+   * viennent de la feuille, recalculés (`poserLaMainDoeuvreDeLaFeuille`).
+   */
+  duServeur?: { hommesMainDoeuvre?: number | null }
 ) {
   exigerNombresDeLigne(data.montant, data.quantite, data.prixUnitaire);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -258,7 +268,11 @@ export async function modifierLignePrix(
     }
     const [row] = await tx
       .update(lignesPrix)
-      .set({ ...patch, updatedAt: new Date() })
+      .set({
+        ...patch,
+        ...(duServeur?.hommesMainDoeuvre !== undefined ? { hommesMainDoeuvre: duServeur.hommesMainDoeuvre } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(lignesPrix.id, id))
       .returning();
     return row;
@@ -684,11 +698,28 @@ export async function poserLesPartsDeMainDoeuvre(
    * pour qu'un devis repris la reporte au prix du jour d'alors. `null` pour un
    * partenaire : ses jours ne se mesurent pas au prix du patron.
    */
-  prixJourHomme: string | null
-): Promise<{ ok: true; lignes: TravailRepris[] } | { ok: false; raison: string }> {
+  prixJourHomme: string | null,
+  /**
+   * La ligne de SON équipe que cette répartition remplace (sa planche du
+   * 18 novembre 2026) : répartie, sa main d'œuvre entre dans le prix des
+   * travaux, et sa ligne laissée à côté la compterait deux fois. Elle part
+   * dans la même transaction que les parts, ou rien ne s'écrit.
+   */
+  remplace: string | null = null
+): Promise<{ ok: true; lignes: TravailRepris[]; retiree: string | null } | { ok: false; raison: string }> {
   const ids = Object.keys(parts);
   if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    if (remplace !== null) {
+      const [sienne] = await tx
+        .select()
+        .from(lignesPrix)
+        .where(and(eq(lignesPrix.chantierId, chantierId), eq(lignesPrix.id, remplace)))
+        .limit(1);
+      if (!sienne || !estLaLigneDeSonEquipe(sienne)) {
+        return { ok: false, raison: "Votre ligne Main d’œuvre n’est plus sur le devis. Rechargez l’écran." };
+      }
+    }
     const lues = await tx
       .select()
       .from(lignesPrix)
@@ -726,7 +757,8 @@ export async function poserLesPartsDeMainDoeuvre(
         })
         .where(eq(lignesPrix.id, r.id));
     }
-    return { ok: true, lignes: repris };
+    if (remplace !== null) await tx.delete(lignesPrix).where(eq(lignesPrix.id, remplace));
+    return { ok: true, lignes: repris, retiree: remplace };
   });
 }
 

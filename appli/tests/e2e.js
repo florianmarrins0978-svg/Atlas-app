@@ -13,7 +13,10 @@ const { chromium } = require('playwright');
 const B = process.env.BASE_URL || 'http://127.0.0.1:8080';
 
 let pass = 0, fail = 0; const fails = [];
-function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
+// Le troisième mot dit CE QUI A ÉTÉ MESURÉ. Il était passé par des dizaines de
+// contrôles et jeté ici : un échec sur la machine de publication ne donnait
+// que son nom, et il fallait deviner (19 novembre 2026).
+function ok(name, cond, mesure){ if (cond) pass++; else { fail++; fails.push(mesure ? name + '\n      mesuré : ' + String(mesure).slice(0, 400) : name); } }
 
 /* Chemin du navigateur, quand il ne vit pas là où Playwright l'attend.
    Sur un runner CI (npx playwright install), la variable est absente et
@@ -677,19 +680,22 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
   // Chaque page nomme ses films : celui de l'équipe a été remonté pour la
   // planche en mouvement (« c'est pas fluide », 17 novembre 2026), celui de
-  // l'envoi y montre le client qui signe (18 novembre 2026), et l'autre page
-  // garde les siens. Un film renommé d'un seul côté ferait chercher un cadre
-  // qui n'existe pas : le contrôle le dit au lieu de s'y casser.
+  // l'envoi y montre le client qui signe (18 novembre 2026), celui de la
+  // fiche d'intervention y porte aussi les travaux cochés et le retour du
+  // soir (19 novembre 2026 : le film des travaux n'y est donc plus), et
+  // l'autre page garde les siens. Un film renommé d'un seul côté ferait
+  // chercher un cadre qui n'existe pas : le contrôle le dit au lieu de s'y
+  // casser.
   //
   // Le dernier mot de chaque page dit si, le film fini, il doit rester sous
   // sa dernière image (voir plus bas, « reste sous sa dernière image ») : la
   // planche en mouvement le tient depuis le 19 novembre 2026. L'autre page,
   // qu'il a demandé de ne pas toucher, garde l'ancienne mécanique.
   const FILMS = ['micro', 'envoi', 'mois', 'equipe', 'travaux'];
-  const EN_MOUVEMENT = { equipe: 'equipe-fluide', envoi: 'envoi-signe' };
+  const FILMS_EN_MOUVEMENT = ['micro', 'envoi-signe', 'mois', 'equipe-fluide', 'fiche'];
   const PAGES_DE_VENTE = [
     ['chapitres-6.html', 'vente', FILMS, false],
-    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => EN_MOUVEMENT[f] || f).concat('fiche'), true],
+    ['cause-2.html', 'vente, en mouvement', FILMS_EN_MOUVEMENT, true],
   ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -733,10 +739,11 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const cadre = await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); return !!el; }, nom);
       ok(nomPage + ' : le film ' + nom + ' a son cadre dans la page', cadre);
       if (!cadre) continue;
+      // Le plus long, celui de la fiche d'intervention, dure onze secondes.
       const fin = await page.waitForFunction((n) => {
         const f = document.querySelector('[data-film="' + n + '"] .film-fin');
         return f && f.classList.contains('vue');
-      }, nom, { timeout: 15000 }).then(() => true, () => false);
+      }, nom, { timeout: 25000 }).then(() => true, () => false);
       const etat = await page.evaluate((n) => {
         const c = document.querySelector('[data-film="' + n + '"]'), v = c.querySelector('video');
         const vu = (s) => { const i = c.querySelector(s); return !!(i && i.complete && i.naturalWidth); };
@@ -801,6 +808,61 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok('ouverture en mouvement : le film se joue jusqu\'au bout au premier défilement', fini && !etatOu.erreur && etatOu.joue > 0.95, JSON.stringify(etatOu));
     ok('ouverture en mouvement : le film reste sous sa dernière image', etatOu.dessous === '1', JSON.stringify(etatOu));
     await cOu.close();
+  }
+
+  // ── Le site de vente en mouvement : la fiche, du trajet au retour du soir ─
+  //
+  // Sa question du 19 novembre 2026 : « est-ce que les retours du soir, il ne
+  // faut pas les mettre sur la même cinématique que Waze, le téléphone, et
+  // ensuite on montre les travaux à cocher, et une fois coché, bam, que ça
+  // débarque sur le retour du soir. Ça fait peut-être une cinématique de
+  // moins. » Il a dit oui : la section « Et aussi » et ses deux cases s'en
+  // vont, et le film de la fiche va jusqu'à l'écran du patron.
+  //
+  // Ce film dure onze secondes et ce qui bouge descend dans le cadre : sur
+  // son téléphone (390 × 664), la figure doit tenir entière entre la barre du
+  // haut (72 px) et le bouton d'essai (104 px), sans quoi la remarque et
+  // « Retour du jour envoyé » se joueraient sous le bouton.
+  {
+    const cFe = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
+    const page = await cFe.newPage();
+    // La page doit être POSÉE avant qu'on y défile : ses polices et ses images
+    // arrivent après le premier rendu et déplacent tout de plusieurs centaines
+    // de pixels. Défiler trop tôt mettait la figure hors de l'écran, et le
+    // film ne partait pas : c'est ce qui a fait échouer la publication du
+    // 19 novembre 2026, sur une machine où elles arrivaient plus tard qu'ici.
+    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    const pageFiche = await page.evaluate(() => {
+      const r = document.getElementById('scene-fiche').getBoundingClientRect();
+      return {
+        aussi: !!document.querySelector('.aussi'), travaux: !!document.querySelector('[data-film="travaux"]'),
+        restes: [...document.images].map((i) => i.getAttribute('src')).filter((s) => /nov-retour\.jpg|nov-travaux-5\.jpg/.test(s)),
+        hauteur: Math.round(r.height), largeur: Math.round(r.width), ecran: innerHeight,
+      };
+    });
+    ok('fiche en mouvement : les travaux cochés et le retour du soir ne sont plus rangés à part',
+       !pageFiche.aussi && !pageFiche.travaux && pageFiche.restes.length === 0, JSON.stringify(pageFiche));
+    ok('fiche en mouvement : la figure tient entière entre la barre du haut et le bouton d\'essai',
+       pageFiche.hauteur > 300 && pageFiche.hauteur <= pageFiche.ecran - 72 - 104, JSON.stringify(pageFiche));
+    // On l'amène sous la barre du haut, et l'on vérifie qu'elle y est restée.
+    let haut = null;
+    for (let essai = 0; essai < 4 && (haut === null || Math.abs(haut - 80) > 2); essai++) {
+      await page.evaluate(() => scrollTo(0, scrollY + document.getElementById('scene-fiche').getBoundingClientRect().top - 80));
+      await page.waitForTimeout(400);
+      haut = await page.evaluate(() => Math.round(document.getElementById('scene-fiche').getBoundingClientRect().top));
+    }
+    ok('fiche en mouvement : la figure reste où on l\'a amenée, sous la barre du haut', haut !== null && Math.abs(haut - 80) <= 2, 'son haut est à ' + haut + ' px');
+    const finie = await page.waitForFunction(() => { const f = document.querySelector('#scene-fiche .film-fin'); return f && f.classList.contains('vue'); }, null, { timeout: 30000 }).then(() => true, () => false);
+    const filmFiche = await page.evaluate(() => {
+      const c = document.getElementById('scene-fiche'), v = c.querySelector('video'), r = c.getBoundingClientRect();
+      return v ? { duree: +v.duration.toFixed(2), joue: v.played.length ? +(v.played.end(v.played.length - 1) / v.duration).toFixed(3) : 0, cadre: +(r.width / r.height).toFixed(4), film: +(v.videoWidth / v.videoHeight).toFixed(4) } : null;
+    });
+    ok('fiche en mouvement : la cinématique entière se joue, du trajet au retour du soir',
+       finie && !!filmFiche && filmFiche.duree > 10 && filmFiche.joue > 0.95, JSON.stringify({ finie, haut, film: filmFiche }));
+    // Un cadre d'une autre proportion que le film le rognerait sans rien dire.
+    ok('fiche en mouvement : le cadre a les proportions du film', !!filmFiche && Math.abs(filmFiche.cadre - filmFiche.film) < 0.004, JSON.stringify(filmFiche));
+    await cFe.close();
   }
 
   // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────
@@ -896,6 +958,36 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok(N + ' : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
     ok(N + ' : aucune erreur de page', errs.length === 0, errs.join(' | '));
     await cIc.close();
+  }
+
+  // ── Le fournisseur depuis son devis : chaque rond suit sa ligne ─────────
+  //
+  // Sa remarque du 20 novembre 2026 : « j'ai décoché les deux, il y avait
+  // marqué aucun prix coché, sauf que le dernier restait coché ». Le script
+  // de la planche peignait le premier `span[aria-hidden]` de chaque ligne :
+  // à partir de la deuxième, c'est le filet qui la sépare de la précédente,
+  // et le rond ne bougeait plus. Le compte, lui, était juste : seule l'image
+  // mentait. Le contrôle décoche toutes les lignes et regarde chaque rond.
+  {
+    const cFo = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cFo.newPage();
+    await page.goto(`${B}/fournisseur-depuis-son-devis.html`, { waitUntil: 'domcontentloaded' });
+    for (const etat of ['nouveau', 'connu']) {
+      await page.click(`.planche-etapes [data-va="${etat}"]`);
+      const lignes = page.locator(`[data-planche="${etat}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`);
+      const n = await lignes.count();
+      for (let i = 0; i < n; i++) await lignes.nth(i).click();
+      const ronds = await page.evaluate((e) => [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)]
+        .map((b) => ({ presse: b.getAttribute('aria-pressed'), plein: /7px/.test((b.querySelector('span[aria-hidden].rounded-full') || {}).style?.boxShadow || '') })), etat);
+      ok(`fournisseur depuis son devis (${etat}) : les ${n} lignes décochées ont toutes un rond vide`,
+         n > 1 && ronds.every((r) => r.presse === 'false' && !r.plein), JSON.stringify(ronds));
+      const bouton = (await page.textContent(`[data-planche="${etat}"] [data-atlas="prendre-les-prix"]`)).trim();
+      ok(`fournisseur depuis son devis (${etat}) : le bouton dit qu'aucun prix n'est pris`, /sans les prix|Aucun prix/.test(bouton), bouton);
+      await lignes.nth(n - 1).click();
+      const dernier = await page.evaluate((e) => { const b = [...document.querySelectorAll(`[data-planche="${e}"] [data-atlas="lu-sur-le-devis"] button[aria-pressed]`)].pop(); return /7px/.test(b.querySelector('span[aria-hidden].rounded-full').style.boxShadow); }, etat);
+      ok(`fournisseur depuis son devis (${etat}) : la dernière ligne recochée remplit son rond`, dernier);
+    }
+    await cFo.close();
   }
 
   await browser.close();

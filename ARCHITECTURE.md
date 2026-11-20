@@ -36880,7 +36880,7 @@ Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nom
 | **la question porte de quoi le montrer** | `QuestionMainOeuvre.jours` et `.partenaires` (les prix de `prixDesPartenaires`, lus comme la feuille du devis les lit). Sa phrase vient de `questionDeLaMainOeuvre`, la même au serveur et à l'écran |
 | **une seule règle pour trois lecteurs** | `mainOeuvreDUnPartenaire` (la ligne, son montant, le calcul en clair) et `quantiteDuPartenaire` (à la journée, les jours du chantier ; sinon ce qu'il tape) dans `src/lib/feuille-main-oeuvre.ts`. La feuille du devis, la carte « Avant de chiffrer » et le serveur (`partenaireDuChoix`) les lisent |
 | **le serveur ne croit pas l'écran** | `propositionAvecMainOeuvre` relit le prix sous son entreprise et rejoue la quantité : une quantité à la journée envoyée par l'écran est remplacée par les jours dictés, un prix d'une autre entreprise ou retiré rend la main d'œuvre « à chiffrer », et la phrase le dit. Le conducteur d'un engin ne se retire pas d'un partenaire : il ne concerne que son équipe |
-| **la ligne ne dit plus son nom** (révisé le 19 novembre 2026, §591) | « Main d’œuvre », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
+| **la ligne ne dit plus son nom** (révisé le 19 novembre 2026, §592) | « Main d’œuvre », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
 | **la liste ne se recopie pas** | `PastilleMesPartenaires`, `ListeDesPartenaires`, `PartenairePris` quittent `FeuilleMainDoeuvre` pour `src/components/atlas/PartenairesDeLaMainOeuvre.tsx` ; `prixEnMots` et `enUnite` pour la règle pure. Les repères (`mo-partenaires`, `mo-prix-<id>`, `mo-revenir`) restent ceux de la feuille |
 
 **Ce que l'écran montre est ce qui part.** La carte (`MainOeuvreDeLaDictee`) lit son total sur la réponse enregistrée, jamais sur le texte tapé : une quantité qui ne se lit pas ne s'enregistre pas, et le total reste celui de la dernière qui se lisait. La barre de répartition reçoit le total du partenaire ; ses parts d'avant ne font plus le compte, elle les remet à l'échelle à la dizaine (`repartirMainOeuvre`), comme le serveur.
@@ -37675,7 +37675,28 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 | Le devis, la facture et l'avoir prennent leur numéro dans ce compteur | les trois tombaient pour un compte inscrit |
 | Les comptes déjà inscrits | la migration 0186 leur pose le compteur, boucle par entreprise sous FORCE RLS, éprouvée sur une base habitée (`test-migration-0186-base-habitee.ts`, qui sait rougir sans la boucle). Commencer à 1 est juste : sans compteur, aucun n'a jamais numéroté quoi que ce soit, et aucun réglage ne fixe de numéro de départ. Ceux qui avaient leur compteur gardent leurs numéros |
 
-## §591 : Le nom du partenaire ne part pas chez le client
+## §591 : La feuille « Main d'œuvre » change la ligne de son équipe
+
+*18 novembre 2026, sa capture : un devis préparé « sur une ligne » portait sa main d'œuvre (2 hommes × 2 jours, 4 jour/homme, 1 600 €) ; « Main d'œuvre » pour ajouter un homme posait une seconde ligne de 2 400 € à côté. Ses mots : « ça devrait juste s'ajouter ». Sa réponse : « changer ma ligne », une seule ligne à 3 hommes × 2 jours. Planche : `appli/soignee/devis-main-d-oeuvre-change-sa-ligne.html`.*
+
+**D'où venait la seconde ligne.** La feuille ne connaissait que la dictée (`donneesDeLaMainOeuvre`) et l'action appelait toujours `ajouterLignePrix`. La dictée, la feuille, ses partenaires et la répartition posaient chacun de la main d'œuvre sans savoir que les autres existaient.
+
+| Décision | Pourquoi |
+|---|---|
+| la ligne de son équipe se reconnaît à `main_doeuvre` ET à l'unité « jour/homme » (`estLaLigneDeSonEquipe`) | un partenaire garde l'unité de son prix, et `UNITES_ACHAT` n'a pas de « jour/homme » ; le libellé, lui, il le renomme au doigt |
+| une par TVA : l'écran prend la première de la TVA où il a appuyé, le serveur revérifie qu'elle est encore celle de son équipe | l'écran a pu vieillir ; une ligne effacée, un travail ou un partenaire ne se réécrit pas, et le refus se dit |
+| « Changer la main d’œuvre » change quantité, prix et hommes ; son libellé reste le sien (`poserLaMainDoeuvreDeLaFeuille`) | sa réponse ; 10 jour/homme (ajouter les 6 aux 4) était écarté, les 4 jours compteraient deux fois |
+| un partenaire pose toujours SA ligne, à son nom | sa réponse : *« il faudrait qu'elle se mette sur une autre ligne »* |
+| « Répartis sur les travaux » retire sa ligne dans la même transaction que les parts | répartie, sa main d'œuvre entre dans le prix des travaux ; la ligne laissée à côté la compterait deux fois |
+| `lignes_prix.hommes_main_doeuvre` (migration 0187, expand seul) | 6 jour/homme ne disent pas 3 × 2 ou 2 × 3 ; la feuille se rouvre sur ce qu'il a posé. Sans la colonne (ligne d'avant), les hommes de la dictée, sinon un homme, au premier cran qui garde ses jours d'homme (`equipeDeSaLigne`) |
+| la préparation du devis écrit aussi ses hommes : ceux qu'elle facture, un engin avec son homme en moins | 2 hommes et une mini pelle font 1 homme × 2 jours sur la ligne (`journeesFacturees`) |
+| les hommes passent par un paramètre que seul le serveur fournit (`modifierLignePrix(…, duServeur)`) | les actions d'édition transmettent `data` tel que la page l'envoie ; la liste de `seulement` ne s'élargit pas |
+
+**Ce que ce lot ne règle pas, et que le relevé a trouvé** : répartir une seconde fois AJOUTE aux parts posées (`partsAppliquees` part de la part d'avant) ; et préparer le devis à nouveau repart de la dictée (2 hommes), pas de la ligne qu'il a changée. Les deux sont dans `TODO.md`.
+
+`test-feuille-main-oeuvre.ts` (sept cas, vus rouges avant), `test-main-oeuvre-change-sa-ligne-db.ts` (sa dictée, « Changer », le partenaire, les refus, « Répartis »), `test-feuille-main-oeuvre-e2e.ts` (son geste : rouvrir, un homme de plus, une seule ligne).
+
+## §592 : Le nom du partenaire ne part pas chez le client
 
 **Sa réponse du 19 novembre 2026 : « le retirer ».** La ligne d'un partenaire
 pris pour la main d'œuvre s'écrivait « Main d’œuvre : Élagage Durand »

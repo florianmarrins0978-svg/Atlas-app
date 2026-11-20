@@ -109,6 +109,12 @@ export type LigneProposee = {
    * Absents pour un partenaire.
    */
   joursMainDoeuvre?: string;
+  /**
+   * Les hommes de son équipe sur la ligne Main d'œuvre (migration 0187) : la
+   * feuille « Main d'œuvre » se rouvre sur eux quand elle change sa ligne.
+   * Absents pour un partenaire.
+   */
+  hommesMainDoeuvre?: number;
 };
 
 export type PropositionPrix = {
@@ -926,6 +932,10 @@ async function propositionAvecMainOeuvre(
         prixUnitaire: sienne ? (sienne.prixUnitaire ?? "0") : partenaire === null ? new Decimal(mo.tarif.prix).toFixed(2) : "0",
         prestationIds: [],
         mainDoeuvre: true,
+        // Les hommes qu'elle facture : un engin avec son homme en emmène un,
+        // tous les jours (`journeesFacturees`), donc 2 hommes et une mini
+        // pelle font 1 homme × 2 jours sur cette ligne.
+        ...(partenaire === null && mo.hommes - t.engins.length > 0 ? { hommesMainDoeuvre: mo.hommes - t.engins.length } : {}),
       },
     });
     // **Cela revient, sur une ligne seulement, sur sa réponse du 21 octobre**

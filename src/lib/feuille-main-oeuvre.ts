@@ -63,6 +63,8 @@ export type LigneDeMainOeuvre = {
   unite: string;
   /** `null` : rien ne permet de dire un prix, la ligne arrive à chiffrer. */
   prixUnitaire: string | null;
+  /** Les hommes de son équipe (migration 0187) ; absent pour un partenaire. */
+  hommes?: number;
 };
 
 function prixPositif(prix: string | null | undefined): string | null {
@@ -87,7 +89,51 @@ export function ligneDeSonEquipe(hommes: number, jours: number, tarifJour: strin
     quantite: journees.toString(),
     unite: "jour/homme",
     prixUnitaire: prixPositif(tarifJour),
+    hommes,
   };
+}
+
+/**
+ * La ligne de SON équipe sur le devis : de la main d'œuvre comptée en jours
+ * d'homme. Un partenaire garde l'unité de son prix (`UNITES_ACHAT` n'a pas de
+ * « jour/homme »), donc sa ligne n'est jamais prise pour celle de l'équipe.
+ *
+ * **Par l'unité et non par le libellé** : il renomme ses lignes au doigt, et
+ * « Main d’œuvre élagage » reste la ligne de son équipe.
+ */
+export function estLaLigneDeSonEquipe(l: { mainDoeuvre?: boolean | null; unite?: string | null }): boolean {
+  return l.mainDoeuvre === true && l.unite === "jour/homme";
+}
+
+/**
+ * Ce que la feuille montre en s'ouvrant sur la ligne de son équipe — sa
+ * planche du 18 novembre 2026 : la feuille CHANGE sa ligne au lieu d'en poser
+ * une seconde, donc elle repart de cette ligne et non plus de la dictée.
+ *
+ * **Les jours d'homme de la ligne ne bougent pas.** Les hommes viennent de la
+ * ligne quand elle les garde (posée par la feuille ou la dictée, migration
+ * 0187), sinon de la dictée, sinon un seul ; on prend le premier qui tombe sur
+ * un cran du compteur. 5 jour/homme tapés à la main pour 2 hommes dictés se
+ * relisent 1 homme × 5 jours : valider sans rien toucher ne change pas son prix.
+ *
+ * Une ligne à chiffrer n'a pas de prix à prêter : son zéro se lirait gratuit.
+ */
+export function equipeDeSaLigne(
+  ligne: { quantite: string; prixUnitaire: string; aChiffrer?: boolean | null; hommesMainDoeuvre?: number | null },
+  dictee: { hommes: number | null }
+): { hommes: number; jours: number; tarif: string | null } {
+  const journees = Number(ligne.quantite);
+  const tarif = ligne.aChiffrer ? null : prixPositif(ligne.prixUnitaire);
+  const candidats = [ligne.hommesMainDoeuvre, dictee.hommes, 1].filter(
+    (h): h is number => typeof h === "number" && Number.isInteger(h) && h >= 1 && h <= 20
+  );
+  for (const hommes of candidats) {
+    const jours = journees / hommes;
+    if (DUREES_MAIN_OEUVRE.some((d) => d.jours === jours)) return { hommes, jours, tarif };
+  }
+  // Aucun cran ne le dit (7,5 jour/homme) : le compteur prend le plus proche,
+  // et le total qu'il montre avant l'appui dit ce qui changerait.
+  return { hommes: 1, jours: journees, tarif };
 }
 
 /** Un prix de partenaire tel que la feuille le montre : le sien, et ce qu'il devient sur le devis. */
