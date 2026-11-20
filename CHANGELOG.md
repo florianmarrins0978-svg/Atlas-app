@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-20
+
+- **Planche « Sans marge sur les pièces »** (sa demande : un artisan qui ne prend pas de marge doit pouvoir le dire). Sur le vrai écran Ce que je paie : aujourd'hui 0 est refusé et 1 ne dit pas « sans marge » ; A ajoute « Sans marge » au coefficient, B passe la marge en pour cent (0 % vaut sans marge). La case vide reste « Marge à donner » dans les deux. `appli/sans-marge-sur-les-pieces.html`. Rien dans `src/`.
+
 ## 2026-11-19
 
 - **Le nom du partenaire ne part plus chez le client** (sa réponse : « le retirer »). La ligne d'un partenaire pris pour la main d'œuvre disait « Main d’œuvre : Élagage Durand », sur le PDF et la page du client ; elle dit « Main d’œuvre ». Le nom reste dans la feuille et le calcul de l'écran Prix, pour lui seul. `ARCHITECTURE.md` §591. Suite pure vue rouge puis verte ; suite base et suites navigateur adaptées, pas encore jouées.
