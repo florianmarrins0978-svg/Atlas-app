@@ -35,5 +35,18 @@ try {
   await page.evaluate(() => window.scrollBy(0, 180));
   await pas(900);
   await fige("24-planning-fiche");
+  // La fiche de sécurité : ouverte sur le planning, puis sa page, qui s'ouvre sur le décret.
+  await page.click('[data-atlas="ouvrir-fiche-de-securite"]'); await pas(1200);
+  await page.locator('[data-atlas="remplir-la-fiche"]').scrollIntoViewIfNeeded(); await page.evaluate(() => window.scrollBy(0, 160)); await pas(700);
+  await fige("24b-fiche-securite");
+  const fiche = await page.locator('[data-atlas="remplir-la-fiche"]').getAttribute("href");
+  await va(fiche); await pas(1500);
+  await fige("24c-fiche-decret");
+  // Les travaux à faire, ouverts sur la même journée.
+  await va("/planning");
+  await page.locator('button[aria-label^="25 novembre"]:visible').first().click(); await pas(2000);
+  await page.click('[data-atlas="ouvrir-travaux"]'); await pas(1200);
+  await page.locator('[data-atlas="travaux-a-faire"]').scrollIntoViewIfNeeded(); await page.evaluate(() => window.scrollBy(0, 120)); await pas(700);
+  await fige("24d-travaux");
 } catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); await page.screenshot({ path: `${TRAVAIL}/echec.png`, fullPage: true }); }
 await fin();
