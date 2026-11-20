@@ -173,14 +173,6 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Oak%20wilt%20symptoms.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/fletrissement-americain-chene-houppier.jpg",
-          "licence": "CC BY 3.0 US",
-          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Un chêne d’Amérique malade, aux États-Unis : le haut du feuillage brunit. En médaillon, des feuilles qui brunissent depuis la pointe."
-        },
-        {
           "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Spore%20Mat%20on%20Northern%20Pin%20Oak%201997.jpg?width=1200",
           "fichier": "donnees/phyto/brouillons/images/fletrissement-americain-chene-ecorce.jpg",
           "licence": "CC BY-SA 4.0",

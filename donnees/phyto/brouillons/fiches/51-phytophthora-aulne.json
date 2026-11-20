@@ -190,14 +190,6 @@
           "credit": "Photo de Malte, via Wikimedia Commons",
           "partie": "tronc",
           "legende": "Des taches noires sur le tronc d’un aulne malade, au bord de l’eau."
-        },
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/B%C5%99ehov%C3%BD%20porost%20po%C5%A1kozen%C3%BD%20pl%C3%ADsn%C3%AD%20ol%C5%A1ovou.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/phytophthora-aulne-houppier.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de Karel Černý, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Des aulnes glutineux malades en bord de rivière, en Tchéquie : plusieurs cimes sont clairsemées."
         }
       ],
       "noteImpact": 2,

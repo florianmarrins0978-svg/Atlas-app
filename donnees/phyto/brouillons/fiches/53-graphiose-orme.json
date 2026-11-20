@@ -164,28 +164,20 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dutch%20elm%20disease.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-houppier.jpg",
-          "licence": "CC BY-SA 3.0",
-          "credit": "Photo de Rasbak, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Dans la cime d’un orme malade, des branches sèches aux feuilles flétries, à côté de branches encore vertes."
+          "url": "https://www.forestryimages.org/browse/image/5496052",
+          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-branche.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Whitney Cranshaw, Colorado State University, Bugwood.org",
+          "partie": "branche",
+          "legende": "L’écorce enlevée sur le tronc d’un orme d’Amérique : le bois rayé de stries brunes, la trace du champignon."
         },
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Iepziekte%20op%20goudiep%20%28Ophiostoma%20ulmi%20on%20Ulmus%20hollandica%20%27Wredei%27%204%20May%202009%29.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-ensemble.jpg",
-          "licence": "CC BY-SA 3.0",
-          "credit": "Photo de Rasbak, via Wikimedia Commons",
-          "partie": "ensemble",
-          "legende": "Un orme doré de jardin (Ulmus × hollandica ‘Wredei’), en mai : le haut de l’arbre est mort, le bas porte encore ses feuilles."
-        },
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ceratocystis%20ulmi%201%20beentree.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-ensemble-2.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de Beentree, via Wikimedia Commons",
-          "partie": "ensemble",
-          "legende": "Un orme de montagne malade, en août, en Pologne : tout son feuillage est sec et reste accroché aux branches."
+          "url": "https://www.forestryimages.org/browse/image/5252020",
+          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-champignon_sur_bois.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "champignon_sur_bois",
+          "legende": "De très près, les petites fructifications du champignon dans les galeries d’un scolyte, sous l’écorce d’un orme."
         }
       ],
       "noteImpact": 2,

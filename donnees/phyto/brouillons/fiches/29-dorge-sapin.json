@@ -159,22 +159,6 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsorella%20caryophyllacearum%20Italy.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-branche.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de GooseCanada, via Wikimedia Commons",
-          "partie": "branche",
-          "legende": "Un balai de sorcière sur un sapin pectiné : une touffe serrée de rameaux dressés, aux aiguilles jaune pâle."
-        },
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsorella%20caryophyllacearum%20on%20trunk%20Italy.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-tronc.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de GooseCanada, via Wikimedia Commons",
-          "partie": "tronc",
-          "legende": "Le tronc d’un sapin pectiné enflé par le champignon, dans le bas de la photo."
-        },
-        {
           "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rak%20jod%C5%82y.jpg?width=1200",
           "fichier": "donnees/phyto/brouillons/images/dorge-sapin-tronc-2.jpg",
           "licence": "CC BY-SA 4.0",

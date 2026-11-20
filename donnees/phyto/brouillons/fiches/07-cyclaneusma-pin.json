@@ -154,14 +154,6 @@
       ],
       "images": [
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cyclaneusma%20needle%20cast%20%28Cyclaneusma%20minus%20%29%20Symptoms%20on%20jack%20pine.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/cyclaneusma-pin-rameau.jpg",
-          "licence": "domaine public",
-          "credit": "Photo du USDA Forest Service (Forest Health Protection, St. Paul), via Wikimedia Commons",
-          "partie": "rameau",
-          "legende": "Rameaux d’un pin gris (Pinus banksiana, un pin d’Amérique du Nord) : des aiguilles jaunies parmi les vertes."
-        },
-        {
           "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cyclaneusma%20niveum%20%2826238147738%29.jpg?width=1200",
           "fichier": "donnees/phyto/brouillons/images/cyclaneusma-pin-aiguille.jpg",
           "licence": "CC BY-SA 2.0",

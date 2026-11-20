@@ -238,32 +238,7 @@
           ]
         }
       ],
-      "images": [
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maladie%20encre.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-tronc.jpg",
-          "licence": "CC BY-SA 3.0",
-          "credit": "Photo de Abrahami, via Wikimedia Commons",
-          "partie": "tronc",
-          "legende": "Des taches noires sur le bas du tronc de châtaigniers malades."
-        },
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Castagn%C3%AE%20maladeye%20intche.JPG?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-ecorce.jpg",
-          "licence": "CC BY-SA 3.0",
-          "credit": "Photo de Lucyin, via Wikimedia Commons",
-          "partie": "ecorce",
-          "legende": "Un châtaignier mort de l’encre, en Lozère : son tronc éclaté montre une couche noire sous l’écorce."
-        },
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maladie%20encre%202.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-houppier.jpg",
-          "licence": "CC BY-SA 3.0",
-          "credit": "Photo d’Abrahami, via Wikimedia Commons",
-          "partie": "houppier",
-          "legende": "Un châtaignier malade, en Gironde : des branches mortes au sommet de la cime."
-        }
-      ],
+      "images": [],
       "noteImpact": 3,
       "noteAgressivite": 3,
       "noteFrequence": 2
