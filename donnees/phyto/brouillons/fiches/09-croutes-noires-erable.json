@@ -133,6 +133,14 @@
           "credit": "Photo de Nova Patch, iNaturalist, via Wikimedia Commons",
           "partie": "feuille",
           "legende": "La croûte noire de près : c’est le champignon lui-même, sur une feuille d’érable."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rhytisma%20acerinum%20151854716.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/croutes-noires-erable-feuille-2.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo de Виктор, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "En août, des feuilles encore sur l’arbre, couvertes de taches noires entourées d’une auréole jaune clair, en Russie (l’arbre n’est pas nommé)."
         }
       ],
       "noteImpact": 1,

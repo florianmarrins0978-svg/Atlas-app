@@ -201,6 +201,14 @@
           "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
           "partie": "feuille",
           "legende": "Feuilles d’érable tachées de blanc, et percées à l’endroit des taches."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cristulariella%20depraedans%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/taches-blanches-houppier.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Cwmhiraeth, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Une branche d’érable sycomore dont tout le feuillage s’est desséché et a blanchi."
         }
       ],
       "noteImpact": 1,

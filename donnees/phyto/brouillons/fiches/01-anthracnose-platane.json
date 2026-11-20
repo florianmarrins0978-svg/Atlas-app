@@ -173,6 +173,22 @@
           "credit": "Photo de Clemson University, USDA Cooperative Extension Slide Series, Bugwood.org, via Wikimedia Commons",
           "partie": "feuille",
           "legende": "Tache sèche brune le long d’une nervure, sur une feuille de Platanus occidentalis, un platane d’Amérique."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2020-05-27%2009%2030%2010%20An%20American%20sycamore%20branch%20with%20a%20severe%20infection%20of%20Sycamore%20anthracnose%20along%20Tranquility%20Court%20in%20the%20Franklin%20Farm%20section%20of%20Oak%20Hill%2C%20Fairfax%20County%2C%20Virginia.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-rameau.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Famartin, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Une pousse morte et ses jeunes feuilles desséchées, sur un platane d’Amérique très atteint, en Virginie aux États-Unis."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2020-05-27%2008%2059%2037%20An%20American%20sycamore%20with%20a%20severe%20infection%20of%20Sycamore%20anthracnose%20along%20Tranquility%20Court%20in%20the%20Franklin%20Farm%20section%20of%20Oak%20Hill%2C%20Fairfax%20County%2C%20Virginia.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-houppier.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Famartin, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Un platane d’Amérique très atteint en mai, en Virginie aux États-Unis : le houppier n’a presque plus de feuilles."
         }
       ],
       "noteImpact": null,

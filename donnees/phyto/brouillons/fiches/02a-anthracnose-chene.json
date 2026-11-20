@@ -236,6 +236,22 @@
           "credit": "Photo d’Adam Kranz, via Wikimedia Commons, identifiée sur iNaturalist et non en laboratoire",
           "partie": "feuille",
           "legende": "Grande tache brune sur une feuille de chêne d’Amérique, photographiée au Michigan."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Apiognomonia%20quercina%2001.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-chene-feuille-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de AfroBrazilian, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Des feuilles brunies au bout et sur les bords (l’arbre n’est pas nommé)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Apiognomonia%20quercina%2003.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-chene-feuille-3.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de AfroBrazilian, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Vues du dessous de l’arbre, des feuilles tachées de brun et d’autres entièrement desséchées (l’arbre n’est pas nommé)."
         }
       ]
     }

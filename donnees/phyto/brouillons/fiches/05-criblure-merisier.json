@@ -194,6 +194,22 @@
           "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
           "partie": "feuille",
           "legende": "Taches dont le centre est tombé, sur une feuille de cerisier acide (Prunus cerasus), et non de merisier."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/SchrotschussKirschblatt.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/criblure-merisier-feuille-2.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de kühler Grill, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "De nombreuses taches rondes brun pourpre sur une feuille de cerisier (l’espèce n’est pas nommée)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Corineo.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/criblure-merisier-feuille-3.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Pinzid, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Des feuilles criblées de petits trous, avec des taches rouges autour (l’arbre n’est pas nommé)."
         }
       ],
       "noteImpact": null,

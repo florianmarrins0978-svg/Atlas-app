@@ -168,6 +168,22 @@
           "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
           "partie": "feuille",
           "legende": "Petites taches pourpres sur des feuilles de merisier, dont certaines rougissent."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Blumeriella%20jaapi%20a1%20%283%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cylindrosporiose-merisier-feuille-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Le dessous d’une feuille de merisier, de près : des taches brunes groupées par plages."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cherry%20Leaf%20Spot%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cylindrosporiose-merisier-feuille-3.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Glen R. Stanosz, University of Wisconsin-Madison, et Mary L. Torsello, USDA Forest Service, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Des feuilles cueillies, jaunies et couvertes de petites taches (l’arbre n’est pas nommé)."
         }
       ],
       "noteImpact": 2,
