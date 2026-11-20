@@ -6,6 +6,7 @@ import {
   ligneDeMarge,
   lireAdresseMail,
   lireMarge,
+  lireTelephone,
   lireMorceauDeMessage,
   achatRetenuEnMots,
   margeEnPourcent,
@@ -149,6 +150,14 @@ test("un prix d'achat se dit comme il le paie, et le fournisseur reste écrit so
     sp(achatRetenuEnMots({ societeNom: "Matériaux Garnier", prixHt: "8.90", unite: "sac" })),
     "Matériaux Garnier, 8,90 € HT le sac"
   );
+});
+
+test("un téléphone de fournisseur : des chiffres, jamais une phrase", () => {
+  assert.deepEqual(lireTelephone("04 75 12 34 56"), { ok: true, telephone: "04 75 12 34 56" });
+  assert.deepEqual(lireTelephone(" +33 (0)4.75.12.34.56 "), { ok: true, telephone: "+33 (0)4.75.12.34.56" });
+  assert.deepEqual(lireTelephone(""), { ok: true, telephone: null });
+  assert.equal(lireTelephone("appelez-nous").ok, false);
+  assert.equal(lireTelephone("12").ok, false);
 });
 
 test("la quantité dictée : un chiffre, « deux », « trois », sinon une", () => {

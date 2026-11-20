@@ -37780,3 +37780,42 @@ retapé ou un montant, absente du devis et de l'export ; **écrit, pas encore
 joué**). Parcouru dans un vrai navigateur sur la base de démonstration : 21
 vérifications, dont le PDF du devis sans aucun fournisseur, et un compte
 commercial qui ne reçoit ni la liste ni la mention.
+
+## §594 : Un fournisseur se crée depuis son devis
+
+*20 novembre 2026, sa réponse « oui, code-la » sur
+`appli/fournisseur-depuis-son-devis.html`.*
+
+Sous « Ajouter » de Ce que je paie, « Prendre un devis en photo » et « PDF,
+photo ou Excel » lisent un devis sans qu'il choisisse d'abord la société. La
+lecture rend aussi l'en-tête (`EmetteurLu` : nom, mail, téléphone de
+l'émetteur, jamais du destinataire), et la feuille « Ranger le devis lu »
+propose :
+
+| Ce qui est lu | Ce que la feuille propose |
+|---|---|
+| un émetteur qu'il n'a pas | « Nouveau fournisseur », prérempli (Nom, Adresse mail, Téléphone), « Créer et ajouter ces N prix » |
+| un émetteur qu'il a (`societeReconnue` : nom sans forme juridique, mail, ou 9 derniers chiffres du téléphone) | « Reconnu sur le devis », sa fiche, et le mail ou téléphone qui lui manquait ; « Ce n'est pas lui » repasse à la création |
+| rien de lisible dans l'en-tête | la création, nom vide et exigé |
+| son choix | « Le ranger chez un autre fournisseur », ou « Ne rien créer » (aucune trace : rien n'est rangé avant le choix) |
+
+| Décision | Pourquoi |
+|---|---|
+| la lecture ne range rien (`lireUnDevisSansSocieteAction`) ; le fichier, la société et les prix partent ensemble au choix (`rangerLeDevisLuAction`) | « Ne rien créer » ne laisse aucun fichier orphelin sans société |
+| sa propre entreprise lue comme émetteur est écartée (`pasLuiMeme`) | un devis qu'il a envoyé lui-même ne crée pas une société à son nom |
+| un nom voisin ne suffit pas (« Garnier » n'est pas « Matériaux Garnier ») | deux fournisseurs confondus mélangeraient leurs prix sans qu'il le voie |
+| le téléphone se valide (`lireTelephone`) et vit sur `societes_achat.telephone` (migration 0189, expand seul, ≤ 30) | « appelez-nous » lu sur un en-tête ne doit pas devenir un numéro |
+| les étapes communes (`preparerLeFichier`, `lireLeFichier`, `garderLeFichier`, `prendreLesLignes`) servent la lecture d'une fiche ET celle-ci | une seule règle pour lire et ranger un devis |
+
+**Ce qui n'est pas vérifiable ici** : la lecture réelle de l'en-tête par
+l'IA (aucune clé sur ce poste). La relecture de sa réponse est éprouvée
+(`test-devis-fournisseur-lu`) ; la consigne, à jouer sur son espace.
+
+Contrôles : `test-devis-fournisseur-lu` (pur : l'en-tête lu, mail et
+téléphone invalides écartés, la reconnaissance), `test-prix-achat`
+(`lireTelephone`). Parcouru dans un vrai navigateur sur la base de
+démonstration, réponse de lecture simulée : 15 vérifications (création,
+« Ne rien créer » sans trace, nom exigé, cases suivies par le bouton,
+téléphone refusé puis corrigé sur la fiche, rangement chez un autre).
+Batterie pas jouée.
+

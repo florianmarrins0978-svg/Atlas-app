@@ -61,7 +61,9 @@ au prix d'achat, sans rien dire, chez l'artisan qui a simplement oublié de la
 remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
 `ligneDeMarge`, `phraseDeLaMargePropre`, et la marge propre de chaque fiche).
 
-## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : LE FOURNISSEUR SOUS LES LIGNES DICTÉES (19 novembre 2026)
+
+**La planche 1 est CODÉE LE 20 novembre 2026** (`ARCHITECTURE.md` §594, migration 0189), pas encore sur `main` : batterie à jouer sur son « oui ». **Reste la planche 2** (`appli/devis-fournisseur-pour-vous-seul.html`) : la mention sous une ligne DICTÉE et le bouton « Chez le client ». La colonne `achat_retenu` existe déjà (0188) et sert le devis tapé à la main ; le devis dicté ne la remplit pas encore.
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
 que c'est un fournisseur, me crée le dossier avec son nom, son mail, son

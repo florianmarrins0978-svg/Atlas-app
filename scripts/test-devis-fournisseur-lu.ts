@@ -4,6 +4,7 @@ import {
   lignesDuTableau,
   lireReponseDevisFournisseur,
   rapprocherDuPrix,
+  societeReconnue,
   sourceDeLaFactureLue,
   sourceDuDevisLu,
   typeDuFichierRecu,
@@ -33,6 +34,7 @@ test("les lignes lues, leur unité, et la remise de la ligne déduite", () => {
     "fournisseur"
   );
   assert.deepEqual(lu, {
+    emetteur: null,
     lignes: [
       { designation: "Turbine 3504", reference: "RA3504", quantite: "9", unite: "pièce", prixHt: "11.16" },
       { designation: "Sac de ciment 35 kg", reference: null, quantite: "3", unite: "sac", prixHt: "8.00" },
@@ -48,7 +50,7 @@ test("une ligne sans prix ou sans désignation est écartée, jamais complétée
     '{"lignes":[{"designation":"Coude","prix_unitaire_ht":null},{"designation":null,"prix_unitaire_ht":"3"},{"designation":"Té","prix_unitaire_ht":"abc"}]}',
     "fournisseur"
   );
-  assert.deepEqual(lu, { lignes: [], ecartees: 3, totalHt: null, totalTtc: null });
+  assert.deepEqual(lu, { emetteur: null, lignes: [], ecartees: 3, totalHt: null, totalTtc: null });
 });
 
 test("un devis lu « ml » garde ml, « m » garde m (sa demande du 20 novembre 2026)", () => {
@@ -139,6 +141,38 @@ test("un tableur reçu se télécharge, une photo ou un PDF s'ouvrent, le reste 
   assert.equal(typeDuFichierRecu("a/b.xlsx")?.joint, true);
   assert.equal(typeDuFichierRecu("a/b.csv")?.joint, true);
   assert.equal(typeDuFichierRecu("a/b.html"), null);
+});
+
+// ── Le fournisseur lu sur son devis (sa planche du 19 novembre 2026,
+//    `appli/fournisseur-depuis-son-devis.html`) ──────────────────────────
+
+test("le fournisseur se lit dans l'en-tête : nom, mail, téléphone, et rien de deviné", () => {
+  const lu = lireReponseDevisFournisseur(
+    '{"fournisseur":{"nom":"Pépinières du Val SARL","email":"contact@pepinieres-du-val.fr","telephone":"04 75 12 34 56"},' +
+      '"lignes":[{"designation":"Terreau","unite":"sac","prix_unitaire_ht":"9,80"}]}',
+    "fournisseur"
+  );
+  assert.deepEqual(lu?.emetteur, { nom: "Pépinières du Val SARL", email: "contact@pepinieres-du-val.fr", telephone: "04 75 12 34 56" });
+  const sansMail = lireReponseDevisFournisseur(
+    '{"fournisseur":{"nom":"Garnier","email":"pas un mail","telephone":"appelez-nous"},"lignes":[]}',
+    "fournisseur"
+  );
+  assert.deepEqual(sansMail?.emetteur, { nom: "Garnier", email: null, telephone: null });
+  const rien = lireReponseDevisFournisseur('{"lignes":[]}', "fournisseur");
+  assert.equal(rien?.emetteur, null);
+});
+
+test("un fournisseur déjà là se reconnaît à son nom sans sa forme juridique, à son mail ou à son téléphone", () => {
+  const siennes = [
+    { id: "g", nom: "Matériaux Garnier", email: "commandes@materiaux-garnier.fr", telephone: null },
+    { id: "m", nom: "Arrosage Martin", email: null, telephone: "04 75 98 76 54" },
+  ];
+  assert.equal(societeReconnue({ nom: "MATERIAUX GARNIER SAS", email: null, telephone: null }, siennes)?.id, "g");
+  assert.equal(societeReconnue({ nom: "Garnier & Fils", email: "commandes@materiaux-garnier.fr", telephone: null }, siennes)?.id, "g");
+  assert.equal(societeReconnue({ nom: null, email: null, telephone: "+33 4 75 98 76 54" }, siennes)?.id, "m");
+  // Un nom voisin ne suffit pas : « Garnier » seul n'est pas « Matériaux Garnier ».
+  assert.equal(societeReconnue({ nom: "Garnier", email: null, telephone: null }, siennes), null);
+  assert.equal(societeReconnue(null, siennes), null);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

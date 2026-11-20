@@ -1,8 +1,8 @@
 # État du projet
 
-## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE : CODÉS, PAS ENCORE SUR `main` (20 novembre 2026)
+## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE, « ML », LE FOURNISSEUR DEPUIS SON DEVIS : CODÉS, PAS ENCORE SUR `main` (20 novembre 2026)
 
-Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cent (0 % sans marge) ; la recherche de Ce que je paie dit le prix d'une pièce ; le devis tapé à la main propose ses prix d'achat sous la ligne, pour lui seul (migration 0188) ; la ligne d'un partenaire ne porte plus son nom (`ARCHITECTURE.md` §592, §593). Niveau 3 : la batterie reste à jouer, sur sa consigne « pas de batterie » pour l'instant.
+Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cent (0 % sans marge) ; la recherche de Ce que je paie dit le prix d'une pièce ; le devis tapé à la main propose ses prix d'achat sous la ligne, pour lui seul (migration 0188) ; la ligne d'un partenaire ne porte plus son nom ; « ml » s'ajoute aux unités ; un devis déposé sans choisir la société crée ou reconnaît son fournisseur (migration 0189) (`ARCHITECTURE.md` §592, §593, §594). Niveau 3 : la batterie reste à jouer, sur sa consigne « pas de batterie » pour l'instant.
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 

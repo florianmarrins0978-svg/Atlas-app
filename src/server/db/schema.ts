@@ -4356,6 +4356,8 @@ export const societesAchat = pgTable("societes_achat", {
   marge: numeric("marge", { precision: 5, scale: 2 }),
   /** Migration 0133 : l'adresse où part sa liste, et le début et la fin de SON message. */
   email: text("email"),
+  /** Migration 0189 : son téléphone, tapé ou lu sur son devis. */
+  telephone: text("telephone"),
   debutMail: text("debut_mail"),
   finMail: text("fin_mail"),
   createdBy: uuid("created_by").references(() => users.id),

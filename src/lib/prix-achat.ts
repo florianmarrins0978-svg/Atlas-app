@@ -90,6 +90,19 @@ export function lireAdresseMail(brut: string): { ok: true; email: string | null 
   return { ok: true, email };
 }
 
+/**
+ * Le téléphone d'un fournisseur, tapé ou lu sur son devis (migration 0189).
+ * Vide : pas de téléphone. Des chiffres, des espaces, « + », « . », « - » et
+ * des parenthèses, au moins six chiffres : « appelez-nous » ne s'enregistre pas.
+ */
+export function lireTelephone(brut: string): { ok: true; telephone: string | null } | { ok: false; raison: string } {
+  const t = brut.replace(/\s+/g, " ").trim();
+  if (t === "") return { ok: true, telephone: null };
+  const chiffres = t.replace(/\D/g, "").length;
+  if (t.length > 30 || !/^\+?[\d\s.()-]+$/.test(t) || chiffres < 6) return { ok: false, raison: "Tapez un numéro comme 04 75 12 34 56." };
+  return { ok: true, telephone: t };
+}
+
 /** Le plus long début ou fin de message gardé (0133). */
 export const MORCEAU_DE_MESSAGE_MAX = 2000;
 
