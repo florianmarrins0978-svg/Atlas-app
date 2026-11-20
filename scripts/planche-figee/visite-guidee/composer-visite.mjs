@@ -144,6 +144,7 @@ html,body{overflow-x:clip}
 .v-pied button{min-height:40px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .v-retour{background:transparent;color:rgba(245,243,238,.7)}
 .v-suivant{background:var(--v-creme);color:var(--v-encre)}
+.v-guide.en-retrait{opacity:0;pointer-events:none}
 .v-guide.secoue{animation:v-secoue 380ms}
 @keyframes v-secoue{20%{transform:translateX(-6px)}50%{transform:translateX(5px)}80%{transform:translateX(-3px)}}
 .v-ouverture{position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;background:rgba(28,28,26,.5)}
@@ -208,17 +209,18 @@ const SCRIPT = `
     const h = guide.offsetHeight, basHaut = 12 + h, hautBas = innerHeight - 84 - h;
     const couvreHaut = q.top < basHaut, couvreBas = q.bottom > hautBas;
     const enHaut = couvreBas && !couvreHaut ? true : couvreHaut && !couvreBas ? false : q.top + q.height / 2 > innerHeight * 0.52;
-    guide.className = "v-guide " + (enHaut && innerWidth < 1024 ? "en-haut" : "en-bas");
+    const retrait = guide.classList.contains("en-retrait");
+    guide.className = "v-guide " + (enHaut && innerWidth < 1024 ? "en-haut" : "en-bas") + (retrait ? " en-retrait" : "");
     return c;
   };
-  const ecrire = () => {
+  const ecrire = (fini) => {
     const champs = [...courant.querySelectorAll("input")].filter((i) => i.value && i.type !== "hidden" && visible(i));
     const valeurs = champs.map((i) => i.value);
     champs.forEach((i) => (i.value = ""));
     let k = 0, j = 0;
     clearInterval(minuteur);
     minuteur = setInterval(() => {
-      if (k >= champs.length) { clearInterval(minuteur); return; }
+      if (k >= champs.length) { clearInterval(minuteur); fini(); return; }
       j++; champs[k].value = valeurs[k].slice(0, j);
       if (j >= valeurs[k].length) { k++; j = 0; }
     }, 38);
@@ -238,11 +240,17 @@ const SCRIPT = `
     libre = false; rang = Math.max(0, Math.min(C.etapes.length - 1, n));
     const e = C.etapes[rang];
     montrer(e.etat);
-    if (e.taper) ecrire();
+    // Pendant que les champs s'écrivent, le guide se retire : il cachait ce qu'il
+    // fallait regarder (sa capture du 20 novembre). Il revient une fois tout écrit.
+    if (e.taper) {
+      guide.classList.add("en-retrait"); doigt.style.opacity = 0;
+      window.scrollTo(0, 0);
+      ecrire(() => setTimeout(() => { guide.classList.remove("en-retrait"); poserDoigt(); }, 500));
+    } else guide.classList.remove("en-retrait");
     if (e.photo) { photo.classList.add("visible"); setTimeout(() => photo.classList.remove("visible"), 1300); }
     libre = !!e.libre;
     dire();
-    requestAnimationFrame(() => requestAnimationFrame(poserDoigt));
+    if (!e.taper) requestAnimationFrame(() => requestAnimationFrame(poserDoigt));
   };
   const rubrique = (href) => {
     const nom = "r-" + href.replace(/^\\/reglages\\//, "").replace(/\\//g, "-");
