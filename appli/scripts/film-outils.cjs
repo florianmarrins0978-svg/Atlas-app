@@ -397,35 +397,38 @@ const CACHER_LA_PLANCHE = '.planche-tete,.planche-notes,.planche-dit{display:non
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
-    // Les deux images du chapitre, prises dans l'état où les films laissent
-    // le jardin : la pelouse en Ø32, sur un réseau de 8 turbines à
-    // recouvrement complet. Sa demande du 20 novembre au soir, devant la
-    // carte en Ø25 (4 turbines sur un seul bord) : « les recouvrements ils
-    // sont pas à 100 % ». La nourrice suit le plan : deux voies.
-    // Rend aussi la place de « 20 m » sur la carte, où la cote du croquis se
-    // pose (CIBLE_COTE dans vente/outils.html).
+    // Les deux images du chapitre, prises sur le jardin tel que le calcul le
+    // pose, en Ø25. Sa demande du 20 novembre au soir, devant la carte du
+    // seul réseau 1 (4 turbines sur un bord, la pelouse à moitié couverte) :
+    // « tu mets réseau 1, 4 [turbines 3504]. En dessous, tu mets réseau 2
+    // avec une autre couleur. Et tu me remets 4 [turbines] en face qui se
+    // recoupent. » L'image est donc les deux cartes, l'une sous l'autre comme
+    // l'appli les pose ; la nourrice va avec, en trois voies.
+    // Rend aussi la place de « 20 m » sur la carte du réseau 1, où la cote du
+    // croquis se pose (CIBLE_COTE dans vente/outils.html).
     async images(p) {
-      await p.amener('[data-atlas="carte-reseau"]', {}, 120, 0.2);
-      await p.toucher('[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"] button', { texte: '32' });
-      await p.pendant(1.5);
-      await p.photographier('outils-plan-reseau.jpg', '[data-atlas="carte-reseau"]');
-      const cible = await p.page.evaluate(() => {
-        const carte = document.querySelector('[data-atlas="carte-reseau"]'), zone = carte.querySelector('[data-atlas="zone-du-reseau"]');
-        const marche = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT);
+      // Deux cartes et la nourrice sont plus hautes que ce qui reste entre le
+      // sommaire et la barre du bas : un écran plus haut les prend entières.
+      await p.page.setViewportSize({ width: ECRAN.l, height: 1200 });
+      const cadre = await p.page.evaluate(() => {
+        const cartes = document.querySelectorAll('[data-atlas="carte-reseau"]');
+        window.scrollTo(0, cartes[0].getBoundingClientRect().top + window.scrollY - 80);
+        const haut = cartes[0].getBoundingClientRect(), bas = cartes[1].getBoundingClientRect();
+        const r = { x: haut.left, y: haut.top, width: haut.width, height: bas.bottom - haut.top };
+        const zone = cartes[0].querySelector('[data-atlas="zone-du-reseau"]'), marche = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT);
         for (let n = marche.nextNode(); n; n = marche.nextNode()) {
           const i = n.textContent.indexOf('20 m');
           if (i < 0) continue;
           const plage = document.createRange(); plage.setStart(n, i); plage.setEnd(n, i + 4);
-          const m = plage.getBoundingClientRect(), c = carte.getBoundingClientRect();
-          return { x: ((m.left + m.width / 2 - c.left) / c.width).toFixed(4), y: ((m.top + m.height / 2 - c.top) / c.height).toFixed(4), l: (m.width / c.width).toFixed(4) };
+          const m = plage.getBoundingClientRect();
+          r.cible = { x: ((m.left + m.width / 2 - r.x) / r.width).toFixed(4), y: ((m.top + m.height / 2 - r.y) / r.height).toFixed(4), l: (m.width / r.width).toFixed(4) };
         }
-        return null;
+        return r;
       });
-      console.log('CIBLE_COTE = ' + JSON.stringify(cible));
-      // La nourrice de deux voies est plus haute que ce qui reste entre le
-      // sommaire et la barre du bas : un écran plus haut la photographie
-      // entière, la barre posée plus bas qu'elle.
-      await p.page.setViewportSize({ width: ECRAN.l, height: 1200 });
+      await p.page.evaluate(() => window.__film.synchro());
+      await p.page.screenshot({ path: path.join(dossier, 'outils-plan-reseau.jpg'), type: 'jpeg', quality: 88, clip: { x: cadre.x, y: cadre.y, width: cadre.width, height: cadre.height } });
+      console.log('outils-plan-reseau.jpg : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
+      console.log('CIBLE_COTE = ' + JSON.stringify(cadre.cible));
       await p.photographier('outils-nourrice.jpg', '[data-atlas="nourrice-eclatee"] > div', { jusqua: ':scope > div', marge: 14 });
     },
     async jouer(p) {

@@ -694,9 +694,9 @@ d'avant : relancer, dans cet ordre,
 `npx tsx appli/scripts/demo-outils/construire.ts` puis
 `node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
 l'encodage ; `--apercu <dossier>` pour régler un récit en une minute ;
-`--images` pour les deux images du chapitre du plan seules, la carte en Ø32
-et la nourrice de deux voies, sa remarque du même soir sur les
-recouvrements).
+`--images` pour les deux images du chapitre du plan seules : les deux
+réseaux de la pelouse face à face, en Ø25, et la nourrice de trois voies,
+ses deux remarques du même soir sur les recouvrements).
 **Le diagnostic du site montre la fiche du peuplier SOIGNÉE**, celle de sa
 planche (`appli/soignee/fiche-de-diagnostic.html`, vue Proposé), sa demande
 du même soir. Elle n'est pas encore dans l'appli : une autre session la code
