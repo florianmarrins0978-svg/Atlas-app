@@ -187,6 +187,14 @@
           "credit": "Photo de Wood Geek, via Wikimedia Commons",
           "partie": "ecorce",
           "legende": "Sous l’écorce fendue d’un chêne d’Amérique, un coussinet du champignon."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bretziella%20fagacearum%20171611523.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/fletrissement-americain-chene-feuille.jpg",
+          "licence": "CC0",
+          "credit": "Photo de lanechaffin, iNaturalist, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Une feuille d’un chêne malade, au Texas (États-Unis) : elle brunit le long des nervures et à la pointe."
         }
       ],
       "noteImpact": 3,

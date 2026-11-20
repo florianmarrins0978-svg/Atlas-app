@@ -204,6 +204,14 @@
           "credit": "Photo de Strobilomyces, via Wikimedia Commons",
           "partie": "champignon_sur_bois",
           "legende": "Des collybies brun-roux au long pied, dans une forêt près de Clairefontaine."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gymnopus%20fusipes%20%2815692696239%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/collybie-pied-fuseau-collet-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Claude Page, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Le pied des collybies, renflé, creusé de sillons et enfoncé dans le sol comme une racine."
         }
       ],
       "noteImpact": 2,

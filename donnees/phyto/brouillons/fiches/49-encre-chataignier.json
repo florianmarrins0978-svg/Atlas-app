@@ -254,6 +254,14 @@
           "credit": "Photo de Lucyin, via Wikimedia Commons",
           "partie": "ecorce",
           "legende": "Un châtaignier mort de l’encre, en Lozère : son tronc éclaté montre une couche noire sous l’écorce."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maladie%20encre%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/encre-chataignier-houppier.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo d’Abrahami, via Wikimedia Commons",
+          "partie": "houppier",
+          "legende": "Un châtaignier malade, en Gironde : des branches mortes au sommet de la cime."
         }
       ],
       "noteImpact": 3,

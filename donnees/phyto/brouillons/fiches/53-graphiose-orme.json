@@ -178,6 +178,14 @@
           "credit": "Photo de Rasbak, via Wikimedia Commons",
           "partie": "ensemble",
           "legende": "Un orme doré de jardin (Ulmus × hollandica ‘Wredei’), en mai : le haut de l’arbre est mort, le bas porte encore ses feuilles."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ceratocystis%20ulmi%201%20beentree.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/graphiose-orme-ensemble-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Beentree, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Un orme de montagne malade, en août, en Pologne : tout son feuillage est sec et reste accroché aux branches."
         }
       ],
       "noteImpact": 2,

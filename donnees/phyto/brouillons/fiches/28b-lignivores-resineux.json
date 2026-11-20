@@ -243,6 +243,22 @@
           "credit": "Photo de Joseph O’Brien, Bugwood.org, via Wikimedia Commons",
           "partie": "champignon_sur_bois",
           "legende": "Des tramètes des pins (Phellinus pini) sur l’écorce d’un résineux (arbre non précisé)."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Red-beltet%20conk%20%28fomitopsis%20pinicola%29%20-%20Ida%20Brennodden.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/lignivores-resineux-champignon_sur_bois.jpg",
+          "licence": "CC BY 4.0",
+          "credit": "Photo d’Ida Brennodden, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Deux polypores marginés (Fomitopsis pinicola) sur le tronc d’un épicéa."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ruhland%2C%20Wald%20s%C3%BCdlich%20des%20Birkenwegs%2C%20Krause%20Glucke%2C%20Sp%C3%A4tsommer%2C%2003.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/lignivores-resineux-collet.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Wilhelm Zimmerling PAR, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Un sparassis crépu (Sparassis crispa), en boule frisée, au pied d’un pin sylvestre, en Allemagne."
         }
       ],
       "noteImpact": 3,

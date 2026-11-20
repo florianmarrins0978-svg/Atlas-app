@@ -366,6 +366,14 @@
           "credit": "Photo de Kristen Chadwick, USDA Forest Service, via Wikimedia Commons",
           "partie": "tronc",
           "legende": "Le cœur du bois d’un douglas, brun et cassé en cubes par la pourriture."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phaeolus%20schweinitzii%20-%20Flickr%20-%20Dick%20Culbert%20%281%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pheole-schweinitz-champignon_sur_bois.jpg",
+          "licence": "CC BY 2.0",
+          "credit": "Photo de Dick Culbert, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "À gauche, le champignon sur la mousse, vu de dessus. À droite, son dessous, aux pores jaunes irréguliers comme un labyrinthe."
         }
       ],
       "noteImpact": 2,

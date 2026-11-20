@@ -176,6 +176,14 @@
           "credit": "Photo de Met.salis, via Wikimedia Commons",
           "partie": "champignon_sur_bois",
           "legende": "Une touffe de champignons de l’armillaire obscure, en automne, dans une forêt d’Allemagne."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2005.%20Armillaria%20ostoyae%20root%20disease%20center.%20%2827842688709%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/armillaire-ostoyae-ensemble.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de Kristen Chadwick, USDA Forest Service, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Un foyer d’armillaire obscure, aux États-Unis : des arbres morts, debout ou tombés, au milieu des arbres vivants."
         }
       ],
       "noteImpact": 2,

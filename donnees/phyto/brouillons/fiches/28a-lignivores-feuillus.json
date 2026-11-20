@@ -324,6 +324,22 @@
           "credit": "Photo d’Agnieszka Kwiecień (Nova), via Wikimedia Commons",
           "partie": "champignon_sur_bois",
           "legende": "Un amadouvier (Fomes fomentarius), en forme de sabot, sur le tronc d’un hêtre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Laetiporus%20sulphureus%20%28Quercus%2C%20Kobylnica%29.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/lignivores-feuillus-champignon_sur_bois.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de MOs810, via Wikimedia Commons",
+          "partie": "champignon_sur_bois",
+          "legende": "Un polypore soufré (Laetiporus sulphureus), jaune orangé, sur le tronc d’un chêne, en Pologne."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Reuzenzwam%20%28Meripilus%20giganteus%29.%20Locatie%2C%20Hortus%20%28Haren%2C%20Groningen%29%2001.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/lignivores-feuillus-collet.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Dominicus Johannes Bergsma, via Wikimedia Commons",
+          "partie": "collet",
+          "legende": "Un polypore géant (Meripilus giganteus) au pied d’un hêtre, aux Pays-Bas, en octobre."
         }
       ],
       "noteImpact": 3,
