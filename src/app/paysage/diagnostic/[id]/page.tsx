@@ -262,7 +262,7 @@ async function FicheRendue({
                 Le défilement est celui du navigateur (aucun script) et la
                 suivante dépasse au bord : le geste se voit, il ne s'apprend pas. */}
             <div
-              className={`mt-3.5 flex items-start gap-2.5 ${
+              className={`mt-3.5 flex gap-2.5 ${
                 images.length > 1 ? "-mx-[22px] snap-x snap-mandatory scroll-px-[22px] overflow-x-auto px-[22px]" : ""
               }`}
               style={images.length > 1 ? { scrollbarWidth: "none" } : undefined}
@@ -273,12 +273,17 @@ async function FicheRendue({
                   key={image.id}
                   className={`relative m-0 ${images.length > 1 ? "w-[calc(100%-44px)] flex-none snap-start" : "w-full"}`}
                 >
+                  {/* Plusieurs photos : un même cadre pour toutes, la photo
+                      entière dedans (jamais rognée : un symptôme coupé ne se
+                      compare plus). Sans cadre commun, la plus petite laissait
+                      un vide sous elle, vu sur sa page de vérification. */}
                   {/* eslint-disable-next-line @next/next/no-img-element -- pansement assumé : ces photos sortent d’une route authentifiée, que l’optimiseur de next/image ne sait pas traverser ; poids borné à l’import (500 Ko) */}
                   <img
                     src={`/api/phyto/image/${image.id}`}
                     alt={image.legende ?? "Photo de référence"}
                     loading="lazy"
-                    className="block h-auto w-full rounded-[6px]"
+                    className={`block w-full rounded-[6px] ${images.length > 1 ? "aspect-[4/3] object-contain" : "h-auto"}`}
+                    style={images.length > 1 ? { backgroundColor: colors.card } : undefined}
                   />
                   {images.length > 1 && (
                     <figcaption
