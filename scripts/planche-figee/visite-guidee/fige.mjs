@@ -26,6 +26,9 @@ export async function session({ anonyme = false } = {}) {
   });
   const ctx = await nav.newContext({
     viewport: { width: 390, height: 844 },
+    // Les PDF se peignent dans un canevas à la densité de l'écran : à 1, ils
+    // sortaient flous sur un téléphone (sa remarque du 20 novembre). À 3, net.
+    deviceScaleFactor: 3,
     locale: "fr-FR",
     timezoneId: "Europe/Paris",
     permissions: ["microphone"],
@@ -57,7 +60,10 @@ export async function session({ anonyme = false } = {}) {
       document.querySelectorAll("canvas").forEach((cv) => {
         try {
           const img = document.createElement("img");
-          img.src = cv.toDataURL("image/png");
+          // Une page de PDF est opaque : en JPEG, elle pèse cinq fois moins. La signature,
+          // transparente, garde le PNG (en JPEG son fond devenait noir).
+          const opaque = cv.getContext("2d")?.getImageData(0, 0, 1, 1).data[3] === 255;
+          img.src = opaque ? cv.toDataURL("image/jpeg", 0.88) : cv.toDataURL("image/png");
           img.className = cv.className;
           img.setAttribute("style", (cv.getAttribute("style") || "") + `;width:${cv.getBoundingClientRect().width}px;height:${cv.getBoundingClientRect().height}px;display:block`);
           cv.replaceWith(img);

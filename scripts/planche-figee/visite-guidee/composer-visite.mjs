@@ -50,10 +50,13 @@ const ETAPES = [
   { etat: "07-dictee-ecoute", titre: "Vous dictez", dit: "« Taille de la haie de thuyas, ramassage des déchets verts, élagage du tilleul. »", cible: '[data-atlas="dictee-envoyer"]', geste: "Touchez Envoyer." },
   { etat: "08-avant-de-chiffrer", titre: "Avant de chiffrer", dit: "Cause demande ce qui manque pour faire le prix.", cible: '[data-atlas="question-chiffrage"] input', geste: "Touchez la case." },
   { etat: "09-avant-de-chiffrer-rempli", titre: "25 mètres", dit: "La longueur de la haie est notée.", cible: 'button:has-text("Continuer")', geste: "Touchez Continuer." },
-  { etat: "10-devis", titre: "Le devis est rédigé", dit: "Votre entreprise, le client, les prestations et vos prix." },
-  { etat: "11-devis-totaux", titre: "Les totaux", dit: "Le HT, la TVA, le TTC, vos conditions et votre IBAN.", cible: '[data-atlas="apercu-pdf"]', geste: "Touchez Aperçu du PDF." },
-  { etat: "12-apercu-pdf", titre: "Le PDF", dit: "Le devis tel que votre client le recevra." },
-  { etat: "13-choisir-date", titre: "Choisir la date", dit: "Votre planning sous les yeux : proposez une ou deux dates.", cible: 'button[aria-label^="25 novembre"]', geste: "Touchez le 25." },
+  { etat: "10-devis", titre: "Le devis est rédigé", dit: "Votre entreprise, le client, les prestations et vos prix. Une correction ? Pas besoin d'écrire.", cible: 'button[aria-label="Dicter dans le devis"]', geste: "Touchez le micro, en haut à droite." },
+  { etat: "10b-devis-micro", titre: "Corriger à la voix", dit: "« Ajoute le désherbage de l'allée. » Cause l'écrit dans le devis, sans rien taper." },
+  { etat: "11-devis-totaux", titre: "À vous d'essayer", dit: "Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : touchez, essayez.", essais: true },
+  { etat: "11-devis-totaux", titre: "L'aperçu", dit: "Voyons ce que reçoit votre client.", cible: '[data-atlas="apercu-pdf"]', geste: "Touchez Aperçu du PDF." },
+  { etat: "12-apercu-pdf", titre: "Le PDF", dit: "Le devis tel que votre client le recevra.", cible: 'a[aria-label="Retour"]', geste: "Revenez au devis." },
+  { etat: "11-devis-totaux", titre: "Le devis est prêt", dit: "Il ne reste qu'à proposer une date.", cible: 'button:has-text("Choisir la date")', geste: "Touchez Choisir la date." },
+  { etat: "13-choisir-date", titre: "Vos dates", dit: "Votre planning sous les yeux : proposez une ou deux dates.", cible: 'button[aria-label^="25 novembre"]', geste: "Touchez le 25." },
   { etat: "14-date-choisie", titre: "Deux dates proposées", dit: "Le 23 et le 25. Le client choisira.", cible: 'button:has-text("Envoyer le devis")', geste: "Touchez Envoyer le devis." },
   { etat: "15-devis-envoye", titre: "Le devis est parti", dit: "Par SMS. Cause vous prévient dès qu'il répond." },
   { etat: "16-client-devis", titre: "Chez votre client", dit: "Voici ce qu'il reçoit sur son téléphone. Il choisit sa date.", chez: "client", cible: 'input[name="choixDate"][value*="25"], label:has(input[name="choixDate"]):nth-of-type(2)', geste: "Touchez Mercredi 25." },
@@ -94,10 +97,20 @@ const ETAPES = [
   { etat: "50-reglages", titre: "À vous", dit: "Touchez chaque rubrique des Réglages. Et dites-nous ce qui vous manque.", libre: true, cible: '[data-atlas="porte-idee"]', geste: "Une idée pour l'appli : on lit tout." },
 ];
 
+// Les boutons du devis, à essayer librement : chacun ouvre sa vraie feuille, et
+// son bouton pose sur le devis ce que l'appli y pose (figés par s3.mjs).
+const ESSAIS = [
+  { ouvre: '[data-atlas="poser-prix-accorde"]', feuille: "11-remise-feuille", pose: "11-remise-pose", applique: 'button:has-text("Appliquer la remise")', titre: "Une remise", geste: "Touchez Appliquer la remise.", fait: "La remise est posée, le total suit." },
+  { ouvre: '[data-atlas="poser-main-doeuvre"]', feuille: "11-main-doeuvre-feuille", pose: "11-main-doeuvre-pose", applique: 'button:has-text("Ajouter la main")', titre: "La main d'œuvre", geste: "Touchez Ajouter la main d'œuvre.", fait: "Les hommes, les jours, votre tarif : la ligne est posée." },
+  { ouvre: '[data-atlas="ajouter-acompte"]', feuille: "11-acompte-feuille", pose: "11-acompte-pose", applique: 'button:has-text("Ajouter l’acompte")', titre: "Un acompte", geste: "Touchez Ajouter l'acompte.", fait: "Versé à la signature, le reste après les travaux." },
+  { ouvre: 'button:has-text("+ Ajouter une TVA")', feuille: "11-tva-feuille", pose: "11-tva-pose", applique: 'button:has-text("Ajouter la TVA")', titre: "Un autre taux", geste: "Touchez Ajouter la TVA.", fait: "Deux taux sur le même devis : chaque ligne prend le sien." },
+  { ouvre: 'button:has-text("+ Ajouter une ligne")', pose: "11-ligne-pose", titre: "Une ligne", fait: "Une ligne vide, à remplir ou à dicter." },
+];
+
 // Les rubriques des Réglages, ouvertes librement à la fin.
 const RUBRIQUES = Object.keys(etats).filter((n) => n.startsWith("r-"));
 
-const besoin = new Set([...ETAPES.map((e) => e.etat), ...RUBRIQUES]);
+const besoin = new Set([...ETAPES.map((e) => e.etat), ...RUBRIQUES, ...ESSAIS.flatMap((x) => [x.feuille, x.pose].filter(Boolean))]);
 const manquent = [...besoin].filter((n) => !etats[n]);
 if (manquent.length) { console.error("écrans manquants :", manquent); process.exit(1); }
 
@@ -160,7 +173,7 @@ html,body{overflow-x:clip}
 @media (prefers-reduced-motion: reduce){.v-doigt::after{animation:none}.v-doigt,.v-guide{transition:none}}
 `;
 
-const config = { etapes: ETAPES, rubriques: RUBRIQUES };
+const config = { etapes: ETAPES, rubriques: RUBRIQUES, essais: ESSAIS };
 
 const SCRIPT = `
 (() => {
@@ -169,6 +182,8 @@ const SCRIPT = `
   const guide = document.querySelector(".v-guide"), doigt = document.querySelector(".v-doigt");
   const photo = document.querySelector(".v-photo");
   let rang = 0, libre = false, courant = null, minuteur = null;
+  // Un essai en cours, sur l'étape qui en propose : { x, phase: "feuille" | "pose" }.
+  let essai = null;
 
   // Un écran figé est inerte : aucun formulaire ne part, aucun lien ne quitte la visite.
   document.addEventListener("submit", (e) => e.preventDefault(), true);
@@ -200,9 +215,9 @@ const SCRIPT = `
     const ronds = [...c.querySelectorAll("*")].filter((x) => estRond(x) && x.getBoundingClientRect().width * x.getBoundingClientRect().height > a * 0.4);
     return ronds.sort((x, y) => y.getBoundingClientRect().width - x.getBoundingClientRect().width)[0] || c;
   };
+  const cibleCourante = () => libre ? C.etapes.at(-1).cible : essai ? (essai.phase === "feuille" ? essai.x.applique : null) : C.etapes[rang].cible;
   const poserDoigt = () => {
-    const e = C.etapes[rang];
-    const c = libre ? cibleDe(C.etapes.at(-1).cible) : cibleDe(e.cible);
+    const c = cibleDe(cibleCourante());
     if (!c) { doigt.style.opacity = 0; guide.className = "v-guide en-bas"; return null; }
     const r = c.getBoundingClientRect();
     if (r.top < 90 || r.bottom > innerHeight - 220) c.scrollIntoView({ block: "center", behavior: "instant" });
@@ -247,7 +262,7 @@ const SCRIPT = `
     s.textContent = libre || rang === C.etapes.length - 1 ? "Recommencer" : e.cible ? "Passer" : "Suivant";
   };
   const aller = (n) => {
-    libre = false; rang = Math.max(0, Math.min(C.etapes.length - 1, n));
+    essai = null; libre = false; rang = Math.max(0, Math.min(C.etapes.length - 1, n));
     const e = C.etapes[rang];
     montrer(e.etat);
     // Pendant que les champs s'écrivent, le guide se retire : il cachait ce qu'il
@@ -272,12 +287,27 @@ const SCRIPT = `
     guide.querySelector(".v-geste").hidden = true;
     return true;
   };
+  const parler = (titre, dit, geste) => {
+    guide.querySelector("h2").textContent = titre;
+    guide.querySelector(".v-dit").textContent = dit;
+    const g = guide.querySelector(".v-geste"); g.textContent = geste || ""; g.hidden = !geste;
+    guide.querySelector(".v-retour").hidden = false;
+    guide.querySelector(".v-suivant").textContent = "Suivant";
+  };
+  const essayer = (x, phase) => {
+    essai = { x, phase };
+    montrer(phase === "feuille" ? x.feuille : x.pose);
+    if (phase === "feuille") parler(x.titre, "Sa vraie feuille, telle que l'appli l'ouvre.", x.geste);
+    else parler(x.titre, x.fait, "Retour pour essayer un autre bouton.");
+    requestAnimationFrame(() => requestAnimationFrame(poserDoigt));
+  };
+  const finirEssai = () => { const r = rang; aller(r); };
   const secouer = () => { guide.classList.remove("secoue"); void guide.offsetWidth; guide.classList.add("secoue"); poserDoigt(); };
 
   document.addEventListener("click", (ev) => {
     if (ev.target.closest(".v-ouverture")) { document.querySelector(".v-ouverture").remove(); aller(0); return; }
     if (ev.target.closest(".v-suivant")) { if (libre || rang === C.etapes.length - 1) aller(0); else aller(rang + 1); return; }
-    if (ev.target.closest(".v-retour")) { if (courant?.dataset.ecran.startsWith("r-")) aller(C.etapes.length - 1); else aller(rang - 1); return; }
+    if (ev.target.closest(".v-retour")) { if (essai) finirEssai(); else if (courant?.dataset.ecran.startsWith("r-")) aller(C.etapes.length - 1); else aller(rang - 1); return; }
     if (ev.target.closest(".v-guide")) return;
     const el = ev.target.closest("a, button, label, input, [role=button], [data-atlas]");
     const lien = ev.target.closest("a");
@@ -291,13 +321,27 @@ const SCRIPT = `
       if (el) secouer();
       return;
     }
+    // Les boutons du devis : chacun s'essaie, sa feuille puis ce qu'il pose.
+    const touche = (sel) => { const t = cibleDe(sel); return t && el && (t === el || t.contains(el) || el.contains(t)); };
+    if (essai?.phase === "feuille") {
+      ev.preventDefault();
+      if (touche(essai.x.applique)) { essayer(essai.x, "pose"); return; }
+      if (el && /Annuler/.test(el.textContent || "")) { finirEssai(); return; }
+      if (el) { parler(essai.x.titre, "Dans l'appli, ce choix change le montant. Ici, touchez le bouton du bas.", essai.x.geste); poserDoigt(); }
+      return;
+    }
+    if (essai?.phase === "pose") { if (el) { ev.preventDefault(); secouer(); } return; }
+    if (C.etapes[rang].essais && el) {
+      const x = C.essais.find((x) => touche(x.ouvre));
+      if (x) { ev.preventDefault(); essayer(x, x.feuille ? "feuille" : "pose"); return; }
+    }
     const c = cibleDe(C.etapes[rang].cible);
     if (c && el && (c === el || c.contains(el) || el.contains(c))) { ev.preventDefault(); aller(rang + 1); return; }
     if (el) { ev.preventDefault(); secouer(); }
   }, true);
   addEventListener("resize", () => poserDoigt());
   let posant = false;
-  addEventListener("scroll", () => { if (posant || doigt.style.opacity !== "1") return; posant = true; requestAnimationFrame(() => { posant = false; const e = C.etapes[rang]; const c = cibleDe(libre ? C.etapes.at(-1).cible : e.cible); if (!c) return; const q = formeDe(c).getBoundingClientRect(); doigt.style.top = q.top - 4 + "px"; doigt.style.left = Math.max(2, q.left - 4) + "px"; }); }, { passive: true });
+  addEventListener("scroll", () => { if (posant || doigt.style.opacity !== "1") return; posant = true; requestAnimationFrame(() => { posant = false; const c = cibleDe(cibleCourante()); if (!c) return; const q = formeDe(c).getBoundingClientRect(); doigt.style.top = q.top - 4 + "px"; doigt.style.left = Math.max(2, q.left - 4) + "px"; }); }, { passive: true });
   document.addEventListener("scroll", () => {}, true);
   montrer(C.etapes[0].etat); dire();
 })();

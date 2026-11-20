@@ -28,7 +28,7 @@ python3 "$ICI/ticket.py" "$VISITE_TRAVAIL/ticket-carburant.jpg"
 $P -f "$ICI/fictif.sql"
 rm -f "$VISITE_TRAVAIL/etat.json"
 cd "$ICI"
-node s0.mjs; node histoire.mjs; node s1.mjs; node s1b.mjs; node s2.mjs; node s3.mjs; node s4.mjs; node s3b.mjs
+node s0.mjs; node histoire.mjs; node s1.mjs; node s1b.mjs; node s2.mjs; node s3.mjs; node s4.mjs
 C=$(cat "$VISITE_TRAVAIL/chantier.txt")
 $P -c "select jeton from envois_devis where chantier_id='$C' order by envoye_at desc limit 1" > "$VISITE_TRAVAIL/jeton-devis.txt"
 node s5.mjs; node s6.mjs

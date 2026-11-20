@@ -35,6 +35,23 @@ for (let k = 0; k < 60; k++) {
   await page.screenshot({ path: `${sortie}/${String(++i).padStart(2, "0")}-${etat.ecran}.png` });
   console.log(i, etat.ecran, "«", etat.titre, "»", etat.doigt ? "doigt" : "", etat.bouton, etat.large > 0 ? `DÉBORDE ${etat.large}` : "");
   if (etat.bouton === "Recommencer") break;
+  // L'étape des essais : chaque bouton du devis s'ouvre, se pose, et l'on revient.
+  if (etat.titre === "À vous d'essayer") {
+    for (const ouvre of ['[data-atlas="poser-prix-accorde"]', '[data-atlas="poser-main-doeuvre"]', '[data-atlas="ajouter-acompte"]', 'button:has-text("+ Ajouter une TVA")', 'button:has-text("+ Ajouter une ligne")']) {
+      const b = page.locator(`.visite-ecran:not([hidden]) ${ouvre}`).first();
+      await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(900);
+      const e1 = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);
+      let e2 = e1;
+      if (e1.endsWith("-feuille")) {
+        const d = await page.evaluate(() => { const r = document.querySelector(".v-doigt").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+        await page.mouse.click(d.x, d.y); await page.waitForTimeout(900);
+        e2 = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);
+      }
+      await page.screenshot({ path: `${sortie}/${String(i).padStart(2, "0")}-essai-${e2}.png` });
+      console.log("   essai", ouvre, "→", e1, "→", e2, e2.endsWith("-pose") ? "" : "   <<< NE POSE RIEN");
+      await page.click(".v-retour"); await page.waitForTimeout(700);
+    }
+  }
   if (etat.doigt) {
     const b = await page.evaluate(() => { const r = document.querySelector(".v-doigt").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
     const avant = etat.ecran + etat.titre;
