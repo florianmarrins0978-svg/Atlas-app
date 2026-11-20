@@ -266,6 +266,22 @@
           "credit": "Photo de Terry S. Price, Georgia Forestry Commission, Bugwood.org, via Wikimedia Commons",
           "partie": "rameau",
           "legende": "Pousses mortes au bout des branches d’un pin d’Elliott (Pinus elliottii), aux États-Unis."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pine%20pitch%20canker.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-resineux-pin-branche.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "branche",
+          "legende": "Des branches d’un pin de Monterey (Pinus radiata) aux pousses rougies ou mortes."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Fusarium%20circinatum%2C%20sintomatolog%C3%ADa%20en%20tronco.%20A%20y%20B%29%20Exudaci%C3%B3n%20de%20resina%20en%20tallo.%20C%29%20Lesi%C3%B3n%20expuesta%20con%20exudaci%C3%B3n%20masiva%20de%20resina..jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/chancre-resineux-pin-tronc.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo d’Asdrubal18, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Des coulées de résine sur des troncs (à gauche et au milieu), et une plaie mise à nu d’où coule beaucoup de résine (à droite)."
         }
       ],
       "noteImpact": 3,

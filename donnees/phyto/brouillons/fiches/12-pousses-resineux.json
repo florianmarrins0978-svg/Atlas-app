@@ -184,7 +184,32 @@
           ]
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phomopsis%20abietina%20a1%20%281%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pousses-resineux-rameau.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Le bout d’un rameau de sapin pectiné aux aiguilles rougies, atteint par Phomopsis abietina, en Pologne."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phomopsis%20abietina%20a1%20%282%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pousses-resineux-rameau-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Une pousse aux aiguilles rousses sur un jeune sapin pectiné atteint par Phomopsis abietina, en Pologne."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diplodia%20blight1470125.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/pousses-resineux-aiguille.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de A. Steven Munson, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "Les petites fructifications noires de Diplodia sapinea sur des aiguilles brunies de pin rouge (Pinus resinosa, un pin d’Amérique du Nord), aux États-Unis."
+        }
+      ],
       "noteImpact": 1,
       "noteAgressivite": 1,
       "noteFrequence": 1

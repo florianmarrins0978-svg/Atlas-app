@@ -139,7 +139,32 @@
           ]
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Populus%2C%20Melampsora%20larici-populina.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouilles-basidiomycetes-feuille.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Rasbak, via Wikimedia Commons",
+          "partie": "feuille",
+          "legende": "Sous une feuille de peuplier hybride, les petites pustules orangées de Melampsora larici-populina."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsora%20populnea%20%2801%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouilles-basidiomycetes-rameau.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Sur une jeune pousse verte de pin sylvestre, une pustule orangée de Melampsora populnea, vue de près."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsora%20populnea%20%2803%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouilles-basidiomycetes-ensemble.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Frantisek Soukup, Bugwood.org, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Un jeune pin sylvestre au tronc courbé à la base, atteint par Melampsora populnea."
+        }
+      ],
       "noteImpact": null,
       "noteAgressivite": null,
       "noteFrequence": null

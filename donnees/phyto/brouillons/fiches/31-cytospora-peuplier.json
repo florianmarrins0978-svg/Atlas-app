@@ -206,6 +206,14 @@
           "credit": "Photo de P Holroyd, iNaturalist, via Wikimedia Commons",
           "partie": "ecorce",
           "legende": "De près, les cordons de spores, orange vif, enroulés sur l’écorce."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/2251070",
+          "fichier": "donnees/phyto/brouillons/images/cytospora-peuplier-tronc.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de USDA Forest Service, Northern and Intermountain Region, Bugwood.org",
+          "partie": "tronc",
+          "legende": "Un chancre sur le tronc d’un peuplier : l’écorce prend une teinte brun orangé et se fend."
         }
       ],
       "noteImpact": 1,

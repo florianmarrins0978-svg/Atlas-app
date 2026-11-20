@@ -151,16 +151,7 @@
           ]
         }
       ],
-      "images": [
-        {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ringelbaum%20(Kirkel)%202017-001.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/necroses-cecidomyies-tronc.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de Simon Mannweiler, via Wikimedia Commons",
-          "partie": "tronc",
-          "legende": "Des rangées de petits trous de pic tout autour d’un tronc, en Allemagne. L’auteur ne précise pas l’essence de l’arbre."
-        }
-      ],
+      "images": [],
       "noteImpact": 1,
       "noteAgressivite": 2,
       "noteFrequence": 2

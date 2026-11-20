@@ -188,6 +188,22 @@
           "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
           "partie": "houppier",
           "legende": "Jeune pin aux aiguilles brunies, surtout dans le bas de l’arbre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lophodermium%2010702.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-rameau.jpg",
+          "licence": "CC0",
+          "credit": "Photo de I. Sáček, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Un rameau de pin en pot aux aiguilles jaunies et brunies."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lophodermium%2010705.JPG?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-aiguille.jpg",
+          "licence": "CC0",
+          "credit": "Photo de I. Sáček, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "De près, des aiguilles de pin jaunies et brunies, à côté d’aiguilles encore vertes."
         }
       ],
       "noteImpact": 2,

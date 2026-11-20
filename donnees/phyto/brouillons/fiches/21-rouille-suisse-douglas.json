@@ -169,6 +169,22 @@
           "credit": "Photo de l’archive de la North Central Research Station, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
           "partie": "rameau",
           "legende": "Rameaux de Douglas aux aiguilles brunies, parmi des aiguilles encore vertes."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Swiss-needle-cast-on-Douglas-fir-Phaeocryptopus-gaeumannii-close-up.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouille-suisse-douglas-aiguille.jpg",
+          "licence": "domaine public",
+          "credit": "Photo de l’archive du USDA Forest Service, Bugwood.org, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "Une aiguille de douglas vue de très près : les fructifications noires du champignon, alignées en rangées, aux États-Unis."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Swiss%20needle%20cast%20symptoms%20from%20the%20air%2C%20near%20Tillamook%20photo%20Rob%20Flowers%20ODF%20%2828505272380%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/rouille-suisse-douglas-ensemble.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de Robbie Flowers (U.S. Forest Service), Oregon State University, via Wikimedia Commons",
+          "partie": "ensemble",
+          "legende": "Vue d’avion d’un versant couvert de douglas jaunis par la maladie, dans l’Oregon, aux États-Unis."
         }
       ],
       "noteImpact": 1,

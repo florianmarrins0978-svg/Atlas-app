@@ -187,6 +187,14 @@
           "credit": "Photo du Minnesota Department of Natural Resources (FIA), Bugwood.org, via Wikimedia Commons",
           "partie": "houppier",
           "legende": "Des peupliers atteints, dans le Minnesota (États-Unis) : le feuillage brunit et se dégarnit."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/4212088",
+          "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-feuille.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo du Minnesota Department of Natural Resources (FIA), Bugwood.org",
+          "partie": "feuille",
+          "legende": "Des taches brunes et rouges sur les feuilles d’un peuplier baumier."
         }
       ],
       "noteImpact": 2,

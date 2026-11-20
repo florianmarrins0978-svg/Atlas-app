@@ -284,6 +284,22 @@
           "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
           "partie": "houppier",
           "legende": "Sommet séché d’un jeune pin rouge (Pinus resinosa, un pin d’Amérique du Nord). L’écorce enlevée montre le bois taché de sombre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diplodia%20blight2112097.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/sphaeropsis-pins-fruit.jpg",
+          "licence": "CC BY-SA 3.0",
+          "credit": "Photo de Petr Kapitola, State Phytosanitary Administration, via Wikimedia Commons",
+          "partie": "fruit",
+          "legende": "Les petites fructifications noires du champignon sur les écailles d’un cône de pin noir, en Tchéquie."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pino%20con%20hongos%20Diplodia%20pinea%20%287494221052%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/sphaeropsis-pins-rameau.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de jacilluch, via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Une pousse de pin sylvestre séchée, aux aiguilles brunies, au milieu de rameaux verts."
         }
       ],
       "noteImpact": 2,

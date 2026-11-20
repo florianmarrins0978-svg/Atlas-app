@@ -173,6 +173,22 @@
           "credit": "Photo de GooseCanada, via Wikimedia Commons",
           "partie": "tronc",
           "legende": "Le tronc d’un sapin pectiné enflé par le champignon, dans le bas de la photo."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rak%20jod%C5%82y.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-tronc-2.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo de Jerzy Opioła, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Le chaudron sur un tronc de sapin pectiné : un renflement en anneau, à l’écorce craquelée."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Melampsorella%20caryophyllacearum%20%28Inyo%20National%20Forest%2C%20California%2C%20USA%29%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/dorge-sapin-aiguille.jpg",
+          "licence": "CC BY-SA 4.0",
+          "credit": "Photo d’Emily Chebul, via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "De près, les aiguilles courtes et jaune orangé d’un balai de sorcière, en Californie (États-Unis)."
         }
       ],
       "noteImpact": 1,

@@ -158,7 +158,32 @@
           ]
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://www.forestryimages.org/browse/image/1442058",
+          "fichier": "donnees/phyto/brouillons/images/dothichiza-peuplier-tronc.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de USDA Forest Service, Region 2, Rocky Mountain Region, Bugwood.org",
+          "partie": "tronc",
+          "legende": "Des chancres autour de la base des branches, sur le tronc d’un jeune peuplier."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/1442057",
+          "fichier": "donnees/phyto/brouillons/images/dothichiza-peuplier-rameau.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de USDA Forest Service, Region 2, Rocky Mountain Region, Bugwood.org",
+          "partie": "rameau",
+          "legende": "Une tache brune et morte sur un rameau de peuplier, couverte des fructifications du champignon."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/0534085",
+          "fichier": "donnees/phyto/brouillons/images/dothichiza-peuplier-rameau-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Petr Kapitola, Central Institute for Supervising and Testing in Agriculture, Bugwood.org",
+          "partie": "rameau",
+          "legende": "Les fructifications noires du champignon sur un rameau de peuplier, où l’écorce morte se fend."
+        }
+      ],
       "noteImpact": 1,
       "noteAgressivite": 1,
       "noteFrequence": 2

@@ -186,6 +186,14 @@
           "credit": "Photo de Joseph O’Brien, USDA Forest Service, Bugwood.org, via Wikimedia Commons",
           "partie": "ecorce",
           "legende": "De très près, les petites boules rouge orangé du champignon, groupées sur l’écorce. L’auteur ne précise pas l’essence de l’arbre."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nectria%20coccinea%202.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/ecorce-hetre-tronc.jpg",
+          "licence": "CC BY 3.0",
+          "credit": "Photo du Pennsylvania Department of Conservation and Natural Resources, Forestry Archive, Bugwood.org, via Wikimedia Commons",
+          "partie": "tronc",
+          "legende": "Une large tache sombre sur le tronc d’un hêtre d’Amérique atteint par la maladie."
         }
       ],
       "noteImpact": 1,

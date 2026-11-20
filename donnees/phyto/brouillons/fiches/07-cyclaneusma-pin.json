@@ -160,6 +160,22 @@
           "credit": "Photo du USDA Forest Service (Forest Health Protection, St. Paul, Minnesota), Bugwood.org, via Wikimedia Commons",
           "partie": "houppier",
           "legende": "Jeune pin sylvestre très atteint : beaucoup d’aiguilles anciennes ont viré au jaune orangé, le bout des pousses reste vert."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cyclaneusma%20needle%20cast%20%28Cyclaneusma%20minus%20%29%20Symptoms%20on%20jack%20pine.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cyclaneusma-pin-rameau.jpg",
+          "licence": "domaine public",
+          "credit": "Photo du USDA Forest Service (Forest Health Protection, St. Paul), via Wikimedia Commons",
+          "partie": "rameau",
+          "legende": "Rameaux d’un pin gris (Pinus banksiana, un pin d’Amérique du Nord) : des aiguilles jaunies parmi les vertes."
+        },
+        {
+          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cyclaneusma%20niveum%20%2826238147738%29.jpg?width=1200",
+          "fichier": "donnees/phyto/brouillons/images/cyclaneusma-pin-aiguille.jpg",
+          "licence": "CC BY-SA 2.0",
+          "credit": "Photo de Björn S..., via Wikimedia Commons",
+          "partie": "aiguille",
+          "legende": "Une aiguille tombée, vue de près, avec les petits coussinets crème de Cyclaneusma niveum, en Allemagne."
         }
       ],
       "noteImpact": 1,
