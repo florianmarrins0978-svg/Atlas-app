@@ -13,7 +13,10 @@ const { chromium } = require('playwright');
 const B = process.env.BASE_URL || 'http://127.0.0.1:8080';
 
 let pass = 0, fail = 0; const fails = [];
-function ok(name, cond){ if (cond) pass++; else { fail++; fails.push(name); } }
+// Le troisième mot dit CE QUI A ÉTÉ MESURÉ. Il était passé par des dizaines de
+// contrôles et jeté ici : un échec sur la machine de publication ne donnait
+// que son nom, et il fallait deviner (19 novembre 2026).
+function ok(name, cond, mesure){ if (cond) pass++; else { fail++; fails.push(mesure ? name + '\n      mesuré : ' + String(mesure).slice(0, 400) : name); } }
 
 /* Chemin du navigateur, quand il ne vit pas là où Playwright l'attend.
    Sur un runner CI (npx playwright install), la variable est absente et
@@ -823,7 +826,13 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   {
     const cFe = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
     const page = await cFe.newPage();
-    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'domcontentloaded' });
+    // La page doit être POSÉE avant qu'on y défile : ses polices et ses images
+    // arrivent après le premier rendu et déplacent tout de plusieurs centaines
+    // de pixels. Défiler trop tôt mettait la figure hors de l'écran, et le
+    // film ne partait pas : c'est ce qui a fait échouer la publication du
+    // 19 novembre 2026, sur une machine où elles arrivaient plus tard qu'ici.
+    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
     const pageFiche = await page.evaluate(() => {
       const r = document.getElementById('scene-fiche').getBoundingClientRect();
       return {
@@ -836,14 +845,21 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
        !pageFiche.aussi && !pageFiche.travaux && pageFiche.restes.length === 0, JSON.stringify(pageFiche));
     ok('fiche en mouvement : la figure tient entière entre la barre du haut et le bouton d\'essai',
        pageFiche.hauteur > 300 && pageFiche.hauteur <= pageFiche.ecran - 72 - 104, JSON.stringify(pageFiche));
-    await page.evaluate(() => scrollTo(0, scrollY + document.getElementById('scene-fiche').getBoundingClientRect().top - 80));
-    const finie = await page.waitForFunction(() => { const f = document.querySelector('#scene-fiche .film-fin'); return f && f.classList.contains('vue'); }, null, { timeout: 25000 }).then(() => true, () => false);
+    // On l'amène sous la barre du haut, et l'on vérifie qu'elle y est restée.
+    let haut = null;
+    for (let essai = 0; essai < 4 && (haut === null || Math.abs(haut - 80) > 2); essai++) {
+      await page.evaluate(() => scrollTo(0, scrollY + document.getElementById('scene-fiche').getBoundingClientRect().top - 80));
+      await page.waitForTimeout(400);
+      haut = await page.evaluate(() => Math.round(document.getElementById('scene-fiche').getBoundingClientRect().top));
+    }
+    ok('fiche en mouvement : la figure reste où on l\'a amenée, sous la barre du haut', haut !== null && Math.abs(haut - 80) <= 2, 'son haut est à ' + haut + ' px');
+    const finie = await page.waitForFunction(() => { const f = document.querySelector('#scene-fiche .film-fin'); return f && f.classList.contains('vue'); }, null, { timeout: 30000 }).then(() => true, () => false);
     const filmFiche = await page.evaluate(() => {
       const c = document.getElementById('scene-fiche'), v = c.querySelector('video'), r = c.getBoundingClientRect();
       return v ? { duree: +v.duration.toFixed(2), joue: v.played.length ? +(v.played.end(v.played.length - 1) / v.duration).toFixed(3) : 0, cadre: +(r.width / r.height).toFixed(4), film: +(v.videoWidth / v.videoHeight).toFixed(4) } : null;
     });
     ok('fiche en mouvement : la cinématique entière se joue, du trajet au retour du soir',
-       finie && !!filmFiche && filmFiche.duree > 10 && filmFiche.joue > 0.95, JSON.stringify(filmFiche));
+       finie && !!filmFiche && filmFiche.duree > 10 && filmFiche.joue > 0.95, JSON.stringify({ finie, haut, film: filmFiche }));
     // Un cadre d'une autre proportion que le film le rognerait sans rien dire.
     ok('fiche en mouvement : le cadre a les proportions du film', !!filmFiche && Math.abs(filmFiche.cadre - filmFiche.film) < 0.004, JSON.stringify(filmFiche));
     await cFe.close();

@@ -652,7 +652,7 @@ html.anime .ligne.t-la .total{opacity:1;transition:opacity .3s ease}
 .film{position:relative}
 /* Ce qui s'anime dans la fiche d'intervention : de ses quatre cases au bas
    de sa note. La scène part quand cette zone est entière à l'écran. */
-.film .zone-depart{position:absolute;left:0;right:0;top:5%;height:90%;pointer-events:none}
+.film .zone-depart{position:absolute;left:0;right:0;top:4%;height:74%;pointer-events:none}
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
@@ -1955,8 +1955,10 @@ html.anime .geant.vu span{transform:none}
   // La fiche d'intervention, du trajet au retour du soir (ses demandes du 18
   // et du 19 novembre 2026). Son film dure onze secondes et ce qui bouge
   // descend dans le cadre : la figure tient entière à l'écran (.entiere), et
-  // le film part quand elle y est presque toute, entre la barre du haut et le
-  // bouton d'essai (sa zone). Il s'arrête quand il n'en reste presque rien.
+  // le film part quand ses trois quarts du haut y sont, entre la barre du
+  // haut et le bouton d'essai (sa zone : les cases, puis les travaux). Exiger
+  // la figure entière ne laissait que soixante pixels de défilement où il
+  // pouvait partir. Il s'arrête quand il n'en reste presque rien.
   // Sur ordinateur elle est à côté de l'équipe : elle attend alors la fin de
   // son film, pour qu'on ne regarde pas deux écrans à la fois. Sur téléphone
   // elles sont l'une sous l'autre, et elle n'attend pas : c'est elle qu'on
