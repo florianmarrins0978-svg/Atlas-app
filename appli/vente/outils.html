@@ -32,9 +32,10 @@
   (phraseDeLaFermeture, src/lib/abonnements.ts) et du bloc qu'il a choisi le
   19 novembre sur l'écran Abonnement. « Les fiches de chantier » est le nom
   de l'outil dans l'appli ; ce qu'il appelle la fiche de fin de passage en
-  est le compte rendu que reçoit le client. Le prix, 6 € HT par mois et 60 €
-  à l'année, le même pour les trois formules, et l'offre d'un plan et d'un
-  diagnostic, sont ses décisions des 18 et 19 novembre
+  est le compte rendu que reçoit le client. Le prix, 6 € HT par mois et 72 €
+  à l'année (douze mois, aucun offert : sa correction du 20 novembre), le
+  même pour les trois formules, et l'offre d'un plan et d'un diagnostic,
+  sont ses décisions des 18, 19 et 20 novembre
   (docs/abonnement-module-paysage.md) : ni le module ni l'offre ne sont
   codés. Chaque promesse sur l'arrosage vient de .claude/rules/arrosage.md
   et se vérifie dans le calcul : les cotes commandent, pas le dessin ; la
@@ -784,10 +785,10 @@ html.anime .geant.vu span{transform:none}
       <p class="chapo">En plus de votre formule, quelle qu'elle soit. Vous les retirez quand vous voulez.</p>
       <div class="bascule" role="group" aria-label="Paiement">
         <button type="button" data-periode="mois" aria-pressed="true">Au mois</button>
-        <button type="button" data-periode="an" aria-pressed="false">À l'année, 2 mois offerts</button>
+        <button type="button" data-periode="an" aria-pressed="false">À l'année</button>
       </div>
     </div>
-    <article class="formule" data-vu="0.1" data-mois="6" data-an="60">
+    <article class="formule" data-vu="0.1" data-mois="6" data-an="72">
       <span class="bandeau">Un plan et un diagnostic offerts</span>
       <h3>Les outils de paysage</h3>
       <p class="accroche">Avec Artisan, Entreprise ou Illimité.</p>
@@ -886,8 +887,9 @@ html.anime .geant.vu span{transform:none}
   tous("a", menu).forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
   addEventListener("keydown", function(e){ if (e.key === "Escape" && menu.classList.contains("ouvert")) basculer(false, true); });
 
-  // Le mois ou l'année : 6 € HT par mois, 60 € HT à l'année (deux mois
-  // offerts, comme les formules ; docs/abonnement-module-paysage.md). Même
+  // Le mois ou l'année : 6 € HT par mois, 72 € HT à l'année. Sa décision
+  // du 20 novembre 2026 : « il n'y a pas 2 mois offerts. C'est 6 euros par
+  // mois sur 12 mois » (docs/abonnement-module-paysage.md). Même
   // geste que cause-2.html : le curseur glisse, l'ancien prix sort par le
   // haut pendant que le nouveau monte.
   var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), carte = un("#prix-outils .formule");
@@ -900,8 +902,10 @@ html.anime .geant.vu span{transform:none}
   var ecrirePrix = function(f, p){
     un(".montant", f).textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
     un(".rythme", f).textContent = p === "an" ? "HT par an" : "HT par mois";
-    var auMois = Number(f.getAttribute("data-an")) / 12;
-    un(".offert", f).textContent = p === "an" ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
+    // Les mois offerts se lisent dans les prix (comme dans cause-2.html) :
+    // l'année des outils vaut douze mois, elle n'en annonce aucun.
+    var an = Number(f.getAttribute("data-an")), auMois = an / 12, offre = an < 12 * Number(f.getAttribute("data-mois"));
+    un(".offert", f).textContent = p === "an" && offre ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
   };
   (function(){ var m = un(".montant", carte), cache = document.createElement("span"); cache.className = "cache"; m.parentNode.insertBefore(cache, m); cache.appendChild(m); })();
   var sortant = function(el){

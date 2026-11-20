@@ -668,6 +668,16 @@ sa planche du 18 novembre.
 - les trois scènes des chapitres sont des captures animées ; les trois
   outils de bout en bout, plus bas, sont des films de l'appli.
 
+**Le prix des outils à l'année, sa correction du 20 novembre au soir** :
+*« il n'y a pas 2 mois offerts. C'est 6 euros par mois sur 12 mois »*, donc
+72 € HT à l'année. Le site le dit (`cause-2.html`, `outils.html`) et
+`docs/abonnement-module-paysage.md` aussi. **Pas encore refaite** : la
+planche de l'écran Abonnement (`appli/soignee/abonnement-module-paysage.html`),
+dont les vues à l'année comptent encore +60 € (Entreprise avec les outils :
+650 € au lieu de 662 €, « Vous gagnez 130 € » au lieu de 118 €). Elle est
+figée sur la vraie page : à refigerer avec le bon prix, ou à corriger en
+codant le module.
+
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
 
 **Le soir même, les trois outils de bout en bout, EN FILMS.** Ses demandes :
