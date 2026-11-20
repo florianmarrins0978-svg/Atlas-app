@@ -10,7 +10,7 @@ Planche : `appli/soignee/abonnement-module-paysage.html`
 | | Sa réponse |
 |---|---|
 | Artisan | **un seul accès**, salariés compris. Aujourd'hui Artisan limite à 1 la personne qui fait les devis, mais laisse inviter autant de salariés qu'on veut |
-| Le module | **Paysage**, 6 € HT par mois, 60 € HT à l'année (deux mois offerts, comme les formules). 6 € plutôt que 5,99 € : la grille est en euros ronds, et 5,99 € HT fait 7,19 € TTC |
+| Le module | **Paysage**, 6 € HT par mois, **72 € HT à l'année : douze mois, aucun offert** (sa correction du 20 novembre 2026 : *« il n'y a pas 2 mois offerts. C'est 6 euros par mois sur 12 mois »* ; il était écrit 60 €, deux mois offerts comme les formules). 6 € plutôt que 5,99 € : la grille est en euros ronds, et 5,99 € HT fait 7,19 € TTC |
 | Ce qu'il ouvre | les **trois** outils de la page Paysage : plan d'arrosage, diagnostic végétal, fiches de chantier |
 | À qui | **les trois formules** (sa correction du même soir : *« ça doit être pour toutes les formules, pas que pour la formule artisan »*). Entreprise et Illimité **ne comprennent donc plus** ces trois outils |
 | Des salariés déjà invités (pendant l'essai) et il choisit Artisan | **refusé** tant qu'il ne les a pas retirés dans Équipe. C'est ce que dit déjà l'article 14.6 des conditions générales |
@@ -24,7 +24,7 @@ confirmé par lui le 19 novembre (*« ouais »*).
 |---|---|
 | **En haut** | le bloc des outils (voir juste dessous) |
 | **Les cartes** | elles ne parlent plus de Paysage. Ajoutés, chaque prix prend 6 € (Artisan 45 €, Entreprise 65 €, Illimité 165 €) |
-| **À l'année** | +60 € ; Entreprise avec Paysage : 780 € barrés, 650 €, « Vous gagnez 130 € » |
+| **À l'année** | +60 € ; Entreprise avec Paysage : 780 € barrés, 650 €, « Vous gagnez 130 € ». **Périmé depuis le 20 novembre** : les outils font 72 € à l'année, sans mois offerts, donc Entreprise avec les outils 662 € (590 + 72), 780 € barrés, « Vous gagnez 118 € ». La planche n'est pas encore refaite |
 | **Artisan** | ses quatre lignes cochées, puis « Vos salariés ont accès au planning » et le reste, barrés ; son accroche commence par « Pour vous seul. » |
 | **Entreprise** | son accroche disait « Accès illimité à tous les outils » : ce n'est plus vrai. Elle dit « Jusqu'à cinq personnes qui facturent, et tous vos salariés. » |
 | **« Avec 2 salariés »** | Artisan dit « Vous avez 2 salariés. Retirez-les d'abord dans Équipe. », et le bouton s'éteint |

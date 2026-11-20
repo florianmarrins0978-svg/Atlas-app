@@ -735,6 +735,16 @@ sa planche du 18 novembre.
 - les trois scènes des chapitres sont des captures animées ; les trois
   outils de bout en bout, plus bas, sont des films de l'appli.
 
+**Le prix des outils à l'année, sa correction du 20 novembre au soir** :
+*« il n'y a pas 2 mois offerts. C'est 6 euros par mois sur 12 mois »*, donc
+72 € HT à l'année. Le site le dit (`cause-2.html`, `outils.html`) et
+`docs/abonnement-module-paysage.md` aussi. **Pas encore refaite** : la
+planche de l'écran Abonnement (`appli/soignee/abonnement-module-paysage.html`),
+dont les vues à l'année comptent encore +60 € (Entreprise avec les outils :
+650 € au lieu de 662 €, « Vous gagnez 130 € » au lieu de 118 €). Elle est
+figée sur la vraie page : à refigerer avec le bon prix, ou à corriger en
+codant le module.
+
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
 
 **Le soir même, les trois outils de bout en bout, EN FILMS.** Ses demandes :
@@ -743,14 +753,24 @@ fournisseur), puis *« pareil avec les autres outils »*. Une première version
 les donnait à toucher dans le téléphone ; sa correction : *« Je veux pas que
 ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il regardait un
 film. »* Chaque outil est donc une suite de scènes qui se jouent seules au
-défilement (onze films, `appli/vente/images/nov-film-outils-*`), tournées par
+défilement (douze films, `appli/vente/images/nov-film-outils-*`), tournées par
 `appli/scripts/film-outils.cjs` dans les démonstrations (les vrais écrans,
 compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
 **Quand un de ces écrans change dans l'appli**, le site montre une version
 d'avant : relancer, dans cet ordre,
 `npx tsx appli/scripts/demo-outils/construire.ts` puis
 `node appli/scripts/film-outils.cjs appli/vente/images` (une heure environ,
-l'encodage ; `--apercu <dossier>` pour régler un récit en une minute).
+l'encodage ; `--apercu <dossier>` pour régler un récit en une minute ;
+`--images` pour les deux images du chapitre du plan seules : les deux
+réseaux de la pelouse face à face, en Ø25, et la nourrice de trois voies,
+ses deux remarques du même soir sur les recouvrements).
+**Le diagnostic du site montre la fiche du peuplier SOIGNÉE**, celle de sa
+planche (`appli/soignee/fiche-de-diagnostic.html`, vue Proposé), sa demande
+du même soir. Elle n'est pas encore dans l'appli : une autre session la code
+(`claude/vigilant-ramanujan-kxr0np` au 20 novembre). **Quand elle sera sur
+`main`**, le film pourra la prendre dans la démonstration au lieu de la
+planche, à condition d'y mettre la fiche du peuplier (elle n'est que dans une
+base locale, pas dans `donnees/phyto/`).
 Le jardin (pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change
 vraiment les réseaux : sa pelouse à 4 turbines sur un seul réseau n'en
 changeait pas. **Vu en le faisant, non corrigé (hors périmètre)** : la fiche

@@ -46,8 +46,11 @@ function ecrire(flux, tampon) {
  * base  : le chemin des fichiers, sans extension.
  * film  : { l, h }, la taille du film.
  * x264, vp9 : ce qui est propre à ce film (qualité, niveau, images clés).
+ * fixes : { l, h }, la taille des deux images fixes, quand les photos n'ont
+ *         pas toutes la même (une caméra qui s'approche photographie une part
+ *         de l'écran) ; sans lui, celle de la photographie.
  */
-function ouvrirBobine({ base, film, ips, x264, vp9 }) {
+function ouvrirBobine({ base, film, ips, x264, vp9, fixes }) {
   const entree = ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(ips), '-c:v', 'png', '-i', 'pipe:0', '-vf', versLeFilm(film)];
   const encodeurs = [
     [base + '.mp4', ['-c:v', 'libx264', '-preset', 'veryslow', '-profile:v', 'high', '-movflags', '+faststart'].concat(x264)],
@@ -69,7 +72,8 @@ function ouvrirBobine({ base, film, ips, x264, vp9 }) {
         if ((await e.fini) !== 0) throw new Error('l\'encodage a échoué : ' + e.sortie);
       }
       for (const [suffixe, png] of [['-debut.jpg', premiere], ['-fin.jpg', derniere]]) {
-        const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'png_pipe', '-i', 'pipe:0', '-frames:v', '1', '-q:v', '4', base + suffixe], { input: png });
+        const taille = fixes ? ['-vf', 'scale=' + fixes.l + ':' + fixes.h + ':flags=lanczos'] : [];
+        const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'png_pipe', '-i', 'pipe:0'].concat(taille, ['-frames:v', '1', '-q:v', '4', base + suffixe]), { input: png });
         if (r.status !== 0) throw new Error('image fixe non écrite : ' + base + suffixe + ' ' + String(r.stderr));
       }
       return ['.mp4', '.webm', '-debut.jpg', '-fin.jpg'].map((s) => path.basename(base) + s);

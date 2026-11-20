@@ -99,7 +99,7 @@ PDF qui traverse l'encadré « Bon pour accord ».
 
 ## Les films des outils de paysage : sans serveur, sans base
 
-Les onze films de `appli/vente/outils.html` (le plan d'arrosage, le diagnostic,
+Les douze films de `appli/vente/outils.html` (le plan d'arrosage, le diagnostic,
 la fiche de chantier, 20 novembre 2026) ne passent pas par ce dossier. Ils se
 tournent dans les démonstrations du site (`appli/vente/demo/`, les vrais écrans
 compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`), qui

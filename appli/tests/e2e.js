@@ -742,6 +742,15 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await page.waitForTimeout(1600);
     const prix = await page.evaluate(() => { const c = document.querySelector('.option-outils'); return c && c.querySelector('.montant').textContent + ' ' + c.querySelector('.rythme').textContent; });
     ok('vente, en mouvement : la carte des outils dit 6 € HT par mois', prix === '6 € HT par mois', prix);
+    // Sa décision du 20 novembre 2026 : « il n'y a pas 2 mois offerts. C'est
+    // 6 euros par mois sur 12 mois ». À l'année, la carte dit 72 €, et rien
+    // sous le prix (les formules, elles, gardent leurs deux mois offerts).
+    await page.locator('.bascule button[data-periode="an"]').click();
+    await page.waitForTimeout(900);
+    const annee = await page.evaluate(() => { const c = document.querySelector('.option-outils'), f = document.querySelector('.formule'); return { outils: c.querySelector('.montant').textContent + ' ' + c.querySelector('.rythme').textContent + ' / ' + c.querySelector('.offert').textContent, formule: f.querySelector('.offert').textContent }; });
+    ok('vente, en mouvement : à l\'année, les outils font 72 € sans mois offerts', annee.outils === '72 € HT par an / ' && /Deux mois offerts/.test(annee.formule), JSON.stringify(annee));
+    await page.locator('.bascule button[data-periode="mois"]').click();
+    await page.waitForTimeout(600);
     // Sur un téléphone la carte est plus haute que l'écran : on amène la
     // ligne touchée à l'écran, sans quoi le doigt tombe hors de la page.
     await page.locator('.outils-liste li').nth(1).scrollIntoViewIfNeeded();
@@ -783,10 +792,10 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // qui repasse). Le film reste donc dessous, sur sa dernière image.
   //
   // La page des outils (20 novembre 2026) montre chaque outil de bout en
-  // bout en onze films de l'appli, tournés dans ses démonstrations par
+  // bout en douze films de l'appli, tournés dans ses démonstrations par
   // appli/scripts/film-outils.cjs (sa correction : « comme s'il regardait un
   // film »). Ils passent le même contrôle.
-  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-conduite', 'outils-rattacher', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
+  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-gravite', 'outils-details', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
   for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE.concat([['outils.html', 'vente, les outils', FILMS_DES_OUTILS, true]])) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
@@ -795,7 +804,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const cadre = await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); return !!el; }, nom);
       ok(nomPage + ' : le film ' + nom + ' a son cadre dans la page', cadre);
       if (!cadre) continue;
-      // Le plus long, celui de la fiche d'intervention, dure onze secondes.
+      // Le plus long, celui de la remarque envoyée (outils.html), dure seize secondes.
       const fin = await page.waitForFunction((n) => {
         const f = document.querySelector('[data-film="' + n + '"] .film-fin');
         return f && f.classList.contains('vue');
