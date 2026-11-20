@@ -167,7 +167,7 @@ même heure (confiance moyenne).
 Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
 son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
 
-## RANGER SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL (19 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -184,6 +184,24 @@ sous deux formes, `libelleClient` les efface (§588). Les colonnes `methode` et
 2. une fois les libellés d'avant convertis (migration de données, base habitée,
    FORCE RLS), retirer `debutsDUnLibelleEnrichi` et l'effacement de
    `libelleClient`.
+
+**La planche du temps 1, le 20 novembre** (son « oui » : *« fait la planche pour
+ranger les réponse à la grille »*), figée sur ses vrais écrans, rien dans
+`src/` :
+https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-le-travail.html
+
+| Écran | Aujourd'hui (regardé, son chêne rejoué) | Proposé |
+|---|---|---|
+| le devis | « Abattage d'un chêne Quercus robur », sans rien d'autre depuis §588 | dessous, discret, « Abattage entre 10 et 20 m, ⌀ 80 cm », pour lui seul, comme le fournisseur de `appli/devis-fournisseur-pour-vous-seul.html` ; « Chez le client » montre le vrai PDF, sans elles |
+| Informations | le champ de la prestation porte tout, coupé à « (Quercus robur) (ab » | le champ garde « Abattage d'un chêne (Quercus robur) », ses réponses passent sous la rangée |
+
+**Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
+la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
+`listerPrestationsDuDevis` le fait déjà pour §588) ; rien ne s'imprime ni ne
+part chez le client. Puis `libelleEnrichi` n'écrit plus dans le libellé, une
+fois éprouvé que le prix de la case se trouve sans le texte : `mesuresResolues`
+lit déjà les colonnes, `mesures-arbre.ts` relit encore le texte. Argent :
+niveau 3.
 
 ## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
 
