@@ -16,6 +16,78 @@ lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite q
 rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
 montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
 
+## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
+
+Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
+écrans, avec des données toutes factices. **Tranché le 20 novembre : la
+voie B** (les vrais écrans figés par `scripts/planche-figee/`, enchaînés
+avec une bulle de guide, sur le site statique). La voie A (une porte
+ouverte au public dans l'appli qui tourne) est écartée : un visiteur
+modifierait ce que voit le suivant, un devis ou un SMS partirait pour de
+vrai, chaque dictée coûterait de l'IA.
+
+**Son parcours, dans cet ordre (ses mots du 20 novembre) :**
+
+1. l'accueil, puis Vos clients ;
+2. Créer un devis : la civilité touchée (Entreprise, Mairie, retour à
+   Monsieur Madame), puis nom, prénom et le reste qui se remplissent ;
+3. Dicter : le devis s'ouvre déjà rempli ;
+4. Aperçu PDF, puis choisir la date : « toutes les vraies étapes » ;
+5. le planning, le chantier posé ; un jour touché, le chantier, les
+   salariés ajoutés, puis en descendant la fiche client ;
+6. Terminés : la facture, son envoi, **ce que le client reçoit**, le
+   client qui paie ;
+7. Ma TVA : toute la page ; la TVA ajoutée ; un ticket de carburant
+   scanné qui s'ajoute ; les chiffres de gauche touchés, qui montrent le
+   relevé et chaque taux ;
+8. la banque connectée, les tickets, le document comptable ;
+9. le paiement du client vu par la banque : la notification sur
+   l'accueil, et de là le check up qui valide le paiement pour le
+   document comptable ;
+10. **la fin : Réglages laissé ouvert**, chaque rubrique se touche
+    librement ; **et la page Vos idées, montrée à coup sûr** (« hyper
+    important »).
+
+Dans la visite, la dictée et le scan du ticket ne lisent rien : l'écran
+suivant s'ouvre déjà rempli, tel que l'appli le peint sur la base de
+démonstration. Planche d'abord dans `appli/`, rien dans `src/` ; le branchement
+sur `appli/vente/` après son choix.
+
+**Sa consigne du même soir : uniquement des données inventées**, *« qu'on ne
+nous attaque pas pour avoir diffusé des données de quelqu'un »*. Numéros de la
+tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
+`example.com`, station, pépinière, banque et signature inventées.
+
+**La planche : `appli/visite-guidee.html`**, faite (49 étapes, puis les
+dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
+l'appli bâtie, joué pour de vrai sur la base de démonstration
+(`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
+dossier du comptable). Retour : `docs/visite-guidee.md`.
+
+**Ce qui a été fait autrement que sa liste, et pourquoi :**
+- **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
+  et le planning : sans cela le chantier n'a pas de date, et c'est le vrai
+  chemin ;
+- **la notification du virement vient juste après le paiement du client**, avant
+  Ma TVA : c'est elle qui fait entrer la facture dans la TVA. Le check up reste
+  dans Pour mon comptable, où il vit ;
+- **« Avant de chiffrer »** s'ajoute après la dictée : c'est ce que l'appli
+  demande quand la longueur de la haie manque ;
+- **le chantier est passé au 18 novembre** par la base avant Terminés : Terminés
+  ne montre qu'un chantier dont la date est passée.
+
+**Retouches de la planche** (ce poste n'a pas de clé d'IA, son espace si) :
+Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
+disponible ici » est retiré du ticket lu. Et partout, l'exemple
+« 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
+qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
+exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
+`FactureClient.tsx`) ; ce numéro peut appartenir à quelqu'un, le passer en
+06 39 98 00 00 serait plus sûr.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
 
 Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
