@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import IconeTrait from "@/components/atlas/IconeTrait";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireDiagnostic } from "@/server/repositories/diagnostics";
 import { compterFichesServables, lireEssence, lireImagesFiche } from "@/server/repositories/fiches-phyto";
@@ -256,16 +256,41 @@ async function FicheRendue({
             <p className="mt-2 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
               Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.
             </p>
-            {images.map((image) => (
-              // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : ces photos sortent d’une route authentifiée, que l’optimiseur de next/image ne sait pas traverser ; poids borné à l’import (500 Ko)
-              <img
-                key={image.id}
-                src={`/api/phyto/image/${image.id}`}
-                alt={image.legende ?? "Photo de référence"}
-                loading="lazy"
-                className="mt-3.5 block h-auto w-full rounded-[6px]"
-              />
-            ))}
+            {/* **Plusieurs photos défilent de gauche à droite**, sa demande du
+                20 novembre 2026 : « si il y a plusieurs photos intéressantes (la
+                feuille et le champignon), fais en sorte de pouvoir défiler ».
+                Le défilement est celui du navigateur (aucun script) et la
+                suivante dépasse au bord : le geste se voit, il ne s'apprend pas. */}
+            <div
+              className={`mt-3.5 flex items-start gap-2.5 ${
+                images.length > 1 ? "-mx-[22px] snap-x snap-mandatory scroll-px-[22px] overflow-x-auto px-[22px]" : ""
+              }`}
+              style={images.length > 1 ? { scrollbarWidth: "none" } : undefined}
+              data-atlas="diagnostic-photos-defilement"
+            >
+              {images.map((image, rang) => (
+                <figure
+                  key={image.id}
+                  className={`relative m-0 ${images.length > 1 ? "w-[calc(100%-44px)] flex-none snap-start" : "w-full"}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- pansement assumé : ces photos sortent d’une route authentifiée, que l’optimiseur de next/image ne sait pas traverser ; poids borné à l’import (500 Ko) */}
+                  <img
+                    src={`/api/phyto/image/${image.id}`}
+                    alt={image.legende ?? "Photo de référence"}
+                    loading="lazy"
+                    className="block h-auto w-full rounded-[6px]"
+                  />
+                  {images.length > 1 && (
+                    <figcaption
+                      className="absolute left-2.5 top-2.5 rounded-full px-2.5 py-1 text-[13px] font-semibold"
+                      style={{ backgroundColor: voile(colors.ink, 0.62), color: colors.cream }}
+                    >
+                      {rang + 1} sur {images.length}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
           </section>
         )}
 
