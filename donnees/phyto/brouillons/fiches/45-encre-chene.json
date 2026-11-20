@@ -172,7 +172,32 @@
           ]
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://www.forestryimages.org/browse/image/5253012",
+          "fichier": "donnees/phyto/brouillons/images/encre-chene-tronc.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "tronc",
+          "legende": "Des coulures noires sur le tronc d’un chêne, causées par Phytophthora cinnamomi, au Mexique."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5253013",
+          "fichier": "donnees/phyto/brouillons/images/encre-chene-ecorce.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "ecorce",
+          "legende": "Sur le même chêne, l’écorce bosselée d’un bourrelet, et les coulures noires qui en descendent."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5253016",
+          "fichier": "donnees/phyto/brouillons/images/encre-chene-ecorce-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "ecorce",
+          "legende": "L’écorce retirée sur un chancre de chêne : le bois brun orangé, bordé de lignes sombres."
+        }
+      ],
       "noteImpact": 2,
       "noteAgressivite": 2,
       "noteFrequence": 1
