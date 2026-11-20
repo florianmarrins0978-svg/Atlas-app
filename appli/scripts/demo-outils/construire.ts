@@ -28,6 +28,7 @@ import { Scanner } from "@tailwindcss/oxide";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { CHARTES, CHARTE_PAR_DEFAUT, variablesCharte } from "../../../src/lib/chartes";
+import { validerLot } from "../../../src/lib/import-fiches-phyto";
 
 // En .ts (CommonJS sous tsx), comme scripts/capture-plan-arrosage.ts : le
 // calcul d'arrosage est un module CommonJS.
@@ -85,6 +86,28 @@ const remplacer = (outil: string): Plugin => ({
     };
     b.onResolve({ filter: /^next\/(link|image|navigation|headers)$/ }, (a) => ({ path: a.path, namespace: "next-demo" }));
     b.onLoad({ filter: /.*/, namespace: "next-demo" }, (a) => ({ contents: virtuels[a.path], loader: "tsx", resolveDir: ICI }));
+
+    // **Une fiche de la bibliothèque, lue ICI par la fonction de l'import
+    // (`validerLot`), et la page ne reçoit que le résultat.** Une fiche que
+    // l'import refuserait fait échouer la construction, au lieu d'une page
+    // qui casse chez le visiteur ; et l'outil d'import (ses messages, zod)
+    // n'entre pas dans la page. Ses notes de rédaction (les clés « _… »)
+    // n'y entrent pas non plus. Trois de ses textes affichés coupent leur
+    // phrase d'un tiret (« INRAE — Ephytia ») que sa règle du 22 septembre
+    // 2026 refuse à l'écran : le garde-fou de main l'a vu le 20 novembre. Sur
+    // le site, le tiret devient une virgule. La donnée de donnees/phyto/,
+    // elle, n'est pas touchée : TODO.md.
+    b.onLoad({ filter: /[\\/]donnees[\\/]phyto[\\/]fiches[\\/].*\.json$/ }, (a) => {
+      const nettoyer = (v: unknown): unknown => {
+        if (typeof v === "string") return v.replace(/\s+[—–]\s+/g, ", ");
+        if (Array.isArray(v)) return v.map(nettoyer);
+        if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith("_")).map(([k, x]) => [k, nettoyer(x)]));
+        return v;
+      };
+      const verdict = validerLot(JSON.parse(readFileSync(a.path, "utf8")), { autoriserFixtures: false, codesConnus: new Set<string>() });
+      if (!verdict.ok) throw new Error(`${relative(RACINE, a.path)} ne passe plus l’import : ${JSON.stringify(verdict.problemes)}`);
+      return { contents: JSON.stringify(nettoyer(verdict.lot)), loader: "json" };
+    });
 
     b.onLoad({ filter: /[\\/]src[\\/].*\.tsx?$/ }, (a) => {
       const texte = readFileSync(a.path, "utf8");

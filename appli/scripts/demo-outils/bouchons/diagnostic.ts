@@ -1,5 +1,5 @@
 /** Le diagnostic végétal : ce que le serveur rendrait, sans serveur. */
-import { validerLot } from "@/lib/import-fiches-phyto";
+import type { LotImporte } from "@/lib/import-fiches-phyto";
 import { composerResultat } from "@/server/diagnostic/moteur";
 import FICHE_DU_PLATANE from "../../../../donnees/phyto/fiches/002-anthracnose-platane.json";
 import { attendre, fabrique, type Action } from "./commun";
@@ -10,15 +10,17 @@ import { attendre, fabrique, type Action } from "./commun";
  * montrée plus haut sur la page, n'existe que dans une base locale.
  *
  * Rien n'est recopié de la fiche à la main : elle est lue par la fonction de
- * l'import (`validerLot`), puis le résultat est composé par la fonction du
- * moteur (`composerResultat`), exactement comme le serveur le fige. La
+ * l'import (`validerLot`, à la construction), puis le résultat est composé
+ * par la fonction du moteur (`composerResultat`), exactement comme le
+ * serveur le fige. La
  * confiance est « probable » ; l'essence n'est pas donnée, et l'écran dit
  * alors « Probable » seul (sans « Probable · Platane », que main affiche
  * encore avec un point entre les deux mots : TODO.md).
  */
 export const PHOTO_EXEMPLE = "platane-exemple.jpg";
-const LOT = validerLot(FICHE_DU_PLATANE, { autoriserFixtures: false, codesConnus: new Set<string>() });
-if (!LOT.ok) throw new Error("La fiche du platane ne passe plus l’import : " + JSON.stringify(LOT.problemes));
+// Déjà lue par l'import au moment de construire (construire.ts) : ce
+// fichier reçoit le lot validé, pas le fichier brut.
+const LOT = { lot: FICHE_DU_PLATANE as unknown as LotImporte };
 const FICHE = { ...LOT.lot.fiches[0], id: "platane" };
 let rattacheA: string | null = null;
 const CHANTIERS = [

@@ -593,7 +593,11 @@ réseaux : sa pelouse à 4 turbines sur un seul réseau n'en changeait pas.
 vrai moteur) et « Essayez la fiche » (M. Bernard, ses cases reprises, l'envoi,
 le retour chez le client). Les trois démonstrations se reconstruisent par
 `npx tsx appli/scripts/demo-outils/construire.ts`, **à relancer dès qu'un de
-ces écrans change dans l'appli**.
+ces écrans change dans l'appli**. **Vu en le faisant, non corrigé (hors
+périmètre)** : la fiche du platane de `donnees/phyto/` affiche des tirets
+dans l'appli (« INRAE — Ephytia », le titre de sa source, le crédit de sa
+photo), contraires à sa règle du 22 septembre ; la démonstration les change
+en virgules à la construction, la donnée et l'écran de `main` les gardent.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
