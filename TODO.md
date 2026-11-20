@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE PRIX D'UNE PIÈCE (20 novembre 2026)
+
+Sa demande : chercher « sac de terreau » pour voir combien un fournisseur le
+lui facture ; et, sur un devis tapé à la main, voir sous la ligne (pour lui
+seul) les prix enregistrés chez chaque fournisseur, et choisir.
+
+**Ce qui existait, regardé sur l'écran** : la recherche de Ce que je paie
+trouve déjà une pièce (`societesAMontrer` cherche dans les noms des prix) et
+écrit sa désignation sous la société, **sans son prix** ; la fiche ouverte ne
+garde pas la recherche. Sur le devis tapé à la main, rien ne propose les prix
+d'achat (les `rappels` du devis viennent des devis passés, pas des
+fournisseurs). Et le devis **dicté**, quand deux fournisseurs répondent, prend
+d'office le moins cher sans montrer l'autre (`prixAchatCorrespondant`).
+
+**La planche** : `appli/le-prix-d-une-piece.html`. Chercher : le prix d'achat
+après la pièce trouvée (« Terreau universel 40 L, 8,90 € HT le sac »), et
+« Chercher un fournisseur ou une pièce ». Devis tapé à la main : sous
+« Sac de terreau », les prix que la règle du devis dicté trouve
+(`lesMieuxNommees`, le moins cher d'abord) ; un appui pose le prix × sa marge,
+l'unité, le montant et les totaux, et le fournisseur reste écrit sous la ligne
+pour lui seul (la planche du 19 novembre). Toucher cette mention rouvre le
+choix. **Une seule règle de rapprochement pour la dictée et la saisie**
+(`CLAUDE.md` §3) : la proposer telle quelle, jamais une seconde.
+
 ## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
 
 Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
