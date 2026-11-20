@@ -25,8 +25,18 @@ avant. Ce que chaque fiche a d'incertain (photo d'un autre pays, nom latin mal
 **Décisions à lui** : corriger ou non l'orthographe d'un nom latin fautif sur la
 page (gardée partout sauf la graphiose) ; le fomès garde sa prévention et son
 traitement validés (document de 2013, homologation du ROTSTOP à revérifier).
-**Reste à faire** : la passe photos (fiches sans photo, ou sans le champignon) ;
-les confusions entre fiches proches (vides) ; le défaut espèce et genre ci-dessous,
+~~La passe photos~~ **faite le 20 novembre** (sa demande : *« au minimum 2 voire
+3 par fiche »*) : Wikimedia Commons puis Bugwood (`searchengine.bugwood.org`,
+`bugwoodcloud.org`, ouverts ce jour), licences libres seulement, l'organisme
+nommé par la page de chaque photo. 42 fiches à 3 photos, une à 4, 8 à 2. **Restent
+sous 2, faute de toute photo libre qui nomme l'organisme** : rougissement des
+pins (Thyriopsis), javart (Diplodina castanea), chancre du pin d'Alep
+(Crumenulopsis), nécroses à cécidomyies (Resseliella sur chêne), chancre
+bactérien du frêne (1). Retirées parce qu'elles trompaient : framboises et
+rosier (pourriture grise des résineux), pommier (chancre du hêtre), tilleul
+(cécidomyies), « Corineo » sans nom d'organisme. Pourquoi aucune photo de
+l'INRAE : ses figures portent « © INRAE » ; seule son autorisation écrite les
+ouvrirait. **Reste à faire** : les confusions entre fiches proches (vides) ; le défaut espèce et genre ci-dessous,
 que les nouvelles essences d'espèce rendent plus pressant. Règles
 ajoutées en écrivant : aucun conseil déduit d'un fait (« Que faire ? » ne dit
 que ce que la page conseille), l'INRAE seulement dans les détails, espace
