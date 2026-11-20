@@ -68,8 +68,12 @@
 <th>Étapes</th>
 </tr></thead><tbody>
 <tr>
+<td>La fiche d'un client</td>
+<td>Vos clients, la fiche de Mme Costa : ses devis, ses factures (ouverte, due), son dernier devis repris, + 10 % sur les prix</td>
+</tr>
+<tr>
 <td>Le client</td>
-<td>l'accueil, Vos clients, Créer un devis, Entreprise, Public, retour à Mr, les champs qui s'écrivent seuls</td>
+<td>l'accueil, Créer un devis, Entreprise, Public, retour à Mr, les champs qui s'écrivent seuls</td>
 </tr>
 <tr>
 <td>Le devis</td>
@@ -89,7 +93,7 @@
 </tr>
 <tr>
 <td>La facture</td>
-<td>Terminés, la facture reprise du devis, l'envoi, ce que reçoit le client</td>
+<td>Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, l'envoi, ce que reçoit le client</td>
 </tr>
 <tr>
 <td>Le paiement</td>
@@ -162,17 +166,23 @@
 <td>ce numéro peut appartenir à quelqu'un</td>
 </tr>
 </tbody></table></div>
+<h2 id="ta-demande-du-20-novembre-au-soir--entrer-dans-la-fiche-dun-client">Ta demande du 20 novembre au soir : entrer dans la fiche d'un client</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite : un devis signé, un chantier passé le 10 novembre, un retour d'intervention, une facture envoyée et ouverte, encore due.</p>
+<p><strong>Ce que l'appli ne fait pas, et que la visite ne montre donc pas :</strong> les retours d'intervention ne sont pas sur la fiche du client. Ils vivent dans Terminés, « Retours d'intervention », rangés client par client. La visite les montre là. Les mettre aussi sur la fiche demanderait un changement de l'appli, à décider.</p>
+<p><strong>Corrigé en route, dans la base d'essai seulement :</strong> le jeu de démonstration écrivait la civilité dans le nom (« Mme Costa »), et le devis repris imprimait « Mme Mme Costa ». Un client créé dans l'appli garde sa civilité à part (vérifié sur M. Lefèvre). Un client dont le nom porterait déjà « Mme » ou « M. », importé par exemple, aurait le même doublon : pas vérifié chez toi.</p>
 <h2 id="ce-qui-reste-ouvert-et-cest-à-toi-de-trancher">Ce qui reste ouvert, et c'est à toi de trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>La longueur</strong> : 49 étapes, environ cinq minutes. On peut en retirer.</li>
+<li><strong>La longueur</strong> : 56 étapes, environ six minutes. On peut en retirer.</li>
+<li><strong>Les retours d'intervention sur la fiche du client</strong> : aujourd'hui ils sont dans Terminés seulement.</li>
 <li><strong>Le bouton sur le site</strong> : où le poser sur <code>appli/vente/</code>.</li>
 <li><strong>Dans l'appli elle-même</strong>, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de <code>src/</code>, il attend ton « oui ».</li>
 </ol>
 <h2 id="pour-la-refaire-quand-un-écran-change">Pour la refaire quand un écran change</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>scripts/planche-figee/visite-guidee/tout.sh</code> rejoue tout le parcours dans l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de démonstration neuve, donc ton accord.</p>
-<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 49 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
+<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 56 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
 </main>
 </body>
 </html>

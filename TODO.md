@@ -65,7 +65,14 @@ Cause IA dit « Oui » en vert, le refus « La lecture automatique n'est pas
 disponible ici » est retiré du ticket lu. Et partout, l'exemple
 « 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
 
-**À trancher par lui :** la visite telle quelle, ou des étapes en moins (49,
+**Sa demande du soir, faite** : entrer dans la fiche d'un client. Mme Costa a
+une histoire jouée avant la visite (`histoire.mjs`) : devis signé, retour
+d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
+« Dernier devis » avec « + 10 % ». **Les retours d'intervention ne sont pas sur
+la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y
+mettre serait un changement de `src/`, à lui de dire.
+
+**À trancher par lui :** la visite telle quelle, ou des étapes en moins (56,
 c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
 qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
 exemple dans trois champs (`EnvoiAuClient.tsx`, `TransmettreAuClient.tsx`,
