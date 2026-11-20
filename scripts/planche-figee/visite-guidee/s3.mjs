@@ -1,0 +1,34 @@
+import { session, TRAVAIL } from "./fige.mjs";
+import { readFileSync } from "node:fs";
+const id = readFileSync(`${TRAVAIL}/chantier.txt`, "utf8").trim();
+const { page, va, fige, fin } = await session();
+const pas = async (t = 600) => page.waitForTimeout(t);
+const remplir = async (label, v) => { const c = page.getByLabel(label, { exact: true }); await c.click(); await c.fill(v); await c.blur(); await pas(400); };
+try {
+  await va(`/chantiers/${id}/devis-complet`);
+  await remplir("Titre du devis", "Entretien du jardin");
+  await remplir("Description 1", "Taille de la haie de thuyas le long du chemin");
+  await remplir("Quantité 1", "25");
+  await remplir("Unité 1", "ml");
+  await remplir("Prix unitaire 1", "12");
+  await remplir("Description 2", "Ramassage et évacuation des déchets verts");
+  await remplir("Unité 2", "forfait");
+  await remplir("Prix unitaire 2", "90");
+  await remplir("Description 3", "Élagage du tilleul devant la maison");
+  await remplir("Prix unitaire 3", "380");
+  await pas(3000);
+  await va(`/chantiers/${id}/devis-complet`);
+  await pas(2000);
+  await fige("10-devis");
+  await page.locator('text=Total TTC').first().scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 200); await pas(800);
+  await fige("11-devis-totaux");
+  await page.screenshot({ path: `${TRAVAIL}/s3-plein.png`, fullPage: true });
+  const href = await page.locator('[data-atlas="apercu-pdf"]').getAttribute("href");
+  console.log("PDF", href);
+  await page.locator('[data-atlas="apercu-pdf"]').click();
+  await page.waitForURL(/documents\/pdf/, { timeout: 60000 });
+  await pas(5000);
+  await fige("12-apercu-pdf");
+} catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); await page.screenshot({ path: `${TRAVAIL}/echec.png`, fullPage: true }); }
+await fin();

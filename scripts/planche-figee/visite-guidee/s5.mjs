@@ -1,0 +1,31 @@
+import { session, TRAVAIL } from "./fige.mjs";
+import { readFileSync } from "node:fs";
+const J = readFileSync(`${TRAVAIL}/jeton-devis.txt`, "utf8").trim();
+const { page, va, fige, fin } = await session({ anonyme: true });
+const pas = (t = 700) => page.waitForTimeout(t);
+try {
+  await va(`/devis/${J}`);
+  await fige("16-client-devis");
+  await page.locator('input[name="choixDate"]').nth(1).check({ force: true });
+  await pas();
+  await page.getByRole("button", { name: "J'accepte ce devis" }).scrollIntoViewIfNeeded();
+  await fige("17-client-date");
+  await page.locator('input[name="demarrageAnticipe"]').check({ force: true }).catch(() => {});
+  await pas(400);
+  await page.getByRole("button", { name: "J'accepte ce devis" }).first().click();
+  await pas(1500);
+  const zone = page.locator('[data-atlas="signature-devis"] canvas, [data-atlas="signature-devis"] svg').first();
+  const b = await zone.boundingBox();
+  await page.mouse.move(b.x + 30, b.y + b.height * 0.6);
+  await page.mouse.down();
+  const pts = [[60,0.3],[90,0.75],[120,0.35],[150,0.7],[185,0.4],[215,0.65],[250,0.45]];
+  for (const [x, y] of pts) await page.mouse.move(b.x + x, b.y + b.height * y, { steps: 8 });
+  await page.mouse.up();
+  await pas(800);
+  await fige("18-client-signe");
+  await page.locator('[data-atlas="signature-devis"]').getByRole("button", { name: /J'accepte/ }).click();
+  await pas(5000);
+  await fige("19-client-accepte");
+  console.log((await page.evaluate(() => document.body.innerText)).slice(0, 600));
+} catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); await page.screenshot({ path: `${TRAVAIL}/echec.png`, fullPage: true }); }
+await fin();

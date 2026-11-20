@@ -1,0 +1,35 @@
+import { session, TRAVAIL } from "./fige.mjs";
+import { writeFileSync } from "node:fs";
+const { page, va, fige, fin } = await session();
+const pas = async (t = 600) => page.waitForTimeout(t);
+try {
+  await va("/chantiers/nouveau");
+  await page.click('[data-atlas="civilite-mr"]');
+  await page.getByLabel("Nom du client").fill("Lefèvre");
+  await page.getByLabel("Téléphone").first().fill("06 39 98 12 34");
+  await page.getByLabel("E-mail").first().fill("lefevre@example.com");
+  await page.getByLabel("Adresse du chantier").fill("7 chemin du Verger, 44300 Nantes");
+  await pas(1200);
+  await page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro').click();
+  await pas(2500);
+  await fige("07-dictee-ecoute");
+  await page.locator('[data-atlas="dictee-envoyer"]').click();
+  const questions = page.locator('[data-atlas="question-chiffrage"]').first();
+  await questions.waitFor({ state: "visible", timeout: 120000 });
+  await pas(1500);
+  await questions.scrollIntoViewIfNeeded();
+  await fige("08-avant-de-chiffrer");
+  const champs = page.locator('input[type="number"]');
+  const n = await champs.count();
+  for (let i = 0; i < n; i++) await champs.nth(i).fill(i === 0 ? "25" : "1");
+  await pas(500);
+  await fige("09-avant-de-chiffrer-rempli");
+  await page.getByRole("button", { name: /Continuer vers le devis|Continuer sans répondre/i }).click();
+  await page.waitForURL(/\/devis-complet$/, { timeout: 180000 });
+  await page.waitForSelector("text=DEVIS", { timeout: 60000 });
+  await pas(4000);
+  await fige("10-devis");
+  writeFileSync(`${TRAVAIL}/chantier.txt`, page.url().match(/chantiers\/([0-9a-f-]{36})/)[1]);
+  await page.screenshot({ path: `${TRAVAIL}/s2-devis-plein.png`, fullPage: true });
+} catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); await page.screenshot({ path: `${TRAVAIL}/echec.png`, fullPage: true }); }
+await fin();
