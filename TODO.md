@@ -49,7 +49,7 @@ espèce, une fiche au genre), puis l'hôte reconnu quand l'espèce appartient au
 genre (le nom latin le dit : « Pinus pinaster » est dans « Pinus »), dans une
 fonction pure. Niveau 3 (le moteur).
 
-## IDÉE À DESSINER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DES DIAGNOSTICS, PAR CHANTIER, AVEC SES NOTES (19 novembre 2026)
 
 Sa proposition : *« une fois que quelqu'un a photographié un champignon ou une
 maladie, qu'il puisse le rattacher à un chantier ou se créer un dossier avec
@@ -63,6 +63,19 @@ fiche du chantier). À trancher sur la planche : où vit le dossier (l'écran
 Diagnostic, la fiche du chantier, les deux), un dossier sans chantier (au nom
 d'un client, ou libre), et la note (une par diagnostic, texte ou dictée).
 **Rien n'est codé.**
+
+**Planche posée le 20 novembre, sur `main` (`1f4fcae`)**, après sa relance :
+*« t'as pas fait ce que je t'ai demandé, que l'utilisateur puisse les ranger
+dans une case »*. `appli/soignee/diagnostic-dossiers.html`, sur l'écran
+Diagnostic et la fiche codée figés : « Mes dossiers » sous « Prendre une
+photo » (un chantier est un dossier, plus les siens), le dossier (vignette,
+maladie, date, début de la note), « Ranger dans un dossier » sous « Nouvelle
+photo », la feuille (chantiers, mes dossiers, « Nouveau dossier », « Ma
+note », « Ranger »), la fiche rangée (« Rangée dans X, le … », la note,
+« Modifier »). « Rattacher à un chantier » des détails disparaît : « Ranger »
+le remplace. **À trancher par lui** : le dossier d'un chantier se montre-t-il
+aussi sur la fiche du chantier ; la note s'écrit seulement, ou se dicte aussi.
+Avant de la lui redemander : chercher `Ranger dans un dossier` dans `src/`.
 
 ## LA FICHE DE DIAGNOSTIC SOIGNÉE : CODÉE LE 19 NOVEMBRE SUR LA BRANCHE, PAS SUR `main` (19 novembre 2026)
 
