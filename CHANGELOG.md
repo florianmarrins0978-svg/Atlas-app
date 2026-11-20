@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-20
 
+- **Planche « Le prix d’une pièce »** (sa demande : chercher combien un fournisseur facture le sac de terreau, et le choisir sur un devis tapé à la main). Regardé sur l'écran : la recherche trouvait déjà la pièce, sans son prix. Proposé : le prix d'achat à côté, et sous la ligne du devis les prix que la règle du devis dicté trouve, pour lui seul ; un appui pose le prix marge comprise. `appli/le-prix-d-une-piece.html`. Rien dans `src/`.
 - **Planche « Sans marge sur les pièces »** (sa demande : un artisan qui ne prend pas de marge doit pouvoir le dire). Sur le vrai écran Ce que je paie : aujourd'hui 0 est refusé et 1 ne dit pas « sans marge » ; A ajoute « Sans marge » au coefficient, B passe la marge en pour cent (0 % vaut sans marge). La case vide reste « Marge à donner » dans les deux. `appli/sans-marge-sur-les-pieces.html`. Rien dans `src/`.
 
 ## 2026-11-19
