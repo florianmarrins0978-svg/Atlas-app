@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
+
+Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
+d'un fournisseur, il faut qu'il puisse le faire »*. Aujourd'hui la marge est
+un coefficient (`lireMarge`, `src/lib/prix-achat.ts`) : **1** vaut sans marge
+mais rien ne le dit (la pastille écrit « Marge × 1,00 ») ; **0** est refusé
+(« Tapez un coefficient : 1,30 pour 30 % de marge. ») ; **vide** laisse les
+lignes du devis dicté « à chiffrer » (`prixDepuisAchat` rend `null`).
+
+**La planche** : `appli/sans-marge-sur-les-pieces.html`, figée sur le vrai
+écran Ce que je paie. Aujourd'hui (la règle recopiée), **A** (le × reste, un
+bouton « Sans marge » pose 1,00, 0 et 1 se lisent « Sans marge » sur les
+pastilles), **B** (la marge en pour cent : « 30 % », 0 % vaut « Sans marge »).
+Recommandé : **B**, parce qu'un artisan dit « 30 % de marge », jamais « × 1,30 »,
+et que l'appli porte déjà un message pour qui tape 20 en voulant 20 %
+(`conseilDeMarge`) : le coefficient trompe. La base garderait le coefficient
+(1,30 s'afficherait 30 %) : aucune migration.
+
+**Ce qui ne change dans aucune des deux** : la case **vide** reste « Marge à
+donner » et la ligne « à chiffrer ». Faire du vide un « sans marge » vendrait
+au prix d'achat, sans rien dire, chez l'artisan qui a simplement oublié de la
+remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
+`ligneDeMarge`, `phraseDeLaMargePropre`, et la marge propre de chaque fiche).
+
 ## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend

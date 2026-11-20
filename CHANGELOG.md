@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-20
+
+- **Planche « Sans marge sur les pièces »** (sa demande : un artisan qui ne prend pas de marge doit pouvoir le dire). Sur le vrai écran Ce que je paie : aujourd'hui 0 est refusé et 1 ne dit pas « sans marge » ; A ajoute « Sans marge » au coefficient, B passe la marge en pour cent (0 % vaut sans marge). La case vide reste « Marge à donner » dans les deux. `appli/sans-marge-sur-les-pieces.html`. Rien dans `src/`.
+
 ## 2026-11-19
 
 - **Deux planches « Le fournisseur depuis son devis »** (sa demande : un devis de fournisseur déposé crée sa fiche, son mail, son numéro et ses prix, que le devis dicté reprend). Vérifié d'abord dans le code : le dépôt, la lecture et la reprise par le devis dicté existaient (Ce que je paie, `prixDUneLigneDictee`, prix d'achat × sa marge) ; manquaient la création du fournisseur depuis le document et son téléphone. `appli/fournisseur-depuis-son-devis.html` : le dépôt sans choisir la société, « Nouveau fournisseur » prérempli, ou sa fiche « Reconnu sur le devis ». `appli/devis-fournisseur-pour-vous-seul.html` : le fournisseur et le prix payé sous la ligne, pour lui seul, et le vrai PDF du même devis sans eux. Figées sur ses vrais écrans (base de démonstration de la session), chaque geste parcouru. Rien dans `src/`.
