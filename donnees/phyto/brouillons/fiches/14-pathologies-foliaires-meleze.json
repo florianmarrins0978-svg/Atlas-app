@@ -248,6 +248,14 @@
           "credit": "Photo de USDA Forest Service, Bugwood.org",
           "partie": "aiguille",
           "legende": "Le rouge du mélèze sur un mélèze occidental : les aiguilles mortes pendent sous les rameaux, piquées des points noirs du champignon."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5055087",
+          "fichier": "donnees/phyto/brouillons/images/pathologies-foliaires-meleze-aiguille-3.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "aiguille",
+          "legende": "Sur un rameau de mélèze laricin, un mélèze d’Amérique, des aiguilles qui jaunissent et brunissent (méria)."
         }
       ],
       "noteImpact": 1,

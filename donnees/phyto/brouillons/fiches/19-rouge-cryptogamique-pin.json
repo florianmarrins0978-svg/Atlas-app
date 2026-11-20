@@ -196,6 +196,14 @@
           "credit": "Photo de I. Sáček, via Wikimedia Commons",
           "partie": "aiguille",
           "legende": "De près, des aiguilles de pin jaunies et brunies, à côté d’aiguilles encore vertes."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5055040",
+          "fichier": "donnees/phyto/brouillons/images/rouge-cryptogamique-pin-aiguille-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "aiguille",
+          "legende": "Des aiguilles de pin desséchées, devenues gris pâle."
         }
       ],
       "noteImpact": 2,
