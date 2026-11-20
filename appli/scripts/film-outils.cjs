@@ -39,6 +39,12 @@ const fs = require('fs');
 const path = require('path');
 const { ouvrirBobine } = require('./_pellicule.cjs');
 
+// Sa remarque du 20 novembre au soir, devant les premiers films : « tu
+// passes trop vite, on n'a pas le temps de voir ». Chaque réponse de l'appli
+// reste donc à l'écran deux secondes au moins, les défilements sont lents,
+// et un film commence là où son geste se passe : d'un film à l'autre,
+// l'écran se replace sans être filmé (ce sont deux téléphones sur le site).
+
 // L'écran des démonstrations sur le site (390 × 664), photographié à trois
 // pixels pour un : les images fixes font 1170 × 1992, comme celles des
 // téléphones de cause-2.html, et le film 780 × 1328, comme son film de
@@ -46,6 +52,14 @@ const { ouvrirBobine } = require('./_pellicule.cjs');
 const ECRAN = { l: 390, h: 664 }, ECHELLE = 3;
 const FILM = { l: 780, h: 1328 };
 const IPS = 60, PAS = 1000 / IPS;
+// Douze films ralentis font sept mille images : aux réglages les plus lents
+// de _pellicule.cjs, une heure et demie d'encodage. Ces réglages-ci (les
+// derniers donnés l'emportent) le font trois fois plus vite, pour un écran
+// d'appli, à plat, une différence qui ne se voit pas.
+const ENCODAGE = {
+  x264: ['-preset', 'slow', '-crf', '22', '-tune', 'animation', '-level', '4.1', '-g', String(IPS * 20)],
+  vp9: ['-cpu-used', '3', '-crf', '36', '-g', String(IPS * 20)],
+};
 const APPLI = path.resolve(__dirname, '..');
 const ORIGINE = 'http://cause.essai';
 // Le jour des films : un vendredi, en fin de journée de chantier. L'heure
@@ -73,7 +87,7 @@ function dansLaPage() {
     const but = Math.max(0, Math.min(max, vers)), d = but - de;
     enCours = null;
     if (Math.abs(d) < 1) return;
-    const temps = duree || Math.min(1000, 420 + Math.abs(d) * 0.25), debut = performance.now(), moi = {};
+    const temps = duree || Math.min(1800, 700 + Math.abs(d) * 0.4), debut = performance.now(), moi = {};
     enCours = moi;
     const pas = () => {
       if (enCours !== moi) return;
@@ -106,8 +120,24 @@ function dansLaPage() {
     style.textContent = 'html{scroll-behavior:auto!important}';
     document.head.appendChild(style);
   });
+  // Le défilement d'une liste DANS une feuille (le catalogue de « Changer la
+  // pièce ») : même courbe, sur la boîte qui défile autour de l'élément.
+  const glisserDans = (el, haut, duree) => {
+    let boite = el.parentElement;
+    while (boite && !(boite.scrollHeight > boite.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(boite).overflowY))) boite = boite.parentElement;
+    if (!boite) return false;
+    const de = boite.scrollTop, but = Math.max(0, Math.min(boite.scrollHeight - boite.clientHeight, de + el.getBoundingClientRect().top - boite.getBoundingClientRect().top - haut));
+    const debut = performance.now();
+    const pas = () => {
+      const p = Math.min(1, (performance.now() - debut) / duree);
+      boite.scrollTop = de + (but - de) * doux(p);
+      if (p < 1) requestAnimationFrame(pas);
+    };
+    requestAnimationFrame(pas);
+    return true;
+  };
   window.__film = {
-    glisser,
+    glisser, glisserDans,
     synchro() {
       const t = performance.now();
       for (const a of document.getAnimations()) {
@@ -177,16 +207,35 @@ async function plateau(navigateur, demo) {
     async film(nom, jouer) {
       nomDuFilm = 'nov-film-' + nom;
       rang = 0;
-      if (!APERCU) bobine = ouvrirBobine({ base: path.join(dossier, nomDuFilm), film: FILM, ips: IPS, x264: ['-crf', '22', '-tune', 'animation', '-level', '4.1', '-g', String(IPS * 20)], vp9: ['-crf', '36', '-g', String(IPS * 20)] });
+      if (!APERCU) bobine = ouvrirBobine({ base: path.join(dossier, nomDuFilm), film: FILM, ips: IPS, x264: ENCODAGE.x264, vp9: ENCODAGE.vp9 });
       await jouer();
       if (erreurs.length) throw new Error(nom + ' : ' + erreurs.join(' ; '));
       console.log(nom + ' : ' + rang + ' images, ' + (rang / IPS).toFixed(2) + ' s');
       if (!APERCU) console.log('  écrits : ' + (await bobine.fermer()).join(', '));
+      nomDuFilm = '';
+    },
+    /** Entre deux films : l'élément à « haut » pixels du haut, sans être filmé. */
+    async placer(sel, o, haut) {
+      const el = await viser(sel, o);
+      await page.evaluate((y) => window.scrollTo(0, y), el.haut - haut);
+      await pendant(0.5);
     },
     /** Amène l'élément à « haut » pixels du haut de l'écran, en « secondes ». */
     async amener(sel, o, haut, secondes) {
       const el = await viser(sel, o);
       await page.evaluate(([y, ms]) => window.__film.glisser(y, ms), [el.haut - haut, secondes * 1000]);
+      await pendant(secondes);
+    },
+    /** Dans une feuille : l'élément à « haut » pixels du haut de sa liste. */
+    async amenerDansLaFeuille(sel, o, haut, secondes) {
+      const trouve = await page.evaluate(([sel, o, haut, ms]) => {
+        let liste = Array.from(document.querySelectorAll(sel));
+        if (o.texte) liste = liste.filter((el) => el.textContent.trim() === o.texte);
+        if (o.contient) liste = liste.filter((el) => el.textContent.includes(o.contient));
+        const el = liste[o.rang || 0];
+        return !!el && window.__film.glisserDans(el, haut, ms);
+      }, [sel, o || {}, haut, secondes * 1000]);
+      if (!trouve) throw new Error('aucune liste à faire défiler autour de ' + sel + ' ' + JSON.stringify(o || {}));
       await pendant(secondes);
     },
     /** Un appui : enfoncé, tenu le temps qu'on le voie, relâché. */
@@ -249,6 +298,7 @@ async function plateau(navigateur, demo) {
 const SOMMAIRE = '[data-atlas="sommaire-du-plan"] button';
 const GARDER = { texte: 'Garder' };
 const OBSERVATIONS = 'textarea[placeholder^="Ce que le client"]';
+const BASCULE = '[data-atlas="bascule"] [role="switch"]';
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
@@ -285,47 +335,61 @@ const RECITS = {
     },
     async jouer(p) {
       // 25 ou 32 : en Ø32, la pelouse tient sur un réseau de moins.
+      await p.placer('[data-atlas="reseaux"]', {}, 64);
       await p.film('outils-tuyau', async () => {
-        await p.pendant(0.7);
-        await p.toucher(SOMMAIRE, { texte: 'Réseaux' });
-        await p.pendant(1.5);
+        await p.pendant(1.8);
         await p.toucher('[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"] button', { texte: '32' });
-        await p.pendant(2.3);
+        await p.pendant(3.4);
       });
-      // Une pièce de la nourrice : la changer, ou la supprimer.
+      // La nourrice à votre idée : une sonde de pluie, le grillage
+      // avertisseur, et chacun s'ajoute à la liste. Le téflon n'est pas au
+      // catalogue, et l'appli le dit : le film ne le touche pas.
+      await p.placer('[data-atlas="nourrice"]', {}, 64);
+      await p.film('outils-options', async () => {
+        await p.pendant(1.6);
+        await p.toucher(BASCULE + '[aria-label="Sonde de pluie"]');
+        await p.pendant(2.4);
+        await p.toucher(BASCULE + '[aria-label="Grillage avertisseur"]');
+        await p.pendant(3.0);
+      });
+      // Une pièce de la nourrice : la changer, ou la supprimer. L'électrovanne
+      // Rain Bird 1" MM 9 V à impulsion devient une Toro EZ FLO+ 1" MM, au
+      // solénoïde 9 V à impulsion : même filetage, même pile, le même
+      // programmateur la commande.
+      await p.placer('[data-atlas="piece-nourrice"]', { rang: 8 }, 330);
       await p.film('outils-nourrice', async () => {
-        await p.pendant(0.4);
-        await p.toucher(SOMMAIRE, { texte: 'Nourrice' });
-        await p.pendant(1.2);
-        await p.amener('[data-atlas="piece-nourrice"]', { rang: 8 }, 300, 1.1);
-        await p.pendant(0.5);
+        await p.pendant(1.6);
         await p.toucher('[data-atlas="piece-nourrice"]', { rang: 8 });
-        await p.pendant(2.2);
-        await p.toucher('[role="dialog"] button', GARDER);
+        await p.pendant(2.4);
+        await p.toucher('[role="dialog"] button', { texte: 'Changer' });
+        await p.pendant(1.8);
+        await p.toucher('[role="dialog"] button', { texte: 'Électrovannes' });
+        await p.pendant(1.6);
+        await p.amenerDansLaFeuille('[role="dialog"] button', { contient: 'EZ FLO+ 1" MM solénoïde 9V' }, 140, 1.6);
         await p.pendant(0.8);
+        await p.toucher('[role="dialog"] button', { contient: 'EZ FLO+ 1" MM solénoïde 9V' });
+        await p.pendant(3.2);
       });
       // Les turbines : une, ou toutes. La chaîne d'une tête monte juste sous
       // le sommaire : la ligne du PEHD, au-dessus d'elle, dit encore « Ø25 »
       // après le passage en Ø32 (PiecesDuReseau.tsx l'écrit en dur, TODO.md),
       // et le site ne montre pas un libellé faux.
+      await p.placer('[data-atlas="chaine"]', {}, 230);
       await p.film('outils-turbines', async () => {
-        await p.pendant(0.4);
-        await p.amener('[data-atlas="chaine"]', {}, 230, 1.6);
-        await p.pendant(0.4);
+        await p.pendant(1.6);
         await p.toucher('[data-atlas="maillon"]', { rang: 4 });
-        await p.pendant(2.2);
+        await p.pendant(3.2);
         await p.toucher('[role="dialog"] button', GARDER);
-        await p.pendant(0.8);
+        await p.pendant(1.2);
       });
       // La liste, additionnée, puis le message au fournisseur.
+      await p.placer('[data-atlas="liste"]', {}, 64);
       await p.film('outils-liste', async () => {
-        await p.pendant(0.4);
-        await p.toucher(SOMMAIRE, { texte: 'Liste' });
-        await p.pendant(1.2);
-        await p.amener('[data-atlas="total-de-la-liste"]', {}, 300, 2.6);
-        await p.pendant(0.8);
+        await p.pendant(1.6);
+        await p.amener('[data-atlas="total-de-la-liste"]', {}, 300, 5.0);
+        await p.pendant(1.6);
         await p.toucher('[data-atlas="envoyer-fournisseur"]');
-        await p.pendant(2.4);
+        await p.pendant(3.6);
       });
     },
   },
@@ -334,29 +398,30 @@ const RECITS = {
     async jouer(p) {
       // Une photo, et la réponse.
       await p.film('outils-photo', async () => {
-        await p.pendant(0.8);
+        await p.pendant(1.6);
         p.photo('diagnostic-anthracnose-platane-feuille.jpg', 'platane-exemple.jpg');
         await p.toucher('[data-atlas="prendre-photo-diagnostic"]');
-        await p.pendant(4.2);
+        await p.pendant(5.2);
       });
       // Que faire, et est-ce grave.
       await p.film('outils-conduite', async () => {
-        await p.pendant(0.4);
-        await p.amener('[data-atlas="diagnostic-gravite"]', {}, 90, 2.0);
-        await p.pendant(2.8);
+        await p.pendant(1.4);
+        await p.amener('[data-atlas="diagnostic-gravite"]', {}, 90, 3.0);
+        await p.pendant(3.8);
       });
       // Le diagnostic rejoint le chantier du client.
       await p.film('outils-rattacher', async () => {
-        await p.pendant(0.4);
-        await p.amener('[data-atlas="diagnostic-details"]', {}, 260, 1.2);
-        await p.toucher('[data-atlas="diagnostic-details"] summary');
-        await p.pendant(0.8);
-        await p.amener('[data-atlas="diagnostic-rattacher"]', {}, 260, 1.4);
+        await p.pendant(1.2);
+        await p.amener('[data-atlas="diagnostic-details"]', {}, 260, 1.8);
         await p.pendant(0.6);
+        await p.toucher('[data-atlas="diagnostic-details"] summary');
+        await p.pendant(1.4);
+        await p.amener('[data-atlas="diagnostic-rattacher"]', {}, 260, 2.2);
+        await p.pendant(1.2);
         await p.choisir('[data-atlas="diagnostic-rattacher"] select', 'Bernard');
-        await p.pendant(0.9);
+        await p.pendant(1.6);
         await p.toucher('[data-atlas="diagnostic-rattacher"] button', { texte: 'Rattacher' });
-        await p.pendant(2.2);
+        await p.pendant(3.0);
       });
     },
   },
@@ -365,47 +430,46 @@ const RECITS = {
     async jouer(p) {
       // Votre liste de prestations, composée une fois pour toutes.
       await p.film('outils-composer', async () => {
-        await p.pendant(0.6);
+        await p.pendant(1.4);
         await p.toucher('[data-atlas="carte-composer-ma-fiche"]');
-        await p.pendant(1.0);
+        await p.pendant(2.0);
         await p.toucher('button', { texte: 'Massifs' });
-        await p.pendant(2.2);
+        await p.pendant(3.2);
       });
       // Une fiche pour M. Bernard : ses cases de la dernière fois.
+      await p.placer('a[aria-label^="Retour"]', {}, 14);
       await p.film('outils-bernard', async () => {
-        await p.pendant(0.3);
-        await p.amener('a[aria-label^="Retour"]', {}, 14, 0.9);
-        await p.pendant(0.2);
-        await p.toucher('a[aria-label^="Retour"]');
-        await p.pendant(0.9);
-        await p.toucher('[data-atlas="ouvrir-fiche-chantier"]');
-        await p.pendant(1.3);
-        await p.toucher('[data-atlas="pont-client"]');
-        await p.pendant(1.1);
-        await p.toucher('[data-atlas="choix-du-client"] button', { contient: 'Bernard' });
         await p.pendant(1.4);
-        await p.defiler(300, 1.6);
-        await p.pendant(1.2);
+        await p.toucher('a[aria-label^="Retour"]');
+        await p.pendant(1.6);
+        await p.toucher('[data-atlas="ouvrir-fiche-chantier"]');
+        await p.pendant(2.0);
+        await p.toucher('[data-atlas="pont-client"]');
+        await p.pendant(1.8);
+        await p.toucher('[data-atlas="choix-du-client"] button', { contient: 'Bernard' });
+        await p.pendant(2.2);
+        await p.defiler(300, 2.4);
+        await p.pendant(2.2);
       });
       // Enregistrée et envoyée.
       await p.film('outils-envoyer', async () => {
-        await p.pendant(0.4);
-        await p.amener(OBSERVATIONS, {}, 250, 2.0);
-        await p.pendant(0.3);
-        await p.toucher(OBSERVATIONS);
-        await p.pendant(0.4);
-        await p.ecrire('La haie du fond sera taillée la semaine prochaine.', 20);
+        await p.pendant(1.2);
+        await p.amener(OBSERVATIONS, {}, 250, 3.0);
         await p.pendant(0.6);
-        await p.amener('[data-atlas="envoyer-fiche"]', {}, 380, 0.9);
-        await p.pendant(0.3);
+        await p.toucher(OBSERVATIONS);
+        await p.pendant(0.6);
+        await p.ecrire('La haie du fond sera taillée la semaine prochaine.', 14);
+        await p.pendant(1.2);
+        await p.amener('[data-atlas="envoyer-fiche"]', {}, 380, 1.4);
+        await p.pendant(0.8);
         await p.toucher('[data-atlas="envoyer-fiche"]');
-        await p.pendant(2.4);
+        await p.pendant(3.4);
       });
       // Ce que lit le client, sur son téléphone.
       await p.page.evaluate(() => window.postMessage({ revenir: '/entretien/dernier' }, '*'));
       await p.page.waitForTimeout(600);
       await p.film('outils-client', async () => {
-        await p.pendant(3.4);
+        await p.pendant(4.2);
       });
     },
   },

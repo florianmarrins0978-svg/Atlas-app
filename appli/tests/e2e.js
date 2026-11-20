@@ -783,10 +783,10 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // qui repasse). Le film reste donc dessous, sur sa dernière image.
   //
   // La page des outils (20 novembre 2026) montre chaque outil de bout en
-  // bout en onze films de l'appli, tournés dans ses démonstrations par
+  // bout en douze films de l'appli, tournés dans ses démonstrations par
   // appli/scripts/film-outils.cjs (sa correction : « comme s'il regardait un
   // film »). Ils passent le même contrôle.
-  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-conduite', 'outils-rattacher', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
+  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-conduite', 'outils-rattacher', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
   for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE.concat([['outils.html', 'vente, les outils', FILMS_DES_OUTILS, true]])) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
@@ -795,7 +795,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const cadre = await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); return !!el; }, nom);
       ok(nomPage + ' : le film ' + nom + ' a son cadre dans la page', cadre);
       if (!cadre) continue;
-      // Le plus long, celui de la fiche d'intervention, dure onze secondes.
+      // Le plus long, celui de la remarque envoyée (outils.html), dure seize secondes.
       const fin = await page.waitForFunction((n) => {
         const f = document.querySelector('[data-film="' + n + '"] .film-fin');
         return f && f.classList.contains('vue');

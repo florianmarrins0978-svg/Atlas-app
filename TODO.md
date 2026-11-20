@@ -676,7 +676,7 @@ fournisseur), puis *« pareil avec les autres outils »*. Une première version
 les donnait à toucher dans le téléphone ; sa correction : *« Je veux pas que
 ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il regardait un
 film. »* Chaque outil est donc une suite de scènes qui se jouent seules au
-défilement (onze films, `appli/vente/images/nov-film-outils-*`), tournées par
+défilement (douze films, `appli/vente/images/nov-film-outils-*`), tournées par
 `appli/scripts/film-outils.cjs` dans les démonstrations (les vrais écrans,
 compilés depuis `src/` par `appli/scripts/demo-outils/construire.ts`).
 **Quand un de ces écrans change dans l'appli**, le site montre une version
