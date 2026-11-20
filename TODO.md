@@ -195,6 +195,10 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-l
 | le devis | « Abattage d'un chêne Quercus robur », sans rien d'autre depuis §588 | dessous, discret, « Abattage entre 10 et 20 m, ⌀ 80 cm », pour lui seul, comme le fournisseur de `appli/devis-fournisseur-pour-vous-seul.html` ; « Chez le client » montre le vrai PDF, sans elles |
 | Informations | le champ de la prestation porte tout, coupé à « (Quercus robur) (ab » | le champ garde « Abattage d'un chêne (Quercus robur) », ses réponses passent sous la rangée |
 
+**Sa réponse du 20 novembre, sur Informations** : *« la page information, je n'y
+ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
+que sur le devis. Reste à savoir si la ligne sous le travail lui convient.
+
 **Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
 la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
 `listerPrestationsDuDevis` le fait déjà pour §588) ; rien ne s'imprime ni ne
