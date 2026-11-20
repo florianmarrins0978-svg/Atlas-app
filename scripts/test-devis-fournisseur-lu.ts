@@ -51,6 +51,14 @@ test("une ligne sans prix ou sans désignation est écartée, jamais complétée
   assert.deepEqual(lu, { lignes: [], ecartees: 3, totalHt: null, totalTtc: null });
 });
 
+test("un devis lu « ml » garde ml, « m » garde m (sa demande du 20 novembre 2026)", () => {
+  const lu = lireReponseDevisFournisseur(
+    '{"lignes":[{"designation":"Bordure acier","unite":"ml","prix_unitaire_ht":"7,50"},{"designation":"Tube","unite":"m","prix_unitaire_ht":"0,80"}]}',
+    "fournisseur"
+  );
+  assert.deepEqual(lu?.lignes.map((l) => l.unite), ["ml", "m"]);
+});
+
 test("une unité qui n'est pas de la rubrique prend la première de la rubrique", () => {
   const lu = lireReponseDevisFournisseur('{"lignes":[{"designation":"Pose","unite":"sac","prix_unitaire_ht":"40"}]}', "partenaire");
   assert.equal(lu?.lignes[0].unite, "heure");

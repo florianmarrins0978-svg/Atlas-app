@@ -1,4 +1,5 @@
 import { normaliserPourRecherche } from "../recherche-client";
+import { auMetreLineaire } from "../prix-achat";
 import type { TableDePrix } from "./prix-de-la-liste";
 
 /**
@@ -60,7 +61,7 @@ export function prixDesFournisseurs(
       // jamais pour des mètres : une couronne n'est pas un mètre de tube.
       const trouves = siens.filter(
         (a) =>
-          (a.unite === "m") === (p.u === "ml") &&
+          auMetreLineaire(a.unite) === (p.u === "ml") &&
           (parRef && refPropre(a.reference) ? refPropre(a.reference) === parRef : normaliserPourRecherche(a.nom) === nom)
       );
       const recent = trouves.reduce<PrixAchatDuFournisseur | null>((m, a) => (m === null || a.releveLe > m.releveLe ? a : m), null);

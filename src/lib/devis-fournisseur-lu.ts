@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "./prix-achat";
+import { auMetreLineaire, lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "./prix-achat";
 import { normaliserPourRecherche } from "./recherche-client";
 import { typeDuDocument } from "./vehicules";
 import type { LectureTableau } from "./import-tarifs";
@@ -39,7 +39,7 @@ export type DevisLu = {
 
 const UNITES_LUES: Record<string, string> = {
   u: "pièce", un: "pièce", unite: "pièce", unité: "pièce", pce: "pièce", pc: "pièce", piece: "pièce", pièce: "pièce",
-  sac: "sac", sacs: "sac", m: "m", ml: "m", mètre: "m", metre: "m", "m2": "m²", "m²": "m²", "m3": "m³", "m³": "m³",
+  sac: "sac", sacs: "sac", m: "m", ml: "ml", mètre: "m", metre: "m", "m2": "m²", "m²": "m²", "m3": "m³", "m³": "m³",
   kg: "kg", palette: "palette", h: "heure", heure: "heure", heures: "heure", j: "journée", jour: "journée",
   journée: "journée", journee: "journée", forfait: "forfait", ens: "forfait",
 };
@@ -48,7 +48,10 @@ const UNITES_LUES: Record<string, string> = {
 function uniteDeLaRubrique(brut: string | null, rubrique: RubriqueAchat): string {
   const siennes = UNITES_ACHAT[rubrique];
   const lue = UNITES_LUES[(brut ?? "").trim().toLowerCase().replace(/\.$/, "")];
-  return lue && siennes.includes(lue) ? lue : siennes[0];
+  if (lue && siennes.includes(lue)) return lue;
+  // Un partenaire n'a que « m » : un « ml » lu reste un mètre linéaire.
+  if (auMetreLineaire(lue)) return siennes.find((u) => auMetreLineaire(u)) ?? siennes[0];
+  return siennes[0];
 }
 
 /** Le texte du modèle, transformé en lignes, ou `null` s'il n'en rend aucune. */

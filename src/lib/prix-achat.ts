@@ -24,12 +24,19 @@ import { enEuros } from "./euros";
 
 export type RubriqueAchat = "fournisseur" | "partenaire";
 
+/** « m » et « ml » : un prix au mètre linéaire, quelle que soit l'écriture choisie. */
+export function auMetreLineaire(unite: string | null | undefined): boolean {
+  return unite === "m" || unite === "ml";
+}
+
 /** Le coefficient le plus haut, 200 % de marge. */
 export const MARGE_MAX = 3;
 
 /** Les unités d'une ligne, celles de la planche. */
 export const UNITES_ACHAT: Record<RubriqueAchat, readonly string[]> = {
-  fournisseur: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"],
+  // « ml » à côté de « m » : sa demande du 20 novembre 2026. Les deux disent un
+  // mètre linéaire (`auMetreLineaire`), et le plan d'arrosage les lit pareil.
+  fournisseur: ["pièce", "sac", "m", "ml", "m²", "m³", "kg", "palette"],
   partenaire: ["heure", "journée", "m", "m²", "forfait"],
 };
 
