@@ -153,7 +153,7 @@ type Ligne = {
   /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
-  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
+  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
   hommesMainDoeuvre?: number | null;
 };
 
