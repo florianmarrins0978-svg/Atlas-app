@@ -187,6 +187,22 @@
           "credit": "Photo du Minnesota Department of Natural Resources (FIA), Bugwood.org",
           "partie": "feuille",
           "legende": "Des taches brunes et rouges sur les feuilles d’un peuplier baumier."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/5190100",
+          "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-feuille-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Michael Kangas, NDSU, North Dakota Forest Service, Bugwood.org",
+          "partie": "feuille",
+          "legende": "De près, sur une feuille de peuplier : une tache morte, avec les points sombres du champignon au centre."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/3046096",
+          "fichier": "donnees/phyto/brouillons/images/chancre-septorien-peuplier-rameau.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Theodor D. Leininger, USDA Forest Service, Bugwood.org",
+          "partie": "rameau",
+          "legende": "Des chancres sombres sur les jeunes tiges d’un peuplier deltoïde, un peuplier d’Amérique."
         }
       ],
       "noteImpact": 2,

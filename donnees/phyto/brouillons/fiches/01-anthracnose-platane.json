@@ -175,12 +175,20 @@
           "legende": "Tache sèche brune le long d’une nervure, sur une feuille de Platanus occidentalis, un platane d’Amérique."
         },
         {
-          "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2020-05-27%2009%2030%2010%20An%20American%20sycamore%20branch%20with%20a%20severe%20infection%20of%20Sycamore%20anthracnose%20along%20Tranquility%20Court%20in%20the%20Franklin%20Farm%20section%20of%20Oak%20Hill%2C%20Fairfax%20County%2C%20Virginia.jpg?width=1200",
-          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-rameau.jpg",
-          "licence": "CC BY-SA 4.0",
-          "credit": "Photo de Famartin, via Wikimedia Commons",
-          "partie": "rameau",
-          "legende": "Une pousse morte et ses jeunes feuilles desséchées, sur un platane d’Amérique très atteint, en Virginie aux États-Unis."
+          "url": "https://www.forestryimages.org/browse/image/1234088",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-feuille-2.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Clemson University, USDA Cooperative Extension Slide Series, Bugwood.org",
+          "partie": "feuille",
+          "legende": "Une tache brune qui suit une nervure, sur une feuille de platane."
+        },
+        {
+          "url": "https://www.forestryimages.org/browse/image/1198007",
+          "fichier": "donnees/phyto/brouillons/images/anthracnose-platane-feuille-3.jpg",
+          "licence": "CC BY 3.0 US",
+          "credit": "Photo de Joseph OBrien, USDA Forest Service, Bugwood.org",
+          "partie": "feuille",
+          "legende": "Au bout d’une pousse, de jeunes feuilles brunies et desséchées, à côté de feuilles encore vertes, sur un platane d’Amérique."
         }
       ],
       "noteImpact": null,
