@@ -324,7 +324,7 @@ async function main() {
     assert.equal(p!.venteHt, "607.50", "450 € × 1,35, sa marge à lui");
   });
 
-  await test("un partenaire pris à la journée : 2 jours × 450 € × 1,35, sur une ligne qui dit son nom, quoi que l'écran envoie", async () => {
+  await test("un partenaire pris à la journée : 2 jours × 450 € × 1,35, quoi que l'écran envoie, et son nom reste hors de la ligne", async () => {
     const A = await sonEntreprise("partenaire-ligne");
     const { journee } = await sesPartenaires(A);
     const c = await chantierDicte(A, {
@@ -337,12 +337,14 @@ async function main() {
     assert.deepEqual(
       p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite, l.mainDoeuvre]),
       [
-        ["Main d’œuvre : Élagage Durand", 1215, "2", "journée", true],
+        // Sa réponse du 19 novembre 2026 : le nom du partenaire ne part pas
+        // chez le client. Il reste dans le calcul, que lui seul lit.
+        ["Main d’œuvre", 1215, "2", "journée", true],
         ["Taille de haie de laurier", 300, "20", "ml", undefined],
       ]
     );
     assert.ok(
-      p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€ × 1,35/.test(x.detail)),
+      p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€, plus 35\s%/.test(x.detail)),
       JSON.stringify(p.explication.calcul)
     );
   });

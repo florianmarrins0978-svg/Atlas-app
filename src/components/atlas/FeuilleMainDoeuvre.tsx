@@ -8,6 +8,7 @@ import RepartirLaMainOeuvre from "./RepartirLaMainOeuvre";
 import { ListeDesPartenaires, PartenairePris, PastilleMesPartenaires } from "./PartenairesDeLaMainOeuvre";
 import { colors, font, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
+import { margeEnMots } from "@/lib/prix-achat";
 import {
   DUREES_MAIN_OEUVRE,
   aLaJournee,
@@ -292,7 +293,7 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
           ) : (
             <Rang titre="Votre marge" sous={qui.margePropre ? "La sienne, sur sa fiche" : "Main d’œuvre, sur leur prix"}>
               <span className="text-[19px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                {qui.marge === null ? "aucune" : `× ${virgule(Number(qui.marge).toFixed(2))}`}
+                {qui.marge === null ? "à donner" : margeEnMots(qui.marge)}
               </span>
             </Rang>
           )}

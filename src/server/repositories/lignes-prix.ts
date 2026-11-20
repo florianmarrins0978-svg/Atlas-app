@@ -102,6 +102,8 @@ export async function ajouterLignePrix(
     partGrille?: string | null;
     /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
     hommesMainDoeuvre?: number | null;
+    /** Le prix d'achat qui la chiffre, en mots (migration 0188), pour lui seul : le serveur seul le pose. */
+    achatRetenu?: string | null;
   }
 ) {
   exigerNombresDeLigne(
@@ -136,6 +138,7 @@ export async function ajouterLignePrix(
         partAncienne: options?.partAncienne ?? null,
         partGrille: options?.partGrille ?? null,
         hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
+        achatRetenu: options?.achatRetenu ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -168,7 +171,14 @@ export async function modifierLignePrix(
    * `seulement` ne doit pas pouvoir s'y glisser. Les hommes de son équipe
    * viennent de la feuille, recalculés (`poserLaMainDoeuvreDeLaFeuille`).
    */
-  duServeur?: { hommesMainDoeuvre?: number | null }
+  duServeur?: {
+    hommesMainDoeuvre?: number | null;
+    /**
+     * Le prix d'achat qui chiffre la ligne, en mots (migration 0188), posé
+     * par le seul choix d'un prix d'achat (`choisirUnPrixDAchatAction`).
+     */
+    achatRetenu?: string | null;
+  }
 ) {
   exigerNombresDeLigne(data.montant, data.quantite, data.prixUnitaire);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -189,6 +199,7 @@ export async function modifierLignePrix(
       prixGrille?: null;
       partAncienne?: null;
       partGrille?: null;
+      achatRetenu?: null;
     } = seulement(data, [
       "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
     ]);
@@ -266,11 +277,25 @@ export async function modifierLignePrix(
       patch.partAncienne = null;
       patch.partGrille = null;
     }
+    // **UN PRIX RETAPÉ À LA MAIN FAIT TOMBER LE FOURNISSEUR ÉCRIT SOUS LA
+    // LIGNE** (migration 0188) : « Matériaux Garnier, 8,90 € HT le sac » sous
+    // un prix qu'il a changé dirait d'où vient un chiffre qui n'en vient plus.
+    // En valeur, comme la reprise : l'écran renvoie le prix à chaque champ
+    // quitté, et une description retouchée ne change pas le prix.
+    if (
+      duServeur?.achatRetenu === undefined &&
+      avant?.achatRetenu != null &&
+      patch.prixUnitaire !== undefined &&
+      !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+    ) {
+      patch.achatRetenu = null;
+    }
     const [row] = await tx
       .update(lignesPrix)
       .set({
         ...patch,
         ...(duServeur?.hommesMainDoeuvre !== undefined ? { hommesMainDoeuvre: duServeur.hommesMainDoeuvre } : {}),
+        ...(duServeur?.achatRetenu !== undefined ? { achatRetenu: duServeur.achatRetenu } : {}),
         updatedAt: new Date(),
       })
       .where(eq(lignesPrix.id, id))

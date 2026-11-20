@@ -7,6 +7,8 @@ import * as tarifsRepo from "../src/server/repositories/tarifs";
 import { ajouterMateriel } from "../src/server/repositories/materiel";
 import { ajouterPrixAchat, creerSociete, reglerMarge } from "../src/server/repositories/fournisseurs-partenaires";
 import { preparerPropositionPrix } from "../src/server/chiffrage/proposition-prix";
+import { appliquerPropositionPrix } from "../src/server/chiffrage/appliquer-proposition";
+import { listerLignesPrix } from "../src/server/repositories/lignes-prix";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -84,9 +86,21 @@ async function main() {
     assert.equal(l?.prixUnitaire, "10.40");
     assert.equal(l?.quantite, "3");
     assert.ok(
-      p!.explication.calcul.some((x) => x.detail.includes("Acheté 24,00 € chez Point P le 12/10/2026, × 1,30, votre marge sur le matériel.")),
+      p!.explication.calcul.some((x) => x.detail.includes("Acheté 24,00 € chez Point P le 12/10/2026, plus 30 %, votre marge sur le matériel.")),
       "la source du prix n'est pas écrite"
     );
+  });
+
+  await test("la ligne dictée garde le fournisseur qui l'a chiffrée, pour lui seul (planche 2 du 19 novembre 2026)", async () => {
+    const c = await chantiersRepo.creerChantier(A, { nom: "Avec mention" });
+    await ajouterMateriel(A, c.id, "3 sacs de ciment");
+    const r = await appliquerPropositionPrix(A, c.id);
+    assert.equal(r.succes, true, JSON.stringify(r));
+    const lignes = await listerLignesPrix(A, c.id);
+    const l = lignes.find((x) => x.libelle === "3 sacs de ciment");
+    assert.ok(l, "la ligne n'est pas écrite : rien n'a été vérifié");
+    assert.equal(l.montant, "31.20");
+    assert.equal(l.achatRetenu?.replace(/\s/g, " "), "Point P, 8,00 € HT le sac");
   });
 
   await test("son prix de vente passe TOUJOURS avant : 3 × 12 € = 36 €", async () => {

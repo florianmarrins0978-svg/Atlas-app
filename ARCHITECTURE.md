@@ -36880,7 +36880,7 @@ Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nom
 | **la question porte de quoi le montrer** | `QuestionMainOeuvre.jours` et `.partenaires` (les prix de `prixDesPartenaires`, lus comme la feuille du devis les lit). Sa phrase vient de `questionDeLaMainOeuvre`, la même au serveur et à l'écran |
 | **une seule règle pour trois lecteurs** | `mainOeuvreDUnPartenaire` (la ligne, son montant, le calcul en clair) et `quantiteDuPartenaire` (à la journée, les jours du chantier ; sinon ce qu'il tape) dans `src/lib/feuille-main-oeuvre.ts`. La feuille du devis, la carte « Avant de chiffrer » et le serveur (`partenaireDuChoix`) les lisent |
 | **le serveur ne croit pas l'écran** | `propositionAvecMainOeuvre` relit le prix sous son entreprise et rejoue la quantité : une quantité à la journée envoyée par l'écran est remplacée par les jours dictés, un prix d'une autre entreprise ou retiré rend la main d'œuvre « à chiffrer », et la phrase le dit. Le conducteur d'un engin ne se retire pas d'un partenaire : il ne concerne que son équipe |
-| **la ligne dit son nom** | « Main d’œuvre : Élagage Durand », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
+| **la ligne ne dit plus son nom** (révisé le 19 novembre 2026, §592) | « Main d’œuvre », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
 | **la liste ne se recopie pas** | `PastilleMesPartenaires`, `ListeDesPartenaires`, `PartenairePris` quittent `FeuilleMainDoeuvre` pour `src/components/atlas/PartenairesDeLaMainOeuvre.tsx` ; `prixEnMots` et `enUnite` pour la règle pure. Les repères (`mo-partenaires`, `mo-prix-<id>`, `mo-revenir`) restent ceux de la feuille |
 
 **Ce que l'écran montre est ce qui part.** La carte (`MainOeuvreDeLaDictee`) lit son total sur la réponse enregistrée, jamais sur le texte tapé : une quantité qui ne se lit pas ne s'enregistre pas, et le total reste celui de la dernière qui se lisait. La barre de répartition reçoit le total du partenaire ; ses parts d'avant ne font plus le compte, elle les remet à l'échelle à la dizaine (`repartirMainOeuvre`), comme le serveur.
@@ -37695,3 +37695,155 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Ce que ce lot ne règle pas, et que le relevé a trouvé** : répartir une seconde fois AJOUTE aux parts posées (`partsAppliquees` part de la part d'avant) ; et préparer le devis à nouveau repart de la dictée (2 hommes), pas de la ligne qu'il a changée. Les deux sont dans `TODO.md`.
 
 `test-feuille-main-oeuvre.ts` (sept cas, vus rouges avant), `test-main-oeuvre-change-sa-ligne-db.ts` (sa dictée, « Changer », le partenaire, les refus, « Répartis »), `test-feuille-main-oeuvre-e2e.ts` (son geste : rouvrir, un homme de plus, une seule ligne).
+
+## §592 : Le nom du partenaire ne part pas chez le client
+
+**Sa réponse du 19 novembre 2026 : « le retirer ».** La ligne d'un partenaire
+pris pour la main d'œuvre s'écrivait « Main d’œuvre : Élagage Durand »
+(`ligneDeSonPartenaire`, `src/lib/feuille-main-oeuvre.ts`, §551). Le libellé
+d'une ligne s'imprime sur le PDF et la page publique : le client lisait le nom
+du sous-traitant. Elle s'écrit désormais « Main d’œuvre », comme celle de son
+équipe.
+
+**Où le nom reste, pour lui seul** : la feuille « Main d'œuvre » et la carte
+« Avant de chiffrer » (la liste de ses partenaires), et l'encadré « Calcul » de
+l'écran Prix (`propositionAvecMainOeuvre` : « Élagage Durand, Démontage sur
+corde : 2 jours × 450 € × 1,35 »). Rien de tout cela ne s'imprime.
+
+**Ce qui ne bouge pas.** La ligne se reconnaît à son drapeau `main_doeuvre`,
+jamais à son texte (`main-doeuvre-devis.ts`) : « dont main d'œuvre HT », la
+répartition et la feuille la retrouvent comme avant. Les lignes déjà écrites
+gardent leur texte : aucune migration ne réécrit un devis, il les corrige à la
+main s'il le veut.
+
+Contrôles : `test-feuille-main-oeuvre` (pur, vu rouge puis vert : la ligne ne
+contient plus le nom), `test-main-oeuvre-dictee-db` et
+`test-feuille-main-oeuvre-e2e` adaptés à la même règle.
+
+## §593 : La marge se tape en pour cent, et le prix d'une pièce se retrouve
+
+*20 novembre 2026, ses deux réponses : « la 3e planche je choisis la B en % »
+(`appli/sans-marge-sur-les-pieces.html`), « 4e planche parfait tu peux coder
+tout » (`appli/le-prix-d-une-piece.html`).*
+
+**La marge.** Elle se tape en pour cent : « 30 » fait 30 %, « 0 » fait sans
+marge (sa demande : *« si un utilisateur ne veut pas prendre de marge sur les
+pièces d'un fournisseur, il faut qu'il puisse le faire »*). La base garde le
+coefficient (`marges_achat`, `societes_achat.marge`, 1,30) : aucune migration,
+et `prixDepuisAchat` calcule comme avant.
+
+| Décision | Pourquoi |
+|---|---|
+| `lireMarge` lit un entier en pour cent, et le rend en coefficient | deux décimales au coefficient en base : 12,5 % y deviendrait 13 % sans le dire |
+| « 1,30 » tapé par habitude est refusé, avec quoi taper | le lire 1,3 % vendrait presque au prix d'achat |
+| la case vide reste « Marge à donner », la ligne « à chiffrer » | un oubli ne doit pas vendre au prix d'achat sans rien dire ; 0 % est un choix, le vide n'en est pas un |
+| `margeEnMots` dit « 30 % » ou « sans marge » partout où la marge se lit | Ce que je paie, la feuille « Main d'œuvre », la liste de ses partenaires, le calcul (« 2 jours × 450 €, plus 35 % ») et l'explication d'un prix (« plus 30 %, votre marge sur le matériel ») : taper 30 % pour lire « × 1,30 » ailleurs aurait été deux langues |
+| `conseilDeMarge` supprimé | il servait à qui tapait 20 en voulant 20 % : c'est désormais ce qu'il faut taper |
+
+**Ce que la recherche montre.** Une pièce trouvée par « Chercher un
+fournisseur ou une pièce » se dit avec son prix d'achat (`prixDAchatEnMots` :
+« 8,90 € HT le sac »), et la fiche ouverte depuis elle s'ouvre sur la même
+recherche.
+
+**Le devis tapé à la main.** Sous une ligne sans prix, ses prix d'achat chez
+ses fournisseurs (`PrixDAchatDeLaLigne`), le moins cher d'abord, par la règle
+du devis dicté (`prixAchatsProposes`, dont `prixAchatCorrespondant` garde le
+premier : une seule règle). Un appui pose le prix × sa marge
+(`choisirUnPrixDAchatAction`, qui relit prix et marge en base à partir du seul
+identifiant), et le fournisseur reste écrit sous la ligne
+(`lignes_prix.achat_retenu`, migration 0188, expand seul).
+
+| Pour qui rédige le devis | Comment |
+|---|---|
+| ses prix d'achat | la page ne les passe qu'aux comptes qui rédigent les devis (`peutGererDevis` : patron, commercial, facturation), et toutes les actions du devis sont gardées par `exigerGestionDevis` ; d'abord réservés au patron, élargis le 20 novembre 2026 sur sa réponse : *« le commercial, c'est celui qui va rédiger les devis, forcément il doit pouvoir le voir »* |
+| la mention sous la ligne | jamais dans la photographie du devis (`devis.ts` recopie ses champs un à un) ; retirée de l'export des données d'un client (`donnees-client.ts`) |
+| la mention tombe | dès qu'un prix est retapé, en valeur (`modifierLignePrix`, comme la reprise) ; l'écran fait de même, comparé au prix que l'achat a posé |
+
+**Trouvé en codant : l'emballage ne dit pas ce qu'on achète.** « Sac de
+terreau » partageait « sac » avec « Sac de ciment » autant que « terreau »
+avec le terreau, et à égalité le moins cher gagnait : le devis DICTÉ chiffrait
+ses sacs de terreau au prix du ciment. Les mots d'emballage (sac, big bag,
+palette, seau, bidon, carton, paquet) rejoignent les mots vides de la règle
+(`MOTS_VIDES`). Test vu rouge avant.
+
+**Ce qui n'est pas tenu.** L'unité d'une ligne reste dans sa rangée
+(`uniteAdmise`) : une pièce achetée « au sac » se pose en « u » sur le devis ;
+la mention, elle, dit « le sac ». Les prix de ses partenaires ne sont pas
+proposés sous une ligne : leur main d'œuvre passe par la feuille « Main
+d'œuvre ».
+
+Contrôles : `test-prix-achat` (pur, vu rouge : la marge en pour cent, les
+prix proposés, l'emballage, les phrases), `test-feuille-main-oeuvre` (le
+calcul en pour cent, 0 % sans marge), `test-achat-retenu-db` (sous
+`atlas_app` : posée, gardée sur une description retouchée, tombée sur un prix
+retapé ou un montant, absente du devis et de l'export ; **écrit, pas encore
+joué**). Parcouru dans un vrai navigateur sur la base de démonstration : 21
+vérifications, dont le PDF du devis sans aucun fournisseur, et un compte
+commercial qui ne reçoit ni la liste ni la mention.
+
+## §594 : Un fournisseur se crée depuis son devis
+
+*20 novembre 2026, sa réponse « oui, code-la » sur
+`appli/fournisseur-depuis-son-devis.html`.*
+
+Sous « Ajouter » de Ce que je paie, « Prendre un devis en photo » et « PDF,
+photo ou Excel » lisent un devis sans qu'il choisisse d'abord la société. La
+lecture rend aussi l'en-tête (`EmetteurLu` : nom, mail, téléphone de
+l'émetteur, jamais du destinataire), et la feuille « Ranger le devis lu »
+propose :
+
+| Ce qui est lu | Ce que la feuille propose |
+|---|---|
+| un émetteur qu'il n'a pas | « Nouveau fournisseur », prérempli (Nom, Adresse mail, Téléphone), « Créer et ajouter ces N prix » |
+| un émetteur qu'il a (`societeReconnue` : nom sans forme juridique, mail, ou 9 derniers chiffres du téléphone) | « Reconnu sur le devis », sa fiche, et le mail ou téléphone qui lui manquait ; « Ce n'est pas lui » repasse à la création |
+| rien de lisible dans l'en-tête | la création, nom vide et exigé |
+| son choix | « Le ranger chez un autre fournisseur », ou « Ne rien créer » (aucune trace : rien n'est rangé avant le choix) |
+
+| Décision | Pourquoi |
+|---|---|
+| la lecture ne range rien (`lireUnDevisSansSocieteAction`) ; le fichier, la société et les prix partent ensemble au choix (`rangerLeDevisLuAction`) | « Ne rien créer » ne laisse aucun fichier orphelin sans société |
+| sa propre entreprise lue comme émetteur est écartée (`pasLuiMeme`) | un devis qu'il a envoyé lui-même ne crée pas une société à son nom |
+| un nom voisin ne suffit pas (« Garnier » n'est pas « Matériaux Garnier ») | deux fournisseurs confondus mélangeraient leurs prix sans qu'il le voie |
+| le téléphone se valide (`lireTelephone`) et vit sur `societes_achat.telephone` (migration 0189, expand seul, ≤ 30) | « appelez-nous » lu sur un en-tête ne doit pas devenir un numéro |
+| les étapes communes (`preparerLeFichier`, `lireLeFichier`, `garderLeFichier`, `prendreLesLignes`) servent la lecture d'une fiche ET celle-ci | une seule règle pour lire et ranger un devis |
+
+**Ce qui n'est pas vérifiable ici** : la lecture réelle de l'en-tête par
+l'IA (aucune clé sur ce poste). La relecture de sa réponse est éprouvée
+(`test-devis-fournisseur-lu`) ; la consigne, à jouer sur son espace.
+
+Contrôles : `test-devis-fournisseur-lu` (pur : l'en-tête lu, mail et
+téléphone invalides écartés, la reconnaissance), `test-prix-achat`
+(`lireTelephone`). Parcouru dans un vrai navigateur sur la base de
+démonstration, réponse de lecture simulée : 15 vérifications (création,
+« Ne rien créer » sans trace, nom exigé, cases suivies par le bouton,
+téléphone refusé puis corrigé sur la fiche, rangement chez un autre).
+Batterie pas jouée.
+
+## §595 : Le fournisseur reste écrit sous une ligne dictée, pour qui rédige le devis
+
+*20 novembre 2026, sa réponse « 2, tu peux la coder aussi » sur
+`appli/devis-fournisseur-pour-vous-seul.html`.*
+
+Une ligne que le devis DICTÉ chiffre par un prix d'achat × sa marge garde le
+fournisseur sous elle (« Matériaux Garnier, 9,40 € HT le sac »), visible de qui rédige le devis (§593), dans la même
+colonne que le devis tapé à la main (`lignes_prix.achat_retenu`, migration
+0188, §593). « Chez le client » de la planche est l'aperçu PDF qui existait :
+le PDF ne la porte pas (`devis.ts` recopie ses champs un à un).
+
+| Chemin | Comment la mention arrive |
+|---|---|
+| la dictée du chantier | `prixDUneLigneDictee` rend `achatRetenu` quand l'achat a donné le prix ; `completerParSesAchats` le garde sur la ligne proposée, `appliquerPropositionPrix` l'écrit |
+| le micro du devis | l'écran renvoie le prix coché, jamais le fournisseur ; le serveur repasse la même règle (`achatQuiChiffreLAjout`) et ne retient l'achat que s'il donne exactement ce prix et cette quantité |
+| son prix de vente, sa grille, une ligne à chiffrer | aucune mention : aucun fournisseur ne l'a chiffrée |
+
+**Limite connue** : sur le micro, si sa grille donnait par hasard au centime
+le même prix que l'achat × marge, la mention nommerait le fournisseur. Une
+ligne sans mention vaut mieux qu'une mention fausse, mais ce cas-là n'est pas
+écarté.
+
+Contrôles : `test-prix-achat` (pur, vu rouge : la mention sur un achat, aucune
+sur une vente ou sans marge), `test-devis-prix-achat-db` (la proposition
+appliquée écrit la mention ; **écrit, pas encore joué**). Regardé sur la base
+de démonstration : deux lignes dictées portent leur fournisseur à l'écran, le
+PDF du même devis n'en nomme aucun.
+

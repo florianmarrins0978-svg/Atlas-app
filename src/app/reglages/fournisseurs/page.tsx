@@ -29,6 +29,7 @@ function vue(s: SocieteComplete): SocieteVue {
     nom: s.nom,
     marge: s.marge,
     email: s.email,
+    telephone: s.telephone,
     prix: s.prix.map((p) => ({ id: p.id, nom: p.nom, reference: p.reference, unite: p.unite, prixHt: p.prixHt, prixAvant: p.prixAvant, source: p.source })),
     devis: s.devis.filter((d) => d.genre === "devis").map(recu),
     factures: s.devis.filter((d) => d.genre === "facture").map(recu),

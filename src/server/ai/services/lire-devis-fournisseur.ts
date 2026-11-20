@@ -3,9 +3,11 @@ import { lireReponseDevisFournisseur, type DevisLu } from "@/lib/devis-fournisse
 import type { RubriqueAchat } from "@/lib/prix-achat";
 
 /**
- * Lire un devis reçu d'un fournisseur ou d'un partenaire, en photo ou en PDF —
+ * Lire un devis reçu d'un fournisseur ou d'un partenaire, en photo ou en PDF,
  * sa demande du 19 octobre 2026. Une facture se lit de la même façon, totaux
- * compris (23 octobre 2026). Même patron que `lire-document-vehicule.ts`.
+ * compris (23 octobre 2026). Et, depuis sa planche du 19 novembre 2026, celui
+ * qui l'a émis : son nom, son mail et son téléphone, pour créer sa fiche ou le
+ * reconnaître. Même patron que `lire-document-vehicule.ts`.
  *
  * Rend `null` quand elle ne peut rien dire (pas de fournisseur, réponse
  * illisible) : le devis reste gardé, et les prix se tapent à la main.
@@ -17,8 +19,9 @@ import type { RubriqueAchat } from "@/lib/prix-achat";
 
 const SYSTEME = `Tu lis un devis ou une facture qu'un fournisseur ou un sous-traitant a envoyé à un artisan paysagiste.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code :
-{"lignes": [{"designation": string, "reference": string|null, "quantite": string|null, "unite": string|null, "prix_unitaire_ht": string, "remise_pourcent": string|null}], "total_ht": string|null, "total_ttc": string|null}
+{"fournisseur": {"nom": string|null, "email": string|null, "telephone": string|null}, "lignes": [{"designation": string, "reference": string|null, "quantite": string|null, "unite": string|null, "prix_unitaire_ht": string, "remise_pourcent": string|null}], "total_ht": string|null, "total_ttc": string|null}
 Règles :
+- fournisseur : la société qui a ÉMIS le document (son en-tête, son logo, son cachet, son pied de page), jamais le client à qui il est adressé. Son nom, son adresse mail et son numéro de téléphone recopiés tels qu'ils sont imprimés ; null pour ce qui n'y est pas.
 - Une entrée par ligne d'article ou de prestation du document, dans l'ordre.
 - designation : le libellé tel qu'il est écrit, sans la référence.
 - reference : le code article du fournisseur s'il est imprimé, sinon null.

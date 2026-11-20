@@ -55,11 +55,24 @@ export async function getSociete(ctx: Ctx, id: string): Promise<SocieteEnBase | 
   });
 }
 
-export async function creerSociete(ctx: Ctx, rubrique: RubriqueAchat, nom: string): Promise<SocieteEnBase> {
+export async function creerSociete(
+  ctx: Ctx,
+  rubrique: RubriqueAchat,
+  nom: string,
+  /** Lus sur son devis, ou tapés (sa planche du 19 novembre 2026). */
+  contact?: { email?: string | null; telephone?: string | null }
+): Promise<SocieteEnBase> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [s] = await tx
       .insert(societesAchat)
-      .values({ entrepriseId: ctx.entrepriseId, rubrique, nom, createdBy: ctx.utilisateurId })
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        rubrique,
+        nom,
+        email: contact?.email ?? null,
+        telephone: contact?.telephone ?? null,
+        createdBy: ctx.utilisateurId,
+      })
       .returning();
     return s;
   });
@@ -81,7 +94,7 @@ export async function reglerMargeSociete(ctx: Ctx, id: string, marge: string | n
 export async function reglerContactSociete(
   ctx: Ctx,
   id: string,
-  champs: { email?: string | null; debutMail?: string | null; finMail?: string | null }
+  champs: { email?: string | null; telephone?: string | null; debutMail?: string | null; finMail?: string | null }
 ): Promise<SocieteEnBase | undefined> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [s] = await tx

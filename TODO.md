@@ -16,6 +16,14 @@ lire le diamètre de la pièce du réseau au lieu de l'écrire, avec une suite q
 rougit sur un réseau en Ø32. Le film des turbines du site est cadré pour ne pas
 montrer cette ligne ; une fois l'écran juste, les films du plan se retournent.
 
+## LE PRIX D'UNE PIÈCE : CODÉ LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« 4e planche parfait tu peux coder tout, pas de batterie »*.
+Codé sur la branche de session (`ARCHITECTURE.md` §593, migration 0188),
+parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
+20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
+612). Ce qui suit est la planche telle qu'elle a été posée.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
 Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
@@ -122,7 +130,12 @@ pour lui seul (la planche du 19 novembre). Toucher cette mention rouvre le
 choix. **Une seule règle de rapprochement pour la dictée et la saisie**
 (`CLAUDE.md` §3) : la proposer telle quelle, jamais une seconde.
 
-## ⏳ UNE PLANCHE À REGARDER : SANS MARGE SUR LES PIÈCES (20 novembre 2026)
+## SANS MARGE : LA B, EN POUR CENT, CODÉE LE 20 NOVEMBRE 2026, SUR `main`
+
+Sa réponse : *« la 3e planche je choisis la B en % »*. Codé avec le prix d'une
+pièce (`ARCHITECTURE.md` §593), même lot, même batterie. Ce qui
+suit est la planche telle qu'elle a été posée.
+
 
 Sa demande : *« si un utilisateur ne veut pas prendre de marge sur les pièces
 d'un fournisseur, il faut qu'il puisse le faire »*. Aujourd'hui la marge est
@@ -146,7 +159,11 @@ au prix d'achat, sans rien dire, chez l'artisan qui a simplement oublié de la
 remplir. Gravité argent : niveau 3 une fois codé (`lireMarge`, `BandeDeMarge`,
 `ligneDeMarge`, `phraseDeLaMargePropre`, et la marge propre de chaque fiche).
 
-## ⏳ DEUX PLANCHES À REGARDER : LE FOURNISSEUR DEPUIS SON DEVIS (19 novembre 2026)
+## LE FOURNISSEUR DEPUIS SON DEVIS : LES DEUX PLANCHES CODÉES (19 et 20 novembre 2026)
+
+**CODÉES LE 20 novembre 2026** (`ARCHITECTURE.md` §594, §595 ; migrations 0188, 0189), sur `main` le 20 novembre 2026, batterie jouée (`test-achat-retenu-db` et `test-devis-prix-achat-db` compris).
+
+**L'écran Prix montre le calcul (« Acheté 24,00 € chez Point P ») au commercial aussi : voulu.** Sa réponse du 20 novembre 2026 : *« le compte commercial, qu'il a accès au prix, ça a du sens »*. Ne pas le retirer.
 
 Sa demande : *« je rentre un devis d'un fournisseur, l'application comprend
 que c'est un fournisseur, me crée le dossier avec son nom, son mail, son
@@ -185,6 +202,19 @@ imprimée). Gravité argent : niveau 3.
 dans la maquette* ; le nom du partenaire sur la ligne « Main d'œuvre :
 Élagage Durand », qui partait chez le client, **le retirer** (voir l'entrée
 suivante).
+
+## LE NOM DU PARTENAIRE NE PART PLUS CHEZ LE CLIENT (19 novembre 2026), CODÉ, SUR `main`
+
+Sa réponse : **le retirer**. `ligneDeSonPartenaire`
+(`src/lib/feuille-main-oeuvre.ts`) écrivait « Main d’œuvre : Élagage Durand »
+sur la ligne du devis, donc sur le PDF et la page du client. La ligne dit
+désormais « Main d’œuvre » ; le partenaire reste dans l'encadré « Calcul » de
+l'écran Prix, pour lui seul. Les lignes déjà écrites gardent leur texte : il
+les corrige à la main s'il le veut. `ARCHITECTURE.md` §592. Gravité argent (devis) : niveau 3. Joués ici : la
+suite pure (vue rouge puis verte), les types, le style. **Pas joués** : la
+suite base et les deux suites navigateur adaptées (et `test-main-oeuvre-change-sa-ligne-db`,
+arrivée de `main` le 20 novembre, qui reconnaît désormais la ligne du
+partenaire à son unité), et la batterie avant `main`, qui attendent son accord.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA FICHE DE DIAGNOSTIC SOIGNÉE (19 novembre 2026)
 

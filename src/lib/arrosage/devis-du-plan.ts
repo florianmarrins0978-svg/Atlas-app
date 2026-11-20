@@ -2,6 +2,7 @@ import { CATALOGUE } from "./catalogue.js";
 import { toutesLesPieces } from "./choix-de-pieces";
 import { composerNourrice } from "./nourrice-eclatee";
 import { normaliserPourRecherche } from "../recherche-client";
+import { auMetreLineaire } from "../prix-achat";
 import type { LigneDevisLue } from "../devis-fournisseur-lu";
 
 /**
@@ -71,7 +72,7 @@ export function reconnaitreLeDevis(lignes: readonly LigneDevisLue[]): { connues:
     }
     const deja = connues.find((c) => c.cle === p.cle);
     if (deja) deja.q += q;
-    else connues.push({ cle: p.cle, nom: p.nom, reference: p.reference, q, u: l.unite === "m" ? "ml" : "u" });
+    else connues.push({ cle: p.cle, nom: p.nom, reference: p.reference, q, u: auMetreLineaire(l.unite) ? "ml" : "u" });
   }
   return { connues, inconnues };
 }

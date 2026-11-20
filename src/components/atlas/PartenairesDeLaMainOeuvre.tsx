@@ -3,6 +3,7 @@
 import IconeTrait from "./IconeTrait";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { prixEnMots, type PrixDePartenaire } from "@/lib/feuille-main-oeuvre";
+import { margeEnMots } from "@/lib/prix-achat";
 
 /**
  * ─── « MES PARTENAIRES » : la pastille, leurs prix, celui qui est pris ────────
@@ -16,8 +17,6 @@ import { prixEnMots, type PrixDePartenaire } from "@/lib/feuille-main-oeuvre";
  * Les repères (`mo-partenaires`, `mo-prix-<id>`, `mo-revenir`) restent ceux
  * de la feuille : les suites qui la parcourent les lisent.
  */
-
-const virgule = (n: number | string) => String(n).replace(".", ",");
 
 function initiales(nom: string): string {
   return nom
@@ -92,7 +91,7 @@ export function ListeDesPartenaires({
                   {societe}
                 </p>
                 <span className="text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
-                  {prix[0].marge === null ? "sans marge" : `× ${virgule(Number(prix[0].marge).toFixed(2))}`}
+                  {prix[0].marge === null ? "marge à donner" : margeEnMots(prix[0].marge)}
                 </span>
               </div>
               {prix.map((p) => (
