@@ -88,6 +88,9 @@ d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
 la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y
 mettre serait un changement de `src/`, à lui de dire.
 
+**Sa capture du 20 au soir** : la bulle cachait les champs qui s'écrivent. Elle
+se retire pendant l'écriture et revient une fois tout écrit.
+
 **À trancher par lui :** la visite telle quelle, ou des étapes en moins (56,
 c'est long) ; puis le bouton « Visiter » sur `appli/vente/`. **Et une question
 qui sort de la planche** : l'appli elle-même montre « 06 12 34 56 78 » comme
