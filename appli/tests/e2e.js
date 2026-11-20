@@ -768,6 +768,43 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cPo.close();
   }
 
+  // ── La page des outils : le vrai plan d'arrosage, à essayer ─────────────
+  //
+  // Sa demande du 20 novembre 2026 : « leur montrer toute la page », que l'on
+  // puisse toucher 25 ou 32, une pièce, la liste, l'envoi au fournisseur. Le
+  // téléphone porte le vrai écran de l'appli, compilé dans vente/demo/ par
+  // appli/scripts/demo-outils/construire.ts. On le regarde se charger, puis
+  // on touche deux étapes du guide et l'on vérifie que c'est l'APPLI qui a
+  // répondu : en Ø32 la pelouse passe sur un seul réseau (trois cartes de
+  // réseau deviennent deux), et l'envoi ouvre la feuille « Au fournisseur ».
+  // Une démonstration reconstruite sur un écran qui aurait changé, ou un
+  // fichier oublié dans vente/demo/, rougit ici.
+  {
+    const cDe = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cDe.newPage();
+    await page.goto(`${B}/vente/outils.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => { const el = document.querySelector('#essai-arrosage .essai-visuel'); scrollTo(0, el.getBoundingClientRect().top + scrollY - 70); });
+    const pret = await page.waitForFunction(() => document.querySelector('#demo-arrosage.pret'), null, { timeout: 30000 }).then(() => true, () => false);
+    ok('vente, les outils : le plan d\'arrosage se charge dans le téléphone', pret);
+    if (pret) {
+      const cadre = page.frameLocator('#demo-arrosage iframe');
+      const avant = await cadre.locator('[data-atlas="carte-reseau"]').count();
+      await page.locator('#essai-arrosage .guide button[data-etape="tuyau"]').click();
+      const apres = await page.waitForFunction(() => {
+        const f = document.querySelector('#demo-arrosage iframe');
+        return f && f.contentDocument && f.contentDocument.querySelectorAll('[data-atlas="carte-reseau"]').length === 2;
+      }, null, { timeout: 8000 }).then(() => 2, async () => cadre.locator('[data-atlas="carte-reseau"]').count());
+      ok('vente, les outils : en Ø32, la pelouse passe sur un seul réseau', avant === 3 && apres === 2, avant + ' réseaux, puis ' + apres);
+      await page.locator('#essai-arrosage .guide button[data-etape="fournisseur"]').click();
+      const feuille = await page.waitForFunction(() => {
+        const f = document.querySelector('#demo-arrosage iframe'), d = f && f.contentDocument && f.contentDocument.querySelector('[role="dialog"]');
+        return d && /Au fournisseur/.test(d.textContent) ? d.textContent : false;
+      }, null, { timeout: 8000 }).then(() => true, () => false);
+      ok('vente, les outils : l\'envoi ouvre la feuille « Au fournisseur »', feuille);
+    }
+    await cDe.close();
+  }
+
   // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
   //
   // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés

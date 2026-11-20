@@ -41,11 +41,11 @@
   pression se compte au dernier arroseur ; la liste part au fournisseur.
 
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
-    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan
-      (LePlanDuJardin), rendu par scripts/capture-plan-arrosage.ts avec la
-      feuille de style de l'appli et le calcul réel, sur le jardin de la
-      planche du 18 octobre (deux pelouses, un massif en goutte-à-goutte, un
-      couloir de tuyères) ; ici la carte du réseau 1 et la nourrice éclatée ;
+    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
+      dans la démonstration (voir « ESSAYEZ LE PLAN » plus bas), sur le même
+      jardin qu'elle ; ici la carte du réseau 1 et la nourrice éclatée ;
+    · outils-demo-arrosage : le premier écran de la démonstration, posé sous
+      le téléphone tant qu'elle charge ;
     · outils-diagnostic : la fiche du peuplier, telle que l'écran de main la
       peint aujourd'hui (onglet « Aujourd'hui » de
       appli/soignee/fiche-de-diagnostic.html, figé par scripts/planche-figee/).
@@ -62,14 +62,15 @@
     · outils-feuille : la photo de référence de la fiche du peuplier, de
       Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia
       Commons, sous licence CC BY 3.0 US ; recadrée, son crédit sous la scène.
-  Le croquis est un dessin, celui de appli/soignee/arrosage.html (le même
-  jardin) : c'est la feuille de papier de l'artisan, pas un écran de l'appli.
+  Le croquis est un dessin du jardin de la démonstration, au trait de celui
+  de appli/soignee/arrosage.html : c'est la feuille de papier de l'artisan,
+  pas un écran de l'appli.
 
   CE QUI BOUGE, et pourquoi. Le geste du site, « rien ne se retape, tout se
   porte », répété une fois par outil :
     · le plan d'arrosage : un trait d'or balaie le croquis (la lecture, comme
-      dans l'appli), « 12 m » quitte le croquis et se pose sur « 12 m sur
-      12 m » de la carte du réseau, qui s'écrit alors de haut en bas ;
+      dans l'appli), la carte du réseau sort, « 20 m » quitte le croquis et se
+      pose sur « 20 m sur 8 m », et la carte s'écrit de haut en bas ;
     · le diagnostic : le trait d'or balaie la photo, la photo recule, et la
       fiche arrive un peu grande et se pose, comme Ma TVA dans Encaissez ;
     · les fiches de chantier : le compte rendu sort de derrière le téléphone
@@ -78,6 +79,27 @@
   sur le papier et sur la photo, jamais sur un écran. Sans script, ou pour
   qui a demandé moins de mouvement, chaque scène montre son état le plus
   parlant, immobile.
+
+  ESSAYEZ LE PLAN, LE 20 NOVEMBRE AU SOIR. Sa demande, la page vue : après
+  la nourrice, un exemple à deux réseaux (« un réseau pour le gazon avec
+  4 arroseurs [Rain Bird], et un réseau de goutte à goutte »), et « toute la
+  page » : toucher 25 ou 32 et voir les réseaux changer, toucher n'importe
+  quelle pièce pour la changer ou la supprimer, la liste, l'envoi au
+  fournisseur. Le téléphone de la section « Essayez le plan » porte donc le
+  VRAI écran de l'appli, pas une copie : demo/arrosage.html, compilé depuis
+  src/ par appli/scripts/demo-outils/construire.ts (mêmes composants, même
+  calcul, même feuille de style), les actions serveur remplacées par
+  appli/scripts/demo-outils/bouchons.ts. Le guide à côté ne dessine rien sur
+  l'écran : il le fait défiler et touche ce qu'il faut, et c'est l'appli qui
+  répond (pilote.ts).
+  LE JARDIN : une pelouse de 20 m sur 8 m et un massif en goutte-à-goutte,
+  cherché avec le vrai calcul parmi des centaines. Une pelouse à 4 turbines
+  sur un seul réseau passe déjà en Ø25 : le 32 n'y change rien, et l'appli
+  le dit. Celle-ci donne en Ø25 deux réseaux de 4 turbines 3504 et le
+  goutte-à-goutte, et en Ø32 une ligne de 8 turbines : « un réseau de
+  moins ». « 3005 » n'existe pas dans son catalogue ; la 3504 est la turbine
+  Rain Bird que le calcul choisit. Le croquis, la carte du réseau et la
+  nourrice du chapitre sont ceux de ce même jardin.
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : à regarder sur son iPhone.
 -->
@@ -355,6 +377,51 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 .duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
 @media (min-width:960px){.scene-fiche{padding:56px 40px 44px}.scene-croquis{padding:36px 30px 40px}}
 
+/* ── Essayez : le vrai écran de l'appli, dans le téléphone ──────────────── */
+/* Sa demande du 20 novembre 2026 : « leur montrer toute la page », et qu'on
+   puisse toucher. Le téléphone porte la VRAIE page de l'appli (demo/, compilée
+   depuis src/ par appli/scripts/demo-outils/construire.ts), dans un cadre à
+   part : ses styles ne débordent pas sur le site, ni ceux du site sur elle.
+   Elle se dessine à la largeur d'un téléphone (390 px) et le cadre est mis à
+   l'échelle de l'écran. Tant qu'elle charge, son premier écran photographié
+   est posé dessous : jamais d'écran blanc. */
+.essai-grille{display:grid;gap:36px}
+.essai .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.scene-essai{display:flex;justify-content:center;padding:34px 18px}
+.appareil.demo{width:min(76vw,300px)}
+.demo .ecran img.affiche{z-index:0}
+.demo .ecran iframe{position:absolute;left:0;top:0;z-index:1;width:100%;height:100%;border:0;background:transparent;opacity:0;transition:opacity .35s ease}
+.demo.echelle .ecran iframe{width:390px;height:664px;transform:scale(var(--s,1));transform-origin:0 0}
+.demo.pret .ecran iframe{opacity:1}
+.dit{min-height:1.5em;margin-top:14px;text-align:center;font-size:15.5px;color:var(--encre-2)}
+/* Les gestes à essayer : sous le téléphone, une rangée de pastilles qu'on
+   touche du pouce ; à côté de lui sur ordinateur, une liste qui dit ce que
+   chaque geste montre. Ils pilotent l'appli, ils ne dessinent rien dessus. */
+.guide{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.guide button{display:grid;gap:4px;min-height:44px;padding:11px 16px;border:0;border-radius:999px;background:var(--fond);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);font:500 15px/1.2 var(--texte);text-align:left;cursor:pointer;transition:background .2s,box-shadow .2s,color .2s}
+.guide button b{font-weight:500}
+.guide button span{display:none}
+.guide button:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--encre) 40%,transparent)}
+.guide button[aria-pressed="true"]{background:var(--nuit);color:var(--sur-nuit);box-shadow:none}
+.recommencer{display:block;margin:18px auto 0;min-height:44px;padding:0 12px;border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);text-decoration:underline;text-underline-offset:.22em;cursor:pointer}
+@media (min-width:960px){
+  .essai-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-areas:"tete visuel" "guide visuel";column-gap:76px;row-gap:28px;align-items:start}
+  .essai-tete{grid-area:tete}
+  .essai-visuel{grid-area:visuel}
+  .essai-guide{grid-area:guide}
+  .appareil.demo{width:340px}
+  .scene-essai{padding:56px 40px}
+  .guide{display:grid;gap:0;justify-content:stretch}
+  .guide li{border-top:1px solid var(--trait)}
+  .guide li:last-child{border-bottom:1px solid var(--trait)}
+  .guide button{width:100%;border-radius:12px;padding:18px 14px;background:transparent;box-shadow:none}
+  .guide button b{font:400 clamp(25px,2.4vw,28px)/1.15 var(--display)}
+  .guide button span{display:block;font-size:16px;color:var(--encre-2)}
+  .guide button:hover{background:color-mix(in srgb,var(--encre) 4%,transparent);box-shadow:none}
+  .guide button[aria-pressed="true"]{background:var(--sable);color:var(--encre)}
+  .recommencer{margin:18px 0 0}
+}
+
 /* ── Le prix : une carte, la bascule mois ou année ─────────────────────── */
 .prix-tete{text-align:center}
 .prix-tete .mot{font-size:clamp(64px,15vw,112px)}
@@ -475,7 +542,7 @@ html.anime .geant.vu span{transform:none}
       <p class="rassure">6 € HT par mois. Un plan d'arrosage et un diagnostic offerts pour essayer.</p>
     </div>
     <div class="scene plateau socle" id="plateau" data-t aria-hidden="true">
-      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1137"></figure></div></div>
+      <div class="pose pose-plan"><div class="entre entre-plan"><figure class="gros"><img src="images/outils-plan-reseau.jpg" alt="" width="1038" height="1176"></figure></div></div>
       <div class="pose pose-cr"><div class="entre entre-cr"><figure class="feuille"><img src="images/outils-compte-rendu-carte.jpg" alt="" width="700" height="1366"></figure></div></div>
       <div class="pose pose-appareil"><div class="entre entre-appareil"><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="" width="1170" height="1992"></div></div></div></div>
     </div>
@@ -495,7 +562,7 @@ html.anime .geant.vu span{transform:none}
     </div>
     <div class="chap-visuel">
       <div class="scene scene-croquis" id="scene-croquis">
-        <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : deux pelouses de 12 m sur 12 m et de 8 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 2,40 m, un couloir de 10 m sur 2 m, la nourrice et le compteur">
+        <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : une pelouse de 20 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 1,20 m, la nourrice et le compteur">
           <svg viewBox="0 0 372 212" aria-hidden="true">
             <defs>
               <filter id="trait-crayon" x="-2%" y="-2%" width="104%" height="104%">
@@ -508,46 +575,61 @@ html.anime .geant.vu span{transform:none}
             </defs>
             <rect width="372" height="212" fill="#fbf8ef"/>
             <rect width="372" height="212" fill="url(#quadrillage)"/>
-            <rect class="eclat" x="63" y="13" width="34" height="14.5" rx="3" fill="rgba(240,180,60,.42)"/>
+            <rect class="eclat" x="142" y="13.5" width="34" height="14.5" rx="3" fill="rgba(240,180,60,.42)"/>
             <g fill="none" stroke="var(--crayon)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" filter="url(#trait-crayon)">
-              <path d="M26.5 35.2 C62 33.8 101 35.9 134.3 34.6 C133.6 70 134.8 106 133.8 142.4 C99 143.2 61 141.6 26 142.6 C27 106 25.6 70 26.5 35.2 Z"/>
-              <path d="M152.4 34.8 C176 33.9 201 35.4 224.2 34.4 C223.6 58 224.6 83 223.8 106.4 C200 107.1 175 105.8 151.8 106.6 C152.6 83 151.6 58 152.4 34.8 Z"/>
-              <path d="M152.2 124.4 C212 123.2 271 125.3 332.4 123.9 C332.8 131 331.8 139 332.3 145.9 C272 146.7 211 144.9 151.9 146.2 C152.5 139 151.7 131 152.2 124.4 Z"/>
-              <path d="M26.3 160.6 C56 159.6 86 161.2 116.4 160.2 C116.9 166 115.9 172 116.2 178.4 C86 179.1 56 177.7 25.9 178.6 C26.5 172 25.8 166 26.3 160.6 Z"/>
-              <path d="M137.6 85.2 L148.8 85 L148.9 91.8 L137.4 92 Z" fill="var(--crayon)"/>
-              <path d="M166 111.4 C160 106 155 100 149.6 94.6 M150 99.8 L149.4 94.4 L154.6 94.8"/>
-              <circle cx="143.2" cy="178.6" r="5.4"/>
-              <circle cx="143.2" cy="178.6" r="1.2" fill="var(--crayon)"/>
-              <path d="M32 28.4 L128 28.4 M32 26 L32 31 M128 26 L128 31"/>
-              <path d="M19.6 41 L19.6 136 M17 41 L22.2 41 M17 136 L22.2 136"/>
-              <path d="M157 28.4 L219 28.4 M157 26 L157 31 M219 26 L219 31"/>
-              <path d="M230.8 40 L230.8 101 M228.2 40 L233.4 40 M228.2 101 L233.4 101"/>
-              <path d="M157 153.4 L327 153.4 M157 151 L157 156 M327 151 L327 156"/>
-              <path d="M30 186.4 L112 186.4 M30 184 L30 189 M112 184 L112 189"/>
+              <path d="M34.5 40.2 C100 39 200 41 284.3 39.6 C283.6 75 284.8 110 283.8 140.4 C200 141.2 100 139.6 34 140.6 C35 105 33.6 72 34.5 40.2 Z"/>
+              <path d="M34.2 152.4 C120 151.2 200 153.3 284.4 151.9 C284.8 157 283.8 163 284.3 167.9 C200 168.7 120 166.9 33.9 168.2 C34.5 163 33.7 157 34.2 152.4 Z"/>
+              <path d="M288.6 85.2 L298.8 85 L298.9 95.8 L288.4 96 Z" fill="var(--crayon)"/>
+              <circle cx="336" cy="159" r="5.4"/>
+              <circle cx="336" cy="159" r="1.2" fill="var(--crayon)"/>
+              <path d="M40 30.4 L278 30.4 M40 28 L40 33 M278 28 L278 33"/>
+              <path d="M22.6 46 L22.6 134 M20 46 L25.2 46 M20 134 L25.2 134"/>
+              <path d="M40 180.4 L278 180.4 M40 178 L40 183 M278 178 L278 183"/>
             </g>
             <g fill="var(--crayon)" font-family="'Bradley Hand', 'Segoe Print', 'Marker Felt', 'Comic Sans MS', cursive" text-anchor="middle">
-              <text x="80" y="93" font-size="15">pelouse</text>
-              <text x="188" y="75" font-size="14">pelouse</text>
-              <text x="242" y="139.4" font-size="12.5">massif  GAG</text>
-              <text x="71" y="173.8" font-size="11.5">couloir</text>
-              <text id="cote-depart" x="80" y="24.2" font-size="12.5">12 m</text>
-              <text x="13" y="92" font-size="12.5" transform="rotate(-90 13 92)">12 m</text>
-              <text x="188" y="24.2" font-size="12.5">8 m</text>
-              <text x="245" y="74" font-size="12.5">8 m</text>
-              <text x="242" y="167" font-size="12.5">20 m</text>
-              <text x="352" y="139" font-size="12">2,40</text>
-              <text x="71" y="200" font-size="12">10 m</text>
-              <text x="13" y="173" font-size="12">2 m</text>
-              <text x="190" y="120.6" font-size="12.5">nourrice</text>
-              <text x="183" y="183" font-size="12.5">compteur</text>
+              <text x="159" y="96" font-size="15">pelouse</text>
+              <text x="159" y="164" font-size="11.5">massif  GAG</text>
+              <text id="cote-depart" x="159" y="25" font-size="12.5">20 m</text>
+              <text x="15" y="90" font-size="12.5" transform="rotate(-90 15 90)">8 m</text>
+              <text x="159" y="194" font-size="12">20 m</text>
+              <text x="305" y="164" font-size="11.5">1,20</text>
+              <text x="325" y="80" font-size="12.5">nourrice</text>
+              <text x="336" y="182" font-size="12.5">compteur</text>
             </g>
           </svg>
         </figure>
-        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, pelouse arrière de 12 m sur 12 m, 8 turbines 3504 buse 0,75 de portée 5,1 m, et 42 m de PEHD Ø25" width="1038" height="1137" decoding="async"></figure></div></div>
-        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">12 m</span></span>
+        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : réseau 1, la pelouse de 20 m sur 8 m, 4 turbines 3504 buse 1,0 de portée 6,1 m, et 24 m de PEHD Ø25" width="1038" height="1176" decoding="async"></figure></div></div>
+        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">20 m</span></span>
       </div>
-      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de quatre voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1185" decoding="async"></figure>
+      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, chaque pièce numérotée" width="1038" height="1379" decoding="async"></figure>
       <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="essai papier" id="essai-arrosage">
+  <div class="large essai-grille">
+    <div class="essai-tete">
+      <h2 class="mot" data-monte>Essayez le plan<span class="point">.</span></h2>
+      <p class="chapo">Le vrai écran de Cause, sur ce jardin. Touchez ce que vous voulez.</p>
+    </div>
+    <div class="essai-visuel">
+      <div class="scene sable scene-essai">
+        <div class="appareil demo" id="demo-arrosage">
+          <div class="ecran"><img class="affiche" src="images/outils-demo-arrosage.jpg" alt="Le plan d'arrosage dans Cause : le croquis lu, deux zones au compteur, le piquage et la nourrice" width="1170" height="1992" decoding="async"><iframe title="Le plan d’arrosage de Cause, à essayer" src="demo/arrosage.html" loading="lazy"></iframe></div>
+        </div>
+      </div>
+      <p class="dit" aria-live="polite"></p>
+    </div>
+    <div class="essai-guide">
+      <ul class="guide" aria-label="À essayer dans le téléphone" data-demo="demo-arrosage">
+        <li><button type="button" data-etape="tuyau"><b>Ø25 ou Ø32</b><span>En Ø32, la pelouse tient sur un seul réseau.</span></button></li>
+        <li><button type="button" data-etape="nourrice"><b>Une pièce de la nourrice</b><span>La changer, ou la supprimer.</span></button></li>
+        <li><button type="button" data-etape="turbines"><b>Les turbines</b><span>Combien en changer : une, ou toutes.</span></button></li>
+        <li><button type="button" data-etape="liste"><b>La liste</b><span>Tout est additionné, pièce par pièce.</span></button></li>
+        <li><button type="button" data-etape="fournisseur"><b>Au fournisseur</b><span>Le message part tel quel, ou retouché.</span></button></li>
+      </ul>
+      <button type="button" class="recommencer" data-demo="demo-arrosage">Recommencer</button>
     </div>
   </div>
 </section>
@@ -766,7 +848,9 @@ html.anime .geant.vu span{transform:none}
       entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
       pouce.classList.toggle("vu", visibles.size === 0);
     });
-    tous(".ouverture, #prix-outils .formule, #essayer, .pied").forEach(function(c){ veille.observe(c); });
+    // Pendant qu'on essaie un outil, le bouton couvrirait les gestes sous le
+    // téléphone : il s'efface aussi là.
+    tous(".ouverture, .essai, #prix-outils .formule, #essayer, .pied").forEach(function(c){ veille.observe(c); });
   }
 
   // La seule boucle du défilement : la barre et son fil, et ce que chaque
@@ -804,6 +888,51 @@ html.anime .geant.vu span{transform:none}
         cours = corps.animate([{ height: corps.offsetHeight + "px", opacity: 1 }, { height: "0px", opacity: 0 }], { duration: 260, easing: "cubic-bezier(.5,0,.75,0)" });
         cours.onfinish = function(){ d.open = false; d.classList.remove("ferme"); };
       }
+    });
+  });
+
+  // ── ESSAYEZ : la page pilote le téléphone, sans rien dessiner dessus ──
+  // Les ordres sont lus par appli/scripts/demo-outils/pilote.ts, dans la
+  // démonstration : amener une partie de l'écran sous les yeux, la toucher,
+  // ou basculer le choix 25 ou 32. Un ordre donné avant que l'écran soit prêt
+  // attend qu'il le soit.
+  var ORDRES = {
+    "demo-arrosage": {
+      tuyau: { basculer: '[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"]' },
+      nourrice: { toucher: '[data-atlas="piece-nourrice"]', rang: 8 },
+      turbines: { toucher: '[data-atlas="maillon"]', rang: 4 },
+      liste: { aller: '[data-atlas="liste-des-pieces"]' },
+      fournisseur: { toucher: '[data-atlas="envoyer-fournisseur"]' }
+    }
+  };
+  tous(".demo").forEach(function(demo){
+    var ecran = un(".ecran", demo), cadre = un("iframe", demo), attente = null;
+    var guide = un('.guide[data-demo="' + demo.id + '"]'), dit = un(".dit", demo.closest(".essai-visuel"));
+    var echelle = function(){ demo.style.setProperty("--s", (ecran.clientWidth / 390).toFixed(4)); };
+    demo.classList.add("echelle"); echelle();
+    if ("ResizeObserver" in window) new ResizeObserver(echelle).observe(ecran); else addEventListener("resize", echelle);
+    var envoyer = function(ordre){ if (demo.classList.contains("pret")) cadre.contentWindow.postMessage(ordre, "*"); else attente = ordre; };
+    addEventListener("message", function(e){
+      if (e.source !== cadre.contentWindow || !e.data) return;
+      if (e.data.pret){ demo.classList.add("pret"); if (attente){ var o = attente; attente = null; cadre.contentWindow.postMessage(o, "*"); } }
+      // Un lien de l'appli (la barre d'onglets, la flèche) ne quitte pas la
+      // démonstration : la page dit ce qu'il ouvre (sa règle du 8 novembre :
+      // aucun geste muet).
+      if (e.data.lien && dit) dit.textContent = "Dans l’appli : " + (e.data.nom || "un autre écran") + ".";
+    });
+    if (guide) tous("button[data-etape]", guide).forEach(function(b){
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function(){
+        tous("button[data-etape]", guide).forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+        if (dit) dit.textContent = "";
+        envoyer(ORDRES[demo.id][b.getAttribute("data-etape")]);
+      });
+    });
+    var reprendre = un('.recommencer[data-demo="' + demo.id + '"]');
+    if (reprendre) reprendre.addEventListener("click", function(){
+      demo.classList.remove("pret"); attente = null; if (dit) dit.textContent = "";
+      if (guide) tous("button[data-etape]", guide).forEach(function(x){ x.setAttribute("aria-pressed", "false"); });
+      cadre.src = cadre.getAttribute("src");
     });
   });
 
@@ -920,14 +1049,15 @@ html.anime .geant.vu span{transform:none}
     ouverture.addEventListener("pointerleave", function(){ viser(0, 0); });
   }
 
-  // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 12 m » s'éclaire,
-  // quitte le croquis, vole jusqu'à « 12 m sur 12 m » de la carte du réseau
-  // et s'y pose au pixel près (mesuré sur le rendu : 38,8 % de la largeur de
-  // la carte, 20,0 % de sa hauteur, le mot faisant 9,0 % de sa largeur),
-  // puis s'efface sur le chiffre de l'appli. La carte s'écrit alors.
+  // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 20 m » s'éclaire,
+  // quitte le croquis, vole jusqu'à « 20 m sur 8 m » de la carte du réseau
+  // et s'y pose au pixel près (mesuré sur le rendu de la démonstration :
+  // 27,0 % de la largeur de la carte, 19,5 % de sa hauteur, le mot faisant
+  // 9,7 % de sa largeur), puis s'efface sur le chiffre de l'appli. La carte
+  // s'écrit alors.
   var sceneCroquis = document.getElementById("scene-croquis"), croquis = un(".croquis", sceneCroquis);
   var carteReseau = document.getElementById("carte-reseau"), porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
-  var depart = document.getElementById("cote-depart"), CIBLE_12 = { x:.3881, y:.1998, l:.0900 };
+  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.1946, l:.0970 };
   var vols = [];
   var voler = function(el, cles, options){ var a = el.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
   var place = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
@@ -950,8 +1080,8 @@ html.anime .geant.vu span{transform:none}
     var L = porte.offsetWidth, H = porte.offsetHeight;
     var de = { e: d.width / (L * .78) };
     de.x = d.left - s.left + d.width / 2 - L * de.e / 2; de.y = d.top - s.top + d.height / 2 - H * de.e / 2;
-    var vers = { e: (CIBLE_12.l * c.width) / (L * .78) };
-    vers.x = c.left - s.left + CIBLE_12.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_12.y * c.height - H * vers.e / 2;
+    var vers = { e: (CIBLE_COTE.l * c.width) / (L * .78) };
+    vers.x = c.left - s.left + CIBLE_COTE.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_COTE.y * c.height - H * vers.e / 2;
     var haut = { x: de.x + (vers.x - de.x) * .45, y: Math.min(de.y, vers.y) - 26, e: Math.max(de.e, vers.e) * 1.5 };
     voler(fondPorte, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1150, easing: "linear" });
     await voler(porte, [

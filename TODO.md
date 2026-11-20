@@ -578,6 +578,16 @@ sa planche du 18 novembre.
 
 `cause.html` et `chapitres-6.html` n'ont pas bougé. Pas regardé sur Safari.
 
+**Le soir même, « Essayez le plan » (sa demande : toute la page, cliquable) :**
+le vrai écran du plan tourne dans le téléphone, compilé depuis `src/` par
+`appli/scripts/demo-outils/construire.ts`. **À relancer quand l'écran du plan
+change dans l'appli**, sans quoi le site montre une version d'avant. Le jardin
+(pelouse de 20 m sur 8 m, massif) est celui où le Ø32 change vraiment les
+réseaux : sa pelouse à 4 turbines sur un seul réseau n'en changeait pas.
+**Reste à faire, sa demande : « pareil avec les autres outils »** (le
+diagnostic végétal et les fiches de chantier, écrans qui lisent la base : à
+monter avec des données d'exemple à la place).
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
