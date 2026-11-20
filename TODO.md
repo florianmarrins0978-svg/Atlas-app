@@ -20,6 +20,11 @@ dans `donnees/phyto/images/`, sur la branche. Une fiche « à corriger » se cor
 dans son brouillon, puis la page se republie. Avant de republier la page, rien à
 recopier : les avis restent dans sa base.
 
+**Sa demande du même soir : toucher une photo pour la voir en plein écran.** Essayée
+d'abord sur la page privée (plein écran, glisser d'une photo à l'autre, une croix
+pour fermer). **À coder dans l'appli sur son oui** (`src/app/paysage/diagnostic/[id]/page.tsx`,
+la rangée des photos) : c'est un geste neuf, la page privée en tient lieu de planche.
+
 **Où il vérifie : une page PRIVÉE** (https://claude.ai/artifact/8PX6o5pUoNqJg9syfyrB78),
 et non une planche dans `appli/` : les mentions légales d'Ephytia interdisent
 de recopier ses pages, et `appli/` est publié sur un site public. La capture
