@@ -490,7 +490,7 @@ console.log("\n=== Ce qu'il a choisi dans sa grille ne se lit pas sur le devis =
 // **Sa capture du 18 novembre 2026** : « Abattage d'un chêne (Quercus robur)
 // (abattage entre 10 et 20 m, ø 80 cm) ». Ses mots : *« abattage entre 10 et
 // 20 mètres, ça ne doit pas figurer sur la désignation. Et même le diamètre ne
-// doit pas figurer. »* La parenthèse est celle que `libelleEnrichi` recolle
+// doit pas figurer. »* La parenthèse est celle que l'ancien code recollait
 // avec ses réponses d'« Avant de chiffrer » ; la case choisie est rangée en
 // colonne (`methode`), le diamètre aussi. « Abattage entre 10 et 20 m » est
 // une façon d'abattre qu'il a nommée lui-même dans sa grille : seul le serveur

@@ -2,7 +2,7 @@
 
 ## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL (20 novembre 2026), PAS ENCORE SUR `main`
 
-`reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Le second temps (plus rien dans le libellé) reste à faire. `ARCHITECTURE.md` §593.
+`reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Plus rien ne s'écrit dans le libellé (`libelleEnrichi` est parti), 0188 nettoie ceux d'avant ; `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` restent jusqu'à ce que 0188 soit passée chez lui. `ARCHITECTURE.md` §593 et §594.
 
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE SUR `main` (20 novembre 2026)
 

@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { reponsesDuTravail, reponsesSousLesLignes } from "../src/lib/reponses-sous-le-travail";
-import { libelleEnrichi } from "../src/lib/questions-chiffrage";
 
 // **SES RÉPONSES À LA GRILLE, SOUS LE TRAVAIL DU DEVIS** : sa planche du
 // 20 novembre 2026 (`appli/soignee/devis-reponses-sous-le-travail.html`), son
@@ -29,7 +28,7 @@ cas("son chêne : sa façon d'abattre et son diamètre, la phrase de la planche"
 
 cas("les mêmes mots que le libellé enrichi d'hier, la majuscule en tête", () => {
   // Ce qu'il relisait dans la parenthèse avant §588 : rien ne change de forme.
-  const ancien = libelleEnrichi("Abattage d'un chêne", ["abattage entre 10 et 20 m", "⌀ 80 cm"]);
+  const ancien = "Abattage d'un chêne (abattage entre 10 et 20 m, ⌀ 80 cm)";
   const dedans = ancien.slice(ancien.indexOf("(") + 1, -1);
   const sous = reponsesDuTravail({ methodeLibelle: "abattage entre 10 et 20 m", caracteristiques: { diametreCm: 80 } });
   assert.equal(sous?.toLowerCase(), dedans.toLowerCase());

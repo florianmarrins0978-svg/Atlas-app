@@ -295,10 +295,15 @@ async function main() {
       { sujet: diametre!.id, libellePrestation: diametre!.libellePrestation, valeur: "80", lisible: precisionLisible(diametre!, "80") },
     ]);
 
-    // Le texte en base garde ses réponses : les moteurs y relisent encore le
-    // diamètre (`mesures-arbre.ts`). Sans elles, ce contrôle ne prouverait rien.
+    // **Ses réponses ne s'écrivent plus dans le nom du travail** (§594) : elles
+    // vivent dans leurs cases, et c'est de là que la ligne ci-dessous tire ses
+    // 1 100 €. Le nom reste celui qu'il a dicté.
     const [prestation] = await prestationsRepo.listerPrestations(D, c.id);
-    assert.match(prestation.libelle, /abattage entre 10 et 20 m, ⌀ 80 cm/, `en base : « ${prestation.libelle} »`);
+    assert.deepEqual(
+      { libelle: prestation.libelle, methode: prestation.methode, diametre: (prestation.caracteristiques as { diametreCm?: number } | null)?.diametreCm },
+      { libelle: "Abattage d'un chêne", methode: cle, diametre: 80 },
+      `en base : « ${prestation.libelle} »`
+    );
 
     const lignes = await listerLignesPrix(D, c.id);
     assert.deepEqual(

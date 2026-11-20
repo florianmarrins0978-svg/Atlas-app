@@ -167,7 +167,7 @@ même heure (confiance moyenne).
 Les deux relèvent de la même règle qu'il a validée (une seule main d'œuvre de
 son équipe par TVA). À lui de dire s'il les veut traitées ; argent, niveau 3.
 
-## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : TEMPS 1 CODÉ, SUITES SUR SON « OUI » (20 novembre 2026)
+## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : CODÉ, SUITES SUR SON « OUI » (20 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -204,8 +204,15 @@ travail, lue dans les cases. Joués : types, style, gardes,
 `test-reponses-sous-le-travail.ts`. **Pas joués** : `test-cases-reglables-db.ts`
 (son chêne, sous `atlas_app`), l'écran regardé, puis le contrôle de son niveau ;
 il a refusé la batterie le 20 (*« Aucune batterie !!! »*), le lot attend donc
-hors de `main`. **Temps 2 à faire** : `libelleEnrichi` n'écrit plus dans le
-libellé, une fois éprouvé que le prix de la case se trouve sans le texte.
+hors de `main`.
+
+**Temps 2 codé le même jour** (son « ok tu peux le faire », §594) : plus rien ne
+s'écrit dans le nom, la migration 0188 rend leur nom aux travaux d'avant.
+Éprouvée sur base habitée (`test-migration-0188-base-habitee.ts`, vert). **Pas
+joués** : `test-cases-reglables-db.ts` (le prix du chêne sans le texte),
+`test-questions-chiffrage-db` et voisines, le contrôle du niveau 3. **Reste,
+plus tard** : retirer `debutsDUnLibelleEnrichi` et l'effacement de
+`libelleClient` une fois 0188 passée sur SA base (contract).
 
 **Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
 la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme

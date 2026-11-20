@@ -37711,6 +37711,21 @@ Depuis §588, ce qu'il a choisi dans sa grille ne s'écrit plus sur la désignat
 | sous la description, discrète ; le toucher dit « Pour vous seul : ni le PDF, ni le client ne le voient. » (`ReponsesSousLeTravail`) | la planche ; une phrase permanente sous chaque travail serait du bruit (sa règle du moins de mots) |
 | Informations ne change pas | il n'y va jamais |
 
-**Ce qui reste, le second temps** : `libelleEnrichi` n'écrit plus dans le libellé une fois éprouvé que le prix de la case se trouve sans le texte (`mesures-arbre.ts` le relit encore), puis les libellés d'avant se convertissent (base habitée, FORCE RLS) et `debutsDUnLibelleEnrichi` part. `TODO.md`.
+**Le second temps suit dans le même lot** (§594) : plus rien ne s'écrit dans le libellé.
 
 `test-reponses-sous-le-travail.ts` (cinq cas purs), `test-cases-reglables-db.ts` (son chêne : la ligne à 1 100 € dit « Abattage entre 10 et 20 m, ⌀ 80 cm » dessous).
+
+## §594 : Ses réponses à la grille ne s'écrivent plus dans le nom du travail
+
+*20 novembre 2026, son « ok tu peux le faire », après l'explication : ses réponses rangées deux fois, dans leurs cases et collées au nom, « Abattage d'un chêne (abattage entre 10 et 20 m, ⌀ 80 cm) ».*
+
+**Ce qui le permettait** : le prix ne relit pas le nom. `mesuresResolues` prend les cases d'abord, puis ses réponses enregistrées (`precisions_chantier.lisible`), qui portent le même « ⌀ 80 cm » ; les noms des travaux (`membres`) n'étaient qu'un troisième repli. Le commentaire d'`ecrirePrecisionsSurLesPrestations` qui disait le contraire datait d'avant `mesuresResolues`.
+
+| Décision | Pourquoi |
+|---|---|
+| `ecrirePrecisionsSurLesPrestations` ne range plus que les cases ; `libelleEnrichi` et `renommerPrestation` (leur seul usage) partent | trois règles pour coller, reconnaître et effacer un texte que personne ne lisait ; la parenthèse du 18 novembre sur sa désignation en venait |
+| la migration 0188 rend leur nom aux travaux d'avant, boucle par entreprise sous FORCE RLS, en comptant | sans elle, deux formes vivraient en base, et la règle qui les reconnaît ne pourrait jamais partir |
+| elle ne retire que ce que l'ancien code ajoutait : après le nom de la question, « (…) » ou « — … », et CHAQUE morceau doit être une de ses réponses enregistrées | « Haie (tout genre) (800 ml) », le nom latin, une parenthèse tapée, un tiret dicté ne bougent pas (`test-migration-0188-base-habitee.ts`) |
+| `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` RESTENT | contract plus tard (`deployment-safety.md`) : ils ne partent qu'une fois 0188 passée sur sa base ; un rejeu de dictée sur un nom d'avant créerait sinon un second arbre |
+
+`test-cases-reglables-db.ts` (son chêne : le nom reste « Abattage d'un chêne », ses cases portent la technique et 80 cm, la ligne vaut toujours 1 100 €), `test-migration-0188-base-habitee.ts` (cinq cas, dont la RLS qui mord sans la boucle), `test-questions-chiffrage.ts`, `test-correspondance-prestation.ts` (les noms d'avant, écrits en toutes lettres).

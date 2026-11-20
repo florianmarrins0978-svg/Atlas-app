@@ -60,7 +60,8 @@ export type PrestationExistante = {
 /**
  * La prestation déjà écrite qui correspond à ce libellé, ou `null`.
  *
- * **Le séparateur reconnu est celui de `libelleEnrichi`**, et il n'est pas
+ * **Le séparateur reconnu est celui que les réponses collées portaient**
+ * (`debutsDUnLibelleEnrichi`, jusqu'au 20 novembre 2026), et il n'est pas
  * recopié ici : deux écritures du même séparateur finiraient par diverger, et
  * le rapprochement cesserait de fonctionner sans qu'aucune erreur ne le dise.
  * C'est arrivé le 28 octobre 2026 : le préfixe se déduisait en coupant le

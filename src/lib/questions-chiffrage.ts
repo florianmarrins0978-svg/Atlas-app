@@ -477,40 +477,11 @@ export function mesureLisible(sujet: string, valeur: string, unite: string | nul
 }
 
 /**
- * Le libellé de la prestation, augmenté de ce qu'il a répondu.
- *
- *     Abattage d'un chêne mort (démontage avec rétention, ⌀ 70 cm)
- *
- * **Sans ça, l'arrêt ne laisserait aucune trace visible.** Une précision
- * obtenue puis rangée dans un coin de la base ne changerait rien à ce qu'il
- * relit, et la question aurait été posée pour rien.
- *
- * **Ce que ça ne fait PAS, et il faut le savoir en lisant ce code :** la
- * précision n'atteint pas encore la *ligne du devis*. Cette ligne porte
- * l'intitulé du tarif appliqué, pas le libellé de la prestation. Et elle ne
- * change pas non plus le montant — par la règle du patron lui-même
- * (`docs/EXEMPLE-DICTEE.md` §9c) : tant qu'aucun rapport n'a été observé entre
- * les techniques et les prix, l'agent **demande** le prix plutôt que d'en
- * fabriquer un. Ce qui manque est la mémoire, pas ce module. Voir `TODO.md` §0 ter.
- *
- * Idempotent : rejouer l'enchaînement ne recolle pas une seconde fois la même
- * mention. Le patron rejoue souvent, et un libellé qui s'allonge à chaque essai
- * finirait sur le devis du client.
- */
-export function libelleEnrichi(libelle: string, precisionsLisibles: readonly string[]): string {
-  const base = libelle.trim();
-  const aAjouter = precisionsLisibles
-    .map((p) => p.trim())
-    .filter((p) => p !== "" && !base.toLowerCase().includes(p.toLowerCase()));
-  if (aAjouter.length === 0) return base;
-  return `${base} (${aAjouter.join(", ")})`;
-}
-
-/**
- * Comment commence un libellé que `libelleEnrichi` a augmenté : la forme
- * d'aujourd'hui, et celle d'avant le 28 octobre 2026 (« base — précisions »),
- * quittée pour sa règle des tirets. Ces libellés-là vivent encore en base : un
- * rejeu qui ne les reconnaîtrait plus créerait un second arbre pour le même.
+ * Comment commence un libellé auquel ses réponses étaient collées, jusqu'au
+ * 20 novembre 2026 : « base (précisions) », et avant le 28 octobre
+ * « base — précisions ». Plus rien ne les écrit (`ARCHITECTURE.md` §594) ; la
+ * migration 0188 les rend à leur nom, et ceci part avec la dernière base qui
+ * en porte : un rejeu qui ne les reconnaîtrait plus créerait un second arbre.
  */
 export function debutsDUnLibelleEnrichi(libelle: string): string[] {
   const base = libelle.trim();
