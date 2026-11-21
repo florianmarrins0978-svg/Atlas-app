@@ -830,6 +830,32 @@ la carte qui s'écrit (un masque posé sur la carte entière, plus seulement sur
 l'image) et les téléphones des films qui se tournent avec un film dedans (la
 mécanique de Dictez dans `cause-2.html`).
 
+**Relue à froid le 21, et retouchée** (un second regard, sur des captures de
+la page finie ; ses constats sont dits en tête de la page) : les captures « à
+lire » l'une sous l'autre sur téléphone, le téléphone du client dégagé de
+celui de l'artisan, la carte du réseau 2 qui attend celle du réseau 1 sur
+ordinateur, la nourrice sous son titre entre 960 et 1179 px, les liens de la
+barre dès 960 px. **Ce qu'il a laissé à sa décision** : la scène du
+diagnostic est la seule des trois où rien n'est « porté » (la photo attend
+seule une seconde et demie, puis la fiche arrive en fondu) ; à ne reprendre
+que s'il le demande, et sans rien dessiner sur l'écran.
+
+**Vu en livrant, hors de ce lot : la vérification du site en ligne tombe
+sur un seul 503 de passage.** Le 21 novembre, la publication de la page a
+réussi (contrôles des planches verts, déploiement vert), puis l'étape
+« Vérifier que chaque écran est servi » de `.github/workflows/pages.yml` a
+reçu un 503 de GitHub Pages sur `main-d-oeuvre-repartie.html`, une planche
+sans rapport, qui répondait 200 trois fois de suite une minute plus tard.
+La publication s'affiche alors en rouge alors que le site est en ligne, et
+les deux étapes suivantes (la racine, les contrôles contre le site en
+ligne) ne se jouent pas. Le message accuse une planche qui va bien.
+**À faire, à part** (outillage, niveau 2, donc sur son « oui ») : redemander
+deux ou trois fois une adresse qui répond 5xx avant de la dire manquante, et
+garder le refus net sur un 404. **En attendant** : devant une publication
+rouge à cette étape, relire le journal (un 5xx isolé se rejoue avec
+« Re-run failed jobs »), et vérifier l'adresse elle-même avant de conclure
+que la page n'est pas en ligne.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi

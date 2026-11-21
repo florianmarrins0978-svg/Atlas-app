@@ -812,6 +812,26 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const fini = await page.waitForFunction(fait, null, { timeout: 6000 }).then(() => true, () => false);
       ok('vente, les outils : en descendant sans s\'arrêter, ' + nom, fini);
     }
+
+    // Trois retouches du même jour, après une relecture à froid de la page
+    // refaite (vues rouges sur elle). Sur téléphone, les captures « à lire »
+    // étaient rangées de côté : il fallait glisser du doigt pour lire la
+    // deuxième, dont les mots dépassaient coupés, et rien ne montrait la
+    // troisième. Elles tiennent toutes dans la largeur de l'écran. Et le
+    // téléphone du client passait à dix pour cent sous celui de l'artisan :
+    // le début de chaque ligne de ce que lit M. Bernard était caché. On
+    // touche donc le bord gauche de son écran, et c'est bien lui qu'on touche.
+    const rangees = await page.evaluate(() => Array.from(document.querySelectorAll('.captures img')).map((i) => { const r = i.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }));
+    ok('vente, les outils : sur téléphone, les trois captures « à lire » tiennent dans l\'écran, sans glisser',
+       rangees.length === 3 && rangees.every((r) => r[0] >= 0 && r[1] <= 390), JSON.stringify(rangees));
+    await page.evaluate(() => document.getElementById('duo').scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.waitForTimeout(1800);
+    const touche = await page.evaluate(() => {
+      const e = document.querySelector('#duo .c .ecran').getBoundingClientRect();
+      const vu = document.elementFromPoint(e.left + 10, e.top + e.height / 2);
+      return { client: !!(vu && vu.closest('#duo .c')), vu: vu ? (vu.closest('.appareil') || vu).className : 'rien' };
+    });
+    ok('vente, les outils : le téléphone de l\'artisan ne cache pas le début de ce que lit le client', touche.client, JSON.stringify(touche));
     await cDe.close();
 
     const cOr = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -819,6 +839,28 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await grande.goto(`${B}/vente/outils.html`, { waitUntil: 'networkidle' });
     const captures = await grande.evaluate(() => Array.from(document.querySelectorAll('.captures img')).map((i) => Math.round(i.getBoundingClientRect().width)));
     ok('vente, les outils : sur ordinateur, les trois captures « à lire » se lisent', captures.length === 3 && captures.every((l) => l >= 240), captures.join(', ') + ' px de large');
+    // Sur ordinateur les deux cartes du plan sont côte à côte, et celle du
+    // réseau 2 s'écrivait AVANT celle du réseau 1, pendant que « 20 m » volait
+    // encore vers la première : une carte pleine à côté d'une carte vide, qui
+    // se lit comme une panne. On descend vers la scène DOUCEMENT et l'on note
+    // l'instant où chacune commence à s'écrire : d'un grand pas, les deux
+    // cartes entrent dans le même rendu et le défaut ne se montre pas (à
+    // 120 px par pas ce contrôle était vert sur la page fautive ; à 40 px, la
+    // carte 2 s'y écrivait 2,8 s avant la 1).
+    const ordre = await grande.evaluate(async () => {
+      const dates = {};
+      for (const nom of ['reseau-1', 'reseau-2']) {
+        const c = document.getElementById(nom);
+        if (!c) return { erreur: nom + ' absente' };
+        new MutationObserver(() => { if (!dates[nom] && c.classList.contains('ecrite')) dates[nom] = Math.round(performance.now()); }).observe(c, { attributes: true, attributeFilter: ['class'] });
+      }
+      const haut = scrollY + document.getElementById('scene-croquis').getBoundingClientRect().top;
+      for (let y = haut - innerHeight; y <= haut - 120; y += 30) { window.scrollTo({ top: y, behavior: 'instant' }); await new Promise((r) => setTimeout(r, 45)); }
+      await new Promise((r) => setTimeout(r, 6500));
+      return dates;
+    });
+    ok('vente, les outils : sur ordinateur, la carte du réseau 2 ne s\'écrit pas avant celle du réseau 1',
+       ordre['reseau-1'] > 0 && ordre['reseau-2'] > 0 && ordre['reseau-2'] >= ordre['reseau-1'], JSON.stringify(ordre));
     await cOr.close();
   }
 

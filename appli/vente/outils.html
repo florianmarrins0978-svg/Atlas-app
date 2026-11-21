@@ -56,11 +56,23 @@
       les fiches ;
     · « LA FICHE, À LIRE » : sur ordinateur, ses trois téléphones mesuraient
       18 px de large (trois points noirs). Ce sont trois captures à plat, en
-      grand, où le texte se lit ;
+      grand, où le texte se lit : côte à côte sur ordinateur, l'une sous
+      l'autre sur téléphone (rangées de côté, il fallait glisser du doigt
+      pour lire la deuxième, et rien ne montrait la troisième) ;
     · sur ordinateur, le texte tient une colonne et l'image l'autre, du haut
       en bas d'un outil (le diagnostic à l'envers) ; les films ne zigzaguent
       plus d'un bord à l'autre.
   Aucun film, aucune capture, aucun prix n'a changé.
+  RELUE À FROID LE 21 par un second regard, sur des captures de la page
+  finie, puis retouchée le jour même : le téléphone du client ne passe plus
+  sous celui de l'artisan que de son bord noir (le début de chaque ligne de
+  ce que lit M. Bernard était caché), et sa légende vient avec lui ; sur
+  ordinateur, où les deux cartes du plan sont côte à côte, celle du réseau 2
+  attend celle du réseau 1 (elle s'écrivait 2,8 s avant, pendant que « 20 m »
+  volait encore) ; entre 960 et 1179 px, la nourrice se range sous son titre
+  et non au-dessus du film ; la barre montre ses liens dès 960 px, comme
+  celle du site. Ce défaut d'ordre ne se voit qu'en descendant DOUCEMENT :
+  d'un grand pas, les deux cartes entrent dans le même rendu.
 
   LE MONDE EST CELUI DE cause-2.html, sans un écart : crème, vert nuit, vert
   feuille, or ; Instrument Serif et Hanken Grotesk ; les titres qui montent
@@ -261,7 +273,7 @@ html.anime .nuit.nappe.entre-etroite{-webkit-clip-path:inset(0 calc(var(--e,0) *
 .ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
 .lien-demo{font:600 14.5px/1 var(--texte);text-decoration:none;padding:13px 18px;border-radius:999px;background:var(--action);color:var(--action-texte);transition:background .2s}
 .lien-demo:hover{background:var(--action-survol)}
-@media (min-width:1040px){.liens{display:flex}.ouvre-menu{display:none}}
+@media (min-width:960px){.liens{display:flex}.ouvre-menu{display:none}}
 .menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:92px 24px 32px;display:flex;flex-direction:column;visibility:hidden;pointer-events:none}
 .menu.ouvert{visibility:visible;pointer-events:auto}
 html.anime .menu{clip-path:circle(0 at calc(100% - 150px) 32px);transition:clip-path .38s var(--va-et-vient),visibility 0s linear .38s}
@@ -474,14 +486,19 @@ html.anime .scene-diag.reponse .appareil{opacity:1;transform:none}
 html.anime .scene-diag.reponse .tirage{opacity:.55;transform:translate(-3%,2%) rotate(-6deg) scale(.95)}
 
 /* Les fiches de chantier : la fiche de l'artisan devant, le compte rendu
-   qui sort de derrière elle dans le téléphone du client. */
+   qui sort de derrière elle dans le téléphone du client. Posé, le téléphone
+   du client ne passe plus sous l'autre que de son bord noir : à dix pour
+   cent de recouvrement, le début de chaque ligne de ce que lit M. Bernard
+   était caché (« telier Démo »). Sa légende vient avec lui, pas avant. */
 .scene-fiche{width:100%;padding:40px 18px 34px}
-.duo{position:relative;width:min(100%,520px);margin:0 auto;aspect-ratio:1/.98}
-.duo .a{position:absolute;left:0;top:0;width:58%;z-index:2}
-.duo .c{position:absolute;right:0;top:9%;width:52%;z-index:1;transform:rotate(3deg)}
+.duo{position:relative;width:min(100%,520px);margin:0 auto;aspect-ratio:1/.92}
+.duo .a{position:absolute;left:0;top:0;width:54%;z-index:2}
+.duo .c{position:absolute;right:0;top:7%;width:48%;z-index:1;transform:rotate(2deg)}
 html.anime .duo .c{opacity:0;transform:translate3d(-46%,2%,0) rotate(-2deg) scale(.9)}
-html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .35s ease,transform 1.2s var(--sortie)}
+html.anime .duo.envoye .c{opacity:1;transform:rotate(2deg);transition:opacity .35s ease,transform 1.2s var(--sortie)}
 .duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
+html.anime .duo-legende span:last-child{opacity:0;transition:opacity .4s ease .5s}
+html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 @media (min-width:960px){.scene-fiche{padding:56px 40px 44px}}
 
 /* ── La suite : le vrai écran de l'appli, filmé, geste après geste ─────── */
@@ -533,12 +550,13 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
 /* « La fiche, à lire » : trois captures fixes, sa proposition du 20 novembre
    (« ou même tu peux mettre à côté des captures figées »), pour lire sans
    que rien ne bouge. À plat et en grand, pour que le texte se lise : dans un
-   téléphone de plus, il faisait huit pixels. Elles défilent d'un doigt sur
-   téléphone, la suivante dépasse pour le dire. */
+   téléphone de plus, il faisait huit pixels. Sur téléphone elles sont l'une
+   sous l'autre : rangées de côté, il fallait glisser du doigt pour lire la
+   deuxième, dont les mots dépassaient coupés, et rien ne disait qu'il y en
+   avait une troisième. Ici on ne fait que descendre. */
 .a-lire{margin-top:clamp(64px,9vw,112px)}
-.captures{list-style:none;margin:20px -16px 0;padding:0 16px 14px;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
-.captures::-webkit-scrollbar{display:none}
-.captures li{flex:none;width:min(80vw,340px);scroll-snap-align:center}
+.captures{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:18px;justify-items:center}
+.captures li{width:min(100%,420px)}
 .captures .gros{border-radius:20px}
 .nuit .gros{box-shadow:0 34px 70px -40px rgba(0,0,0,.75),0 0 0 1px rgba(243,239,227,.08)}
 @media (min-width:960px){
@@ -560,8 +578,17 @@ html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .3
   .plans.inverse .plan > .faits{grid-column:2}
   .plan.avec-note .plan-texte{align-self:end}
   .plan .nourrice-fig{width:min(100%,430px);margin:0 auto 28px}
-  .captures{margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;overflow:visible}
+  .captures{margin:30px 0 0;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
   .captures li{width:auto}
+}
+/* Pas assez large pour deux images côte à côte : la nourrice se range sous
+   son titre, à gauche, et le film garde la droite. Empilée au-dessus du
+   film, elle laissait la colonne du texte vide sur tout un écran. */
+@media (min-width:960px) and (max-width:1179px){
+  .plan.avec-figure .plan-vue{display:contents}
+  .plan.avec-figure .plan-texte{align-self:end}
+  .plan.avec-figure .nourrice-fig{grid-column:1;grid-row:2;align-self:start;justify-self:start;width:min(100%,400px);margin:28px 0 0}
+  .plan.avec-figure .scene-plan{grid-column:2;grid-row:1 / span 2}
 }
 /* Assez large, la nourrice se range à côté de son film. */
 @media (min-width:1180px){
@@ -1257,9 +1284,14 @@ html.anime .geant.vu span{transform:none}
   // carte laisse à la lecture le temps de se déclarer, sans quoi elle
   // s'écrivait avant que « 20 m » ait volé.
   enVue(r1, 0.45, function(v){ r1La = v; if (v) setTimeout(function(){ if (!(lecture && croquisLa)) ecrire(r1); }, 80); });
+  // La carte du réseau 2 ne s'écrit jamais avant celle du réseau 1 quand on
+  // voit les deux (côte à côte sur ordinateur). On regarde où est la première,
+  // pas si elle s'est déjà dite « vue » : son seuil est plus haut que celui de
+  // la seconde, qui partait donc devant, pendant que « 20 m » volait encore.
   enVue(r2, 0.35, function(v){
     if (!v || r2.ecriteA) return;
-    if (!r1.ecriteA && r1La){ r2.attend = true; return; }
+    var b = r1.getBoundingClientRect();
+    if (!r1.ecriteA && b.bottom > HAUT && b.top < innerHeight){ r2.attend = true; return; }
     var reste = r1.ecriteA ? 520 - (performance.now() - r1.ecriteA) : 0;
     if (reste > 0) setTimeout(ecrire, reste, r2); else ecrire(r2);
   });
@@ -1308,6 +1340,7 @@ html.anime .geant.vu span{transform:none}
   uneFois(duo, 0.4, async function(){
     await attendre(600);
     duo.classList.add("envoye");
+    duo.closest(".scene-fiche").classList.add("envoye");
   });
 
   // LA SUITE. Chaque geste est un film de l'appli, qui se joue seul quand son
