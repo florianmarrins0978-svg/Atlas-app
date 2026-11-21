@@ -23,7 +23,8 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 | Le paiement | le virement vu par la banque sur l'accueil, « Oui », la facture payée |
 | Ma TVA | toute la page, un achat écrit à la main, le ticket de carburant scanné, les chiffres de gauche (collectée, déductible, par taux) |
 | Le comptable | Ma banque, le check up, les lignes justifiées, le relevé du mois, le dossier arrêté, le document du comptable |
-| La fin | les Réglages ouverts : chaque rubrique se touche librement, le doigt reste sur **Une idée pour l'appli** |
+| L'assistant | après la fiche client : « Dans le devis chez Costa, il y avait une ligne de claustra. Retrouve-la avec son prix. » Il la retrouve, avec le devis d'où elle vient |
+| La fin | Une idée pour l'appli (« Voir la météo de la semaine sur le planning »), puis les fournisseurs et leurs prix d'achat, puis les Réglages libres. **« Quitter la visite » et « Recommencer » restent toujours affichés** |
 
 ## Ce qui a été fait autrement que ta liste, et pourquoi
 
@@ -73,9 +74,11 @@ Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite :
 
 Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : la visite le dit, et c'est le bouton du bas qui pose.
 
+**L'assistant, honnêtement :** la recherche de la ligne est la vraie, dans la vraie base. La phrase de sa réponse vient du modèle d'essai de ce poste, sans clé d'IA ; chez toi, la réponse sera formulée par la vraie IA.
+
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 64 étapes, environ sept minutes. On peut en retirer.
+1. **La longueur** : 74 étapes, environ huit minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
@@ -86,4 +89,4 @@ Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : l
 l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de
 démonstration neuve, donc ton accord.
 
-**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 64 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
+**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
