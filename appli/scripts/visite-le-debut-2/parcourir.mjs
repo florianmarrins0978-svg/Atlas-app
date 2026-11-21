@@ -46,7 +46,13 @@ const dire = (cas, ok, quoi) => { if (!ok) { fautes++; console.log(`  ✗ [${cas
     const p = await ctx.newPage();
     const erreurs = [];
     p.on('pageerror', (e) => erreurs.push(String(e)));
-    p.on('console', (m) => m.type() === 'error' && erreurs.push(m.text()));
+    // Une erreur dit d'OÙ elle vient : « 404 » seul envoie chercher au mauvais endroit.
+    // L'icône du site, elle, n'est pas une ressource de la planche : le navigateur la
+    // demande de lui-même à la racine, et aucune page du site publié n'en déclare.
+    p.on('console', (m) => {
+      const source = m.location().url || 'sans adresse';
+      if (m.type() === 'error' && !source.endsWith('/favicon.ico')) erreurs.push(`${m.text()} (${source})`);
+    });
     let partis = [];
     p.on('framenavigated', (f) => { if (f === p.mainFrame()) partis.push(f.url()); });
     await p.goto(adresse, { waitUntil: 'networkidle' });
@@ -148,12 +154,14 @@ const dire = (cas, ok, quoi) => { if (!ok) { fautes++; console.log(`  ✗ [${cas
     for (const l of liens) dire(cas.nom, existsSync(path.join(path.dirname(planche), l)), `le lien de la fin vise une planche absente : ${l}`);
     await appuyer('[data-va="recommencer"]'); await p.waitForTimeout(POSE);
     await verifierEtape(0, ECRANS[0]);
+    // Les erreurs se comptent ICI, sur la planche : la page où mène la croix n'est
+    // pas la sienne, et en ligne son icône absente accusait la planche à tort.
+    dire(cas.nom, erreurs.length === 0, `erreurs : ${erreurs.join(' | ')}`);
     // Quitter : la croix mène au site de vente.
     partis = [];
     await p.route('**/vente/index.html', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<title>site</title>' }));
     await appuyer('.g-quitter'); await p.waitForTimeout(600);
     dire(cas.nom, partis.some((u) => u.endsWith('vente/index.html')), `la croix ne quitte pas vers le site (${partis.join(', ') || 'aucun départ'})`);
-    dire(cas.nom, erreurs.length === 0, `erreurs : ${erreurs.join(' | ')}`);
     console.log(`${cas.nom} : parcouru`);
     await ctx.close();
   }
