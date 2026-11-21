@@ -1766,7 +1766,6 @@ html,body{overflow-x:clip}
 
 .g{position:fixed;left:12px;right:12px;bottom:58px;z-index:210;max-width:420px;margin:0 auto;padding:2px 6px 16px;border-radius:20px;background:var(--v-encre);color:var(--v-creme);box-shadow:0 10px 32px rgba(0,0,0,.26);font-family:var(--font-body),system-ui,sans-serif;transition:opacity 180ms}
 .g.en-haut{top:calc(12px + env(safe-area-inset-top));bottom:auto}
-.g.en-retrait{opacity:0;pointer-events:none}
 .g button{border:0;font:inherit;cursor:pointer}
 .g-haut{display:flex;align-items:center}
 .g-haut button{flex:none;min-height:44px;padding:0 12px;border-radius:999px;background:none;color:rgba(245,243,238,.74);font-size:14px;font-weight:600;white-space:nowrap}
@@ -1998,7 +1997,6 @@ html,body{overflow-x:clip}
   const montre = () => cibleDe(cibleCourante()) || (guidee() ? cibleDe(etape().regard) : null);
 
   const plie = () => guide.classList.contains("pliee");
-  const enRetrait = () => guide.classList.contains("en-retrait");
   const plier = (oui) => { guide.classList.toggle("pliee", oui); reserver(); };
 
   // Ce que dit le guide : le GESTE en titre, ce que l'écran apporte dessous.
@@ -2056,12 +2054,12 @@ html,body{overflow-x:clip}
   // sinon la page sauterait sous le doigt.
   const reserver = () => {
     if (!courant) return;
-    const bas = !bureau() && !guide.classList.contains("en-haut") && !enRetrait();
+    const bas = !bureau() && !guide.classList.contains("en-haut");
     if (bas) reserve = Math.max(reserve, Math.ceil(guide.offsetHeight) + 10);
     courant.style.paddingBottom = reserve ? reserve + "px" : "";
   };
   const recouvre = (el) => {
-    if (!el || enRetrait() || aCote) return false;
+    if (!el || aCote) return false;
     const a = el.getBoundingClientRect(), g = guide.getBoundingClientRect();
     return a.bottom > g.top - 4 && a.top < g.bottom + 4 && a.right > g.left && a.left < g.right;
   };
@@ -2150,7 +2148,7 @@ html,body{overflow-x:clip}
       if (k >= champs.length) { clearInterval(minuteur); fini(); return; }
       j++; champs[k].value = valeurs[k].slice(0, j);
       if (j >= valeurs[k].length) { k++; j = 0; }
-    }, 38);
+    }, 12);
   };
   const aller = (n) => {
     clearInterval(minuteur);
@@ -2165,16 +2163,16 @@ html,body{overflow-x:clip}
     guide.classList.toggle("pliee", !!e.sansBulle);
     dire();
     doigt.style.opacity = 0;
-    // Pendant que les champs s'écrivent, le guide se retire : il cachait ce qu'il
-    // fallait regarder (sa capture du 20 novembre). Il revient une fois tout écrit.
+    // Pendant que les champs s'écrivent, le guide reste replié en bas, loin
+    // d'eux : déplié, il les cachait (sa capture du 20 novembre) ; retiré, on
+    // attendait trois secondes et demie sans rien à lire, et ça ressemblait à
+    // une panne (sa remarque du 21 au soir). Il se déplie une fois tout écrit.
     if (e.taper) {
-      guide.classList.add("en-retrait");
+      guide.classList.add("pliee");
+      poser("bas");
       window.scrollTo(0, 0);
-      ecrire(() => setTimeout(() => { guide.classList.remove("en-retrait"); disposer(); }, 500));
-    } else {
-      guide.classList.remove("en-retrait");
-      requestAnimationFrame(() => requestAnimationFrame(disposer));
-    }
+      ecrire(() => { guide.classList.remove("pliee"); disposer(); });
+    } else requestAnimationFrame(() => requestAnimationFrame(disposer));
     if (e.photo) { photo.classList.add("visible"); setTimeout(() => photo.classList.remove("visible"), 1300); }
   };
   const rubrique = (href) => {
@@ -2210,7 +2208,7 @@ html,body{overflow-x:clip}
 
   // Faire défiler soi-même, c'est vouloir lire : le guide se replie en une
   // ligne et laisse voir l'écran. Il ne se déplie que quand on le touche.
-  const replierSiOnLit = (cible) => { if (!plie() && !enRetrait() && !aCote && !cible?.closest?.(".g, .v-ouverture")) plier(true); };
+  const replierSiOnLit = (cible) => { if (!plie() && !aCote && !cible?.closest?.(".g, .v-ouverture")) plier(true); };
   let departY = null;
   addEventListener("touchstart", (e) => { departY = e.touches[0]?.clientY ?? null; }, { passive: true });
   addEventListener("touchmove", (e) => { if (departY !== null && Math.abs((e.touches[0]?.clientY ?? departY) - departY) > 12) replierSiOnLit(e.target); }, { passive: true });
@@ -2280,7 +2278,7 @@ html,body{overflow-x:clip}
     if (c && el && (c === el || c.contains(el) || el.contains(c))) { ev.preventDefault(); aller(rang + 1); return; }
     if (el) { ev.preventDefault(); secouer(); }
   }, true);
-  addEventListener("resize", () => { if (courant && !enRetrait()) disposer(); });
+  addEventListener("resize", () => { if (courant) disposer(); });
   // Le doigt suit sa cible à chaque image : la page défile, mais aussi une feuille
   // dans la page (le calendrier de la date), et le défilement de la page seule
   // laissait le doigt en l'air au-dessus du bon jour (sa capture du 20 novembre).
