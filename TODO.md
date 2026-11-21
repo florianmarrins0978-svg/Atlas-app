@@ -1021,6 +1021,29 @@ rouge à cette étape, relire le journal (un 5xx isolé se rejoue avec
 « Re-run failed jobs »), et vérifier l'adresse elle-même avant de conclure
 que la page n'est pas en ligne.
 
+**ET LE DÉPLOIEMENT, LUI, NE SE RELANCE JAMAIS PAR « Re-run failed jobs »
+(payé le 21 novembre 2026, une demi-heure).** Ce jour-là, à partir de
+13 h 53 UTC, l'étape « Déployer sur GitHub Pages » a échoué pour deux
+sessions de suite, une demi-seconde après un téléversement réussi :
+*« Found 0 artifact(s) […] No artifacts named "github-pages" were found for
+this workflow run »*. L'artefact existait (l'API le listait deux minutes
+plus tard) : GitHub ne le voyait pas encore, et l'action ne patiente pas.
+Le flux n'avait pas changé depuis le 9 novembre, ses actions sont épinglées,
+la même version avait publié à 13 h 36. **Ce qu'il ne faut pas faire, et qui
+a été fait cinq fois** : relancer les jobs en échec. Chaque relance téléverse
+un artefact de plus DANS LA MÊME exécution, et le déploiement refuse alors
+pour une autre raison, qu'on ne lit que dans le journal : *« Multiple
+artifacts named "github-pages" were unexpectedly found […] Artifact count is
+5 »*. Pire, le groupe `pages` annule ce qui est en cours : une de ces
+relances a tué la publication neuve qu'une autre session venait de lancer.
+**Ce qu'on fait** : regarder d'abord si une publication tourne
+(`list_workflow_runs` sur `pages.yml`) et la laisser finir ; sinon en lancer
+une NEUVE sur `main` (`run_workflow`, le flux accepte `workflow_dispatch`),
+jamais une relance ; et lire la ligne d'erreur de CHAQUE tentative, pas
+seulement de la première. **À faire, à part, sur son « oui »** (outillage,
+niveau 2) : que le flux attende de voir son artefact avant de déployer, ou
+redéploie une fois de lui-même.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
