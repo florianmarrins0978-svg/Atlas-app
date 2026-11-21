@@ -97,11 +97,15 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON "plans_arrosage" TO atlas_app;
 
 CREATE TABLE IF NOT EXISTS "dossiers_arrosage_a_purger" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "dossier_id" uuid NOT NULL REFERENCES "dossiers_arrosage"("id") ON DELETE CASCADE,
+  "dossier_id" uuid NOT NULL,
   "entreprise_id" uuid NOT NULL REFERENCES "entreprises"("id") ON DELETE CASCADE,
   "purger_le" timestamptz NOT NULL,
   "mis_en_file_le" timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT "dossiers_arrosage_a_purger_uk" UNIQUE ("dossier_id")
+  CONSTRAINT "dossiers_arrosage_a_purger_uk" UNIQUE ("dossier_id"),
+  -- Le dossier ET son entreprise : une file qui nommerait le dossier d'une
+  -- autre entreprise ferait purger à tort, et la base le refuse d'elle-même.
+  CONSTRAINT "dossiers_arrosage_a_purger_dossier_fk" FOREIGN KEY ("dossier_id", "entreprise_id")
+    REFERENCES "dossiers_arrosage"("id", "entreprise_id") ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS "dossiers_arrosage_a_purger_echeance_idx" ON "dossiers_arrosage_a_purger" ("purger_le");
 GRANT SELECT, INSERT, UPDATE, DELETE ON "dossiers_arrosage_a_purger" TO atlas_app;

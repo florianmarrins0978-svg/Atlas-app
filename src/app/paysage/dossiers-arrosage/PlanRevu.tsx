@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { enregistreLe } from "@/lib/arrosage/mots-des-dossiers";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { saisieEcrite } from "@/lib/arrosage/saisie-ecrite";
 import type { PlanFige, SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
 import LePlanDuJardin from "../arrosage/LePlanDuJardin";
@@ -24,7 +25,7 @@ export default function PlanRevu({
   resultat,
 }: {
   dossier: { id: string; nom: string };
-  plan: { id: string; le: string; avecPhoto: boolean; avecPdf: boolean };
+  plan: { id: string; version: number; le: string; avecPhoto: boolean; avecPdf: boolean };
   saisie: SaisieDuPlan;
   resultat: PlanFige;
 }) {
@@ -76,16 +77,19 @@ export default function PlanRevu({
           </div>
         )}
         bas={
+          // **La porte commune des PDF** (`test-tous-les-pdf.ts`) : un lien posé
+          // à la main ouvre le PDF sur iPhone au lieu de le ranger.
           plan.avecPdf ? (
-            <a
-              href={`${base}/pdf?telecharger=1`}
-              data-atlas="telecharger-pdf"
-              className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full text-[17px] font-semibold"
+            <BoutonTelechargerDocument
+              fichier={`${base}/pdf`}
+              nom={`plan-d-arrosage-version-${plan.version}.pdf`}
+              dataAtlas="telecharger-pdf"
+              className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full border-0 text-[17px] font-semibold"
               style={{ backgroundColor: colors.plein, color: surPlein }}
             >
               <Icone nom="telecharger" />
               Télécharger le PDF
-            </a>
+            </BoutonTelechargerDocument>
           ) : undefined
         }
       />

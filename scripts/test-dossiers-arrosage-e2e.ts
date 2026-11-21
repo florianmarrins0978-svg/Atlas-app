@@ -153,9 +153,12 @@ async function main() {
     await feuille.getByRole("button", { name: "Fermer" }).click();
   });
 
-  await cas("le PDF archivé se télécharge", async () => {
-    adresseDuPdf = (await page.locator('[data-atlas="telecharger-pdf"]').getAttribute("href")) ?? "";
-    assert.match(adresseDuPdf, /\/pdf\?telecharger=1$/);
+  await cas("le PDF archivé se télécharge, par l'appui sur le bouton", async () => {
+    // Son geste : appuyer. Sans feuille de partage (ce Chromium n'en a pas),
+    // la porte commune range le fichier par un lien local.
+    const [telecharge] = await Promise.all([page.waitForEvent("download", { timeout: 30_000 }), page.click('[data-atlas="telecharger-pdf"]')]);
+    assert.match(telecharge.suggestedFilename(), /^plan-d-arrosage-\d{4}-\d\d-\d\d-version-1\.pdf$/);
+    adresseDuPdf = `${adresseDuPlan}/pdf?telecharger=1`;
     const r = await page.request.get(`${BASE}${adresseDuPdf}`);
     assert.equal(r.status(), 200, `le PDF répond ${r.status()}`);
     assert.equal(r.headers()["content-type"], "application/pdf");

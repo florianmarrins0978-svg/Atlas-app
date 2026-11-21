@@ -23,7 +23,7 @@ export default async function PlanRevuPage({ params }: { params: Promise<{ dossi
       <EnTeteEcran retour={{ href: `/paysage/dossiers-arrosage/${dossier}`, libelle: "Retour au dossier" }} surtitre="Mes dossiers" titre="Plan d’arrosage" />
       <PlanRevu
         dossier={{ id: dossier, nom: p.dossierNom }}
-        plan={{ id: p.id, le: p.createdAt.toISOString(), avecPhoto: p.photoCle !== null, avecPdf: p.pdfCle !== null }}
+        plan={{ id: p.id, version: p.version, le: p.createdAt.toISOString(), avecPhoto: p.photoCle !== null, avecPdf: p.pdfCle !== null }}
         saisie={p.saisie}
         resultat={p.resultat}
       />

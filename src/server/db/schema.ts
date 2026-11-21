@@ -4999,14 +4999,20 @@ export const dossiersArrosageAPurger = pgTable(
   "dossiers_arrosage_a_purger",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    dossierId: uuid("dossier_id")
-      .notNull()
-      .references(() => dossiersArrosage.id, { onDelete: "cascade" }),
+    dossierId: uuid("dossier_id").notNull(),
     entrepriseId: uuid("entreprise_id")
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
     purgerLe: timestamp("purger_le", { withTimezone: true }).notNull(),
     misEnFileLe: timestamp("mis_en_file_le", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("dossiers_arrosage_a_purger_uk").on(t.dossierId), index("dossiers_arrosage_a_purger_echeance_idx").on(t.purgerLe)]
+  (t) => [
+    unique("dossiers_arrosage_a_purger_uk").on(t.dossierId),
+    index("dossiers_arrosage_a_purger_echeance_idx").on(t.purgerLe),
+    foreignKey({
+      columns: [t.dossierId, t.entrepriseId],
+      foreignColumns: [dossiersArrosage.id, dossiersArrosage.entrepriseId],
+      name: "dossiers_arrosage_a_purger_dossier_fk",
+    }).onDelete("cascade"),
+  ]
 );
