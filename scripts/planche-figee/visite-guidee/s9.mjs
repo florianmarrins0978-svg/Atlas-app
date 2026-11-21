@@ -12,6 +12,9 @@ async function remplir({ ou, date, nature, total }) {
   await pas(900);
 }
 try {
+  // Le chemin vers Ma TVA, comme il le prend : Terminés, puis la carte du haut.
+  await va("/termines");
+  await fige("33b-termines");
   await va("/termines/tva");
   await fige("34-tva");
   await page.click('button:has-text("Écrire à la main")'); await pas(1200);
