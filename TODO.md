@@ -70,7 +70,16 @@ tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
 dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
 l'appli bâtie, joué pour de vrai sur la base de démonstration
 (`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
-dossier du comptable). Retour : `docs/visite-guidee.md`.
+dossier du comptable). Retour : `docs/visite-guidee.md`. **Corrigé le
+21 novembre : ce dossier n'a jamais été commité** (ni `tout.sh`, ni
+`histoire.mjs`, ni `parcourir-visite.mjs`) ; refaire la visite demande de
+réécrire son parcours.
+
+**⏳ Le début revu, en attente de son choix (21 novembre)** :
+`appli/visite-guidee-le-debut.html`, les quatre premières étapes jusqu'aux
+factures de Costa, sur ses mêmes écrans figés. Retour :
+`docs/visite-guidee-le-debut.md`. S'il la retient, la même bulle passe sur
+les 74 étapes de `appli/visite-guidee.html`.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi

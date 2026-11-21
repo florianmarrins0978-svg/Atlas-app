@@ -89,4 +89,10 @@ Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : l
 l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de
 démonstration neuve, donc ton accord.
 
+**Corrigé le 21 novembre : ce dossier n'est pas dans le dépôt.** Ni
+`tout.sh`, ni `histoire.mjs`, ni `parcourir-visite.mjs` n'ont été commités ;
+ils sont restés dans la session qui a fait la planche. Seuls `figer.mjs`,
+`composer.mjs` et `parcourir.mjs` existent sous `scripts/planche-figee/`.
+Refaire la visite demande donc de réécrire son parcours.
+
 **Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
