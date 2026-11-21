@@ -1,0 +1,202 @@
+# Les dossiers du plan d'arrosage : la planche, et les cinq questions
+
+*21 novembre 2026. Réponse au brief « les dossiers du plan d'arrosage ».
+**Rien n'est codé** : la planche d'abord (`CLAUDE.md` §3 bis), le code
+seulement une fois ses réponses données.*
+
+**La planche :** https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-dossiers.html
+
+---
+
+## 1. Ce qui a été fait
+
+La planche est `appli/arrosage-dossiers.html`.
+
+| Le brief demandait | Verdict |
+|---|---|
+| la planche sur le VRAI écran d'arrosage figé | **fait** : figé le 21 novembre sur l'appli servie (commit `f7f9468`), base de démonstration, par `scripts/planche-figee/` |
+| un vrai plan sous le bouton | **fait** : un jardin (deux pelouses, un massif, un couloir) envoyé au serveur par le chemin du dessin. Le plan, ses 4 réseaux, ses 45 pièces et ses 11 réserves sont ceux du calcul ; rien n'est tapé à la main |
+| où sont les dossiers, comment on en crée un | **fait** : « Mes dossiers » sous « J'ai déjà un devis fournisseur », au départ de l'outil. Rien entre le titre et le piquage (sa règle du 20 août) |
+| « Enregistrer dans un dossier » sous un plan | **fait** : sous les réserves, à la fin de la liste. La feuille demande le dossier, ou en crée un |
+| un dossier ouvert, ses plans, leur date | **fait** : deux versions, la plus récente en tête, Renommer, Supprimer |
+| un plan revu, le téléchargement | **fait** : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 4 pages |
+| chaque bouton fait quelque chose | **fait** : parcourue à 390 et 360 px, chaque geste touché, aucun muet, aucune erreur |
+| dans `appli/` et `essais.html` | **fait**, et dans `docs/maquettes/index.html`. Les scripts qui la refont : `appli/scripts/dossiers-arrosage/` |
+
+**Deux pilotes en tête de la planche** montrent les deux réponses qui changent
+l'écran : le dossier libre ou relié à une fiche client (question 1), la photo
+gardée ou non (question 3).
+
+**Aucune batterie** : le lot ne touche que `appli/` et `docs/`, niveau 1. Sur
+son « oui » du 21 novembre, un serveur de démonstration a tourné dans le
+conteneur du nuage, sur une base neuve, pour figer l'écran.
+
+**Contrôles joués** : `appli/tests/e2e.js` (celui qui garde la publication)
+255 sur 255 ; `test-aucun-tiret`, `test-aucune-fleche`, `test-nom-cause`,
+`test-une-seule-recherche` verts. La planche pèse 1,1 Mo : les photos des
+pièces arrivaient en pleine taille (14 Mo), elles sont réduites à leur place
+et écrites une seule fois.
+
+**Pas regardé** : Safari. Ce poste n'a que Chromium.
+
+---
+
+## 2. Ce que le brief disait, et qui est faux ou incomplet
+
+1. **« L'hébergement n'est pas encore choisi. »** Il est choisi : Scaleway
+   (`docs/QUESTIONS.md` §30, `HANDOVER.md`). Il n'est pas encore en place.
+   Et le stockage des fichiers existe déjà dans le code
+   (`src/server/storage/` : le disque sur le banc, S3 en production) ; il
+   porte déjà les photos de chantier, les tickets, les photos de diagnostic
+   et les PDF. Garder la photo du croquis n'ajoute aucune brique.
+2. **« `EnregistrerLaDemande.tsx` montre comment une liste s'enregistre. »**
+   Il range le message envoyé à un fournisseur sur la fiche de ce
+   fournisseur : ce n'est pas un plan, et rien n'y est figé. Les deux bons
+   modèles sont la table `diagnostics` (le résultat figé, `moteur`, `modele`,
+   `versionBase`) et **la facture**, dont le PDF est « archivé à l'émission,
+   jamais reconstruit » (`docs/QUESTIONS.md` §30).
+3. **« Le plan et la liste, exactement comme affichés. »** Une partie de ce
+   qui est affiché ne vit QUE dans l'écran : les pièces changées ou
+   supprimées au nombre choisi sont un état local de
+   `LePlanDuJardin.tsx` (`retouches`), absent des
+   paramètres qui voyagent. Un enregistrement fait des seuls paramètres
+   perdrait ses retouches sans rien dire. Elles font partie de la saisie
+   enregistrée.
+
+## 3. Ce qui manquait au brief
+
+1. **L'enregistrement se recalcule au SERVEUR, et se compare à l'écran.** Si
+   le navigateur envoyait le plan tout fait, un envoi bricolé (ou une page
+   restée ouverte sur un code ancien : le piège « la page a survécu à son
+   serveur », `HANDOVER.md`) enregistrerait un plan que Cause n'a jamais
+   calculé. C'est exactement ce que la trace doit pouvoir réfuter. Ce qui
+   part du navigateur, c'est la saisie (la lecture de l'IA, ses corrections,
+   les paramètres, les retouches) et l'empreinte du plan affiché ; le serveur
+   refait le plan avec le même calcul (`le-plan.ts`) et compare. Différent :
+   refus, « rechargez la page », et une ligne au journal. La lecture de l'IA,
+   elle, ne se recalcule pas : elle s'enregistre telle que rendue, avec le
+   modèle qui l'a faite, comme `diagnostics.modele`.
+2. **Le PDF s'archive au moment d'enregistrer**, comme celui d'une facture.
+   Le plan revu à l'écran redessine des données figées avec le dessin
+   d'aujourd'hui ; le PDF, lui, est l'image de ce jour-là, à l'octet près.
+   C'est lui qui fait foi.
+3. **Sans l'option à 6 €, ses plans enregistrés deviendraient
+   inaccessibles** : `layout.tsx` de l’outil ferme tout ce qui
+   vit sous l'outil. Question 5.
+4. **Ses prix d'achat ne partent pas dans le PDF** : le PDF est fait pour
+   être envoyé. Ils restent à l'écran, dans le plan revu.
+5. **Enregistrer deux fois le même plan ne crée pas de version.** La planche
+   le dit (« Ce plan est déjà enregistré tel quel dans ce dossier »).
+6. **Une version ne se supprime pas seule**, sinon l'historique ment. On
+   supprime un dossier entier.
+7. **L'effacement d'un client, la fermeture du compte et « Télécharger mes
+   données »** doivent suivre les dossiers. Pour le premier, seul un dossier
+   RELIÉ à la fiche peut être retrouvé (question 1).
+
+---
+
+## 4. Les cinq questions, avec ma recommandation
+
+### Question 1. Un dossier libre, ou relié à la fiche client ?
+
+**Recommandation : un nom libre, toujours possible, et un lien FACULTATIF à
+une fiche qui existe.** Choisir le client remplit le nom ; le lien se pose
+aussi après coup (« Renommer »). Pilote « Relié à un client » sur la planche.
+
+| | |
+|---|---|
+| pourquoi le nom libre reste | l'outil sert en visite de devis, avant que le client existe : c'est sa décision du 17 août (`ARCHITECTURE.md` §125) |
+| pourquoi le lien compte | **l'effacement d'un client ne retrouve que ce qui lui est relié** (`effacerClient`, `donnees-client.ts`, par l'identifiant du client). Un dossier tapé « Madame Intel » survivrait à l'effacement de Mme Intel : son nom resterait chez Cause, contre la demande |
+| ce qu'il gagne | ne pas taper deux fois ; le dossier se retrouve depuis la fiche |
+| ce que ça coûte | une colonne et le champ de recherche de l'appli dans la feuille |
+| écarté | le lien au chantier : un jardin reçoit plusieurs devis, le client est la bonne attache |
+
+### Question 2. Supprimer un dossier ?
+
+**Recommandation : le dossier disparaît pour lui, et tout ce qui désigne son
+client s'efface aussitôt : le nom du dossier, le lien à la fiche, la photo du
+croquis. Cause garde le calcul seul (les cotes, les mesures, les choix, le
+plan, la liste, les réserves, la version, la date) pendant 5 ans, lisible par
+Cause seule, puis l'efface.** La feuille « Supprimer ce dossier ? » de la
+planche le dit en deux phrases.
+
+| | |
+|---|---|
+| ce que dit le RGPD | les données du client de l'artisan sont à l'artisan ; Cause est sous-traitant (`docs/QUESTIONS.md` §33, article 28). Son ordre d'effacer s'exécute |
+| pourquoi garder le calcul reste permis | sans nom, sans photo et sans lien, il ne désigne plus le client de l'artisan : c'est la trace du service que Cause a rendu à l'artisan, gardée pour le propre compte de Cause, pour se défendre (RGPD article 17.3.e, intérêt légitime article 6.1.f) |
+| pourquoi 5 ans | la prescription des actions entre commerçants (Code de commerce L110-4) et de droit commun (Code civil 2224) |
+| écarté : tout effacer | plus aucune preuve, c'est ce qu'il veut éviter |
+| écarté : tout garder | Cause garderait le nom de Mme Intel contre l'ordre de l'artisan : c'est le point attaquable, le même qu'au §33 |
+
+**Confiance : moyenne.** Ce qui la ferait changer : si l'arrosage enterré
+relève de la garantie décennale de l'artisan, un recours contre Cause peut
+arriver après 5 ans, et la durée passerait à 10. **C'est au juriste de
+trancher**, et la règle doit être écrite dans les conditions générales et la
+politique de confidentialité **avant** que le code parte : une nouvelle
+version des conditions, que chaque compte accepte. Cela, c'est sa décision.
+La fermeture du compte suit la même règle.
+
+### Question 3. La photo du croquis : on la garde ?
+
+**Recommandation : oui, avec le plan, tant que le dossier vit ; effacée avec
+lui.** Pilote « La photo » sur la planche.
+
+| | |
+|---|---|
+| pourquoi | c'est la seule preuve de ce que l'artisan a fourni. Sans elle, « l'IA a mal lu mon croquis » ne se tranche pas : on a les cotes lues, jamais ce qui était écrit |
+| ce qui existe déjà | elle passe par `preparerPhotoEntrante` : coordonnées GPS retirées, 8 Mo au plus. Le stockage existe (point 2.1) |
+| le poids | quelques centaines de Ko une fois réduite (estimation, à mesurer au codage) |
+| le coût | le stockage d'objets de Scaleway coûte de l'ordre d'un à deux centimes par Go et par mois (grille relevée en 2024, à revérifier) : mille plans, moins d'un euro par an. Confiance sur l'ordre de grandeur : haute ; sur le prix exact : faible |
+| un plan dessiné au doigt | pas de photo : c'est le dessin qui s'enregistre |
+
+### Question 4. Le téléchargement en PDF, comme les devis ?
+
+**Recommandation : oui**, fait par l'appli comme le devis (`src/server/pdf/`),
+archivé au moment d'enregistrer. La planche montre ses 4 pages :
+
+| page | ce qu'elle porte |
+|---|---|
+| 1 | l'entreprise, le dossier, la date ; le plan, réseau par réseau, avec sa buse et son tuyau ; **les réserves juste sous le plan**, jamais à la fin |
+| 2 | la fin des réserves, puis la liste des pièces |
+| 3, 4 | la suite de la liste, chaque groupe coupé redit son nom |
+| au pied de chaque page | la date et l'heure, la version du calcul, l'empreinte de l'enregistrement |
+
+Les pages se remplissent en mesurant chaque bloc : une réserve qui ne tient
+pas passe à la page suivante, elle n'est jamais coupée. Le PDF ne suit pas la
+charte de couleurs (comme les devis) et **ne porte pas ses prix d'achat**.
+
+**À lui de dire** : veut-il aussi les dessins « Les pièces des réseaux » (où
+visser chaque pièce) ? Ils servent au poseur, et ajoutent des pages. Ma
+recommandation : pas pour commencer.
+
+### Question 5, que le brief n'avait pas. Sans l'option à 6 €, ses plans ?
+
+**Recommandation : revoir et télécharger restent ouverts, en lecture seule,
+même sans l'option ; seul un nouveau plan la demande.** Une trace sert au
+moment d'un litige, souvent après avoir arrêté l'option : la lui fermer
+reviendrait à garder ses propres données hors de sa portée. Aujourd'hui,
+`layout.tsx` ferme tout l'outil : les dossiers vivraient donc à une adresse
+hors de cette porte.
+
+---
+
+## 5. Comment ce sera codé, une fois ses réponses
+
+| | |
+|---|---|
+| deux tables | `dossiers_arrosage` (le nom, le client facultatif) et `plans_enregistres` (la version, la saisie, le résultat figé, l'empreinte, la photo, le PDF archivé, `moteur`, `modele`, `version_calcul`, la date, qui l'a enregistré) |
+| isolation | `FORCE ROW LEVEL SECURITY`, tout par `withEntreprise`, et une suite base sous `atlas_app` qui prouve qu'une entreprise ne voit pas les dossiers d'une autre, ni par leur identifiant |
+| migration | en expansion seulement : deux tables neuves, rien d'autre ne bouge. Le numéro se prend au-dessus de `main` (0192) **et** des branches actives, juste avant la batterie |
+| tests rouges d'abord | l'isolation ; une empreinte qui diffère est refusée ; une version s'ajoute, l'ancienne reste ; le même plan deux fois ne fait pas de version ; supprimer efface le nom, le lien et la photo ; effacer un client emporte ses dossiers ; chaque réserve est dans le PDF (un contrôle qui sait rougir) |
+| niveau | 3 (`drizzle/`). La batterie sur son « oui », puis `main` |
+| à corriger dans le même lot | `ARCHITECTURE.md` « Rien n'est enregistré », l'en-tête de `actions.ts` de l’outil, le tableau des durées de `docs/RGPD.md` |
+
+---
+
+## 6. Ce qui reste ouvert, et qui le tranche
+
+| | qui |
+|---|---|
+| les cinq questions | lui |
+| la durée de garde du calcul après suppression, et son écriture dans les conditions générales | lui, avec le juriste |
+| la planche sur Safari | lui, sur son iPhone |

@@ -6,6 +6,10 @@ sur les vrais écrans, avec des données toutes inventées.*
 **La planche :** `appli/visite-guidee.html`. Pas encore branchée sur le site de
 vente : on la branche quand tu l'as validée.
 
+**Ta demande du 21 novembre, un meilleur début :** deux propositions, sur ses
+quatre premières étapes. Leurs retours : `docs/visite-guidee-le-debut.md` et
+`docs/visite-guidee-le-debut-2.md`.
+
 ## Ce que fait le visiteur
 
 Une bulle dit quoi regarder, et un doigt doré montre où toucher. S'il touche

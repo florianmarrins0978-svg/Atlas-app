@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les dossiers du plan d'arrosage : la planche, et les cinq questions</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-dossiers-du-plan-darrosage--la-planche-et-les-cinq-questions">Les dossiers du plan d'arrosage : la planche, et les cinq questions</h1>
+<p><em>21 novembre 2026. Réponse au brief « les dossiers du plan d'arrosage ». <strong>Rien n'est codé</strong> : la planche d'abord (<code>CLAUDE.md</code> §3 bis), le code seulement une fois ses réponses données.</em></p>
+<p><strong>La planche :</strong> https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-dossiers.html</p>
+<hr>
+<h2 id="1-ce-qui-a-été-fait">1. Ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La planche est <code>appli/arrosage-dossiers.html</code>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le brief demandait</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>la planche sur le VRAI écran d'arrosage figé</td>
+<td><strong>fait</strong> : figé le 21 novembre sur l'appli servie (commit <code>f7f9468</code>), base de démonstration, par <code>scripts/planche-figee/</code></td>
+</tr>
+<tr>
+<td>un vrai plan sous le bouton</td>
+<td><strong>fait</strong> : un jardin (deux pelouses, un massif, un couloir) envoyé au serveur par le chemin du dessin. Le plan, ses 4 réseaux, ses 45 pièces et ses 11 réserves sont ceux du calcul ; rien n'est tapé à la main</td>
+</tr>
+<tr>
+<td>où sont les dossiers, comment on en crée un</td>
+<td><strong>fait</strong> : « Mes dossiers » sous « J'ai déjà un devis fournisseur », au départ de l'outil. Rien entre le titre et le piquage (sa règle du 20 août)</td>
+</tr>
+<tr>
+<td>« Enregistrer dans un dossier » sous un plan</td>
+<td><strong>fait</strong> : sous les réserves, à la fin de la liste. La feuille demande le dossier, ou en crée un</td>
+</tr>
+<tr>
+<td>un dossier ouvert, ses plans, leur date</td>
+<td><strong>fait</strong> : deux versions, la plus récente en tête, Renommer, Supprimer</td>
+</tr>
+<tr>
+<td>un plan revu, le téléchargement</td>
+<td><strong>fait</strong> : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 4 pages</td>
+</tr>
+<tr>
+<td>chaque bouton fait quelque chose</td>
+<td><strong>fait</strong> : parcourue à 390 et 360 px, chaque geste touché, aucun muet, aucune erreur</td>
+</tr>
+<tr>
+<td>dans <code>appli/</code> et <code>essais.html</code></td>
+<td><strong>fait</strong>, et dans <code>docs/maquettes/index.html</code>. Les scripts qui la refont : <code>appli/scripts/dossiers-arrosage/</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux pilotes en tête de la planche</strong> montrent les deux réponses qui changent l'écran : le dossier libre ou relié à une fiche client (question 1), la photo gardée ou non (question 3).</p>
+<p><strong>Aucune batterie</strong> : le lot ne touche que <code>appli/</code> et <code>docs/</code>, niveau 1. Sur son « oui » du 21 novembre, un serveur de démonstration a tourné dans le conteneur du nuage, sur une base neuve, pour figer l'écran.</p>
+<p><strong>Contrôles joués</strong> : <code>appli/tests/e2e.js</code> (celui qui garde la publication) 255 sur 255 ; <code>test-aucun-tiret</code>, <code>test-aucune-fleche</code>, <code>test-nom-cause</code>, <code>test-une-seule-recherche</code> verts. La planche pèse 1,1 Mo : les photos des pièces arrivaient en pleine taille (14 Mo), elles sont réduites à leur place et écrites une seule fois.</p>
+<p><strong>Pas regardé</strong> : Safari. Ce poste n'a que Chromium.</p>
+<hr>
+<h2 id="2-ce-que-le-brief-disait-et-qui-est-faux-ou-incomplet">2. Ce que le brief disait, et qui est faux ou incomplet</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>« L'hébergement n'est pas encore choisi. »</strong> Il est choisi : Scaleway (<code>docs/QUESTIONS.md</code> §30, <code>HANDOVER.md</code>). Il n'est pas encore en place. Et le stockage des fichiers existe déjà dans le code (<code>src/server/storage/</code> : le disque sur le banc, S3 en production) ; il porte déjà les photos de chantier, les tickets, les photos de diagnostic et les PDF. Garder la photo du croquis n'ajoute aucune brique.</li>
+<li><strong>« <code>EnregistrerLaDemande.tsx</code> montre comment une liste s'enregistre. »</strong> Il range le message envoyé à un fournisseur sur la fiche de ce fournisseur : ce n'est pas un plan, et rien n'y est figé. Les deux bons modèles sont la table <code>diagnostics</code> (le résultat figé, <code>moteur</code>, <code>modele</code>, <code>versionBase</code>) et <strong>la facture</strong>, dont le PDF est « archivé à l'émission, jamais reconstruit » (<code>docs/QUESTIONS.md</code> §30).</li>
+<li><strong>« Le plan et la liste, exactement comme affichés. »</strong> Une partie de ce qui est affiché ne vit QUE dans l'écran : les pièces changées ou supprimées au nombre choisi sont un état local de <code>LePlanDuJardin.tsx</code> (<code>retouches</code>), absent des paramètres qui voyagent. Un enregistrement fait des seuls paramètres perdrait ses retouches sans rien dire. Elles font partie de la saisie enregistrée.</li>
+</ol>
+<h2 id="3-ce-qui-manquait-au-brief">3. Ce qui manquait au brief</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>L'enregistrement se recalcule au SERVEUR, et se compare à l'écran.</strong> Si le navigateur envoyait le plan tout fait, un envoi bricolé (ou une page restée ouverte sur un code ancien : le piège « la page a survécu à son serveur », <code>HANDOVER.md</code>) enregistrerait un plan que Cause n'a jamais calculé. C'est exactement ce que la trace doit pouvoir réfuter. Ce qui part du navigateur, c'est la saisie (la lecture de l'IA, ses corrections, les paramètres, les retouches) et l'empreinte du plan affiché ; le serveur refait le plan avec le même calcul (<code>le-plan.ts</code>) et compare. Différent : refus, « rechargez la page », et une ligne au journal. La lecture de l'IA, elle, ne se recalcule pas : elle s'enregistre telle que rendue, avec le modèle qui l'a faite, comme <code>diagnostics.modele</code>.</li>
+<li><strong>Le PDF s'archive au moment d'enregistrer</strong>, comme celui d'une facture. Le plan revu à l'écran redessine des données figées avec le dessin d'aujourd'hui ; le PDF, lui, est l'image de ce jour-là, à l'octet près. C'est lui qui fait foi.</li>
+<li><strong>Sans l'option à 6 €, ses plans enregistrés deviendraient inaccessibles</strong> : <code>layout.tsx</code> de l’outil ferme tout ce qui vit sous l'outil. Question 5.</li>
+<li><strong>Ses prix d'achat ne partent pas dans le PDF</strong> : le PDF est fait pour être envoyé. Ils restent à l'écran, dans le plan revu.</li>
+<li><strong>Enregistrer deux fois le même plan ne crée pas de version.</strong> La planche le dit (« Ce plan est déjà enregistré tel quel dans ce dossier »).</li>
+<li><strong>Une version ne se supprime pas seule</strong>, sinon l'historique ment. On supprime un dossier entier.</li>
+<li><strong>L'effacement d'un client, la fermeture du compte et « Télécharger mes données »</strong> doivent suivre les dossiers. Pour le premier, seul un dossier RELIÉ à la fiche peut être retrouvé (question 1).</li>
+</ol>
+<hr>
+<h2 id="4-les-cinq-questions-avec-ma-recommandation">4. Les cinq questions, avec ma recommandation</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="question-1-un-dossier-libre-ou-relié-à-la-fiche-client-">Question 1. Un dossier libre, ou relié à la fiche client ?</h3>
+<p><strong>Recommandation : un nom libre, toujours possible, et un lien FACULTATIF à une fiche qui existe.</strong> Choisir le client remplit le nom ; le lien se pose aussi après coup (« Renommer »). Pilote « Relié à un client » sur la planche.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>pourquoi le nom libre reste</td>
+<td>l'outil sert en visite de devis, avant que le client existe : c'est sa décision du 17 août (<code>ARCHITECTURE.md</code> §125)</td>
+</tr>
+<tr>
+<td>pourquoi le lien compte</td>
+<td><strong>l'effacement d'un client ne retrouve que ce qui lui est relié</strong> (<code>effacerClient</code>, <code>donnees-client.ts</code>, par l'identifiant du client). Un dossier tapé « Madame Intel » survivrait à l'effacement de Mme Intel : son nom resterait chez Cause, contre la demande</td>
+</tr>
+<tr>
+<td>ce qu'il gagne</td>
+<td>ne pas taper deux fois ; le dossier se retrouve depuis la fiche</td>
+</tr>
+<tr>
+<td>ce que ça coûte</td>
+<td>une colonne et le champ de recherche de l'appli dans la feuille</td>
+</tr>
+<tr>
+<td>écarté</td>
+<td>le lien au chantier : un jardin reçoit plusieurs devis, le client est la bonne attache</td>
+</tr>
+</tbody></table></div>
+<h3 id="question-2-supprimer-un-dossier-">Question 2. Supprimer un dossier ?</h3>
+<p><strong>Recommandation : le dossier disparaît pour lui, et tout ce qui désigne son client s'efface aussitôt : le nom du dossier, le lien à la fiche, la photo du croquis. Cause garde le calcul seul (les cotes, les mesures, les choix, le plan, la liste, les réserves, la version, la date) pendant 5 ans, lisible par Cause seule, puis l'efface.</strong> La feuille « Supprimer ce dossier ? » de la planche le dit en deux phrases.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce que dit le RGPD</td>
+<td>les données du client de l'artisan sont à l'artisan ; Cause est sous-traitant (<code>docs/QUESTIONS.md</code> §33, article 28). Son ordre d'effacer s'exécute</td>
+</tr>
+<tr>
+<td>pourquoi garder le calcul reste permis</td>
+<td>sans nom, sans photo et sans lien, il ne désigne plus le client de l'artisan : c'est la trace du service que Cause a rendu à l'artisan, gardée pour le propre compte de Cause, pour se défendre (RGPD article 17.3.e, intérêt légitime article 6.1.f)</td>
+</tr>
+<tr>
+<td>pourquoi 5 ans</td>
+<td>la prescription des actions entre commerçants (Code de commerce L110-4) et de droit commun (Code civil 2224)</td>
+</tr>
+<tr>
+<td>écarté : tout effacer</td>
+<td>plus aucune preuve, c'est ce qu'il veut éviter</td>
+</tr>
+<tr>
+<td>écarté : tout garder</td>
+<td>Cause garderait le nom de Mme Intel contre l'ordre de l'artisan : c'est le point attaquable, le même qu'au §33</td>
+</tr>
+</tbody></table></div>
+<p><strong>Confiance : moyenne.</strong> Ce qui la ferait changer : si l'arrosage enterré relève de la garantie décennale de l'artisan, un recours contre Cause peut arriver après 5 ans, et la durée passerait à 10. <strong>C'est au juriste de trancher</strong>, et la règle doit être écrite dans les conditions générales et la politique de confidentialité <strong>avant</strong> que le code parte : une nouvelle version des conditions, que chaque compte accepte. Cela, c'est sa décision. La fermeture du compte suit la même règle.</p>
+<h3 id="question-3-la-photo-du-croquis--on-la-garde-">Question 3. La photo du croquis : on la garde ?</h3>
+<p><strong>Recommandation : oui, avec le plan, tant que le dossier vit ; effacée avec lui.</strong> Pilote « La photo » sur la planche.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>pourquoi</td>
+<td>c'est la seule preuve de ce que l'artisan a fourni. Sans elle, « l'IA a mal lu mon croquis » ne se tranche pas : on a les cotes lues, jamais ce qui était écrit</td>
+</tr>
+<tr>
+<td>ce qui existe déjà</td>
+<td>elle passe par <code>preparerPhotoEntrante</code> : coordonnées GPS retirées, 8 Mo au plus. Le stockage existe (point 2.1)</td>
+</tr>
+<tr>
+<td>le poids</td>
+<td>quelques centaines de Ko une fois réduite (estimation, à mesurer au codage)</td>
+</tr>
+<tr>
+<td>le coût</td>
+<td>le stockage d'objets de Scaleway coûte de l'ordre d'un à deux centimes par Go et par mois (grille relevée en 2024, à revérifier) : mille plans, moins d'un euro par an. Confiance sur l'ordre de grandeur : haute ; sur le prix exact : faible</td>
+</tr>
+<tr>
+<td>un plan dessiné au doigt</td>
+<td>pas de photo : c'est le dessin qui s'enregistre</td>
+</tr>
+</tbody></table></div>
+<h3 id="question-4-le-téléchargement-en-pdf-comme-les-devis-">Question 4. Le téléchargement en PDF, comme les devis ?</h3>
+<p><strong>Recommandation : oui</strong>, fait par l'appli comme le devis (<code>src/server/pdf/</code>), archivé au moment d'enregistrer. La planche montre ses 4 pages :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>page</th>
+<th>ce qu'elle porte</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>l'entreprise, le dossier, la date ; le plan, réseau par réseau, avec sa buse et son tuyau ; <strong>les réserves juste sous le plan</strong>, jamais à la fin</td>
+</tr>
+<tr>
+<td>2</td>
+<td>la fin des réserves, puis la liste des pièces</td>
+</tr>
+<tr>
+<td>3, 4</td>
+<td>la suite de la liste, chaque groupe coupé redit son nom</td>
+</tr>
+<tr>
+<td>au pied de chaque page</td>
+<td>la date et l'heure, la version du calcul, l'empreinte de l'enregistrement</td>
+</tr>
+</tbody></table></div>
+<p>Les pages se remplissent en mesurant chaque bloc : une réserve qui ne tient pas passe à la page suivante, elle n'est jamais coupée. Le PDF ne suit pas la charte de couleurs (comme les devis) et <strong>ne porte pas ses prix d'achat</strong>.</p>
+<p><strong>À lui de dire</strong> : veut-il aussi les dessins « Les pièces des réseaux » (où visser chaque pièce) ? Ils servent au poseur, et ajoutent des pages. Ma recommandation : pas pour commencer.</p>
+<h3 id="question-5-que-le-brief-navait-pas-sans-loption-à-6--ses-plans-">Question 5, que le brief n'avait pas. Sans l'option à 6 €, ses plans ?</h3>
+<p><strong>Recommandation : revoir et télécharger restent ouverts, en lecture seule, même sans l'option ; seul un nouveau plan la demande.</strong> Une trace sert au moment d'un litige, souvent après avoir arrêté l'option : la lui fermer reviendrait à garder ses propres données hors de sa portée. Aujourd'hui, <code>layout.tsx</code> ferme tout l'outil : les dossiers vivraient donc à une adresse hors de cette porte.</p>
+<hr>
+<h2 id="5-comment-ce-sera-codé-une-fois-ses-réponses">5. Comment ce sera codé, une fois ses réponses</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>deux tables</td>
+<td><code>dossiers_arrosage</code> (le nom, le client facultatif) et <code>plans_enregistres</code> (la version, la saisie, le résultat figé, l'empreinte, la photo, le PDF archivé, <code>moteur</code>, <code>modele</code>, <code>version_calcul</code>, la date, qui l'a enregistré)</td>
+</tr>
+<tr>
+<td>isolation</td>
+<td><code>FORCE ROW LEVEL SECURITY</code>, tout par <code>withEntreprise</code>, et une suite base sous <code>atlas_app</code> qui prouve qu'une entreprise ne voit pas les dossiers d'une autre, ni par leur identifiant</td>
+</tr>
+<tr>
+<td>migration</td>
+<td>en expansion seulement : deux tables neuves, rien d'autre ne bouge. Le numéro se prend au-dessus de <code>main</code> (0192) <strong>et</strong> des branches actives, juste avant la batterie</td>
+</tr>
+<tr>
+<td>tests rouges d'abord</td>
+<td>l'isolation ; une empreinte qui diffère est refusée ; une version s'ajoute, l'ancienne reste ; le même plan deux fois ne fait pas de version ; supprimer efface le nom, le lien et la photo ; effacer un client emporte ses dossiers ; chaque réserve est dans le PDF (un contrôle qui sait rougir)</td>
+</tr>
+<tr>
+<td>niveau</td>
+<td>3 (<code>drizzle/</code>). La batterie sur son « oui », puis <code>main</code></td>
+</tr>
+<tr>
+<td>à corriger dans le même lot</td>
+<td><code>ARCHITECTURE.md</code> « Rien n'est enregistré », l'en-tête de <code>actions.ts</code> de l’outil, le tableau des durées de <code>docs/RGPD.md</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert-et-qui-le-tranche">6. Ce qui reste ouvert, et qui le tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>qui</th>
+</tr></thead><tbody>
+<tr>
+<td>les cinq questions</td>
+<td>lui</td>
+</tr>
+<tr>
+<td>la durée de garde du calcul après suppression, et son écriture dans les conditions générales</td>
+<td>lui, avec le juriste</td>
+</tr>
+<tr>
+<td>la planche sur Safari</td>
+<td>lui, sur son iPhone</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

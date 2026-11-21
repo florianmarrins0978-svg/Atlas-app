@@ -14736,6 +14736,10 @@ message. **Aucune persistance** : un plan d'arrosage se refait à chaque client,
 comme un devis. Le jour où il vivra en base, ce sera une décision, pas un effet
 de bord.
 
+**Cette décision a été levée par lui le 21 novembre 2026** (§599) : un plan
+s'enregistrera dans un dossier. Tant que ce n'est pas codé, ce paragraphe
+décrit toujours le code.
+
 Les zones y portent un **identifiant stable**, parce que les consignes les
 désignent par lui (« passe la zone 2 en tuyères »). Le laisser au calcul le
 ferait dépendre de l'ordre de lecture, et un message d'hier viserait demain une
@@ -37901,3 +37905,27 @@ Depuis §588, ce qu'il a choisi dans sa grille ne s'écrit plus sur la désignat
 | `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` RESTENT | contract plus tard (`deployment-safety.md`) : ils ne partent qu'une fois 0192 passée sur sa base ; un rejeu de dictée sur un nom d'avant créerait sinon un second arbre |
 
 `test-cases-reglables-db.ts` (son chêne : le nom reste « Abattage d'un chêne », ses cases portent la technique et 80 cm, la ligne vaut toujours 1 100 €), `test-migration-0192-base-habitee.ts` (cinq cas, dont la RLS qui mord sans la boucle), `test-questions-chiffrage.ts`, `test-correspondance-prestation.ts` (les noms d'avant, écrits en toutes lettres).
+
+## §599 : Le plan d'arrosage s'enregistrera dans un dossier, figé ; la forme attend ses réponses
+
+**Sa décision du 21 novembre 2026** lève « aucune persistance » (§167, « Rien
+n'est enregistré ») : *« si un artisan me reproche un réseau qui ne se lève
+pas, ni lui ni moi ne pouvons montrer ce que Cause lui a rendu »*. Il veut un
+dossier à un nom choisi, chaque plan enregistré figé avec ce qui a été saisi,
+le plan et la liste affichés, les réserves, la version du calcul et la date.
+Revoir ne recalcule jamais ; un enregistrement ne s'écrase pas ; les réserves
+partent dans le téléchargement ; l'outil reste utilisable sans dossier (§125).
+
+**Rien n'est codé.** La planche `appli/arrosage-dossiers.html` et cinq
+questions (`docs/arrosage-dossiers.md`) attendent ses réponses. Trois choses
+y sont établies, parce qu'elles ne dépendent pas de ses réponses :
+
+| | pourquoi |
+|---|---|
+| le serveur refait le plan à l'enregistrement et compare l'empreinte de l'écran | un plan reçu tout fait du navigateur ferait de la trace ce qu'elle doit réfuter : un plan que Cause n'a jamais calculé (envoi bricolé, ou page restée ouverte sur un code ancien) |
+| la saisie enregistrée porte les `retouches` | elles ne vivent que dans l'état de `LePlanDuJardin.tsx`, hors de `ParametresPlan` : sans elles, le plan revu ne serait pas celui qu'il a vu |
+| le PDF s'archive à l'enregistrement, comme celui d'une facture | l'écran revu redessine des données figées avec le dessin du jour ; le PDF est l'image de ce jour-là, et c'est lui qui fait foi |
+
+Le modèle de la table est `diagnostics` (le résultat figé, `moteur`, `modele`,
+`version_base`). `EnregistrerLaDemande.tsx`, cité par le brief, range un
+message chez un fournisseur et ne fige rien : ce n'en est pas un.

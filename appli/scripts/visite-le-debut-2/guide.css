@@ -1,0 +1,219 @@
+/*
+  LE GUIDE DE LA VISITE, PROPOSÉ SUR LES QUATRE PREMIÈRES ÉTAPES.
+  SECONDE PROPOSITION : une autre session a répondu à la même demande dans
+  `visite-guidee-le-debut.html`. Les deux se comparent ; aucune ne remplace
+  l'autre tant qu'il n'a pas choisi.
+
+  Sa demande du 21 novembre 2026 : « propose une version améliorée juste pour
+  les 4 premières étapes, arrête-toi avant d'entrer dans le devis, au client ».
+
+  Les écrans sont ceux de `visite-guidee.html`, recopiés tels quels : seul le
+  guide change. Ce qu'il corrige, relevé en parcourant la visite à 390 × 664 :
+
+  1. La bulle parlait de ce qu'on ne voyait pas. À l'étape des factures, elle
+     décrivait des factures restées sous l'écran. Ici le guide MONTRE ce dont
+     il parle : la page arrive en haut, comme dans l'appli, glisse jusqu'au
+     geste, et ce qui se regarde sans se toucher est surligné.
+  2. La bulle couvrait un quart de l'écran et le voile grisait tout le reste.
+     Elle tient maintenant en une phrase et un geste, posée juste au-dessus de
+     la barre du bas, et l'appli garde ses couleurs.
+  3. « Passer » était le bouton le plus voyant : la bulle poussait à sauter le
+     geste. Il passe au second plan tant qu'un geste est attendu.
+  4. Toucher à côté faisait trembler la bulle, comme un mot de passe faux. Ici
+     une main revient montrer où toucher : on ne punit pas une hésitation.
+*/
+/* Deux appuis rapprochés ne grossissent pas la page : qui hésite appuie souvent
+   deux fois. Pincer pour agrandir reste possible. */
+html, body { overflow-x: clip; touch-action: manipulation; }
+.visite-ecran[hidden] { display: none; }
+/* Un écran figé ne répond pas : c'est le guide qui lit où l'on touche, avec de
+   la marge autour de la cible, parce qu'on vise mal avec un doigt épais. */
+.visite-ecran { pointer-events: none; -webkit-user-select: none; user-select: none; }
+
+:root {
+  --g-encre: var(--atlas-ink, #1c1c1a);
+  --g-creme: var(--atlas-cream, #f5f3ee);
+  --g-or: var(--atlas-or, #b98b47);
+  /* L'or clair de l'appli : c'est lui qui se lit sur l'encre, en plein soleil. */
+  --g-or-clair: var(--atlas-orClair, #c9a15e);
+  --g-plein: var(--atlas-plein, #7d9a6d);
+  --g-elan: cubic-bezier(0.16, 1, 0.3, 1);
+  --g-barre: 58px;
+}
+::selection { background: rgba(185, 139, 71, 0.3); }
+html.g-sur-cible, html.g-sur-cible body { cursor: pointer; }
+
+/* ─── La bulle : une phrase, un geste ─────────────────────────────────────── */
+/* Le socle : sous la bulle, la page s'efface au lieu de dépasser par bandes
+   entre la bulle et la barre du bas. Il ne prend rien au-dessus d'elle. */
+.g-pose {
+  position: fixed; z-index: 210; left: 0; right: 0; bottom: var(--g-barre);
+  padding: 0 10px 10px; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(245, 243, 238, 0), var(--g-creme) 46px);
+  transition: opacity 240ms ease, transform 520ms var(--g-elan);
+}
+.g-pose.absente { opacity: 0; transform: translateY(22px); }
+.g-bulle {
+  position: relative; pointer-events: auto;
+  max-width: 420px; margin-inline: auto;
+  padding: 15px 16px 8px;
+  border-radius: 22px;
+  background: var(--g-encre); color: var(--g-creme);
+  box-shadow: 0 14px 34px rgba(28, 28, 26, 0.24), 0 2px 8px rgba(28, 28, 26, 0.2);
+  font-family: var(--font-body), system-ui, sans-serif;
+  view-transition-name: g-bulle;
+}
+.g-pose.absente .g-bulle { pointer-events: none; }
+:where(.g-bulle) button {
+  appearance: none; border: 0; background: none; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.g-bulle button:focus-visible, .g-feuille :focus-visible { outline: 2px solid var(--g-or-clair); outline-offset: 2px; }
+.g-dit {
+  margin: 0; padding-right: 30px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 18.5px; line-height: 1.28; letter-spacing: -0.005em; text-wrap: balance;
+}
+.g-geste {
+  display: flex; align-items: center; gap: 8px; margin: 8px 0 0;
+  font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--g-or-clair);
+}
+.g-geste[hidden] { display: none; }
+.g-geste svg { flex: none; width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.g-geste.appelle { animation: g-appelle 700ms ease both; }
+@keyframes g-appelle { 30% { color: var(--g-creme); } }
+
+.g-pied { display: flex; align-items: center; gap: 12px; margin-top: 6px; min-height: 46px; }
+.g-retour { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin-left: -7px; border-radius: 50%; color: rgba(245, 243, 238, 0.86); }
+.g-retour span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(245, 243, 238, 0.36); }
+/* À la première étape il n'y a pas d'avant : le bouton s'en va, sans laisser de trou. */
+.g-retour[disabled] { display: none; }
+.g-bulle svg.g-trait { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Où l'on en est : quatre traits pour quatre étapes, au lieu d'une barre de 74. */
+.g-pas { flex: 1; display: flex; gap: 5px; }
+.g-pas i { flex: 1; height: 4px; border-radius: 2px; background: rgba(245, 243, 238, 0.2); transition: background-color 320ms ease; }
+.g-pas i.fait { background: var(--g-or-clair); }
+/* Tant qu'un geste est attendu, « Passer » reste en retrait : c'est l'écran
+   qu'on touche. Sans geste, « Suivant » devient LE bouton, et il se remplit. */
+.g-suite {
+  flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px;
+  font-size: 15px; font-weight: 600; color: var(--g-creme);
+  box-shadow: inset 0 0 0 1px rgba(245, 243, 238, 0.36);
+  transition: background-color 200ms ease, color 200ms ease, transform 140ms ease;
+}
+.g-suite.pleine { background: var(--g-creme); color: var(--g-encre); box-shadow: none; }
+.g-suite:active { transform: scale(0.97); }
+/* Touché à côté alors que rien n'est à toucher : le bouton se signale, sans un mot. */
+.g-suite.appelle { animation: g-pousse 560ms var(--g-elan) both; }
+@keyframes g-pousse { 35% { transform: scale(1.07); } }
+.g-quitter { position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: rgba(245, 243, 238, 0.66); }
+.g-bulle svg.g-trait.g-croix { width: 17px; height: 17px; }
+
+/* ─── Ce qu'on touche : l'anneau, à la forme du bouton ────────────────────── */
+.g-calque { position: fixed; inset: 0; z-index: 200; overflow: hidden; pointer-events: none; }
+.g-anneau {
+  position: absolute; left: 0; top: 0; border-radius: 14px;
+  box-shadow: 0 0 0 3px var(--g-or);
+  opacity: 0; transition: opacity 220ms ease, background-color 120ms ease, transform 140ms var(--g-elan);
+}
+.g-anneau.visible { opacity: 1; }
+/* L'onde grandit d'une douzaine de points, quelle que soit la largeur de la
+   cible. En proportion, elle débordait de cent points sur une ligne de liste. */
+.g-anneau::after { content: ""; position: absolute; inset: -3px; border-radius: inherit; border: 2px solid var(--g-or); opacity: 0; }
+.g-anneau.visible::after { animation: g-onde 2s var(--g-elan) infinite; }
+@keyframes g-onde { 0% { transform: scale(1); opacity: 0.75; } 70%, 100% { transform: scale(var(--g-gx, 1.2), var(--g-gy, 1.2)); opacity: 0; } }
+.g-anneau::before { content: ""; position: absolute; inset: -3px; border-radius: inherit; background: rgba(185, 139, 71, 0.22); opacity: 0; }
+.g-anneau.joue::before { animation: g-touche 2.6s linear both; }
+@keyframes g-touche { 0%, 22% { opacity: 0; } 25% { opacity: 1; } 37%, 48% { opacity: 0; } 51% { opacity: 1; } 63%, 100% { opacity: 0; } }
+.g-anneau.appuie { background: rgba(185, 139, 71, 0.2); transform: scale(0.985); }
+
+/* La main vient montrer le geste, touche deux fois, puis se retire : elle ne
+   reste pas posée sur l'écran qu'on est venu regarder. */
+.g-main {
+  position: absolute; left: 0; top: 0; width: 46px; height: 46px; opacity: 0;
+  transform-origin: 18px 5px;
+  filter: drop-shadow(0 4px 6px rgba(28, 28, 26, 0.3));
+}
+.g-main svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #faf9f5; stroke: var(--g-encre); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.g-main.joue { animation: g-montre 2.6s var(--g-elan) both; }
+@keyframes g-montre {
+  0% { opacity: 0; transform: translate(30px, 40px) rotate(-10deg); }
+  16% { opacity: 1; transform: translate(7px, 10px) rotate(-10deg); }
+  25% { transform: translate(0, 0) rotate(-10deg) scale(0.93); }
+  33%, 43% { transform: translate(7px, 10px) rotate(-10deg); }
+  51% { transform: translate(0, 0) rotate(-10deg) scale(0.93); }
+  60%, 82% { opacity: 1; transform: translate(7px, 10px) rotate(-10deg); }
+  100% { opacity: 0; transform: translate(30px, 40px) rotate(-10deg); }
+}
+@keyframes g-montre-calme { 0%, 100% { opacity: 0; } 12%, 84% { opacity: 1; } }
+
+/* ─── Ce qu'on regarde sans le toucher : un trait de surligneur ───────────── */
+.g-regard {
+  position: fixed; left: 0; top: 0; z-index: 190; pointer-events: none;
+  border-radius: 5px; background: rgba(185, 139, 71, 0.34); mix-blend-mode: multiply; opacity: 0;
+}
+.g-regard.visible { opacity: 1; animation: g-surligne 620ms var(--g-elan) both; }
+@keyframes g-surligne { from { clip-path: inset(0 100% 0 0 round 5px); } to { clip-path: inset(0 0 0 0 round 5px); } }
+
+/* ─── L'ouverture et la fin ───────────────────────────────────────────────── */
+.g-feuille {
+  position: fixed; inset: 0; z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(28, 28, 26, 0.44); transition: opacity 260ms ease;
+}
+.g-feuille[hidden] { display: none; }
+.g-feuille > div {
+  width: 100%; max-width: 460px; padding: 30px 22px calc(22px + env(safe-area-inset-bottom)); border-radius: 26px 26px 0 0;
+  background: var(--g-creme); color: var(--g-encre);
+  box-shadow: 0 18px 50px rgba(28, 28, 26, 0.3);
+  font-family: var(--font-body), system-ui, sans-serif;
+  animation: g-monte 560ms var(--g-elan) both;
+}
+@keyframes g-monte { from { transform: translateY(40px); opacity: 0; } }
+.g-feuille > div:focus { outline: none; }
+.g-feuille.part { opacity: 0; pointer-events: none; }
+.g-feuille.part > div { transform: translateY(26px); transition: transform 260ms ease-in; }
+.g-feuille h1 { margin: 0 0 10px; font-family: var(--font-display), Georgia, serif; font-size: 30px; font-weight: 400; line-height: 1.08; letter-spacing: -0.015em; text-wrap: balance; }
+.g-feuille p { margin: 0 0 20px; font-size: 16.5px; line-height: 1.45; color: var(--atlas-inkSoft, #4a4a44); text-wrap: pretty; }
+.g-feuille .g-oui {
+  appearance: none; width: 100%; min-height: 54px; border: 0; border-radius: 999px;
+  background: var(--g-plein); color: #faf9f5; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: transform 140ms ease;
+}
+.g-feuille .g-oui:active { transform: scale(0.98); }
+.g-feuille .g-autre {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 50px; margin-top: 8px;
+  border-radius: 999px; color: var(--g-encre); font-size: 16px; font-weight: 600; text-decoration: none;
+  box-shadow: inset 0 0 0 1.5px rgba(28, 28, 26, 0.2);
+}
+
+/* D'un écran à l'autre : un fondu, comme une page qui s'ouvre. Rien ne glisse,
+   parce qu'un écran déplacé emmènerait avec lui sa barre du bas. */
+/* Le trait d'or sous les onglets glisse d'un mot à l'autre, à l'allure que lui
+   donne l'appli : c'est le même trait, pas deux images qui se remplacent. */
+.visite-ecran [role="tablist"] > span[aria-hidden="true"] { view-transition-name: g-trait; }
+::view-transition-group(g-trait) { animation-duration: 480ms; animation-timing-function: cubic-bezier(0.34, 1.4, 0.5, 1); }
+/* La bulle change de hauteur d'une étape à l'autre : l'ancienne et la nouvelle
+   se fondent calées sur leur bas, là où sont les boutons. Calées en haut, on
+   voyait un instant deux rangées de boutons l'une sur l'autre. */
+::view-transition-old(g-bulle), ::view-transition-new(g-bulle) { inset-block-start: auto; inset-block-end: 0; }
+::view-transition-old(root) { animation: g-sort 150ms ease-in both; }
+::view-transition-new(root) { animation: g-entre 320ms var(--g-elan) both; }
+@keyframes g-sort { to { opacity: 0; } }
+@keyframes g-entre { from { opacity: 0; } }
+
+/* Sur ordinateur, la bulle se range en bas à gauche, hors de la colonne. */
+@media (min-width: 720px) {
+  .g-feuille { align-items: center; }
+  .g-feuille > div { max-width: 440px; padding-bottom: 22px; border-radius: 26px; }
+}
+@media (min-width: 1024px) {
+  .g-pose { left: 16px; right: auto; bottom: 24px; width: 284px; padding: 0; background: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-anneau.visible::after, .g-anneau.joue::before, .g-regard.visible, .g-feuille > div, .g-geste.appelle, .g-suite.appelle { animation: none; }
+  .g-main { transform: translate(7px, 10px) rotate(-10deg); }
+  .g-main.joue { animation: g-montre-calme 2.6s linear both; }
+  .g-pose, .g-anneau, .g-suite { transition: opacity 200ms ease; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
+}
