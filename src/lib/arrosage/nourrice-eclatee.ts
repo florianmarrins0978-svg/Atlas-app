@@ -63,8 +63,8 @@ type FormeHaut = {
 };
 export const HAUT: Record<string, FormeHaut> = {
   "coude-mf": { h: 47, vertical: 0.2557, horizontal: 0.2389 },
-  "coude-ff": { h: 49.2, vertical: 0.7276, horizontal: 0.2613, quart: true },
-  "te-mmf": { h: 53.5, vertical: 0.5137, horizontal: 0.247, miroir: true },
+  "coude-ff": { h: 46, vertical: 0.7276, horizontal: 0.2613, quart: true },
+  "te-mmf": { h: 47, vertical: 0.5137, horizontal: 0.247, miroir: true },
   "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
   "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
   "clarinette-4v": { w: 271, sorties: [0.1679, 0.4038, 0.6373, 0.8721], tube: 0.3125 },

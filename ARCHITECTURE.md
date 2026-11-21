@@ -38009,6 +38009,14 @@ sur sa photo, le fait paraître plus gros. Deux conséquences dans le dessin :
 les fils des deux électrovannes ont leur place au-dessus d'elles (`dessus`),
 et chaque pastille se pose à droite de sa pièce (`droite`, les coins de la
 photo tournés), et non plus à 24 px de l'axe, où elle couvrait la bobine.
+Puis, à 6 voies : *« le coude de droite et le té, en Dura, encore trop gros
+par rapport à la clarinette et au coude de gauche »*. Leurs écrous avaient la
+taille de ceux de la clarinette, mais leur corps était plus épais sur leurs
+photos (le filetage du té : 43 px à 3x, contre 38 pour le tube de la
+clarinette). Le té passe à h 47 (son filetage à l'épaisseur du tube), le coude
+FF à h 46 (l'allure du coude de gauche). Un écrou ne suffit pas à mettre deux
+photos à la même échelle quand l'une est prise de plus près : c'est l'œil sur
+le dessin entier qui tranche, et c'est le sien.
 
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
