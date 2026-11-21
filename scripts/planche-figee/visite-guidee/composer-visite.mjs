@@ -108,7 +108,7 @@ const ETAPES = [
   { etat: "r-idee-ecrite", titre: "Votre idée", dit: "Elle part chez nous, avec votre nom. Les meilleures arrivent dans l'appli." },
   { etat: "50-reglages", titre: "Vos fournisseurs", dit: "Ce que vous payez, et à qui.", cible: 'a[href="/reglages/fournisseurs"]', geste: "Touchez Fournisseurs et partenaires." },
   { etat: "r-fournisseurs", titre: "Ce que vous payez", dit: "Vos fournisseurs, et votre marge sur le matériel.", cible: '[data-atlas="societe"]:has-text("Pépinière")', geste: "Touchez la Pépinière des Saules." },
-  { etat: "r-fournisseurs-fiche", titre: "Ses prix", dit: "Chaque prix d'achat. Sur vos devis, il revient avec votre marge. Ajoutez-en, ou prenez son devis en photo." },
+  { etat: "r-fournisseurs-fiche", titre: "Ses prix", dit: "Chaque prix d'achat. Sur vos devis, il revient avec votre marge. Ajoutez-en, ou prenez son devis en photo.", bulleEnHaut: true },
   { etat: "50-reglages", titre: "À vous", dit: "Promenez-vous : chaque rubrique s'ouvre, la flèche du haut ramène ici.", libre: true },
 ];
 
@@ -220,6 +220,7 @@ const SCRIPT = `
     ecrans.forEach((e, n) => (e.hidden = n !== nom));
     courant = ecrans.get(nom);
     window.scrollTo(0, defile ?? Number(courant.dataset.defile || 0));
+    courant.querySelectorAll("[data-defile-interne]").forEach((e) => { e.scrollTop = Number(e.dataset.defileInterne); });
   };
   const visible = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   const cibleDe = (sel) => {
@@ -349,9 +350,11 @@ const SCRIPT = `
     // Les Réglages, à la fin : chaque rubrique s'ouvre, la flèche ramène au sommaire.
     if (libre || enRubrique) {
       const h = lien?.getAttribute("href") || "";
+      // La flèche de retour d'une rubrique ramène toujours au sommaire : figée, elle
+      // pointe parfois vers la rubrique vue avant (« Mon année » vers « Ma banque »).
+      if (lien?.hasAttribute("data-geste-retour") || h === "/reglages") { aller(C.etapes.length - 1); return; }
       if (h.startsWith("/reglages/") && rubrique(h)) return;
       if (courant?.dataset.ecran === "r-idee" && el?.textContent.includes("J'écris")) { montrer("r-idee-ecrite", 0); return; }
-      if (h === "/reglages" || lien?.getAttribute("aria-label")?.startsWith("Retour")) { aller(C.etapes.length - 1); return; }
       if (el) secouer();
       return;
     }

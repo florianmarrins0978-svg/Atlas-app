@@ -6,6 +6,18 @@ const P = (sql) => execFileSync("psql", ["-qtA", "postgresql://postgres@localhos
 const { page, va, fige, fin } = await session();
 const pas = (t = 700) => page.waitForTimeout(t);
 try {
+  // L'assistant connaît l'appli et les devis passés : il retrouve une ligne et son prix.
+  // Avant « Dernier devis » : la copie ferait une seconde ligne de claustra à trouver.
+  await va("/");
+  await page.click('button[aria-label="Ouvrir l\'assistant"]'); await pas(1500);
+  await fige("01b-assistant");
+  await page.fill('input[placeholder="Votre question…"]', "Il me semble que dans le devis chez Costa il y avait une ligne de claustra. Retrouve-la avec son prix.");
+  await pas(500);
+  await fige("01c-assistant-question");
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => /trouv/i.test(document.body.innerText.split("Retrouve-la avec son prix.")[1] || ""), null, { timeout: 60000 }); await pas(2500);
+  await fige("01d-assistant-reponse");
+  console.log("assistant :", (await page.evaluate(() => document.body.innerText.split("Retrouve-la avec son prix.")[1] || "")).slice(0, 400));
   await va("/clients");
   await page.locator("text=Costa").first().click();
   await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 60000 }); await pas(2500);
@@ -20,16 +32,5 @@ try {
   await fige("02e-dernier-devis-hausse");
   // Le devis repris ne sert qu'à la visite : il quitte la liste des chantiers.
   P(`update chantiers set deleted_at=now() where id='${nouveau}'`);
-  // L'assistant connaît l'appli et les devis passés : il retrouve une ligne et son prix.
-  await va("/");
-  await page.click('button[aria-label="Ouvrir l\'assistant"]'); await pas(1500);
-  await fige("01b-assistant");
-  await page.fill('input[placeholder="Votre question…"]', "Il me semble que dans le devis chez Costa il y avait une ligne de claustra. Retrouve-la avec son prix.");
-  await pas(500);
-  await fige("01c-assistant-question");
-  await page.keyboard.press("Enter");
-  await page.waitForFunction(() => /Sources|claustra/i.test(document.body.innerText.split("Il me semble")[1] || ""), null, { timeout: 60000 }); await pas(2500);
-  await fige("01d-assistant-reponse");
-  console.log("assistant :", (await page.evaluate(() => document.body.innerText.split("Retrouve-la avec son prix.")[1] || "")).slice(0, 400));
 } catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); }
 await fin();

@@ -39,6 +39,7 @@ try {
   await fige("r-idee-ecrite");
   await va("/reglages/fournisseurs");
   await page.locator('[data-atlas="societe"]', { hasText: "Pépinière des Saules" }).first().click(); await pas(2000);
+  await page.locator('[data-atlas="partie-prix"]').scrollIntoViewIfNeeded(); await pas(600);
   await fige("r-fournisseurs-fiche");
 } catch (e) { console.log("ÉCHEC", e.message.split("\n")[0]); await page.screenshot({ path: `${TRAVAIL}/echec.png`, fullPage: true }); }
 await fin();

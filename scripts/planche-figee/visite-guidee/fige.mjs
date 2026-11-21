@@ -70,6 +70,12 @@ export async function session({ anonyme = false } = {}) {
         } catch {}
       });
     });
+    // Ce qui défile À L'INTÉRIEUR d'une feuille ne se fige pas tout seul : on note
+    // où il en était, et la visite le remet (sinon une feuille repart toujours d'en haut).
+    await page.evaluate(() => {
+      document.querySelectorAll("[data-defile-interne]").forEach((e) => e.removeAttribute("data-defile-interne"));
+      document.querySelectorAll("body *").forEach((e) => { if (e.scrollTop > 0) e.setAttribute("data-defile-interne", String(Math.round(e.scrollTop))); });
+    });
     const c = await corps(page, ctx);
     const defile = await page.evaluate(() => window.scrollY);
     writeFileSync(`${DOSSIER}/${nom}.json`, JSON.stringify({ nom, url: page.url(), feuilles, corps: c, defile }));
