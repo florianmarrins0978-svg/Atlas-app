@@ -108,8 +108,12 @@
 <td>Ma banque, le check up, les lignes justifiées, le relevé du mois, le dossier arrêté, le document du comptable</td>
 </tr>
 <tr>
+<td>L'assistant</td>
+<td>après la fiche client : « Dans le devis chez Costa, il y avait une ligne de claustra. Retrouve-la avec son prix. » Il la retrouve, avec le devis d'où elle vient</td>
+</tr>
+<tr>
 <td>La fin</td>
-<td>les Réglages ouverts : chaque rubrique se touche librement, le doigt reste sur <strong>Une idée pour l'appli</strong></td>
+<td>Une idée pour l'appli (« Voir la météo de la semaine sur le planning »), puis les fournisseurs et leurs prix d'achat, puis les Réglages libres. <strong>« Quitter la visite » et « Recommencer » restent toujours affichés</strong></td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-fait-autrement-que-ta-liste-et-pourquoi">Ce qui a été fait autrement que ta liste, et pourquoi</h2>
@@ -211,10 +215,11 @@
 </tr>
 </tbody></table></div>
 <p>Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : la visite le dit, et c'est le bouton du bas qui pose.</p>
+<p><strong>L'assistant, honnêtement :</strong> la recherche de la ligne est la vraie, dans la vraie base. La phrase de sa réponse vient du modèle d'essai de ce poste, sans clé d'IA ; chez toi, la réponse sera formulée par la vraie IA.</p>
 <h2 id="ce-qui-reste-ouvert-et-cest-à-toi-de-trancher">Ce qui reste ouvert, et c'est à toi de trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>La longueur</strong> : 64 étapes, environ sept minutes. On peut en retirer.</li>
+<li><strong>La longueur</strong> : 74 étapes, environ huit minutes. On peut en retirer.</li>
 <li><strong>Les retours d'intervention sur la fiche du client</strong> : aujourd'hui ils sont dans Terminés seulement.</li>
 <li><strong>Le bouton sur le site</strong> : où le poser sur <code>appli/vente/</code>.</li>
 <li><strong>Dans l'appli elle-même</strong>, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de <code>src/</code>, il attend ton « oui ».</li>
@@ -222,7 +227,7 @@
 <h2 id="pour-la-refaire-quand-un-écran-change">Pour la refaire quand un écran change</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>scripts/planche-figee/visite-guidee/tout.sh</code> rejoue tout le parcours dans l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de démonstration neuve, donc ton accord.</p>
-<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 64 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
+<p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
 </main>
 </body>
 </html>
