@@ -13,6 +13,7 @@ import {
   DUREES_MAIN_OEUVRE,
   aLaJournee,
   equipeDeSaLigne,
+  equipeDeSesParts,
   ligneDeSonEquipe,
   mainOeuvreDUnPartenaire,
   montantDeLaMainOeuvre,
@@ -53,6 +54,13 @@ type Props = {
    * feuille repart de la dictée, et la ligne s'ajoute.
    */
   saLigne?: { quantite: string; prixUnitaire: string; aChiffrer?: boolean | null; hommesMainDoeuvre?: number | null };
+  /**
+   * Les travaux qui portent la part de son équipe, quand sa main d'œuvre est
+   * répartie (sa planche du 20 novembre 2026) : la feuille repart d'eux, sur
+   * « Répartis », et la CHANGE (`equipeDeSesParts`). Sans ligne ni parts,
+   * elle repart de sa dictée.
+   */
+  sesParts?: readonly { id: string; partMainDoeuvre?: string | null; joursMainDoeuvre?: string | null }[];
   /**
    * La répartition, quand la pièce sait la garder (le devis) : les travaux de
    * la TVA où il a appuyé qui ont leur prix, et ce qui pose les parts.
@@ -141,10 +149,16 @@ function Rang({ titre, sous, children }: { titre: string; sous: string; children
   );
 }
 
-function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) {
+function Contenu({ donnees, saLigne, sesParts, repartition, onValider, onFermer }: Props) {
   const travaux = repartition?.travaux ?? [];
   // Sa ligne d'abord : ce qu'il a déjà posé sur la pièce, puis la dictée.
-  const [depart] = useState(() => (saLigne ? equipeDeSaLigne(saLigne, { hommes: donnees.hommes }) : null));
+  // Sa ligne d'abord, puis ses parts dans les travaux : ce qu'il a déjà posé
+  // sur la pièce, sous l'une ou l'autre forme (`ARCHITECTURE.md` §596).
+  const [deSesParts] = useState(() =>
+    !saLigne && sesParts && sesParts.length > 0 ? equipeDeSesParts(sesParts, { hommes: donnees.hommes }) : null
+  );
+  const [depart] = useState(() => (saLigne ? equipeDeSaLigne(saLigne, { hommes: donnees.hommes }) : deSesParts));
+  const repris = deSesParts ? "Repris de vos travaux" : "Repris de votre ligne";
   const tarifDeDepart = depart?.tarif ?? donnees.tarifJour;
   const [vue, setVue] = useState<"calcul" | "liste">("calcul");
   const [qui, setQui] = useState<PrixDePartenaire | null>(null);
@@ -155,7 +169,14 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
   // « Où la mettre » : la barre de l'appli, celle d'« Avant de chiffrer »
   // (`RepartirLaMainOeuvre`), et non une seconde barre. Sur une ligne d'abord,
   // comme la planche : répartir est un choix, pas l'habitude.
-  const [ou, setOu] = useState(ecrireChoix({ mode: "ligne", parts: {}, retires: [] }));
+  // Répartie, elle se rouvre « Répartis », chaque travail avec sa part.
+  const [ou, setOu] = useState(
+    ecrireChoix(
+      deSesParts
+        ? { mode: "reparti", parts: deSesParts.parts, retires: travaux.filter((t) => !(t.id in deSesParts.parts)).map((t) => t.id) }
+        : { mode: "ligne", parts: {}, retires: [] }
+    )
+  );
 
   const alaJournee = qui !== null && aLaJournee(qui.unite);
   const tarifLu = quantiteTapee(tarif);
@@ -228,7 +249,7 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
           )}
 
           {qui === null && (
-            <Rang titre="Hommes" sous={depart ? "Repris de votre ligne" : donnees.hommes ? "Repris de votre dictée" : "Votre équipe"}>
+            <Rang titre="Hommes" sous={depart ? repris : donnees.hommes ? "Repris de votre dictée" : "Votre équipe"}>
               <Compteur
                 nom="Hommes"
                 repere="mo-hommes"
@@ -243,7 +264,7 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
           {qui === null || alaJournee ? (
             <Rang
               titre="Durée"
-              sous={qui === null && depart ? "Repris de votre ligne" : qui === null && donnees.jours ? "Repris de votre dictée" : "À poser"}
+              sous={qui === null && depart ? repris : qui === null && donnees.jours ? "Repris de votre dictée" : "À poser"}
             >
               <Compteur
                 nom="Durée"
@@ -273,7 +294,7 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
               titre="Le jour par homme"
               sous={
                 depart?.tarif && Number(depart.tarif) !== Number(donnees.tarifJour)
-                  ? "Repris de votre ligne"
+                  ? repris
                   : donnees.tarifJour
                     ? "Vos tarifs"
                     : "Aucun tarif au jour par homme"
@@ -346,7 +367,13 @@ function Contenu({ donnees, saLigne, repartition, onValider, onFermer }: Props) 
                 }
               }}
             >
-              {reparti ? "Répartir la main d’œuvre" : depart && qui === null ? "Changer la main d’œuvre" : "Ajouter la main d’œuvre"}
+              {deSesParts && qui === null
+                ? "Changer la main d’œuvre"
+                : reparti
+                  ? "Répartir la main d’œuvre"
+                  : depart && qui === null
+                    ? "Changer la main d’œuvre"
+                    : "Ajouter la main d’œuvre"}
             </PrimaryButton>
           </div>
           <button

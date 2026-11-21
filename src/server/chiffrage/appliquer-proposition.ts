@@ -7,7 +7,7 @@ import {
 } from "../repositories/lignes-prix";
 import { getTarif } from "../repositories/tarifs";
 import { preparerPropositionPrix } from "./proposition-prix";
-import { ligneDejaAuDetail } from "../../lib/proposition-au-detail";
+import { ligneDejaAuDetail, type LigneVisee } from "../../lib/proposition-au-detail";
 import { libelleAvecDetail } from "../../lib/detail-de-la-ligne";
 import { listerPrestations } from "../repositories/prestations";
 
@@ -60,8 +60,8 @@ export async function appliquerPropositionPrix(
   // arriveraient quand même ici. **La même fonction** que l'écran (`CLAUDE.md`
   // §3) — jamais une seconde version de la règle.
   const detailActuel = await listerLignesPrix(ctx, chantierId);
-  function refuserSiDoublon(libelle: string | null) {
-    const deja = ligneDejaAuDetail(libelle, detailActuel);
+  function refuserSiDoublon(vise: LigneVisee) {
+    const deja = ligneDejaAuDetail(vise, detailActuel);
     return deja
       ? {
           succes: false as const,
@@ -94,7 +94,7 @@ export async function appliquerPropositionPrix(
     }
     // Une seule ligne pour le chantier : elle vend tous ses travaux.
     const libelle = libelleAvecDetail(tarifActuel.intitule, [...detailDe.values()]);
-    const doublon = refuserSiDoublon(libelle);
+    const doublon = refuserSiDoublon({ libelle });
     if (doublon) return doublon;
     const ligne = await ajouterLignePrix(ctx, chantierId, libelle, tarifActuel.prix);
     const ecrite = { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant };
@@ -120,7 +120,7 @@ export async function appliquerPropositionPrix(
       proposee.libelle,
       proposee.prestationIds.map((id) => detailDe.get(id))
     );
-    const doublon = refuserSiDoublon(libelle);
+    const doublon = refuserSiDoublon({ libelle, mainDoeuvre: proposee.mainDoeuvre, unite: proposee.unite });
     if (doublon) {
       refusees.push(doublon.erreur);
       continue;

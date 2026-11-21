@@ -323,6 +323,79 @@ async function main() {
       assert.match(totaux, /dont main d’œuvre HT/);
       assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "280", "« dont » ne compte pas la main d'œuvre répartie");
     });
+
+    // **Répartie, sa main d'œuvre n'a plus de ligne** (`ARCHITECTURE.md` §596) :
+    // la feuille rouverte ne la voyait plus, et la reposer l'ajoutait à la
+    // première. Son geste, par l'écran : c'est lui qui désigne les travaux.
+    const ecrite = async () =>
+      String((await pool.query(`SELECT max(updated_at)::text AS t FROM lignes_prix WHERE chantier_id = $1`, [chantier2])).rows[0].t);
+    const apresLAppui = async (avant: string) => {
+      for (const essai of [1, 2, 3, 4, 5, 6, 7, 8]) {
+        if ((await ecrite()) !== avant) return;
+        await page.waitForTimeout(essai * 500);
+      }
+      throw new Error("l'appui n'a rien écrit");
+    };
+    const sonEquipeAUneJournee = async () => {
+      await ouvrir();
+      await regler("mo-hommes", "1");
+      await regler("mo-duree", "1 journée");
+      await page.fill('[data-atlas="mo-tarif"]', "280");
+    };
+
+    await cas("rouverte, la feuille repart de ses PARTS : « Repris de vos travaux », sur « Répartis », et la change", async () => {
+      await ouvrir();
+      // Sa planche du 20 novembre 2026 : 1 homme × 1 journée × 280 €, en
+      // 140 € et 140 €, repris des travaux et non de la dictée.
+      assert.equal(await texte('[data-atlas="mo-hommes"]'), "1");
+      assert.equal(await texte('[data-atlas="mo-duree"]'), "1 journée");
+      assert.equal(await page.locator('[data-atlas="mo-tarif"]').inputValue(), "280");
+      assert.ok((await texte('[data-atlas="feuille-mo"]')).includes("Repris de vos travaux"), "la feuille ne dit pas qu'elle repart des travaux");
+      await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
+      assert.equal(await texte('[data-atlas="mo-valider"]'), "Changer la main d’œuvre");
+      await page.getByRole("button", { name: "Annuler", exact: true }).click();
+    });
+
+    await cas("répartie une seconde fois, sa main d'œuvre REMPLACE la première : les travaux gardent leurs 140 €", async () => {
+      await sonEquipeAUneJournee();
+      await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
+      const avant = await ecrite();
+      await page.click('[data-atlas="mo-valider"]');
+      await apresLAppui(avant);
+      assert.deepEqual(
+        (await lignes2()).map((x) => ({ montant: Number(x.montant), part: Number(x.part) })),
+        [
+          { montant: 340, part: 140 },
+          { montant: 320, part: 140 },
+        ],
+        "la même main d'œuvre compte deux fois dans les travaux"
+      );
+    });
+
+    await cas("reposée sur une ligne, sa main d'œuvre SORT des travaux : ils reviennent à 200 € et 180 €", async () => {
+      await sonEquipeAUneJournee();
+      // Sur une ligne, chaque travail montre déjà son prix SANS elle.
+      await page.getByRole("button", { name: "Sur une ligne Main d'œuvre" }).click();
+      assert.deepEqual(
+        (await page.locator('[data-atlas="mo-ou"] [data-atlas="prix-du-travail"]').allInnerTexts()).map((p) => p.replace(/\s+/g, " ")),
+        ["200 €", "180 €"],
+        "les travaux montrent encore leur prix part comprise"
+      );
+      const avant = await ecrite();
+      await page.click('[data-atlas="mo-valider"]');
+      await apresLAppui(avant);
+      assert.deepEqual(
+        (await lignes2()).map((x) => ({ montant: Number(x.montant), part: x.part === null ? 0 : Number(x.part), mo: x.main_doeuvre })),
+        [
+          { montant: 200, part: 0, mo: false },
+          { montant: 180, part: 0, mo: false },
+          { montant: 280, part: 0, mo: true },
+        ],
+        "sa main d'œuvre est sur sa ligne ET dans les travaux"
+      );
+      const aLEcran = (await page.locator('[data-atlas="part-main-doeuvre"]').allInnerTexts()).length;
+      assert.equal(aLEcran, 0, "l'écran dit encore une part sous les travaux");
+    });
   } finally {
     await contexte.close();
     await navigateur.close();

@@ -301,6 +301,72 @@ export type TravailRepris = {
  * CE chiffre qui est gardé et compté dans « dont main d'œuvre HT », jamais le
  * voulu : la somme dite au client tombe juste avec ses lignes.
  */
+/**
+ * **La part de SON équipe dans un travail**, quand ses jours d'homme la disent
+ * (migration 0173) : posée par la feuille ou par sa dictée, au prix du jour
+ * par homme. `null` sinon.
+ *
+ * Une part de partenaire n'a pas de jours (`joursDeLaPart` les tait sans prix
+ * du jour) ; une part qui mêle les deux non plus, ni une part d'avant 0173.
+ * Personne ne sait alors ce qui est à lui : elle reste où elle est, plutôt
+ * que d'en retirer ce qui revient à un partenaire.
+ */
+export function partDeSonEquipe(t: { partMainDoeuvre?: string | null; joursMainDoeuvre?: string | null }): Decimal | null {
+  if (t.joursMainDoeuvre === null || t.joursMainDoeuvre === undefined) return null;
+  const part = new Decimal(t.partMainDoeuvre || "0");
+  return part.greaterThan(0) ? part : null;
+}
+
+/**
+ * Le travail SANS la part de son équipe : le prix qu'il portait avant qu'elle
+ * y entre, la quantité inchangée. C'est la base d'où la feuille repart quand
+ * son équipe change de forme (sa ligne, ou ses parts) : la même main d'œuvre
+ * ne compte qu'une fois (`ARCHITECTURE.md` §596). `null` quand il n'en porte
+ * pas.
+ */
+export function sansLaPartDeSonEquipe(t: {
+  quantite: string;
+  montant: string;
+  partMainDoeuvre?: string | null;
+  joursMainDoeuvre?: string | null;
+}): { prixUnitaire: string; montant: string } | null {
+  const part = partDeSonEquipe(t);
+  const q = new Decimal(t.quantite || "0");
+  if (part === null || !q.greaterThan(0)) return null;
+  const prixUnitaire = new Decimal(t.montant).minus(part).div(q).toDecimalPlaces(2);
+  return { prixUnitaire: prixUnitaire.toFixed(2), montant: montantDeLaLigne(t.quantite, prixUnitaire.toFixed(2)) };
+}
+
+/**
+ * **Son équipe, quand sa main d'œuvre est dans les travaux** — sa planche du
+ * 20 novembre 2026 (`appli/soignee/devis-main-d-oeuvre-repartie-se-rouvre.html`).
+ * Répartie, elle n'a plus de ligne : la feuille rouverte repart de ses parts,
+ * leurs jours d'homme au prix qu'ils ont coûté, et les hommes se trouvent
+ * comme pour sa ligne (`equipeDeSaLigne`). Les parts restent celles de chaque
+ * travail, pour que la barre les montre telles qu'elles sont.
+ *
+ * Les jours se comptent au centième : une part arrondie au centime (150 € sur
+ * 7 m² font 149,99 €) ne doit pas faire tomber la durée hors du compteur.
+ * `null` quand aucun travail ne porte la part de son équipe.
+ */
+export function equipeDeSesParts(
+  travaux: readonly { id: string; partMainDoeuvre?: string | null; joursMainDoeuvre?: string | null }[],
+  dictee: { hommes: number | null }
+): { hommes: number; jours: number; tarif: string | null; parts: Record<string, number> } | null {
+  const siennes = travaux.flatMap((t) => {
+    const part = partDeSonEquipe(t);
+    return part === null ? [] : [{ id: t.id, part, jours: new Decimal(t.joursMainDoeuvre ?? "0") }];
+  });
+  const jours = siennes.reduce((s, t) => s.plus(t.jours), new Decimal(0)).toDecimalPlaces(2);
+  if (siennes.length === 0 || !jours.greaterThan(0)) return null;
+  const total = siennes.reduce((s, t) => s.plus(t.part), new Decimal(0));
+  const equipe = equipeDeSaLigne(
+    { quantite: jours.toFixed(2), prixUnitaire: total.div(jours).toDecimalPlaces(2).toFixed(2), hommesMainDoeuvre: null },
+    dictee
+  );
+  return { ...equipe, parts: Object.fromEntries(siennes.map((t) => [t.id, t.part.toNumber()])) };
+}
+
 export function partsAppliquees(
   travaux: readonly TravailQuiRecoit[],
   parts: Readonly<Record<string, string>>

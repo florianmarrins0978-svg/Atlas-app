@@ -16,9 +16,9 @@ import { preparerPropositionPrix, questionMainOeuvre, type OriginePrix } from ".
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerLaPiece } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
-import { listerPrestations, listerPrestationsDuDevis, renommerPrestation, completerPrestation } from "../repositories/prestations";
+import { listerPrestations, listerPrestationsDuDevis, completerPrestation } from "../repositories/prestations";
 import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
-import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
+import { debutsDUnLibelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
 import { quantiteCommerciale } from "../../lib/quantite-commerciale";
@@ -295,60 +295,41 @@ export async function enregistrerPrecisionsEtReprendre(
 }
 
 /**
- * Reporte les réponses sur le libellé des prestations déjà enregistrées.
+ * Range ses réponses dans les CASES des prestations déjà enregistrées : la
+ * technique dans `methode`, les mesures dans `caracteristiques`.
  *
- * **Sans ce report, l'arrêt n'aurait servi à rien de visible.** Le patron
- * répondrait « démontage avec rétention », et relirait une fiche de chantier
- * qui dit encore « Abattage d'un chêne mort », sans trace de ce qui vient
- * d'être décidé.
- *
- * **Portée exacte, à ne pas surestimer :** cela enrichit la PRESTATION, celle
- * qu'il relit sur l'écran Informations. La ligne du devis, elle, porte
- * l'intitulé du tarif appliqué et ne reprend pas ce libellé — et le montant ne
- * bouge pas davantage, faute de mémoire reliant technique et prix
- * (`docs/EXEMPLE-DICTEE.md` §9c, `TODO.md` §0 ter).
+ * **Plus rien ne s'écrit dans le libellé** (`ARCHITECTURE.md` §598, son « ok »
+ * du 20 novembre 2026). Jusque-là, ses réponses y étaient aussi collées entre
+ * parenthèses, puis reconnues, puis effacées de la désignation : trois règles
+ * pour un texte que personne ne lisait plus, et la parenthèse du 18 novembre
+ * sur sa désignation. Le prix lit les cases et ses réponses enregistrées
+ * (`mesuresResolues`), le devis les redit sous le travail (§597).
  *
  * Le rapprochement se fait sur le **libellé au moment de la question**, pas sur
  * le rang : une relecture de la dictée peut réordonner les lignes, et un report
  * fondé sur la position collerait alors la technique d'un arbre sur un autre.
+ * Un libellé d'avant, qui porte encore ses réponses, se reconnaît par son
+ * début (`debutsDUnLibelleEnrichi`), sous ses deux formes.
  */
 async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): Promise<void> {
   const precisions = await listerPrecisions(ctx, chantierId);
   if (precisions.length === 0) return;
 
-  const parPrestation = new Map<string, string[]>();
-  for (const p of precisions) {
-    const cle = p.libellePrestation.trim().toLowerCase();
-    parPrestation.set(cle, [...(parPrestation.get(cle) ?? []), p.lisible]);
-  }
+  const parPrestation = new Map<string, true>();
+  for (const p of precisions) parPrestation.set(p.libellePrestation.trim().toLowerCase(), true);
 
   for (const prestation of await listerPrestations(ctx, chantierId)) {
-    // Le libellé en base a pu déjà être enrichi lors d'un passage précédent :
-    // on retrouve alors la prestation par son début, jamais par égalité stricte.
     const actuel = prestation.libelle.trim().toLowerCase();
-    const entree = [...parPrestation.entries()].find(([cle]) => actuel === cle || actuel.startsWith(`${cle} —`));
-    if (!entree) continue;
-
-    const enrichi = libelleEnrichi(prestation.libelle, entree[1]);
-    if (enrichi !== prestation.libelle) {
-      // `renommerPrestation`, et non `modifierPrestation` : ce report est
-      // automatique, et ne doit pas marquer la ligne « corrigée par l'artisan ».
-      await renommerPrestation(ctx, prestation.id, enrichi);
-    }
-
-    // **Et la même précision entre AUSSI dans ses colonnes, pas seulement dans
-    // le texte.** C'est la seule source sûre de la méthode et des mesures : le
-    // contrat d'extraction ne les demande pas au modèle, mais le patron les a
-    // saisies lui-même à l'arrêt qui vaut de l'argent. On déplace une donnée
-    // certaine, on n'en fabrique aucune.
-    //
-    // Le libellé continue de les porter en toutes lettres — « ⌀ 45 cm » est
-    // relu par `mesures-arbre.ts` pour trouver la case de sa grille, et le lui
-    // retirer avant que ce lecteur sache lire la colonne casserait le chiffrage
-    // en silence.
-    const siennes = precisions.filter(
-      (p) => p.libellePrestation.trim().toLowerCase() === entree[0]
+    const cle = [...parPrestation.keys()].find(
+      (c) => actuel === c || debutsDUnLibelleEnrichi(c).some((debut) => actuel.startsWith(debut))
     );
+    if (cle === undefined) continue;
+
+    // La seule source sûre de la méthode et des mesures : le contrat
+    // d'extraction ne les demande pas au modèle, mais le patron les a saisies
+    // lui-même à l'arrêt qui vaut de l'argent. On déplace une donnée certaine,
+    // on n'en fabrique aucune.
+    const siennes = precisions.filter((p) => p.libellePrestation.trim().toLowerCase() === cle);
     await completerPrestation(ctx, prestation.id, structureDepuisPrecisions(siennes));
   }
 }

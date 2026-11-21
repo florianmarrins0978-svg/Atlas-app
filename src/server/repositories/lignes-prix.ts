@@ -13,8 +13,9 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { nombreDeLigneAdmis } from "../../lib/montant-ecrivable";
-import { estLaLigneDeSonEquipe, partsAppliquees, type TravailRepris } from "../../lib/feuille-main-oeuvre";
+import { estLaLigneDeSonEquipe, partsAppliquees, sansLaPartDeSonEquipe, type TravailRepris } from "../../lib/feuille-main-oeuvre";
 import { ActionRefuseeError } from "../garde-action";
+import type { LienDeLaLigne } from "../../lib/reponses-sous-le-travail";
 
 /** Refuse avant toute écriture un nombre qu'aucun écran n'envoie (`nombreDeLigneAdmis`). */
 function exigerNombresDeLigne(...nombres: (string | undefined)[]): void {
@@ -76,12 +77,7 @@ async function sansTvaSurLeChantier(tx: DbOrTx, chantierId: string): Promise<boo
   return c?.autoliquidation ?? false;
 }
 
-export async function ajouterLignePrix(
-  ctx: Ctx,
-  chantierId: string,
-  libelle: string,
-  montant: string,
-  options?: {
+type OptionsDeLigneNeuve = {
     quantite?: string;
     prixUnitaire?: string;
     unite?: string | null;
@@ -104,7 +100,30 @@ export async function ajouterLignePrix(
     hommesMainDoeuvre?: number | null;
     /** Le prix d'achat qui la chiffre, en mots (migration 0188), pour lui seul : le serveur seul le pose. */
     achatRetenu?: string | null;
-  }
+};
+
+export async function ajouterLignePrix(
+  ctx: Ctx,
+  chantierId: string,
+  libelle: string,
+  montant: string,
+  options?: OptionsDeLigneNeuve
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => insererLigne(tx, ctx, chantierId, libelle, montant, options));
+}
+
+/**
+ * Le corps d'`ajouterLignePrix`, dans la transaction qu'on lui donne : la
+ * feuille « Main d'œuvre » pose la ligne de son équipe ET retire ses parts des
+ * travaux d'un seul geste (`poserLaLigneDeSonEquipe`), ou rien ne s'écrit.
+ */
+async function insererLigne(
+  tx: DbOrTx,
+  ctx: Ctx,
+  chantierId: string,
+  libelle: string,
+  montant: string,
+  options?: OptionsDeLigneNeuve
 ) {
   exigerNombresDeLigne(
     montant,
@@ -115,41 +134,36 @@ export async function ajouterLignePrix(
     options?.partAncienne ?? undefined,
     options?.partGrille ?? undefined
   );
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
-    const sansTva = await sansTvaSurLeChantier(tx, chantierId);
-    const [row] = await tx
-      .insert(lignesPrix)
-      .values({
-        entrepriseId: ctx.entrepriseId,
-        chantierId,
-        libelle,
-        montant,
-        quantite: options?.quantite ?? "1",
-        prixUnitaire: options?.prixUnitaire ?? montant,
-        unite: uniteAdmise(options?.unite),
-        aChiffrer: options?.aChiffrer ?? false,
-        tauxTva: sansTva ? null : (options?.tauxTva ?? null),
-        prixAncien: options?.prixAncien ?? null,
-        prixGrille: options?.prixGrille ?? null,
-        mainDoeuvre: options?.mainDoeuvre ?? false,
-        partMainDoeuvre: options?.partMainDoeuvre ?? null,
-        joursMainDoeuvre: options?.joursMainDoeuvre ?? null,
-        partAncienne: options?.partAncienne ?? null,
-        partGrille: options?.partGrille ?? null,
-        hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
-        achatRetenu: options?.achatRetenu ?? null,
-        ordre: existantes.length,
-      })
-      .returning();
-    return row;
-  });
+  const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+  const sansTva = await sansTvaSurLeChantier(tx, chantierId);
+  const [row] = await tx
+    .insert(lignesPrix)
+    .values({
+      entrepriseId: ctx.entrepriseId,
+      chantierId,
+      libelle,
+      montant,
+      quantite: options?.quantite ?? "1",
+      prixUnitaire: options?.prixUnitaire ?? montant,
+      unite: uniteAdmise(options?.unite),
+      aChiffrer: options?.aChiffrer ?? false,
+      tauxTva: sansTva ? null : (options?.tauxTva ?? null),
+      prixAncien: options?.prixAncien ?? null,
+      prixGrille: options?.prixGrille ?? null,
+      mainDoeuvre: options?.mainDoeuvre ?? false,
+      partMainDoeuvre: options?.partMainDoeuvre ?? null,
+      joursMainDoeuvre: options?.joursMainDoeuvre ?? null,
+      partAncienne: options?.partAncienne ?? null,
+      partGrille: options?.partGrille ?? null,
+      hommesMainDoeuvre: options?.hommesMainDoeuvre ?? null,
+      achatRetenu: options?.achatRetenu ?? null,
+      ordre: existantes.length,
+    })
+    .returning();
+  return row;
 }
 
-export async function modifierLignePrix(
-  ctx: Ctx,
-  id: string,
-  data: {
+type DonneesDeLigne = {
     libelle?: string;
     montant?: string;
     quantite?: string;
@@ -164,144 +178,157 @@ export async function modifierLignePrix(
      * catégorie, plutôt que de supprimer les lignes qu'elle portait.
      */
     tauxTva?: string | null;
-  },
+};
+
+/**
+ * Ce que seul le serveur pose, jamais l'écran : les actions d'édition passent
+ * `data` tel que la page l'envoie, et ce qui n'est pas dans la liste de
+ * `seulement` ne doit pas pouvoir s'y glisser.
+ */
+type DuServeur = {
+  /** Les hommes de son équipe, recalculés par la feuille (`poserLaLigneDeSonEquipe`). */
+  hommesMainDoeuvre?: number | null;
   /**
-   * Ce que seul le serveur pose, jamais l'écran : les actions d'édition passent
-   * `data` tel que la page l'envoie, et ce qui n'est pas dans la liste de
-   * `seulement` ne doit pas pouvoir s'y glisser. Les hommes de son équipe
-   * viennent de la feuille, recalculés (`poserLaMainDoeuvreDeLaFeuille`).
+   * Le prix d'achat qui chiffre la ligne, en mots (migration 0188), posé
+   * par le seul choix d'un prix d'achat (`choisirUnPrixDAchatAction`).
    */
-  duServeur?: {
-    hommesMainDoeuvre?: number | null;
-    /**
-     * Le prix d'achat qui chiffre la ligne, en mots (migration 0188), posé
-     * par le seul choix d'un prix d'achat (`choisirUnPrixDAchatAction`).
-     */
-    achatRetenu?: string | null;
-  }
+  achatRetenu?: string | null;
+};
+
+export async function modifierLignePrix(ctx: Ctx, id: string, data: DonneesDeLigne, duServeur?: DuServeur) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => reecrireLigne(tx, id, data, duServeur));
+}
+
+/**
+ * Le corps de `modifierLignePrix`, dans la transaction qu'on lui donne (voir
+ * `insererLigne`).
+ */
+async function reecrireLigne(
+  tx: DbOrTx,
+  id: string,
+  data: DonneesDeLigne,
+  duServeur?: DuServeur
 ) {
   exigerNombresDeLigne(data.montant, data.quantite, data.prixUnitaire);
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
-    //
-    // De bas en haut : un montant modifié seul (écran Prix, où c'est le seul
-    // champ) donne quantité 1 et prix unitaire égal au montant.
-    //
-    // De haut en bas : une quantité ou un prix unitaire modifié (le devis
-    // écrit à la main) recalcule le montant. **Ce sens manquait** — trois
-    // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
-    // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
-    // correspond pas à son détail ne se rattrape que par un avoir.
-    // Les champs déclarés et eux seuls : `{ ...data }` laissait déplacer une
-    // ligne vers un autre chantier, ou réécrire son prix de grille (audit E7).
-    const patch: Partial<typeof data> & {
-      prixAncien?: null;
-      prixGrille?: null;
-      partAncienne?: null;
-      partGrille?: null;
-      achatRetenu?: null;
-    } = seulement(data, [
-      "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
-    ]);
-    if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
-    const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
-    if (data.tauxTva !== undefined && avant && (await sansTvaSurLeChantier(tx, avant.chantierId))) {
-      delete patch.tauxTva;
+  // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
+  //
+  // De bas en haut : un montant modifié seul (écran Prix, où c'est le seul
+  // champ) donne quantité 1 et prix unitaire égal au montant.
+  //
+  // De haut en bas : une quantité ou un prix unitaire modifié (le devis
+  // écrit à la main) recalcule le montant. **Ce sens manquait** — trois
+  // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
+  // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
+  // correspond pas à son détail ne se rattrape que par un avoir.
+  // Les champs déclarés et eux seuls : `{ ...data }` laissait déplacer une
+  // ligne vers un autre chantier, ou réécrire son prix de grille (audit E7).
+  const patch: Partial<typeof data> & {
+    prixAncien?: null;
+    prixGrille?: null;
+    partAncienne?: null;
+    partGrille?: null;
+    achatRetenu?: null;
+  } = seulement(data, [
+    "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
+  ]);
+  if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
+  const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
+  if (data.tauxTva !== undefined && avant && (await sansTvaSurLeChantier(tx, avant.chantierId))) {
+    delete patch.tauxTva;
+  }
+  if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
+    patch.prixUnitaire = data.montant;
+    patch.quantite = "1";
+  } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
+    if (avant) {
+      // **La multiplication vit dans `src/lib/montant-de-ligne.ts`, et nulle
+      // part ailleurs — 13 septembre 2026.** Elle était écrite ici ET dans le
+      // dépôt des factures, dont le commentaire affirmait pourtant l'appeler.
+      // Deux écritures d'une règle qui décide de ce que le client paie.
+      patch.montant = montantDeLaLigne(patch.quantite ?? avant.quantite, patch.prixUnitaire ?? avant.prixUnitaire);
     }
-    if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
-      patch.prixUnitaire = data.montant;
-      patch.quantite = "1";
-    } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
-      if (avant) {
-        // **La multiplication vit dans `src/lib/montant-de-ligne.ts`, et nulle
-        // part ailleurs — 13 septembre 2026.** Elle était écrite ici ET dans le
-        // dépôt des factures, dont le commentaire affirmait pourtant l'appeler.
-        // Deux écritures d'une règle qui décide de ce que le client paie.
-        patch.montant = montantDeLaLigne(patch.quantite ?? avant.quantite, patch.prixUnitaire ?? avant.prixUnitaire);
-      }
-    }
+  }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // **POSER UN PRIX, C'EST RÉPONDRE À « À CHIFFRER » — QUEL QUE SOIT LE
-    // CHAMP PAR LEQUEL ON L'A POSÉ.**
-    //
-    // **Le défaut du 31 août 2026, dans ses mots :** *« je suis revenu en
-    // arrière, j'ai mis les prix pour chaque ligne, mais il ne veut quand même
-    // pas que j'envoie mon devis »*. Et il avait raison de ne rien comprendre :
-    // l'écran affichait 2 280,00 € de total, plus aucune ligne marquée « à
-    // chiffrer », et l'envoi nommait pourtant deux lignes qu'il venait de
-    // chiffrer.
-    //
-    // Cette extinction lisait `data.montant` — l'ENTRÉE. Or il y a deux
-    // chemins d'écriture, et un seul envoie un montant :
-    //
-    // | Écran | Ce qu'il poste | Le drapeau |
-    // |---|---|---|
-    // | Prix | `{ montant }` | s'éteignait |
-    // | Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
-    //
-    // Sur le second, le montant est CALCULÉ quinze lignes plus haut
-    // (quantité × prix unitaire) : le total du devis devenait juste, l'étiquette
-    // « à chiffrer » disparaissait de l'écran — elle ne s'affiche qu'à montant
-    // nul —, et rien ne trahissait le drapeau resté en base. La photographie du
-    // devis le recopiait à la régénération suivante (`devis.ts`), et l'envoi
-    // refusait en le renvoyant vers un écran Prix où tout paraissait normal.
-    // **Une boucle sans sortie : aucun geste ne pouvait la rouvrir.**
-    //
-    // On lit donc `patch.montant` — le RÉSULTAT, après calcul —, seul chiffre
-    // qui vaille pour la question « cette ligne est-elle chiffrée ».
-    //
-    // **Et l'extinction reste à sens unique.** Un montant qui retombe à zéro ne
-    // relève pas le drapeau : `aChiffrer` dit « le prix n'a pas été trouvé »,
-    // pas « la ligne vaut zéro ». Le rallumer ferait d'une remise gratuite
-    // délibérée un devis impossible à envoyer.
-    // ═══════════════════════════════════════════════════════════════════════
-    if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
-      patch.aChiffrer = false;
-    }
+  // ═══════════════════════════════════════════════════════════════════════
+  // **POSER UN PRIX, C'EST RÉPONDRE À « À CHIFFRER » — QUEL QUE SOIT LE
+  // CHAMP PAR LEQUEL ON L'A POSÉ.**
+  //
+  // **Le défaut du 31 août 2026, dans ses mots :** *« je suis revenu en
+  // arrière, j'ai mis les prix pour chaque ligne, mais il ne veut quand même
+  // pas que j'envoie mon devis »*. Et il avait raison de ne rien comprendre :
+  // l'écran affichait 2 280,00 € de total, plus aucune ligne marquée « à
+  // chiffrer », et l'envoi nommait pourtant deux lignes qu'il venait de
+  // chiffrer.
+  //
+  // Cette extinction lisait `data.montant` — l'ENTRÉE. Or il y a deux
+  // chemins d'écriture, et un seul envoie un montant :
+  //
+  // | Écran | Ce qu'il poste | Le drapeau |
+  // |---|---|---|
+  // | Prix | `{ montant }` | s'éteignait |
+  // | Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+  //
+  // Sur le second, le montant est CALCULÉ quinze lignes plus haut
+  // (quantité × prix unitaire) : le total du devis devenait juste, l'étiquette
+  // « à chiffrer » disparaissait de l'écran — elle ne s'affiche qu'à montant
+  // nul —, et rien ne trahissait le drapeau resté en base. La photographie du
+  // devis le recopiait à la régénération suivante (`devis.ts`), et l'envoi
+  // refusait en le renvoyant vers un écran Prix où tout paraissait normal.
+  // **Une boucle sans sortie : aucun geste ne pouvait la rouvrir.**
+  //
+  // On lit donc `patch.montant` — le RÉSULTAT, après calcul —, seul chiffre
+  // qui vaille pour la question « cette ligne est-elle chiffrée ».
+  //
+  // **Et l'extinction reste à sens unique.** Un montant qui retombe à zéro ne
+  // relève pas le drapeau : `aChiffrer` dit « le prix n'a pas été trouvé »,
+  // pas « la ligne vaut zéro ». Le rallumer ferait d'une remise gratuite
+  // délibérée un devis impossible à envoyer.
+  // ═══════════════════════════════════════════════════════════════════════
+  if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
+    patch.aChiffrer = false;
+  }
 
-    // **UN PRIX TAPÉ SORT LA LIGNE DE LA REPRISE** (migration 0106, sa règle
-    // du 26 septembre 2026). C'est un prix d'aujourd'hui, le sien : ni le
-    // tarif du jour ni la hausse ne doivent le réécrire ensuite. On compare en
-    // valeur, pas en chaîne : l'écran renvoie le prix à chaque champ quitté,
-    // et « 17.5 » n'est pas une retouche de « 17.50 ».
-    if (
-      avant?.prixAncien != null &&
-      patch.prixUnitaire !== undefined &&
-      !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
-    ) {
-      patch.prixAncien = null;
-      patch.prixGrille = null;
-      // Sa main d'œuvre sort de la reprise avec lui : un « Mettre à jour »
-      // suivant ne doit pas réécrire le prix qu'il vient de taper.
-      patch.partAncienne = null;
-      patch.partGrille = null;
-    }
-    // **UN PRIX RETAPÉ À LA MAIN FAIT TOMBER LE FOURNISSEUR ÉCRIT SOUS LA
-    // LIGNE** (migration 0188) : « Matériaux Garnier, 8,90 € HT le sac » sous
-    // un prix qu'il a changé dirait d'où vient un chiffre qui n'en vient plus.
-    // En valeur, comme la reprise : l'écran renvoie le prix à chaque champ
-    // quitté, et une description retouchée ne change pas le prix.
-    if (
-      duServeur?.achatRetenu === undefined &&
-      avant?.achatRetenu != null &&
-      patch.prixUnitaire !== undefined &&
-      !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
-    ) {
-      patch.achatRetenu = null;
-    }
-    const [row] = await tx
-      .update(lignesPrix)
-      .set({
-        ...patch,
-        ...(duServeur?.hommesMainDoeuvre !== undefined ? { hommesMainDoeuvre: duServeur.hommesMainDoeuvre } : {}),
-        ...(duServeur?.achatRetenu !== undefined ? { achatRetenu: duServeur.achatRetenu } : {}),
-        updatedAt: new Date(),
-      })
-      .where(eq(lignesPrix.id, id))
-      .returning();
-    return row;
-  });
+  // **UN PRIX TAPÉ SORT LA LIGNE DE LA REPRISE** (migration 0106, sa règle
+  // du 26 septembre 2026). C'est un prix d'aujourd'hui, le sien : ni le
+  // tarif du jour ni la hausse ne doivent le réécrire ensuite. On compare en
+  // valeur, pas en chaîne : l'écran renvoie le prix à chaque champ quitté,
+  // et « 17.5 » n'est pas une retouche de « 17.50 ».
+  if (
+    avant?.prixAncien != null &&
+    patch.prixUnitaire !== undefined &&
+    !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+  ) {
+    patch.prixAncien = null;
+    patch.prixGrille = null;
+    // Sa main d'œuvre sort de la reprise avec lui : un « Mettre à jour »
+    // suivant ne doit pas réécrire le prix qu'il vient de taper.
+    patch.partAncienne = null;
+    patch.partGrille = null;
+  }
+  // **UN PRIX RETAPÉ À LA MAIN FAIT TOMBER LE FOURNISSEUR ÉCRIT SOUS LA
+  // LIGNE** (migration 0188) : « Matériaux Garnier, 8,90 € HT le sac » sous
+  // un prix qu'il a changé dirait d'où vient un chiffre qui n'en vient plus.
+  // En valeur, comme la reprise : l'écran renvoie le prix à chaque champ
+  // quitté, et une description retouchée ne change pas le prix.
+  if (
+    duServeur?.achatRetenu === undefined &&
+    avant?.achatRetenu != null &&
+    patch.prixUnitaire !== undefined &&
+    !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+  ) {
+    patch.achatRetenu = null;
+  }
+  const [row] = await tx
+    .update(lignesPrix)
+    .set({
+      ...patch,
+      ...(duServeur?.hommesMainDoeuvre !== undefined ? { hommesMainDoeuvre: duServeur.hommesMainDoeuvre } : {}),
+      ...(duServeur?.achatRetenu !== undefined ? { achatRetenu: duServeur.achatRetenu } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(lignesPrix.id, id))
+    .returning();
+  return row;
 }
 
 export async function supprimerLignePrix(ctx: Ctx, id: string) {
@@ -443,6 +470,25 @@ export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) 
       )
       .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
       .orderBy(_asc(lignesPrixPrestations.ordre))
+  );
+}
+
+/**
+ * Les liens des lignes de ce chantier aux prestations qu'elles vendent, dans
+ * l'ordre du devis : de quoi dire ses réponses à la grille sous chaque
+ * travail (`reponses-sous-le-travail.ts`, sa planche du 20 novembre 2026).
+ */
+export async function liensDesLignesDuChantier(ctx: Ctx, chantierId: string): Promise<LienDeLaLigne[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ lignePrixId: lignesPrixPrestations.lignePrixId, prestationId: lignesPrixPrestations.prestationId })
+      .from(lignesPrixPrestations)
+      .innerJoin(
+        lignesPrix,
+        and(eq(lignesPrixPrestations.lignePrixId, lignesPrix.id), eq(lignesPrixPrestations.entrepriseId, lignesPrix.entrepriseId))
+      )
+      .where(eq(lignesPrix.chantierId, chantierId))
+      .orderBy(_asc(lignesPrix.ordre), _asc(lignesPrixPrestations.ordre))
   );
 }
 
@@ -730,21 +776,30 @@ export async function poserLesPartsDeMainDoeuvre(
    * travaux, et sa ligne laissée à côté la compterait deux fois. Elle part
    * dans la même transaction que les parts, ou rien ne s'écrit.
    */
-  remplace: string | null = null
-): Promise<{ ok: true; lignes: TravailRepris[]; retiree: string | null } | { ok: false; raison: string }> {
+  remplace: string | null = null,
+  /**
+   * Les travaux de la TVA où il a appuyé, quand c'est SON équipe qui se
+   * répartit : la part qu'elle y a déjà en sort avant que la nouvelle entre
+   * (`sesPartsDansLesTravaux`). Répartir deux fois ne l'ajoute plus.
+   */
+  sesTravaux: readonly string[] = []
+): Promise<
+  | {
+      ok: true;
+      /** Chaque travail tel que posé, avec les jours d'homme de sa part : l'écran y reconnaît celle de son équipe. */
+      lignes: (TravailRepris & { joursMainDoeuvre: string | null })[];
+      retiree: string | null;
+      sorties: TravailSansSaPart[];
+    }
+  | { ok: false; raison: string }
+> {
   const ids = Object.keys(parts);
   if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    if (remplace !== null) {
-      const [sienne] = await tx
-        .select()
-        .from(lignesPrix)
-        .where(and(eq(lignesPrix.chantierId, chantierId), eq(lignesPrix.id, remplace)))
-        .limit(1);
-      if (!sienne || !estLaLigneDeSonEquipe(sienne)) {
-        return { ok: false, raison: "Votre ligne Main d’œuvre n’est plus sur le devis. Rechargez l’écran." };
-      }
+    if (remplace !== null && !(await estEncoreSaLigne(tx, chantierId, remplace))) {
+      return { ok: false, raison: LIGNE_DE_SON_EQUIPE_PARTIE };
     }
+    const sansSaPart = await sesPartsDansLesTravaux(tx, chantierId, sesTravaux);
     const lues = await tx
       .select()
       .from(lignesPrix)
@@ -755,22 +810,34 @@ export async function poserLesPartsDeMainDoeuvre(
     if (lues.some((l) => l.mainDoeuvre || !(Number(l.montant) > 0))) {
       return { ok: false, raison: "La main d'œuvre se répartit sur des travaux qui ont leur prix. Rechargez l'écran." };
     }
+    // Un travail qui portait déjà la part de son équipe repart du prix qu'il
+    // avait sans elle : la nouvelle la REMPLACE.
+    const base = (l: (typeof lues)[number]) => {
+      const sans = sansSaPart.get(l.id);
+      return sans
+        ? { prixUnitaire: sans.prixUnitaire, partMainDoeuvre: null, joursMainDoeuvre: null }
+        : { prixUnitaire: l.prixUnitaire, partMainDoeuvre: l.partMainDoeuvre, joursMainDoeuvre: l.joursMainDoeuvre };
+    };
     const repris = partsAppliquees(
-      lues.map((l) => ({ id: l.id, quantite: l.quantite, prixUnitaire: l.prixUnitaire, partMainDoeuvre: l.partMainDoeuvre })),
+      lues.map((l) => ({ id: l.id, quantite: l.quantite, prixUnitaire: base(l).prixUnitaire, partMainDoeuvre: base(l).partMainDoeuvre })),
       parts
     );
     if (repris.some((r) => !nombreDeLigneAdmis(r.montant) || !nombreDeLigneAdmis(r.prixUnitaire))) {
       return { ok: false, raison: "Cette main d'œuvre ferait un prix démesuré. Vérifiez le calcul." };
     }
+    const posees: (TravailRepris & { joursMainDoeuvre: string | null })[] = [];
     for (const r of repris) {
-      const avant = lues.find((l) => l.id === r.id);
+      const lue = lues.find((l) => l.id === r.id);
+      const avant = lue ? base(lue) : undefined;
+      const jours = joursDeLaPart(avant?.partMainDoeuvre ?? null, avant?.joursMainDoeuvre ?? null, r.partPosee, prixJourHomme);
+      posees.push({ ...r, joursMainDoeuvre: jours });
       await tx
         .update(lignesPrix)
         .set({
           prixUnitaire: r.prixUnitaire,
           montant: r.montant,
           partMainDoeuvre: r.partMainDoeuvre,
-          joursMainDoeuvre: joursDeLaPart(avant?.partMainDoeuvre ?? null, avant?.joursMainDoeuvre ?? null, r.partPosee, prixJourHomme),
+          joursMainDoeuvre: jours,
           // **Une main d'œuvre posée aujourd'hui sort la ligne de la reprise**,
           // comme un prix tapé : un « Mettre à jour » suivant repartirait de
           // l'ancien prix et lui retirerait ce qu'il vient d'ajouter.
@@ -782,8 +849,129 @@ export async function poserLesPartsDeMainDoeuvre(
         })
         .where(eq(lignesPrix.id, r.id));
     }
+    // Ceux qui ne reçoivent rien cette fois rendent quand même la sienne.
+    const sorties = [...sansSaPart.values()].filter((t) => !repris.some((r) => r.id === t.id));
+    for (const t of sorties) await ecrireSansSaPart(tx, t);
     if (remplace !== null) await tx.delete(lignesPrix).where(eq(lignesPrix.id, remplace));
-    return { ok: true, lignes: repris, retiree: remplace };
+    return { ok: true, lignes: posees, retiree: remplace, sorties };
+  });
+}
+
+const LIGNE_DE_SON_EQUIPE_PARTIE = "Votre ligne Main d’œuvre n’est plus sur le devis. Rechargez l’écran.";
+
+/** La ligne que l'écran désigne est-elle encore, en base, celle de son équipe sur ce chantier ? */
+async function estEncoreSaLigne(tx: DbOrTx, chantierId: string, id: string): Promise<boolean> {
+  const [sienne] = await tx
+    .select()
+    .from(lignesPrix)
+    .where(and(eq(lignesPrix.chantierId, chantierId), eq(lignesPrix.id, id)))
+    .limit(1);
+  return sienne !== undefined && estLaLigneDeSonEquipe(sienne);
+}
+
+/** Un travail rendu à son prix d'avant la part de son équipe. */
+export type TravailSansSaPart = { id: string; prixUnitaire: string; montant: string };
+
+/**
+ * **La main d'œuvre de son équipe n'a qu'UNE forme par TVA : sa ligne, ou ses
+ * parts dans les travaux** (`ARCHITECTURE.md` §596). Répartie, elle n'a plus de
+ * ligne, et la feuille rouverte ne la voyait plus : la répartir encore
+ * l'ajoutait à la première, la reposer sur une ligne la laissait aussi dans
+ * les travaux. Deux fois la même main d'œuvre, sur un devis qui part.
+ *
+ * L'écran désigne les travaux de la TVA où il a appuyé ; chacun se relit ici,
+ * et n'en sort que la part de son équipe (`sansLaPartDeSonEquipe`) : celle
+ * d'un partenaire reste où elle est.
+ */
+async function sesPartsDansLesTravaux(
+  tx: DbOrTx,
+  chantierId: string,
+  sesTravaux: readonly string[]
+): Promise<Map<string, TravailSansSaPart>> {
+  if (sesTravaux.length === 0) return new Map();
+  const lues = await tx
+    .select()
+    .from(lignesPrix)
+    .where(and(eq(lignesPrix.chantierId, chantierId), inArray(lignesPrix.id, [...sesTravaux])));
+  return new Map(
+    lues.flatMap((l) => {
+      const sans = l.mainDoeuvre ? null : sansLaPartDeSonEquipe(l);
+      return sans ? [[l.id, { id: l.id, ...sans }] as const] : [];
+    })
+  );
+}
+
+async function ecrireSansSaPart(tx: DbOrTx, t: TravailSansSaPart) {
+  await tx
+    .update(lignesPrix)
+    .set({
+      prixUnitaire: t.prixUnitaire,
+      montant: t.montant,
+      partMainDoeuvre: null,
+      joursMainDoeuvre: null,
+      // Comme une part posée (plus haut) : un « Mettre à jour » suivant
+      // repartirait de l'ancien prix, part comprise.
+      prixAncien: null,
+      prixGrille: null,
+      partAncienne: null,
+      partGrille: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(lignesPrix.id, t.id));
+}
+
+/**
+ * La ligne de SON équipe que la feuille « Main d'œuvre » pose, sur la ligne
+ * qu'elle avait (`remplace`) ou en ligne neuve, et ses parts qui sortent des
+ * travaux (`sesTravaux`) : **un seul geste, ou rien ne s'écrit**. Une ligne
+ * posée sans que ses parts sortent compterait sa main d'œuvre deux fois ; des
+ * parts sorties sans la ligne la perdraient.
+ */
+export async function poserLaLigneDeSonEquipe(
+  ctx: Ctx,
+  chantierId: string,
+  ligne: {
+    libelle: string;
+    montant: string;
+    quantite: string;
+    prixUnitaire: string;
+    unite: string;
+    aChiffrer: boolean;
+    tauxTva: string | null;
+    hommes: number | null;
+  },
+  remplace: string | null,
+  sesTravaux: readonly string[]
+): Promise<
+  | { ok: true; ligne: typeof lignesPrix.$inferSelect; changee: boolean; sorties: TravailSansSaPart[] }
+  | { ok: false; raison: string }
+> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    if (remplace !== null && !(await estEncoreSaLigne(tx, chantierId, remplace))) {
+      return { ok: false, raison: LIGNE_DE_SON_EQUIPE_PARTIE };
+    }
+    const sorties = [...(await sesPartsDansLesTravaux(tx, chantierId, sesTravaux)).values()];
+    for (const t of sorties) await ecrireSansSaPart(tx, t);
+    if (remplace !== null) {
+      // Son libellé reste le sien : il a pu la renommer au doigt.
+      const changee = await reecrireLigne(
+        tx,
+        remplace,
+        { quantite: ligne.quantite, prixUnitaire: ligne.prixUnitaire, aChiffrer: ligne.aChiffrer },
+        { hommesMainDoeuvre: ligne.hommes }
+      );
+      return { ok: true, ligne: changee, changee: true, sorties };
+    }
+    const creee = await insererLigne(tx, ctx, chantierId, ligne.libelle, ligne.montant, {
+      quantite: ligne.quantite,
+      prixUnitaire: ligne.prixUnitaire,
+      unite: ligne.unite,
+      aChiffrer: ligne.aChiffrer,
+      tauxTva: ligne.tauxTva,
+      mainDoeuvre: true,
+      hommesMainDoeuvre: ligne.hommes,
+    });
+    return { ok: true, ligne: creee, changee: false, sorties };
   });
 }
 

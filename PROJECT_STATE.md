@@ -1,5 +1,13 @@
 # État du projet
 
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : SUR `main` (21 novembre 2026)
+
+Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, reposer en ligne fait sortir ses parts des travaux (celle d'un partenaire reste), et sa ligne renommée n'en reçoit plus une seconde au rejeu de la dictée. Répartie, la feuille se rouvre sur ses travaux (sa planche du 20). Batterie verte le 21. `ARCHITECTURE.md` §596.
+
+## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL DU DEVIS : SUR `main` (21 novembre 2026)
+
+« Abattage entre 10 et 20 m, ⌀ 80 cm » sous la description, lu dans les cases, pour lui seul ; et plus rien dans le nom du travail (migration 0192 pour ceux d'avant). Batterie verte le 21, écran regardé. `ARCHITECTURE.md` §597 et §598.
+
 ## LA MARGE EN POUR CENT, LE PRIX D'UNE PIÈCE, LE PARTENAIRE HORS DE LA LIGNE, « ML », LE FOURNISSEUR DEPUIS SON DEVIS ET SOUS LA LIGNE DICTÉE : SUR `main` (20 novembre 2026)
 
 Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cent (0 % sans marge) ; la recherche de Ce que je paie dit le prix d'une pièce ; le devis tapé à la main propose ses prix d'achat sous la ligne, pour lui seul (migration 0188) ; la ligne d'un partenaire ne porte plus son nom ; « ml » s'ajoute aux unités ; un devis déposé sans choisir la société crée ou reconnaît son fournisseur (migration 0189) ; une ligne dictée chiffrée par un achat garde son fournisseur sous elle, pour lui seul (`ARCHITECTURE.md` §592 à §595). Niveau 3 : batterie jouée, 216 suites navigateur sur 217 ; les deux contrôles qui cherchaient encore le nom du partenaire sur la ligne ont été corrigés, puis rejoués verts (612 sur 612).

@@ -49,8 +49,15 @@ import {
 import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
 import FeuilleDuTaux from "@/components/atlas/FeuilleDuTaux";
 import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
+import ReponsesSousLeTravail from "@/components/atlas/ReponsesSousLeTravail";
 import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
-import { estLaLigneDeSonEquipe, type ChoixDeMainOeuvre, type DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
+import {
+  estLaLigneDeSonEquipe,
+  partDeSonEquipe,
+  sansLaPartDeSonEquipe,
+  type ChoixDeMainOeuvre,
+  type DonneesMainOeuvre,
+} from "@/lib/feuille-main-oeuvre";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
@@ -154,11 +161,15 @@ type Ligne = {
   mainDoeuvre?: boolean | null;
   /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
   partMainDoeuvre?: string | null;
+  /** Les jours d'homme de cette part (migration 0173) : ce qui dit qu'elle est celle de son équipe (`partDeSonEquipe`). */
+  joursMainDoeuvre?: string | null;
   /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
-  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0185). */
+  /** Les hommes de son équipe, sur sa ligne de main d'œuvre (migration 0187). */
   hommesMainDoeuvre?: number | null;
+  /** Ses réponses à la grille, sous le travail, pour lui seul (sa planche du 20 novembre 2026). */
+  reponses?: string[];
   /** Le prix d'achat qui l'a chiffrée, en mots, pour lui seul (migration 0188). */
   achatRetenu?: string | null;
 };
@@ -1003,6 +1014,33 @@ export default function DevisCompletClient(props: Props) {
       !estLigneOuverte(l.id) &&
       (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
   );
+  // Les travaux de cette TVA : ceux qui peuvent recevoir sa main d'œuvre, et
+  // ceux d'où la part de son équipe sort quand elle change de forme (le
+  // serveur relit chacun, et ne retire que la sienne, `ARCHITECTURE.md` §596).
+  const travauxDeSaTva = lignesVisibles.filter(
+    (l) =>
+      !l.mainDoeuvre &&
+      !estLigneOuverte(l.id) &&
+      (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+  );
+
+  // Sa main d'œuvre répartie, quand elle n'a pas de ligne : la feuille repart
+  // de ces parts-là (sa planche du 20 novembre 2026).
+  const sesPartsDeMainDoeuvre = saLigneDeMainOeuvre ? [] : travauxDeSaTva.filter((l) => partDeSonEquipe(l) !== null);
+  /** Ce qu'un travail vaut sans la part de son équipe : ce qu'il redeviendra quand elle change. */
+  const sansSaMainDoeuvre = (l: Ligne) =>
+    Number(
+      sansLaPartDeSonEquipe({ quantite: l.quantite, montant: montantDeLaLigne(l).toFixed(2), partMainDoeuvre: l.partMainDoeuvre, joursMainDoeuvre: l.joursMainDoeuvre })
+        ?.montant ?? montantDeLaLigne(l)
+    );
+
+  /** Les travaux que le serveur a rendus à leur prix sans la part de son équipe. */
+  function sansSaPart(sorties: readonly { id: string; prixUnitaire: string; montant: string }[]) {
+    return (l: Ligne): Ligne => {
+      const t = sorties.find((x) => x.id === l.id);
+      return t ? { ...l, prixUnitaire: t.prixUnitaire, montant: t.montant, partMainDoeuvre: null, joursMainDoeuvre: null } : l;
+    };
+  }
 
   /**
    * « Répartis sur les travaux » : chaque travail reçoit sa part dans son prix.
@@ -1013,7 +1051,9 @@ export default function DevisCompletClient(props: Props) {
     setFeuille(null);
     setRefusMainOeuvre(null);
     const remplace = saLigneDeMainOeuvre?.id ?? null;
-    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts, remplace));
+    const pose = await aLaSuite(() =>
+      repartirMainDoeuvreAction(props.chantierId, choix, parts, remplace, travauxDeSaTva.map((l) => l.id))
+    );
     if (!pose) return;
     if (!pose.ok) {
       setRefusMainOeuvre(pose.raison);
@@ -1026,8 +1066,11 @@ export default function DevisCompletClient(props: Props) {
         .filter((l) => l.id !== pose.retiree)
         .map((l) => {
           const r = pose.lignes.find((x) => x.id === l.id);
-          return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
+          return r
+            ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre, joursMainDoeuvre: r.joursMainDoeuvre }
+            : l;
         })
+        .map(sansSaPart(pose.sorties))
     );
     annoncer(...pose.lignes.map((r) => `ligne:${r.id}`));
   }
@@ -1040,9 +1083,10 @@ export default function DevisCompletClient(props: Props) {
     // Sa planche du 18 novembre 2026 : son équipe CHANGE sa ligne ; un
     // partenaire pose la sienne, à son nom.
     const saLigne = choix.qui === "equipe" ? (saLigneDeMainOeuvre?.id ?? null) : null;
+    const sesTravaux = choix.qui === "equipe" ? travauxDeSaTva.map((l) => l.id) : [];
     const pose = await aLaSuite(async () => {
       if (ouverte) await idEnBase(ouverte);
-      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix, saLigne);
+      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix, saLigne, sesTravaux);
     });
     if (!pose) return;
     if (!pose.ok) {
@@ -1063,7 +1107,9 @@ export default function DevisCompletClient(props: Props) {
       mainDoeuvre: true,
       hommesMainDoeuvre: posee.hommesMainDoeuvre,
     };
-    setLignes((cur) => (pose.changee ? cur.map((l) => (l.id === posee.id ? { ...l, ...aLEcran } : l)) : [...cur, aLEcran]));
+    setLignes((cur) =>
+      (pose.changee ? cur.map((l) => (l.id === posee.id ? { ...l, ...aLEcran } : l)) : [...cur, aLEcran]).map(sansSaPart(pose.sorties))
+    );
     annoncer(`ligne:${posee.id}`);
   }
 
@@ -1661,6 +1707,7 @@ export default function DevisCompletClient(props: Props) {
                 className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
                 style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
               />
+              <ReponsesSousLeTravail reponses={l.reponses ?? []} />
               {/* Ses prix d'achat sous la ligne, pour lui seul (planche du
                   20 novembre 2026) : sous la description, là où il tape le
                   nom de la pièce. */}
@@ -2139,18 +2186,15 @@ export default function DevisCompletClient(props: Props) {
         ouverte={feuille === "mo"}
         donnees={props.mainOeuvre}
         saLigne={saLigneDeMainOeuvre}
+        sesParts={sesPartsDeMainDoeuvre}
         repartition={{
           // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
           // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
-          travaux: lignesVisibles
-            .filter(
-              (l) =>
-                !l.mainDoeuvre &&
-                !estLigneOuverte(l.id) &&
-                montantDeLaLigne(l) > 0 &&
-                (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
-            )
-            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: montantDeLaLigne(l).toFixed(2) })),
+          // Leur prix sans la part de son équipe : c'est la base d'où la
+          // nouvelle part repart (`ARCHITECTURE.md` §596).
+          travaux: travauxDeSaTva
+            .filter((l) => sansSaMainDoeuvre(l) > 0)
+            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: sansSaMainDoeuvre(l).toFixed(2) })),
           onRepartir: (choix, parts) => void repartirMainDoeuvre(choix, parts),
         }}
         onValider={(choix) => void ajouterMainDoeuvre(choix)}

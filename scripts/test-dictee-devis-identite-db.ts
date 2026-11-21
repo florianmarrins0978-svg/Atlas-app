@@ -67,7 +67,8 @@ function dicteeDu26Aout(): PropositionExtraction {
  *
  * Les libellés passés à `prestations` sont **exactement** ceux que
  * `confirmerBrouillon` écrit (quantité recollée) et que
- * `ecrirePrecisionsSurLesPrestations` enrichit ensuite. On les pose à la main
+ * `ecrirePrecisionsSurLesPrestations` enrichissait ensuite (jusqu'au 20 novembre
+ * 2026, §598 : ces libellés vivent encore dans les bases d'avant). On les pose à la main
  * plutôt que d'appeler la chaîne : elle exige une note vocale transcrite, donc
  * une clé, et `CLAUDE.md` §1 ter interdit qu'une suite en dépende.
  */

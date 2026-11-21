@@ -36,7 +36,7 @@ import {
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
 import { marquerAideNoteDevisVue } from "@/server/repositories/aide-note-devis";
-import { montantDeLaMainOeuvre, type ChoixDeMainOeuvre, type TravailRepris } from "@/lib/feuille-main-oeuvre";
+import { montantDeLaMainOeuvre, type ChoixDeMainOeuvre } from "@/lib/feuille-main-oeuvre";
 import { repartirMainOeuvre } from "@/lib/main-oeuvre-dictee";
 import { ligneDuChoix, poserLaMainDoeuvreDeLaFeuille } from "@/server/chiffrage/main-oeuvre-choisie";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
@@ -248,11 +248,25 @@ export async function ajouterMainDoeuvreChoisieAction(
   tauxTva: string | null,
   choix: ChoixDeMainOeuvre,
   /** La ligne de son équipe que la feuille change (sa planche du 18 novembre 2026) ; `null` : elle s'ajoute. */
-  saLigne: string | null = null
+  saLigne: string | null = null,
+  /** Les travaux de cette TVA, d'où la part de son équipe sort (`ARCHITECTURE.md` §596). */
+  sesTravaux: readonly string[] = []
 ): ReturnType<typeof poserLaMainDoeuvreDeLaFeuille> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter une main d'œuvre au devis");
-  return poserLaMainDoeuvreDeLaFeuille(ctx, chantierId, tauxTva, choix, typeof saLigne === "string" ? saLigne : null);
+  return poserLaMainDoeuvreDeLaFeuille(
+    ctx,
+    chantierId,
+    tauxTva,
+    choix,
+    typeof saLigne === "string" ? saLigne : null,
+    desIdentifiants(sesTravaux)
+  );
+}
+
+/** Ce que l'écran envoie comme liste de lignes : des chaînes, rien d'autre (le dépôt relit chacune). */
+function desIdentifiants(brut: unknown): string[] {
+  return Array.isArray(brut) ? brut.filter((x): x is string => typeof x === "string").slice(0, 500) : [];
 }
 
 /**
@@ -267,8 +281,10 @@ export async function repartirMainDoeuvreAction(
   choix: ChoixDeMainOeuvre,
   parts: Record<string, number>,
   /** La ligne de son équipe que la répartition remplace (sa planche du 18 novembre 2026). */
-  saLigne: string | null = null
-): Promise<{ ok: true; lignes: TravailRepris[]; retiree: string | null } | { ok: false; raison: string }> {
+  saLigne: string | null = null,
+  /** Les travaux de cette TVA, d'où la part que son équipe y avait sort d'abord (`ARCHITECTURE.md` §596). */
+  sesTravaux: readonly string[] = []
+): ReturnType<typeof poserLesPartsDeMainDoeuvre> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "répartir une main d'œuvre sur le devis");
   const ligne = await ligneDuChoix(ctx, choix);
@@ -283,7 +299,17 @@ export async function repartirMainDoeuvreAction(
   // Répartie, la main d'œuvre de SON équipe remplace sa ligne ; celle d'un
   // partenaire laisse la sienne, qui ne la compte pas.
   const remplace = choix.qui === "equipe" && typeof saLigne === "string" ? saLigne : null;
-  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts), prixJourHomme, remplace);
+  // Sa propre part sort des travaux avant que la nouvelle entre ; celle d'un
+  // partenaire s'ajoute à ce qui y est, elle ne remplace rien.
+  const sesParts = choix.qui === "equipe" ? desIdentifiants(sesTravaux) : [];
+  return poserLesPartsDeMainDoeuvre(
+    ctx,
+    chantierId,
+    repartirMainOeuvre(total, ids, parts),
+    prixJourHomme,
+    remplace,
+    sesParts
+  );
 }
 
 /**

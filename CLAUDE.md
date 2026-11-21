@@ -1574,6 +1574,14 @@ Si une branche touche le même coin de l'application, lire son dernier commit
 **avant** d'écrire. On ne demande la permission à personne — on évite de payer
 deux fois.
 
+**Et juste avant une batterie, les numéros de migration** (20 novembre 2026, sa
+consigne : *« fais en sorte que ça n'arrive plus »*). Une autre session a pris
+sur `main` le numéro du lot pendant qu'il mesurait : la renumérotation touche
+`drizzle/`, donc le niveau 3, donc une seconde batterie. Le numéro du lot se
+prend au-dessus de ceux que `main` ET les branches actives posent
+(`git diff --name-only origin/main...<branche> -- drizzle/`) ; un trou ne gêne
+pas `run-migrations.ts`, qui applique ce qui manque dans l'ordre des noms.
+
 **B. UN PARAGRAPHE NEUF D'`ARCHITECTURE.md` S'AJOUTE À LA FIN, JAMAIS AU
 MILIEU** — et son numéro n'est pas réservé. Ce soir-là, §147 et §148 ont été
 pris deux fois le même jour : quatre renumérotations, à quatre fusions. Pire, un

@@ -154,7 +154,8 @@ function couvert(mot: string, valeurs: Set<string>, unites: Set<string>): boolea
  * **Sauf s'il nomme EN ENTIER la technique que la colonne porte — 18 novembre
  * 2026.** Sa capture : « Abattage d'un chêne (abattage entre 10 et 20 m, ø 80
  * cm) », et sa règle : *« ça ne doit pas figurer sur la désignation, et même
- * le diamètre ne doit pas figurer »*. C'est la parenthèse de `libelleEnrichi`,
+ * le diamètre ne doit pas figurer »*. C'est la parenthèse que l'ancien code recollait
+ * (jusqu'au 20 novembre 2026 ; la migration 0192 la retire des libellés d'avant),
  * faite de ses réponses à la grille : la case choisie est en colonne
  * (`methode`), le diamètre aussi. Nommée en entier, et seulement alors : « en
  * rétention » ne dit pas « démontage avec rétention », et un fragment dicté
