@@ -31,3 +31,7 @@ ses gestes passent par le script de `composer.mjs`, qui écoute AVANT celui de
 `scripts/planche-figee/composer.mjs` et l'arrête quand il a répondu. Les pages
 du PDF ont une taille fixe (340 sur 481) : leur remplissage se MESURE, et une
 réserve qui ne tient pas passe à la page suivante au lieu d'être coupée.
+Les pages des réseaux sont couchées (481 sur 340), mesurées à cette taille,
+puis montrées réduites à la largeur d'une page droite. Sous `zoom`,
+`offsetHeight` rend la hauteur d'AVANT réduction : la mesure se lit sur
+`getBoundingClientRect`, sans quoi la boucle réduisait le dessin à vide.

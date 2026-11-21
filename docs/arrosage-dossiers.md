@@ -19,7 +19,7 @@ La planche est `appli/arrosage-dossiers.html`.
 | où sont les dossiers, comment on en crée un | **fait** : « Mes dossiers » sous « J'ai déjà un devis fournisseur », au départ de l'outil. Rien entre le titre et le piquage (sa règle du 20 août) |
 | « Enregistrer dans un dossier » sous un plan | **fait** : sous les réserves, à la fin de la liste. La feuille demande le dossier, ou en crée un |
 | un dossier ouvert, ses plans, leur date | **fait** : deux versions, la plus récente en tête, Renommer, Supprimer |
-| un plan revu, le téléchargement | **fait** : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 4 pages |
+| un plan revu, le téléchargement | **fait** : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 8 pages, un réseau par page |
 | chaque bouton fait quelque chose | **fait** : parcourue à 390 et 360 px, chaque geste touché, aucun muet, aucune erreur |
 | dans `appli/` et `essais.html` | **fait**, et dans `docs/maquettes/index.html`. Les scripts qui la refont : `appli/scripts/dossiers-arrosage/` |
 
@@ -152,22 +152,30 @@ lui.** Pilote « La photo » sur la planche.
 ### Question 4. Le téléchargement en PDF, comme les devis ?
 
 **Recommandation : oui**, fait par l'appli comme le devis (`src/server/pdf/`),
-archivé au moment d'enregistrer. La planche montre ses 4 pages :
+archivé au moment d'enregistrer.
+
+**Revu le soir même, sur sa demande** : *« ce qui serait bien, c'est qu'on
+puisse voir les réseaux en grand »*, chaque réseau sur sa page, à la fois en
+couleur et avec ses pièces, *« qu'on voie la photo des pièces »*. C'était ma
+question ouverte (les dessins des pièces dans le PDF) : il l'a tranchée. La
+planche montre maintenant 8 pages :
 
 | page | ce qu'elle porte |
 |---|---|
-| 1 | l'entreprise, le dossier, la date ; le plan, réseau par réseau, avec sa buse et son tuyau ; **les réserves juste sous le plan**, jamais à la fin |
-| 2 | la fin des réserves, puis la liste des pièces |
-| 3, 4 | la suite de la liste, chaque groupe coupé redit son nom |
+| 1 | l'entreprise, le dossier, la date ; **les réserves**, puis la légende des symboles (rond, carré, plein, creux, losange) |
+| 2 à 5 | **un réseau par page**, en A4 couché : à gauche le réseau en couleur dans le jardin, son tuyau, une tête de bas en haut avec ses photos ; à droite le dessin des pièces avec leurs photos, aussi grand que la page le permet |
+| 6 à 8 | la liste des pièces, chaque groupe coupé redit son nom |
 | au pied de chaque page | la date et l'heure, la version du calcul, l'empreinte de l'enregistrement |
+
+**Pourquoi couché.** Sur une page droite, le dessin d'une pelouse carrée
+n'avait que le bas de la page : ses photos sortaient à 6 mm. Couché, le dessin
+prend la moitié droite et ses photos doublent. Les deux dessins sont ceux de
+l'écran, jamais redessinés. Les réserves restent en page 1, là où on commence
+à lire.
 
 Les pages se remplissent en mesurant chaque bloc : une réserve qui ne tient
 pas passe à la page suivante, elle n'est jamais coupée. Le PDF ne suit pas la
 charte de couleurs (comme les devis) et **ne porte pas ses prix d'achat**.
-
-**À lui de dire** : veut-il aussi les dessins « Les pièces des réseaux » (où
-visser chaque pièce) ? Ils servent au poseur, et ajoutent des pages. Ma
-recommandation : pas pour commencer.
 
 ### Question 5, que le brief n'avait pas. Sans l'option à 6 €, ses plans ?
 
