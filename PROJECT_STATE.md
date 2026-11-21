@@ -1,5 +1,9 @@
 # État du projet
 
+## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.
+
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : SUR `main` (21 novembre 2026)
 
 Une seule forme par TVA, sa ligne ou ses parts : répartir encore remplace, reposer en ligne fait sortir ses parts des travaux (celle d'un partenaire reste), et sa ligne renommée n'en reçoit plus une seconde au rejeu de la dictée. Répartie, la feuille se rouvre sur ses travaux (sa planche du 20). Batterie verte le 21. `ARCHITECTURE.md` §596.

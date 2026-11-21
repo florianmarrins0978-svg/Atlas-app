@@ -21,6 +21,47 @@
   site. » La porte est la carte « Les outils de paysage », sous les trois
   formules de cause-2.html. Rien n'est codé dans l'application.
 
+  REPRISE LE 20 NOVEMBRE 2026 AU SOIR, sa demande devant la page : « j'aimerais
+  que tu améliores ce qu'il a fait [...] dans le même esprit que ce qu'on a
+  fait sur notre site internet ». La page avait le monde du site, pas sa
+  façon de raconter. Ce qui a changé, et pourquoi :
+    · UNE HISTOIRE PAR OUTIL. Chaque outil tenait en deux sections et deux
+      grands titres (« Le plan d'arrosage. », puis « Le plan, de bout en
+      bout. ») : douze fois le même cadre sable, à la suite. Les films
+      suivent maintenant la scène de leur outil, dans la même bande, comme le
+      récit de Dictez dans cause-2.html : son nom, sa phrase, ce qu'on
+      apporte et ce qui en sort, puis les vrais écrans, geste après geste ;
+    · ON VOIT D'ABORD. Sur téléphone, trois faits et leurs explications
+      passaient avant la première image. La scène vient juste sous la phrase,
+      et chaque fait se lit là où l'écran le prouve (« Calculé, pas deviné. »
+      après le film où le Ø32 retire un réseau, « Probable, jamais certain. »
+      après la fiche qui répond). Quatre phrases disaient deux fois ce que le
+      titre d'un film dit déjà : elles sont parties (« La liste part chez
+      votre fournisseur. », « Que faire, et est-ce grave. », « Votre liste,
+      une fois pour toutes. », et « sans rien installer » sous le dernier
+      film, gardé dans le fait d'au-dessus) ;
+    · LES TROIS SCÈNES NE RESTENT PLUS VIDES. Elles ne partaient qu'à moitié
+      visibles, duraient six secondes, et s'arrêtaient dès qu'on les
+      quittait : en descendant sans s'arrêter (260 px toutes les 700 ms,
+      mesuré), la carte du réseau ne sortait JAMAIS, on voyait un croquis et
+      une boîte verte vide. Elles se jouent une fois, tôt, et vont au bout ;
+      la carte du réseau, plus haute qu'un écran de téléphone, est montrée en
+      deux cartes (réseau 1, réseau 2), qui s'écrivent chacune quand on la
+      voit ;
+    · LA PROFONDEUR DU SITE. Les téléphones des films se tournent vers le
+      lecteur en montant, un côté puis l'autre (ils étaient posés à plat), et
+      tiennent entiers à l'écran, entre la barre et le bouton d'essai. Un
+      seul film bouge à la fois. Chaque outil a sa scène : sauge pour le
+      plan, une clairière dans le vert nuit pour le diagnostic, sable pour
+      les fiches ;
+    · « LA FICHE, À LIRE » : sur ordinateur, ses trois téléphones mesuraient
+      18 px de large (trois points noirs). Ce sont trois captures à plat, en
+      grand, où le texte se lit ;
+    · sur ordinateur, le texte tient une colonne et l'image l'autre, du haut
+      en bas d'un outil (le diagnostic à l'envers) ; les films ne zigzaguent
+      plus d'un bord à l'autre.
+  Aucun film, aucune capture, aucun prix n'a changé.
+
   LE MONDE EST CELUI DE cause-2.html, sans un écart : crème, vert nuit, vert
   feuille, or ; Instrument Serif et Hanken Grotesk ; les titres qui montent
   mot à mot et le point d'or qui tombe ; les objets qui se tournent vers le
@@ -43,13 +84,20 @@
 
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
     · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
-      dans la démonstration (voir « DE BOUT EN BOUT » plus bas), sur le même
+      dans la démonstration (voir « LA SUITE » plus bas), sur le même
       jardin qu'elle, en Ø25 : les deux réseaux de la pelouse l'un sous
       l'autre, le 1 en bleu et le 2 en vert, chacun ses 4 turbines face à
       celles de l'autre, qui se recouvrent (sa demande du 20 novembre au
       soir, devant la carte du seul réseau 1) ; et la nourrice éclatée, en
       trois voies. Elles sortent de film-outils.cjs --images, qui rend aussi
-      la place de « 20 m » sur la carte (CIBLE_COTE) ;
+      la place de « 20 m » sur la carte (CIBLE_COTE). Dans le chapitre, la
+      capture des deux réseaux est montrée en deux cartes : la même image
+      deux fois, sa moitié du haut puis celle du bas (chaque carte de l'appli
+      y fait 1170 px de haut, 45 px les séparent). Si la capture change de
+      hauteur, ces deux chiffres se remesurent (.reseau, CIBLE_COTE). La
+      nourrice est montrée sans la marge ni le filet de sa carte dans
+      l'appli, qui faisaient une carte dans une carte (.nourrice-fig : 948 px
+      sur 1320, à 45 px du bord gauche et 51 px du haut) ;
     · nov-film-outils-* : les films de la démonstration (même endroit) ;
     · outils-diagnostic et outils-fiche-a-lire-* : la fiche du peuplier
       soignée, vue Proposé de appli/soignee/fiche-de-diagnostic.html (la
@@ -73,10 +121,13 @@
   pas un écran de l'appli.
 
   CE QUI BOUGE, et pourquoi. Le geste du site, « rien ne se retape, tout se
-  porte », répété une fois par outil :
+  porte », répété une fois par outil, une seule fois, et mené au bout :
     · le plan d'arrosage : un trait d'or balaie le croquis (la lecture, comme
-      dans l'appli), la carte du réseau sort, « 20 m » quitte le croquis et se
-      pose sur « 20 m sur 8 m », et la carte s'écrit de haut en bas ;
+      dans l'appli), « 20 m » quitte le croquis et se pose sur « 20 m sur
+      8 m » de la carte du réseau 1, qui s'écrit de haut en bas ; celle du
+      réseau 2 s'écrit après elle. Le mot ne vole que si l'on voit d'où il
+      part et où il se pose ; une carte qu'on voit sans avoir vu le croquis
+      s'écrit d'elle-même ;
     · le diagnostic : le trait d'or balaie la photo, la photo recule, et la
       fiche arrive un peu grande et se pose, comme Ma TVA dans Encaissez ;
     · les fiches de chantier : le compte rendu sort de derrière le téléphone
@@ -86,8 +137,8 @@
   qui a demandé moins de mouvement, chaque scène montre son état le plus
   parlant, immobile.
 
-  DE BOUT EN BOUT, LE 20 NOVEMBRE AU SOIR. Sa demande, la page vue : après
-  la nourrice, un exemple à deux réseaux (« un réseau pour le gazon avec
+  LA SUITE, LES VRAIS ÉCRANS (20 novembre au soir). Sa demande, la page vue :
+  après la nourrice, un exemple à deux réseaux (« un réseau pour le gazon avec
   4 arroseurs [Rain Bird], et un réseau de goutte à goutte »), et « toute la
   page » : 25 ou 32 qui change les réseaux, n'importe quelle pièce à changer
   ou supprimer, la liste, l'envoi au fournisseur ; puis « pareil avec les
@@ -95,8 +146,8 @@
   téléphone qui portait l'appli. Sa correction, le soir même : « Je veux pas
   que ça soit l'utilisateur de cliquer. Je veux que ça soit comme s'il
   regardait un film. Comme on a fait sur le site internet normal. »
-  Chaque outil est donc une suite de scènes filmées, une par geste, qui se
-  jouent seules quand on arrive dessus et se rejouent quand on y revient
+  Chaque outil est donc suivi de ses gestes filmés, un film par geste, qui se
+  jouent seuls quand on arrive dessus et se rejouent quand on y revient
   (douze films, images/nov-film-outils-*). Ce qu'ils filment est le VRAI
   écran de l'appli, pas une copie : vente/demo/*.html, compilés depuis src/
   par appli/scripts/demo-outils/construire.ts (mêmes composants, même
@@ -111,7 +162,7 @@
   le dit. Celle-ci donne en Ø25 deux réseaux de 4 turbines 3504 et le
   goutte-à-goutte, et en Ø32 une ligne de 8 turbines : « un réseau de
   moins ». « 3005 » n'existe pas dans son catalogue ; la 3504 est la turbine
-  Rain Bird que le calcul choisit. Le croquis, la carte du réseau et la
+  Rain Bird que le calcul choisit. Le croquis, les cartes des réseaux et la
   nourrice du chapitre sont ceux de ce même jardin.
   LE DIAGNOSTIC ET LA FICHE lisent la base (ce sont des écrans « serveur ») :
   demo-outils/routeur.tsx les rend dans le navigateur.
@@ -250,10 +301,6 @@ html.anime .menu.ouvert a{opacity:1;transform:none;transition:opacity .5s ease c
 .gros img{width:100%}
 html.anime .gros[data-vu] img{transform:scale(1.035);transition:transform 1.6s var(--sortie)}
 html.anime .gros[data-vu].vu img{transform:none}
-/* Une capture s'écrit de haut en bas : « Cause dessine le plan ». Elle n'est
-   jamais toute blanche, son en-tête est là d'emblée (cause-2.html). */
-html.anime .blanche img{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);-webkit-mask-size:100% 230%;mask-size:100% 230%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:0 68%;mask-position:0 68%}
-html.anime .blanche.ecrite img{-webkit-mask-position:0 0;mask-position:0 0;transition:-webkit-mask-position 1.5s cubic-bezier(.45,0,.2,1),mask-position 1.5s cubic-bezier(.45,0,.2,1)}
 .sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
 .credit{margin-top:14px;font-size:13.5px;line-height:1.45;color:var(--encre-2)}
 .nuit .credit{color:var(--sur-nuit-2)}
@@ -322,6 +369,9 @@ html.anime .plateau.flotte .pose-cr .feuille{animation:flotte-d 8s ease-in-out i
 @keyframes flotte-d{from{translate:0 0}to{translate:0 -6px}}
 @media (min-width:960px){
   .ouverture-grille{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;text-align:left;gap:56px}
+  /* « pour le jardin. » fait 4,91 fois le corps, et la colonne
+     (100vw - 88px) / 2 : le titre tient en deux lignes dès 960 px. */
+  .ouverture h1{font-size:clamp(72px,calc((100vw - 88px) * .098),96px)}
   .ouverture .chapo{margin-inline:0}
   .ouverture .actions{justify-content:flex-start}
   .plateau{height:640px;--rx:2deg;--ry:-9deg}
@@ -330,15 +380,23 @@ html.anime .plateau.flotte .pose-cr .feuille{animation:flotte-d 8s ease-in-out i
   .pose-appareil{width:286px;top:auto;bottom:-88px;margin-left:-143px}
 }
 
-/* ── Un outil : son nom, sa phrase, ce qu'il fait, ce qu'on voit ──────── */
+/* ── Un outil : son nom, sa phrase, ce qu'on apporte, ce qui en sort ───── */
 .mot{font-size:clamp(54px,12.4vw,92px);line-height:.92}
+.outil .mot{font-size:clamp(58px,19vw,104px);line-height:.88}
 .mot .point{color:var(--or)}
 .nuit .mot .point{color:var(--or-clair)}
 .outil .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
 .nuit.outil .chapo{color:var(--sur-nuit-2)}
-.chap-grille{display:grid;gap:52px}
-.chap-visuel{display:grid;gap:36px;justify-items:center}
-.faits{list-style:none;margin:40px 0 0;padding:0;display:grid}
+.fond{background:var(--fond)}
+/* Sur téléphone on voit d'abord : le nom, la phrase, la scène, puis ce qu'il
+   faut en savoir. La colonne du texte n'y est donc pas une boîte : ses
+   enfants se rangent avec la scène. Sur ordinateur elle tient à gauche, et
+   suit la scène. */
+.chap-grille{display:grid}
+.chap-texte{display:contents}
+.chap-visuel{order:1;display:grid;gap:18px;justify-items:center;min-width:0;margin-top:40px}
+.chap-texte > .faits{order:2}
+.faits{list-style:none;margin:36px 0 0;padding:0;display:grid}
 .faits li{padding:22px 0 22px 46px;border-bottom:1px solid var(--trait);display:grid;gap:6px;position:relative}
 .faits li:first-child{border-top:1px solid var(--trait)}
 .faits li svg{position:absolute;left:0;top:25px;width:26px;height:26px;color:var(--feuille)}
@@ -351,8 +409,12 @@ html.anime .faits svg circle{stroke-dasharray:76;stroke-dashoffset:76;transform:
 html.anime .faits svg path{stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .45s var(--sortie);transition-delay:calc(var(--i,0) * 150ms + 420ms)}
 html.anime .faits.vu svg circle,html.anime .faits.vu svg path{stroke-dashoffset:0}
 @media (min-width:960px){
-  .chap-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
-  .chap-texte{position:sticky;top:132px}
+  .chap-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:76px;align-items:start}
+  /* Le nom tient sur deux lignes dans sa colonne : « de chantier. » fait
+     3,81 fois le corps, et la colonne (100vw - 108px) * 5 / 12. */
+  .outil .mot{font-size:clamp(76px,calc((100vw - 108px) * .105),104px)}
+  .chap-texte{display:block;position:sticky;top:132px}
+  .chap-visuel{order:0;margin-top:0}
   .chap-grille.inverse .chap-texte{order:2}
 }
 
@@ -360,29 +422,44 @@ html.anime .faits.vu svg circle,html.anime .faits.vu svg path{stroke-dashoffset:
    comme la lecture du croquis dans l'appli. Jamais un écran de l'appli. */
 .balaye{position:relative;overflow:hidden}
 .balaye::after{content:"";position:absolute;left:0;right:0;top:0;height:24%;pointer-events:none;opacity:0;border-bottom:2px solid var(--or-clair);background:linear-gradient(to bottom,rgba(240,180,60,0),rgba(240,180,60,.16));transform:translateY(-100%)}
-html.anime .balaye.lit::after{animation:balaye 1.25s cubic-bezier(.45,0,.25,1) both}
+html.anime .balaye.lit::after{animation:balaye 1.1s cubic-bezier(.45,0,.25,1) both}
 @keyframes balaye{0%{opacity:0;transform:translateY(-100%)}12%{opacity:1}88%{opacity:1}100%{opacity:0;transform:translateY(420%)}}
 
-/* Le plan d'arrosage : le croquis de l'artisan, et la carte du réseau que
-   Cause en tire. « 12 m » quitte le croquis et se pose sur la carte. */
-.scene-croquis{width:100%;max-width:560px;padding:28px 22px 30px;display:grid}
-.croquis{margin:0;width:90%;border-radius:6px;background:#fbf8ef;transform:rotate(-2.5deg);box-shadow:0 30px 50px -32px rgba(var(--ombre),.55),0 0 0 1px rgba(var(--ombre),.06);--crayon:#33322e;--quadrillage:#d9e2ec}
+/* Le plan d'arrosage : le croquis de l'artisan, et les deux réseaux que
+   Cause en tire, chacun sur sa carte. C'est la même capture de l'appli,
+   montrée en deux fois : sa moitié du haut, puis celle du bas (chaque carte
+   y fait 1170 px de haut, 45 px les séparent). Entière, elle dépassait
+   l'écran d'un téléphone, et s'écrivait donc à moitié hors de vue. */
+.scene-croquis{width:100%;max-width:460px;padding:22px 14px 24px;display:grid;justify-items:start}
+.croquis{z-index:3;margin:0;width:88%;border-radius:6px;background:#fbf8ef;transform:rotate(-2.5deg);box-shadow:0 30px 50px -32px rgba(var(--ombre),.55),0 0 0 1px rgba(var(--ombre),.06);--crayon:#33322e;--quadrillage:#d9e2ec}
 .croquis svg{display:block;width:100%;height:auto}
 .croquis .eclat{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(0);transition:transform .45s var(--va-et-vient)}
 .scene-croquis.surligne .croquis .eclat{transform:none}
 html:not(.anime) .croquis .eclat{transform:none}
-.scene-croquis .socle{width:80%;justify-self:end;margin-top:-16%;z-index:2}
-.scene-croquis .gros{border-radius:18px}
-/* La carte du réseau sort une fois le croquis lu : restée posée, blanche
-   sous son en-tête, elle se lisait comme une image qui ne charge pas. */
-html.anime #carte-reseau{opacity:0;transform:translateY(28px) scale(.96);transition:opacity .45s ease,transform .9s var(--sortie)}
-html.anime .scene-croquis.sort #carte-reseau{opacity:1;transform:none}
+.reseaux{display:grid;gap:12px;width:100%;margin-top:2px}
+.reseau{position:relative;margin:0;aspect-ratio:1038/1170;border-radius:18px;overflow:hidden;isolation:isolate;background:var(--papier);box-shadow:0 26px 50px -34px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07);transition:box-shadow .7s ease}
+.reseau img{position:absolute;left:0;top:0;width:100%;height:auto}
+.reseau.r2 img{top:auto;bottom:0}
+/* Une carte s'écrit de haut en bas : « Cause dessine le plan ». Avant, on
+   n'en voit que l'en-tête, qui se fond dans la scène : ni carte blanche (elle
+   se lisait comme une image qui ne charge pas), ni ombre posée sur du vide.
+   L'ombre vient quand la carte est finie. */
+html.anime .reseau.blanche{box-shadow:0 0 0 0 transparent;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 44%,transparent 56%,transparent 100%);-webkit-mask-size:100% 230%;mask-size:100% 230%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:0 68%;mask-position:0 68%}
+html.anime .reseau.blanche.ecrite{-webkit-mask-position:0 0;mask-position:0 0;transition:-webkit-mask-position 1.3s cubic-bezier(.45,0,.2,1),mask-position 1.3s cubic-bezier(.45,0,.2,1)}
+/* Ce qui doit être à l'écran pour que la lecture parte : le croquis, et le
+   haut de la première carte, où « 20 m » va se poser. */
+.scene-croquis .zone-depart{position:absolute;left:0;right:0;top:18px;aspect-ratio:1/.8;pointer-events:none}
 /* Le mot porté : une étiquette, un seul objet, dont le fond de papier
    apparaît quand elle se soulève (cause-2.html, Dictez). */
 .porte{position:absolute;left:0;top:0;z-index:6;padding:.02em .14em .06em;font:italic 400 30px/1.12 var(--display);color:var(--or);white-space:nowrap;pointer-events:none;transform-origin:0 0;opacity:0;will-change:transform,opacity}
 .porte .fond{position:absolute;inset:0;border-radius:.22em;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.08),0 14px 26px -14px rgba(var(--ombre),.55);opacity:0}
 .porte .texte{position:relative}
-.nourrice-fig{width:100%;max-width:460px}
+@media (min-width:960px){
+  .scene-croquis{max-width:none;padding:34px 30px 38px;justify-items:center}
+  .croquis{width:60%}
+  .reseaux{grid-template-columns:1fr 1fr;gap:18px;margin-top:0}
+  .scene-croquis .zone-depart{top:30px;aspect-ratio:1/.46}
+}
 
 /* Le diagnostic : la photo, puis la fiche qui arrive un peu grande et se
    pose, comme Ma TVA dans Encaissez. La photo recule derrière elle. */
@@ -405,58 +482,93 @@ html.anime .scene-diag.reponse .tirage{opacity:.55;transform:translate(-3%,2%) r
 html.anime .duo .c{opacity:0;transform:translate3d(-46%,2%,0) rotate(-2deg) scale(.9)}
 html.anime .duo.envoye .c{opacity:1;transform:rotate(3deg);transition:opacity .35s ease,transform 1.2s var(--sortie)}
 .duo-legende{display:flex;justify-content:space-between;gap:16px;margin-top:16px;font-size:15.5px;color:var(--encre-2)}
-@media (min-width:960px){.scene-fiche{padding:56px 40px 44px}.scene-croquis{padding:36px 30px 40px}}
+@media (min-width:960px){.scene-fiche{padding:56px 40px 44px}}
 
-/* ── De bout en bout : le vrai écran de l'appli, filmé ───────────────────── */
+/* ── La suite : le vrai écran de l'appli, filmé, geste après geste ─────── */
 /* Sa correction du 20 novembre 2026 au soir, devant des démonstrations à
    toucher : « comme s'il regardait un film ». Chaque geste est un film de la
    démonstration (vente/demo/, les vrais écrans compilés depuis src/), tourné
-   par appli/scripts/film-outils.cjs, et se joue seul quand on arrive dessus,
-   comme les scènes de cause-2.html. Le texte dit le geste, le téléphone le
-   montre ; l'un sous l'autre sur téléphone, côte à côte sur ordinateur. */
-.film-tete .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
-.nuit .film-tete .chapo{color:var(--sur-nuit-2)}
-.plans{list-style:none;margin:48px 0 0;padding:0;display:grid;gap:56px}
-.plan{display:grid;gap:22px;min-width:0}
+   par appli/scripts/film-outils.cjs, et se joue seul quand on arrive dessus.
+   Les films suivent la scène de leur outil, dans la même bande : une seule
+   histoire par outil. Le texte dit le geste, le téléphone le montre, et ce
+   qu'il prouve s'écrit juste après ; l'un sous l'autre sur téléphone, côte à
+   côte sur ordinateur. */
+.suite{margin-top:clamp(56px,9vw,104px);font:italic 400 clamp(32px,8.6vw,44px)/1.06 var(--display);letter-spacing:-.01em}
+.suite .bloc{display:inline-block}
+.nuit .suite{color:var(--or-clair)}
+.plans{list-style:none;margin:clamp(36px,5vw,60px) 0 0;padding:0;display:grid;gap:clamp(64px,9vw,120px)}
+.plan{display:grid;min-width:0}
 .plan-texte{display:grid;gap:6px;max-width:24em}
-.plan-texte b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display);font-weight:400}
-.plan-texte span{color:var(--encre-2);font-size:16.5px}
-.nuit .plan-texte span{color:var(--sur-nuit-2)}
-.scene-plan{display:flex;justify-content:center;padding:22px 18px}
-.scene-plan .appareil{width:min(64vw,290px)}
+.plan-texte h3,.a-lire h3{font-size:clamp(28px,6.8vw,34px);line-height:1.08;letter-spacing:-.01em}
+.plan-texte p{color:var(--encre-2);font-size:16.5px}
+.nuit .plan-texte p{color:var(--sur-nuit-2)}
+.plan-vue{display:contents}
+.scene-plan{order:1;margin-top:18px;display:flex;justify-content:center;padding:26px 16px 30px}
+/* Le téléphone d'un film tient ENTIER à l'écran, entre la barre du haut et
+   le bouton d'essai (cause-2.html, la fiche d'intervention) : sa largeur se
+   déduit de la hauteur libre. Plus haut, la fin du geste se jouerait sous le
+   bouton. */
+.scene-plan .socle{width:min(72vw,300px,calc((100vh - 218px) * .5873 + 18px));width:min(72vw,300px,calc((100svh - 218px) * .5873 + 18px))}
+.scene-plan .appareil{width:100%}
+/* Sur le vert nuit, la scène est une clairière : plus claire d'un rien. */
+.nuit .scene-plan{background:radial-gradient(70% 55% at 30% 18%,rgba(243,239,227,.08),transparent 70%),rgba(243,239,227,.045);box-shadow:inset 0 0 0 1px var(--trait-nuit)}
+.plan > .faits{order:2;margin-top:26px}
+/* La nourrice, dessinée pièce par pièce, ouvre le film où l'on en change une. */
+/* Sa capture porte la marge et le filet de sa carte dans l'appli : montrée
+   telle quelle, c'était une carte dans une carte. On n'en montre que
+   l'intérieur (948 px sur 1320, à 45 px du bord gauche et 51 px du haut d'une
+   capture large de 1038) ; le cadre est celui de la page. Si la capture
+   change de taille, ces quatre chiffres se remesurent. */
+.nourrice-fig{aspect-ratio:948/1320;background:#fff}
+.nourrice-fig img{max-width:none;width:calc(100% * 1038 / 948);margin:calc(-100% * 51 / 948) 0 0 calc(-100% * 45 / 948)}
+.plan .nourrice-fig{order:-1;width:min(100%,460px);justify-self:center;margin-bottom:30px}
 /* Le film d'un écran : sa première image dessous avant qu'il parte, sa
    dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
-/* « La fiche, à lire » : trois captures fixes, sa proposition du 20 novembre
-   (« ou même tu peux mettre à côté des captures figées »), pour lire sans
-   que rien ne bouge. Elles défilent d'un doigt sur téléphone. */
-.a-lire{margin-top:64px}
-.captures{list-style:none;margin:22px -16px 0;padding:0 16px 8px;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-.captures::-webkit-scrollbar{display:none}
-.captures li{flex:none;scroll-snap-align:center}
-.captures .appareil{width:min(62vw,260px)}
-@media (min-width:960px){
-  .a-lire{margin-top:96px}
-  .captures{margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;overflow:visible;justify-items:center}
-  .captures .appareil{width:min(100%,300px)}
-}
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
 .film video.joue{opacity:1}
 .film img.film-fin{z-index:3;opacity:0}
 .film img.film-fin.vue{opacity:1}
-/* Sur ordinateur, le cadre sable épouse le téléphone : étiré sur sa colonne,
-   il changeait de largeur d'une rangée à l'autre. */
+/* « La fiche, à lire » : trois captures fixes, sa proposition du 20 novembre
+   (« ou même tu peux mettre à côté des captures figées »), pour lire sans
+   que rien ne bouge. À plat et en grand, pour que le texte se lise : dans un
+   téléphone de plus, il faisait huit pixels. Elles défilent d'un doigt sur
+   téléphone, la suivante dépasse pour le dire. */
+.a-lire{margin-top:clamp(64px,9vw,112px)}
+.captures{list-style:none;margin:20px -16px 0;padding:0 16px 14px;display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.captures::-webkit-scrollbar{display:none}
+.captures li{flex:none;width:min(80vw,340px);scroll-snap-align:center}
+.captures .gros{border-radius:20px}
+.nuit .gros{box-shadow:0 34px 70px -40px rgba(0,0,0,.75),0 0 0 1px rgba(243,239,227,.08)}
 @media (min-width:960px){
-  .plans{gap:88px}
-  .plan{grid-template-columns:minmax(0,1fr) auto;column-gap:96px;align-items:center}
-  .plan:nth-child(even){grid-template-columns:auto minmax(0,1fr)}
-  .plan:nth-child(even) .plan-texte{order:2}
-  .plan-texte{gap:10px}
-  .plan-texte b{font-size:clamp(30px,3vw,42px)}
-  .plan-texte span{font-size:18px}
-  .scene-plan{padding:44px 64px}
-  .scene-plan .appareil{width:320px}
+  .suite{padding-top:44px;border-top:1px solid var(--trait)}
+  .nuit .suite{border-top-color:var(--trait-nuit)}
+  .plans{gap:clamp(96px,9vw,136px)}
+  .plan{grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:76px;align-items:center}
+  .plans.inverse .plan{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+  .plan-texte{grid-column:1;grid-row:1;gap:12px}
+  .plan-vue{display:block;grid-column:2;grid-row:1}
+  .plan.avec-note .plan-vue{grid-row:1 / span 2}
+  .plans.inverse .plan-texte{grid-column:2}
+  .plans.inverse .plan-vue{grid-column:1}
+  .plan-texte h3,.a-lire h3{font-size:clamp(34px,3.3vw,46px)}
+  .plan-texte p{font-size:18px}
+  .scene-plan{margin-top:0;padding:48px 40px 52px}
+  .scene-plan .socle{width:min(320px,calc((100vh - 240px) * .5873 + 18px))}
+  .plan > .faits{grid-column:1;grid-row:2;align-self:start;margin-top:34px}
+  .plans.inverse .plan > .faits{grid-column:2}
+  .plan.avec-note .plan-texte{align-self:end}
+  .plan .nourrice-fig{width:min(100%,430px);margin:0 auto 28px}
+  .captures{margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;overflow:visible}
+  .captures li{width:auto}
+}
+/* Assez large, la nourrice se range à côté de son film. */
+@media (min-width:1180px){
+  .plan.avec-figure .plan-vue{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1fr);gap:26px;align-items:center}
+  .plan.avec-figure .nourrice-fig{width:100%;margin:0}
+  .plan.avec-figure .scene-plan{padding:40px 22px 44px}
+  .plan.avec-figure .scene-plan .socle{width:min(100%,286px,calc((100vh - 240px) * .5873 + 18px))}
 }
 
 /* ── Le prix : une carte, la bascule mois ou année ─────────────────────── */
@@ -587,18 +699,17 @@ html.anime .geant.vu span{transform:none}
 </section>
 
 <section class="outil papier nappe" id="arrosage">
-  <div class="large chap-grille">
-    <div class="chap-texte">
-      <h2 class="mot" data-monte>Le plan d'arrosage<span class="point">.</span></h2>
-      <p class="chapo">Photographiez le croquis du jardin, et le plan sort avec sa liste de pièces.</p>
-      <ul class="faits" data-vu="0.3">
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>À main levée, avec ses cotes.</b><span>Les cotes commandent, pas le dessin. Le croquis porte aussi le piquage et la nourrice.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Calculé, pas deviné.</b><span>Chaque réseau est dimensionné sur la pression qui arrive au dernier arroseur.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>La liste part chez votre fournisseur.</b><span>Chaque pièce comptée, du compteur à la nourrice et jusqu'au dernier arroseur.</span></li>
-      </ul>
-    </div>
-    <div class="chap-visuel">
-      <div class="scene scene-croquis" id="scene-croquis">
+  <div class="large">
+    <div class="chap-grille">
+      <div class="chap-texte">
+        <h2 class="mot" data-monte>Le plan d'arrosage<span class="point">.</span></h2>
+        <p class="chapo">Photographiez le croquis du jardin, et le plan sort avec sa liste de pièces.</p>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>À main levée, avec ses cotes.</b><span>Les cotes commandent, pas le dessin. Le croquis porte aussi le piquage et la nourrice.</span></li>
+        </ul>
+      </div>
+      <div class="chap-visuel">
+        <div class="scene scene-croquis" id="scene-croquis">
         <figure class="croquis balaye" role="img" aria-label="Le croquis du jardin, à main levée : une pelouse de 20 m sur 8 m, un massif en goutte-à-goutte de 20 m sur 1,20 m, la nourrice et le compteur">
           <svg viewBox="0 0 372 212" aria-hidden="true">
             <defs>
@@ -635,110 +746,106 @@ html.anime .geant.vu span{transform:none}
             </g>
           </svg>
         </figure>
-        <div class="socle" data-t><div class="leve douce"><figure class="gros blanche" id="carte-reseau"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : la pelouse de 20 m sur 8 m sur deux réseaux en Ø25, le réseau 1 en bleu et le réseau 2 en vert, chacun 4 turbines 3504 buse 1,0 de portée 6,1 m, face à face, qui se recouvrent, et 24 m de PEHD Ø25 chacun" width="1038" height="2385" decoding="async"></figure></div></div>
-        <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">20 m</span></span>
+          <div class="reseaux">
+            <figure class="reseau r1 blanche" id="reseau-1"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause, réseau 1, en bleu : la pelouse de 20 m sur 8 m, 4 turbines 3504 buse 1,0 de portée 6,1 m sur un bord, et 24 m de PEHD Ø25" width="1038" height="2385" decoding="async"></figure>
+            <figure class="reseau r2 blanche" id="reseau-2"><img src="images/outils-plan-reseau.jpg" alt="Réseau 2, en vert : ses 4 turbines 3504 buse 1,0 sur le bord d'en face, qui recouvrent celles du réseau 1, et 24 m de PEHD Ø25" width="1038" height="2385" decoding="async"></figure>
+          </div>
+          <span class="zone-depart" aria-hidden="true"></span>
+          <span class="porte" aria-hidden="true"><span class="fond"></span><span class="texte">20 m</span></span>
+        </div>
+        <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
       </div>
-      <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, une voie pour chaque réseau de la pelouse et une pour le goutte-à-goutte, chaque pièce numérotée" width="1038" height="1416" decoding="async"></figure>
-      <p class="sous">Ce qui reste à mesurer sur place est écrit sous le plan.</p>
     </div>
-  </div>
-</section>
-
-<section class="en-film papier" id="film-arrosage">
-  <div class="large">
-    <div class="film-tete">
-      <h2 class="mot" data-monte>Le plan, de bout en bout<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, sur ce jardin.</p>
-    </div>
+    <p class="suite" data-monte><span class="bloc">Le vrai écran de Cause,</span> <span class="bloc">sur ce jardin.</span></p>
     <ol class="plans">
-      <li class="plan">
-        <div class="plan-texte"><b>25 ou 32.</b><span>En Ø32, la pelouse tient sur un réseau de moins.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-tuyau"><img class="film-pose" src="images/nov-film-outils-tuyau-fin.jpg" alt="Le plan dans Cause : réseau 1 passé en Ø32, avec la phrase « En Ø32 : 8 arroseurs sur ce réseau au lieu de 4, un réseau de moins. » et 2 réseaux, 48 m de tranchée" width="1170" height="1992" decoding="async"></div></div></div>
+      <li class="plan avec-note">
+        <div class="plan-texte"><h3>25 ou 32.</h3><p>En Ø32, la pelouse tient sur un réseau de moins.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-tuyau"><img class="film-pose" src="images/nov-film-outils-tuyau-fin.jpg" alt="Le plan dans Cause : réseau 1 passé en Ø32, avec la phrase « En Ø32 : 8 arroseurs sur ce réseau au lieu de 4, un réseau de moins. » et 2 réseaux, 48 m de tranchée" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Calculé, pas deviné.</b><span>Chaque réseau est dimensionné sur la pression qui arrive au dernier arroseur.</span></li>
+        </ul>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>La nourrice, à votre idée.</b><span>Une sonde de pluie, le grillage avertisseur : touchés, ils s’ajoutent à la liste.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-options"><img class="film-pose" src="images/nov-film-outils-options-fin.jpg" alt="La nourrice de deux voies dans Cause : la sonde de pluie RSD-Bex Rain Bird et le grillage avertisseur bleu, rouleau de 100 m, ajoutés" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>La nourrice, à votre idée.</h3><p>Une sonde de pluie, le grillage avertisseur : touchés, ils s’ajoutent à la liste.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-options"><img class="film-pose" src="images/nov-film-outils-options-fin.jpg" alt="La nourrice de deux voies dans Cause : la sonde de pluie RSD-Bex Rain Bird et le grillage avertisseur bleu, rouleau de 100 m, ajoutés" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+      </li>
+      <li class="plan avec-figure">
+        <div class="plan-texte"><h3>Une pièce de la nourrice.</h3><p>La changer, ou la supprimer.</p></div>
+        <div class="plan-vue">
+          <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, une voie pour chaque réseau de la pelouse et une pour le goutte-à-goutte, chaque pièce numérotée" width="1038" height="1416" decoding="async"></figure>
+          <div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La légende de la nourrice dans Cause : la pièce 9 changée pour une électrovanne Toro EZ FLO+ 1 pouce MM, solénoïde 9 V à impulsion" width="1170" height="1992" decoding="async"></div></div></div></div></div>
+        </div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Une pièce de la nourrice.</b><span>La changer, ou la supprimer.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La légende de la nourrice dans Cause : la pièce 9 changée pour une électrovanne Toro EZ FLO+ 1 pouce MM, solénoïde 9 V à impulsion" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Les turbines.</h3><p>Une seule, ou les huit d’un coup.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 : huit turbines 3504, chaque maillon de la chaîne dessiné, du té taraudé à la turbine" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Les turbines.</b><span>Une seule, ou les huit d’un coup.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 : huit turbines 3504, chaque maillon de la chaîne dessiné, du té taraudé à la turbine" width="1170" height="1992" decoding="async"></div></div></div>
-      </li>
-      <li class="plan">
-        <div class="plan-texte"><b>Au fournisseur.</b><span>Tout est additionné, pièce par pièce. Le message part tel quel, ou retouché.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-liste"><img class="film-pose" src="images/nov-film-outils-liste-fin.jpg" alt="La feuille « Au fournisseur » : Bonjour, voici ma commande pour un chantier d’arrosage, 8 m de PEHD Ø32, puis chaque pièce avec sa référence" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Au fournisseur.</h3><p>Tout est additionné, pièce par pièce. Le message part tel quel, ou retouché.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-liste"><img class="film-pose" src="images/nov-film-outils-liste-fin.jpg" alt="La feuille « Au fournisseur » : Bonjour, voici ma commande pour un chantier d’arrosage, 8 m de PEHD Ø32, puis chaque pièce avec sa référence" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
     </ol>
   </div>
 </section>
 
 <section class="outil nuit nappe" id="diagnostic">
-  <div class="large chap-grille inverse">
-    <div class="chap-texte">
-      <h2 class="mot" data-monte>Le diagnostic végétal<span class="point">.</span></h2>
-      <p class="chapo">Photographiez une plante malade, et sachez quoi faire.</p>
-      <ul class="faits" data-vu="0.3">
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>L'IA regarde, la fiche décide.</b><span>Le modèle décrit ce qu'il voit. Le diagnostic vient d'une fiche écrite et sourcée.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Probable, jamais certain.</b><span>Cause dit ce qu'il pense, et sur quel arbre. Jamais un pourcentage.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Que faire, et est-ce grave.</b><span>La conduite à tenir, et la gravité pour l'arbre.</span></li>
-      </ul>
-    </div>
-    <div class="chap-visuel">
+  <div class="large">
+    <div class="chap-grille inverse">
+      <div class="chap-texte">
+        <h2 class="mot" data-monte>Le diagnostic végétal<span class="point">.</span></h2>
+        <p class="chapo">Photographiez une plante malade, et sachez quoi faire.</p>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>L'IA regarde, la fiche décide.</b><span>Le modèle décrit ce qu'il voit. Le diagnostic vient d'une fiche écrite et sourcée.</span></li>
+        </ul>
+      </div>
+      <div class="chap-visuel">
       <div class="scene-diag" id="scene-diag">
         <figure class="tirage"><div class="balaye"><img src="images/outils-feuille.jpg" alt="Photo d'une feuille de peuplier couverte de petites taches brunes" width="650" height="650" decoding="async"></div></figure>
         <div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du diagnostic dans Cause : brunissure des feuilles de peuplier, probable sur un peuplier, ce qu'est la maladie et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div>
       </div>
       <p class="credit">Photo de Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia Commons, sous licence CC BY 3.0 US, recadrée.</p>
+      </div>
     </div>
-  </div>
-</section>
-
-<section class="en-film nuit" id="film-diagnostic">
-  <div class="large">
-    <div class="film-tete">
-      <h2 class="mot" data-monte>Le diagnostic, de bout en bout<span class="point">.</span></h2>
-      <p class="chapo">Une feuille de peuplier, et la fiche qui répond.</p>
-    </div>
-    <ol class="plans">
-      <li class="plan">
-        <div class="plan-texte"><b>Une photo.</b><span>Cause la compare à ses fiches, et répond.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="La fiche de Cause qui répond à la photo : brunissure des feuilles de peuplier, Drepanopeziza brunnea, probable sur un peuplier, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div>
+    <p class="suite" data-monte><span class="bloc">Une feuille de peuplier,</span> <span class="bloc">et la fiche qui répond.</span></p>
+    <ol class="plans inverse">
+      <li class="plan avec-note">
+        <div class="plan-texte"><h3>Une photo.</h3><p>Cause la compare à ses fiches, et répond.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-photo"><img class="film-pose" src="images/nov-film-outils-photo-fin.jpg" alt="La fiche de Cause qui répond à la photo : brunissure des feuilles de peuplier, Drepanopeziza brunnea, probable sur un peuplier, et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Probable, jamais certain.</b><span>Cause dit ce qu'il pense, et sur quel arbre. Jamais un pourcentage.</span></li>
+        </ul>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Est-ce grave, et que faire.</b><span>Ce que la maladie fait à l’arbre, puis la conduite à tenir.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-gravite"><img class="film-pose" src="images/nov-film-outils-gravite-fin.jpg" alt="La fiche du peuplier : Que faire ? Aucun traitement ni aucune méthode de lutte, surveillez l’arbre d’une année sur l’autre" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Est-ce grave, et que faire.</h3><p>Ce que la maladie fait à l’arbre, puis la conduite à tenir.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-gravite"><img class="film-pose" src="images/nov-film-outils-gravite-fin.jpg" alt="La fiche du peuplier : Que faire ? Aucun traitement ni aucune méthode de lutte, surveillez l’arbre d’une année sur l’autre" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Les détails.</b><span>Comment la reconnaître, comment elle arrive, et tout le reste de la fiche.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-details"><img class="film-pose" src="images/nov-film-outils-details-fin.jpg" alt="Les détails de la fiche du peuplier, ouverts : l’agent en cause, quand ça se voit, et les autres arbres du jardin" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Les détails.</h3><p>Comment la reconnaître, comment elle arrive, et tout le reste de la fiche.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-details"><img class="film-pose" src="images/nov-film-outils-details-fin.jpg" alt="Les détails de la fiche du peuplier, ouverts : l’agent en cause, quand ça se voit, et les autres arbres du jardin" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
     </ol>
     <div class="a-lire">
-      <p class="plan-texte"><b>La fiche, à lire.</b></p>
+      <h3>La fiche, à lire.</h3>
       <ul class="captures">
-        <li><div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du peuplier dans Cause : brunissure des feuilles de peuplier, Drepanopeziza brunnea, les feuilles, les rameaux et le houppier, probable sur un peuplier" width="1170" height="1992" decoding="async"></div></div></li>
-        <li><div class="appareil"><div class="ecran"><img src="images/outils-fiche-a-lire-gravite.jpg" alt="Est-ce grave pour l’arbre ? Impact faible, agressivité moyenne, fréquence forte, et ce que la maladie fait à l’arbre" width="1170" height="1992" decoding="async"></div></div></li>
-        <li><div class="appareil"><div class="ecran"><img src="images/outils-fiche-a-lire-que-faire.jpg" alt="Que faire ? Aucun traitement ni méthode de lutte, surveiller l’arbre, puis comment la reconnaître" width="1170" height="1992" decoding="async"></div></div></li>
+        <li><figure class="gros"><img src="images/outils-diagnostic.jpg" alt="La fiche du peuplier dans Cause : brunissure des feuilles de peuplier, Drepanopeziza brunnea, les feuilles, les rameaux et le houppier, probable sur un peuplier" width="1170" height="1992" decoding="async"></figure></li>
+        <li><figure class="gros"><img src="images/outils-fiche-a-lire-gravite.jpg" alt="Est-ce grave pour l’arbre ? Impact faible, agressivité moyenne, fréquence forte, et ce que la maladie fait à l’arbre" width="1170" height="1992" decoding="async"></figure></li>
+        <li><figure class="gros"><img src="images/outils-fiche-a-lire-que-faire.jpg" alt="Que faire ? Aucun traitement ni méthode de lutte, surveiller l’arbre, puis comment la reconnaître" width="1170" height="1992" decoding="async"></figure></li>
       </ul>
     </div>
   </div>
 </section>
 
-<section class="outil nappe" id="fiches" style="background:var(--fond)">
-  <div class="large chap-grille">
-    <div class="chap-texte">
-      <h2 class="mot" data-monte>Les fiches de chantier<span class="point">.</span></h2>
-      <p class="chapo">Cochez ce qui a été fait pendant l'entretien, puis envoyez la fiche au client.</p>
-      <ul class="faits" data-vu="0.3">
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Votre liste, une fois pour toutes.</b><span>Vous composez vos prestations. Chaque fiche les reprend.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Par SMS ou par e-mail.</b><span>Le client lit son compte rendu sur son téléphone, sans rien installer.</span></li>
-        <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Gardées pour vous.</b><span>Les comptes rendus envoyés restent dans l'outil, à leur date.</span></li>
-      </ul>
-    </div>
-    <div class="chap-visuel">
+<section class="outil fond nappe" id="fiches">
+  <div class="large">
+    <div class="chap-grille">
+      <div class="chap-texte">
+        <h2 class="mot" data-monte>Les fiches de chantier<span class="point">.</span></h2>
+        <p class="chapo">Cochez ce qui a été fait pendant l'entretien, puis envoyez la fiche au client.</p>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Par SMS ou par e-mail.</b><span>Le client lit son compte rendu sur son téléphone, sans rien installer.</span></li>
+        </ul>
+      </div>
+      <div class="chap-visuel">
       <div class="scene sable scene-fiche">
         <div class="socle" data-t style="--cote:16deg"><div class="tourne">
           <div class="duo" id="duo">
@@ -748,32 +855,28 @@ html.anime .geant.vu span{transform:none}
         </div></div>
         <p class="duo-legende"><span>Votre fiche.</span><span>Ce que reçoit M. Bernard.</span></p>
       </div>
+      </div>
     </div>
-  </div>
-</section>
-
-<section class="en-film" id="film-fiches" style="background:var(--fond)">
-  <div class="large">
-    <div class="film-tete">
-      <h2 class="mot" data-monte>La fiche, de bout en bout<span class="point">.</span></h2>
-      <p class="chapo">Le vrai écran de Cause, chez M. Bernard.</p>
-    </div>
+    <p class="suite" data-monte><span class="bloc">Le vrai écran de Cause,</span> <span class="bloc">chez M. Bernard.</span></p>
     <ol class="plans">
       <li class="plan">
-        <div class="plan-texte"><b>Votre liste.</b><span>Vos prestations, rangées par famille, une fois pour toutes.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-composer"><img class="film-pose" src="images/nov-film-outils-composer-fin.jpg" alt="Composer ma fiche dans Cause : la famille Massifs et ses cinq prestations, puis Propreté" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Votre liste.</h3><p>Vos prestations, rangées par famille, une fois pour toutes.</p></div>
+        <div class="plan-vue"><div class="scene sable scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-composer"><img class="film-pose" src="images/nov-film-outils-composer-fin.jpg" alt="Composer ma fiche dans Cause : la famille Massifs et ses cinq prestations, puis Propreté" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Une fiche pour M. Bernard.</b><span>Ses cases de la dernière fois, déjà cochées.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-bernard"><img class="film-pose" src="images/nov-film-outils-bernard-fin.jpg" alt="Une fiche de chantier pour Bernard : 5 prestations cochées, celles du dernier chantier, envoyée par SMS" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Une fiche pour M. Bernard.</h3><p>Ses cases de la dernière fois, déjà cochées.</p></div>
+        <div class="plan-vue"><div class="scene sable scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-bernard"><img class="film-pose" src="images/nov-film-outils-bernard-fin.jpg" alt="Une fiche de chantier pour Bernard : 5 prestations cochées, celles du dernier chantier, envoyée par SMS" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
       <li class="plan">
-        <div class="plan-texte"><b>Une remarque, et c’est envoyé.</b><span>Par SMS, le compte rendu prêt à partir.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-envoyer"><img class="film-pose" src="images/nov-film-outils-envoyer-fin.jpg" alt="La fiche de Bernard, avec la remarque « La haie du fond sera taillée la semaine prochaine. », envoyée le 20 novembre 2026 à 17:36" width="1170" height="1992" decoding="async"></div></div></div>
+        <div class="plan-texte"><h3>Une remarque, et c’est envoyé.</h3><p>Par SMS, le compte rendu prêt à partir.</p></div>
+        <div class="plan-vue"><div class="scene sable scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-envoyer"><img class="film-pose" src="images/nov-film-outils-envoyer-fin.jpg" alt="La fiche de Bernard, avec la remarque « La haie du fond sera taillée la semaine prochaine. », envoyée le 20 novembre 2026 à 17:36" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
-      <li class="plan">
-        <div class="plan-texte"><b>Chez M. Bernard.</b><span>Ce qu’il lit sur son téléphone, sans rien installer.</span></div>
-        <div class="scene sable scene-plan"><div class="appareil"><div class="ecran film" data-film="outils-client"><img class="film-pose" src="images/nov-film-outils-client-fin.jpg" alt="Le retour d’intervention que lit Bernard : les Jardins de Valmorin, le vendredi 20 novembre 2026, cinq travaux faits et la remarque" width="1170" height="1992" decoding="async"></div></div></div>
+      <li class="plan avec-note">
+        <div class="plan-texte"><h3>Chez M. Bernard.</h3><p>Ce qu’il lit sur son téléphone.</p></div>
+        <div class="plan-vue"><div class="scene sable scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-client"><img class="film-pose" src="images/nov-film-outils-client-fin.jpg" alt="Le retour d’intervention que lit Bernard : les Jardins de Valmorin, le vendredi 20 novembre 2026, cinq travaux faits et la remarque" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+        <ul class="faits" data-vu="0.3">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Gardées pour vous.</b><span>Les comptes rendus envoyés restent dans l'outil, à leur date.</span></li>
+        </ul>
       </li>
     </ol>
   </div>
@@ -1064,13 +1167,36 @@ html.anime .geant.vu span{transform:none}
   var fin = un(".fin");
   suivre(fin, function(r, vh){ fin.style.setProperty("--p", borne((vh - r.top) / (vh + r.height), 0, 1).toFixed(3)); });
 
-  // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
-  // y revenir la rejoue depuis le début.
-  var scene = function(el, seuil, jouerLa, arreter){
-    var tour = 0;
+  // Ce qu'on voit vraiment : sous la barre du haut, au-dessus du bouton
+  // d'essai. Un seuil plus haut que ce que l'écran peut montrer ne serait
+  // jamais atteint (un téléphone tenu en large) : il se borne à la place libre.
+  var HAUT = 64, margeVue = "-" + HAUT + "px 0px " + sousLePouce + " 0px";
+  var seuilPossible = function(el, seuil){
+    var libre = innerHeight - HAUT + parseInt(sousLePouce, 10);
+    return Math.max(.05, Math.min(seuil, .9 * libre / Math.max(1, el.offsetHeight)));
+  };
+  // Ce qui ne se joue qu'UNE fois, et va au bout quoi qu'il arrive : une
+  // scène qu'on pouvait quitter en route restait à moitié jouée, un téléphone
+  // absent, une carte vide. C'était le cas des trois scènes de cette page pour
+  // qui descendait sans s'arrêter (mesuré le 20 novembre 2026 : à 260 px
+  // toutes les 700 ms, la carte du réseau ne sortait jamais).
+  var uneFois = function(el, seuil, jouerLa){
+    new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); jouerLa(); } }, {rootMargin:margeVue, threshold:seuilPossible(el, seuil)}).observe(el);
+  };
+  var enVue = function(el, seuil, dire){
+    new IntersectionObserver(function(e){ dire(e[0].isIntersecting); }, {rootMargin:margeVue, threshold:seuilPossible(el, seuil)}).observe(el);
+  };
+  // Un film se joue quand son téléphone est assez à l'écran ; le quitter
+  // l'arrête, y revenir le rejoue depuis le début. Rien ne se charge avant
+  // l'approche : il prépare ses images à 900 px de l'écran, ou en arrivant, si
+  // l'on arrive d'un coup (cause-2.html).
+  var scene = function(el, seuil, prete, jouerLa, arreter){
+    var tour = 0, chargee = false;
+    var charger = function(){ if (!chargee){ chargee = true; prete(); } };
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting) charger(); }, {rootMargin:"900px 0px"}).observe(el);
     new IntersectionObserver(function(e){
-      if (e[0].isIntersecting){ tour++; var mien = tour; jouerLa(function(){ return mien === tour; }); }
-      else { tour++; if (arreter) arreter(); }
+      if (e[0].isIntersecting){ charger(); tour++; var mien = tour; jouerLa(function(){ return mien === tour; }); }
+      else { tour++; if (chargee && arreter) arreter(); }
     }, {rootMargin:"0px 0px " + sousLePouce + " 0px", threshold:seuil}).observe(el);
   };
 
@@ -1105,78 +1231,87 @@ html.anime .geant.vu span{transform:none}
   }
 
   // 1. LE PLAN D'ARROSAGE. Le trait d'or lit le croquis ; « 20 m » s'éclaire,
-  // quitte le croquis, vole jusqu'à « 20 m sur 8 m » de la carte du réseau
+  // quitte le croquis, vole jusqu'à « 20 m sur 8 m » de la carte du réseau 1
   // et s'y pose au pixel près (mesuré sur le rendu de la démonstration :
-  // 27,0 % de la largeur de la carte, 9,6 % de sa hauteur, le mot faisant
+  // 27,0 % de la largeur de la carte, 19,5 % de sa hauteur, le mot faisant
   // 9,7 % de sa largeur), puis s'efface sur le chiffre de l'appli. La carte
-  // s'écrit alors.
+  // s'écrit alors, et celle du réseau 2 après elle.
+  // Chaque carte s'écrit aussi d'elle-même dès qu'on la voit : la lecture du
+  // croquis ne la retient que le temps où on la regarde. Qui descend vite,
+  // ou remonte par le bas, trouve les cartes écrites, jamais vides.
   var sceneCroquis = document.getElementById("scene-croquis"), croquis = un(".croquis", sceneCroquis);
-  var carteReseau = document.getElementById("carte-reseau"), porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
-  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.0956, l:.0970 };
-  var vols = [];
-  var voler = function(el, cles, options){ var a = el.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
+  var r1 = document.getElementById("reseau-1"), r2 = document.getElementById("reseau-2");
+  var porte = un(".porte", sceneCroquis), fondPorte = un(".fond", porte);
+  var depart = document.getElementById("cote-depart"), CIBLE_COTE = { x:.2700, y:.1949, l:.0970 };
+  var voler = function(el, cles, options){ return el.animate(cles, Object.assign({ fill: "forwards" }, options)).finished.catch(function(){}); };
   var place = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
-  var remettreCroquis = function(){
-    vols.forEach(function(a){ a.cancel(); }); vols = [];
-    sceneCroquis.classList.remove("surligne", "sort"); croquis.classList.remove("lit");
-    carteReseau.classList.remove("ecrite"); carteReseau.classList.add("blanche");
+  var lecture = false, croquisLa = false, r1La = false;
+  var ecrire = function(carte){
+    if (carte.ecriteA) return;
+    carte.ecriteA = performance.now(); carte.classList.add("ecrite");
+    setTimeout(function(){ carte.classList.remove("blanche", "ecrite"); }, 1350);
+    if (carte === r1 && r2.attend) setTimeout(ecrire, 520, r2);
   };
-  scene(sceneCroquis, 0.55, async function(encore){
-    remettreCroquis();
-    await attendre(500); if (!encore()) return;
+  enVue(croquis, 0.5, function(v){ croquisLa = v; if (!v && lecture && r1La) ecrire(r1); });
+  // Arrivé d'un coup, on voit la carte et le croquis au même instant : la
+  // carte laisse à la lecture le temps de se déclarer, sans quoi elle
+  // s'écrivait avant que « 20 m » ait volé.
+  enVue(r1, 0.45, function(v){ r1La = v; if (v) setTimeout(function(){ if (!(lecture && croquisLa)) ecrire(r1); }, 80); });
+  enVue(r2, 0.35, function(v){
+    if (!v || r2.ecriteA) return;
+    if (!r1.ecriteA && r1La){ r2.attend = true; return; }
+    var reste = r1.ecriteA ? 520 - (performance.now() - r1.ecriteA) : 0;
+    if (reste > 0) setTimeout(ecrire, reste, r2); else ecrire(r2);
+  });
+  uneFois(un(".zone-depart", sceneCroquis), 0.95, async function(){
+    lecture = true;
+    await attendre(350);
     croquis.classList.add("lit");
-    await attendre(1150); if (!encore()) return;
-    // Le croquis lu, la carte sort, son en-tête seul écrit.
-    sceneCroquis.classList.add("sort");
-    await attendre(850); if (!encore()) return;
+    await attendre(1000);
     sceneCroquis.classList.add("surligne");
-    await attendre(480); if (!encore()) return;
-    var s = sceneCroquis.getBoundingClientRect(), d = depart.getBoundingClientRect(), c = carteReseau.getBoundingClientRect();
-    var L = porte.offsetWidth, H = porte.offsetHeight;
-    var de = { e: d.width / (L * .78) };
-    de.x = d.left - s.left + d.width / 2 - L * de.e / 2; de.y = d.top - s.top + d.height / 2 - H * de.e / 2;
-    var vers = { e: (CIBLE_COTE.l * c.width) / (L * .78) };
-    vers.x = c.left - s.left + CIBLE_COTE.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_COTE.y * c.height - H * vers.e / 2;
-    var haut = { x: de.x + (vers.x - de.x) * .45, y: Math.min(de.y, vers.y) - 26, e: Math.max(de.e, vers.e) * 1.5 };
-    voler(fondPorte, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1150, easing: "linear" });
-    await voler(porte, [
-      { transform: place(de), opacity: 0, filter: "blur(0px)" },
-      { transform: place(de), opacity: 1, offset: .12 },
-      { transform: place(haut), opacity: 1, filter: "blur(2px)", offset: .5 },
-      { transform: place(vers), opacity: 1, filter: "blur(0px)" }
-    ], { duration: 1150, easing: CAMERA });
-    if (!encore()) return;
-    await voler(porte, [{ transform: place(vers), opacity: 1 }, { transform: place(vers), opacity: 0 }], { duration: 220 });
-    if (!encore()) return;
-    carteReseau.classList.add("ecrite");
-    await attendre(1600); if (!encore()) return;
-    carteReseau.classList.remove("blanche", "ecrite");
-  }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
+    await attendre(460);
+    // Le mot ne vole que si l'on voit d'où il part et où il se pose.
+    if (croquisLa && !r1.ecriteA){
+      var s = sceneCroquis.getBoundingClientRect(), d = depart.getBoundingClientRect(), c = r1.getBoundingClientRect();
+      var L = porte.offsetWidth, H = porte.offsetHeight;
+      var de = { e: d.width / (L * .78) };
+      de.x = d.left - s.left + d.width / 2 - L * de.e / 2; de.y = d.top - s.top + d.height / 2 - H * de.e / 2;
+      var vers = { e: (CIBLE_COTE.l * c.width) / (L * .78) };
+      vers.x = c.left - s.left + CIBLE_COTE.x * c.width - L * vers.e / 2; vers.y = c.top - s.top + CIBLE_COTE.y * c.height - H * vers.e / 2;
+      var haut = { x: de.x + (vers.x - de.x) * .45, y: Math.min(de.y, vers.y) - 26, e: Math.max(de.e, vers.e) * 1.5 };
+      voler(fondPorte, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1050, easing: "linear" });
+      await voler(porte, [
+        { transform: place(de), opacity: 0, filter: "blur(0px)" },
+        { transform: place(de), opacity: 1, offset: .12 },
+        { transform: place(haut), opacity: 1, filter: "blur(2px)", offset: .5 },
+        { transform: place(vers), opacity: 1, filter: "blur(0px)" }
+      ], { duration: 1050, easing: CAMERA });
+      voler(porte, [{ transform: place(vers), opacity: 1 }, { transform: place(vers), opacity: 0 }], { duration: 220 });
+    }
+    lecture = false;
+    ecrire(r1);
+  });
 
   // 2. LE DIAGNOSTIC. Le trait d'or lit la photo, puis la fiche arrive un
   // peu grande et se pose ; la photo recule derrière elle.
-  var sceneDiag = document.getElementById("scene-diag"), lecture = un(".balaye", sceneDiag);
-  scene(sceneDiag, 0.45, async function(encore){
-    sceneDiag.classList.remove("reponse"); lecture.classList.remove("lit");
-    await attendre(500); if (!encore()) return;
-    lecture.classList.add("lit");
-    await attendre(1350); if (!encore()) return;
+  var sceneDiag = document.getElementById("scene-diag"), photoLue = un(".balaye", sceneDiag);
+  uneFois(sceneDiag, 0.35, async function(){
+    await attendre(350);
+    photoLue.classList.add("lit");
+    await attendre(1050);
     sceneDiag.classList.add("reponse");
   });
 
   // 3. LES FICHES. La fiche de l'artisan est là ; une demi-seconde, puis le
   // compte rendu sort de derrière elle, dans le téléphone du client.
   var duo = document.getElementById("duo");
-  scene(duo, 0.5, async function(encore){
-    duo.classList.remove("envoye");
-    await attendre(900); if (!encore()) return;
+  uneFois(duo, 0.4, async function(){
+    await attendre(600);
     duo.classList.add("envoye");
   });
 
-  // DE BOUT EN BOUT. Chaque geste est un film de l'appli, qui se joue seul
-  // quand son téléphone est au tiers à l'écran, et se rejoue quand on y
-  // revient. Rien ne se charge avant l'approche : un film prépare ses images
-  // à 900 px de l'écran, ou en arrivant, si l'on arrive d'un coup. Un film
+  // LA SUITE. Chaque geste est un film de l'appli, qui se joue seul quand son
+  // téléphone est au tiers à l'écran, et se rejoue quand on y revient. Un film
   // refusé (économie d'énergie) ou introuvable montre sa dernière image.
   // C'est la mécanique de cause-2.html, recopiée.
   var bobine = function(cadre){
@@ -1197,27 +1332,34 @@ html.anime .geant.vu span{transform:none}
         video.addEventListener("ended", finir);
         cadre.append(debut, video, fin);
       },
-      remettre: function(){ rendre(); video.pause(); video.classList.remove("joue"); if (!casse) fin.classList.remove("vue"); video.currentTime = 0; },
+      remettre: function(){ rendre(); video.pause(); video.classList.remove("joue"); if (!casse) fin.classList.remove("vue"); try { video.currentTime = 0; } catch (e) {} },
       jouer: function(){
         this.remettre();
         if (casse) return Promise.resolve();
         // Une lecture coupée par la sortie de l'écran n'est pas un refus.
         return new Promise(function(r){ quand = r; var p = video.play(); if (p && p.catch) p.catch(function(e){ if (!e || e.name !== "AbortError") finir(); }); });
       },
-      arreter: function(){ rendre(); if (video) video.pause(); }
+      arreter: function(){ rendre(); video.pause(); }
     };
   };
-  tous(".en-film .film").forEach(function(cadre){
-    var film = bobine(cadre), pret = false;
-    var preparer = function(){ if (!pret){ pret = true; film.preparer(); } };
-    new IntersectionObserver(function(e){ if (e[0].isIntersecting) preparer(); }, {rootMargin:"900px 0px"}).observe(cadre);
+  // Un seul écran bouge à la fois (cause-2.html : « pour qu'on ne regarde pas
+  // deux écrans à la fois »). Sur un grand écran, deux téléphones peuvent être
+  // au tiers visibles ensemble : le second attend que le premier ait fini, ou
+  // qu'on l'ait quitté.
+  var enLecture = null;
+  tous(".film[data-film]").forEach(function(cadre){
+    var film = bobine(cadre);
+    var liberer = function(){ if (enLecture === cadre) enLecture = null; };
     // Le film commence par un temps immobile : avec ce court délai, le
     // premier geste vient une demi-seconde après l'arrivée.
-    scene(cadre, 0.35, async function(encore){
-      preparer(); film.remettre();
+    scene(cadre, 0.35, film.preparer, async function(encore){
+      film.remettre();
       await attendre(150); if (!encore()) return;
-      film.jouer();
-    }, film.arreter);
+      while (enLecture && enLecture !== cadre){ await attendre(150); if (!encore()) return; }
+      enLecture = cadre;
+      await film.jouer();
+      liberer();
+    }, function(){ film.arreter(); liberer(); });
   });
 
   window.causePret = true;

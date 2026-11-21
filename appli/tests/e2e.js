@@ -777,6 +777,51 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cPo.close();
   }
 
+  // ── Le site de vente, les outils : rien ne reste vide en descendant ──────
+  //
+  // Sa demande du 20 novembre 2026 au soir : la page des outils « dans le
+  // même esprit » que le site. Deux défauts mesurés ce soir-là sur la page
+  // d'avant, que personne n'avait vus parce qu'on la regardait arrêté devant
+  // chaque scène. En descendant sans s'arrêter (260 px toutes les 700 ms),
+  // la carte du réseau ne sortait JAMAIS, la fiche du diagnostic non plus :
+  // la scène ne partait qu'à moitié visible, durait six secondes, et
+  // s'arrêtait dès qu'on la quittait. Et sur ordinateur, les trois captures
+  // de « La fiche, à lire » mesuraient 18 px de large : trois points noirs.
+  // On descend donc à cette allure à travers chacune des trois scènes, et
+  // l'on regarde ce qu'il en reste ; puis on mesure les captures sur un
+  // écran d'ordinateur. Vu rouge sur la page d'avant.
+  {
+    const cDe = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
+    const page = await cDe.newPage();
+    await page.goto(`${B}/vente/outils.html`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    const SCENES = [
+      ['scene-croquis', 'les deux cartes du plan sont écrites', () => ['reseau-1', 'reseau-2'].every((i) => { const c = document.getElementById(i); return !!c && !c.classList.contains('blanche'); })],
+      ['scene-diag', 'la fiche du diagnostic est arrivée', () => document.getElementById('scene-diag').classList.contains('reponse')],
+      ['duo', 'le compte rendu est sorti chez le client', () => document.getElementById('duo').classList.contains('envoye')],
+    ];
+    for (const [id, nom, fait] of SCENES) {
+      const place = await page.evaluate((i) => { const el = document.getElementById(i); if (!el) return null; const r = el.getBoundingClientRect(); return { haut: Math.round(scrollY + r.top), hauteur: Math.round(r.height) }; }, id);
+      ok('vente, les outils : la scène ' + id + ' est dans la page', !!place);
+      if (!place) continue;
+      for (let y = place.haut - 664; y <= place.haut + place.hauteur + 664; y += 260) {
+        await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
+        await page.waitForTimeout(700);
+      }
+      // La scène est passée : elle va au bout, même sortie de l'écran.
+      const fini = await page.waitForFunction(fait, null, { timeout: 6000 }).then(() => true, () => false);
+      ok('vente, les outils : en descendant sans s\'arrêter, ' + nom, fini);
+    }
+    await cDe.close();
+
+    const cOr = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const grande = await cOr.newPage();
+    await grande.goto(`${B}/vente/outils.html`, { waitUntil: 'networkidle' });
+    const captures = await grande.evaluate(() => Array.from(document.querySelectorAll('.captures img')).map((i) => Math.round(i.getBoundingClientRect().width)));
+    ok('vente, les outils : sur ordinateur, les trois captures « à lire » se lisent', captures.length === 3 && captures.every((l) => l >= 240), captures.join(', ') + ' px de large');
+    await cOr.close();
+  }
+
   // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
   //
   // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés

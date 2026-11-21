@@ -2,7 +2,7 @@
 version: 1
 slug: "appli-vente-cause-2-html"
 primary_target: "appli/vente/cause-2.html"
-related_targets: []
+related_targets: ["appli/vente/outils.html"]
 ---
 
 # Surface : planche « Cause, en mouvement », le site de vente rejoué en cinéma (appli/vente/cause-2.html)

@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LA PAGE DES OUTILS DU SITE, REPRISE DANS L'ESPRIT DU SITE (21 novembre 2026) : UNE PLANCHE, PAS ENCORE VUE PAR LUI
+
+`appli/vente/outils.html`, refaite en place sur sa demande du 20 au soir (*« dans le même esprit que ce qu'on a fait sur notre site internet »*) : une histoire par outil dans une seule bande, la scène puis ses films. Rien dans `src/`, aucun film ni prix changé. **Avant d'y toucher** : les trois scènes du haut se jouent UNE fois et vont au bout (`uneFois`), seuls les films se rejouent (`scene`) ; la carte des deux réseaux et la nourrice sont des découpes, en feuille de style, d'une capture entière, à remesurer si `film-outils.cjs --images` rend une autre taille (les chiffres sont en tête de la page et dans `TODO.md`). **Le piège qui a caché le défaut** : on regardait chaque scène arrêté devant elle ; en descendant sans s'arrêter, la carte du réseau ne sortait jamais. Un contrôle d'une scène la TRAVERSE, comme `appli/tests/e2e.js` le fait maintenant. Ce qui a été décidé sans lui est dans `TODO.md`. Pas regardé sur Safari.
+
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE N'A QU'UNE FORME PAR TVA (20 novembre 2026), SUR `main`
 
 La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Répartie, la feuille se rouvre sur ses travaux (`equipeDeSesParts`). `ARCHITECTURE.md` §596.

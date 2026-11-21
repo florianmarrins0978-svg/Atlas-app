@@ -742,8 +742,8 @@ sa planche du 18 novembre.
 - la fiche du diagnostic montrée est celle de `main`, qui porte encore
   « Probable · Peuplier » (l'entrée de la fiche de diagnostic, plus haut) : à
   refaire quand l'écran aura changé ;
-- les trois scènes des chapitres sont des captures animées ; les trois
-  outils de bout en bout, plus bas, sont des films de l'appli.
+- dans chaque outil, la scène du haut est faite de captures animées ; les
+  gestes qui la suivent sont des films de l'appli.
 
 **Le prix des outils à l'année, sa correction du 20 novembre au soir** :
 *« il n'y a pas 2 mois offerts. C'est 6 euros par mois sur 12 mois »*, donc
@@ -792,6 +792,43 @@ encore deux points médians de l'écran de `main` (« forêts) · consultée le�
 sous Que faire, « Fiche version 1 · à jour au… » dans les détails) : ils
 partent avec l'entrée de la fiche de diagnostic, plus haut, et les films se
 retournent alors.
+
+**REPRISE LE 21 NOVEMBRE, « DANS LE MÊME ESPRIT » QUE LE SITE.** Sa demande
+du 20 au soir, devant la page : *« J'aimerais que tu améliores ce qu'il a
+fait [...] dans le même esprit que ce qu'on a fait sur notre site
+internet. »* La page est la même adresse, refaite en place ; celle d'avant
+est dans l'historique (`git show f65c7fa:appli/vente/outils.html`). **Il ne
+l'a pas encore vue.** Ce qui a changé est dit en tête de la page, avec ses
+raisons ; en trois lignes :
+- une histoire par outil, dans une seule bande : son nom, sa phrase, la
+  scène, puis ses films (plus de « de bout en bout » en second titre), et
+  chaque fait là où l'écran le prouve ;
+- les trois scènes se jouent une fois, tôt, et vont au bout. Mesuré sur la
+  page d'avant : en descendant sans s'arrêter, la carte du réseau ne sortait
+  jamais, la fiche du diagnostic non plus ;
+- sur ordinateur, les trois captures de « La fiche, à lire » mesuraient
+  18 px de large (trois points noirs) ; elles sont à plat, lisibles.
+
+**Décidé sans lui, à défaire d'un mot s'il n'en veut pas** : quatre phrases
+qui redisaient le titre d'un film sont parties (« La liste part chez votre
+fournisseur. », « Que faire, et est-ce grave. », « Votre liste, une fois pour
+toutes. », et « sans rien installer » sous le dernier film des fiches, gardé
+dans le fait « Par SMS ou par e-mail. ») ; la nourrice dessinée se lit
+maintenant juste avant le film où l'on en change une pièce.
+
+**Deux découpes à remesurer si une capture change de taille**
+(`film-outils.cjs --images`) : la carte des deux réseaux est montrée en deux
+cartes, la même image deux fois (chaque carte de l'appli y fait 1170 px de
+haut, 45 px les séparent : `.reseau`, et `CIBLE_COTE`, la place de « 20 m »
+dans la première) ; la nourrice est montrée sans la marge ni le filet de sa
+carte (`.nourrice-fig` : 948 px sur 1320, à 45 px du bord gauche et 51 px du
+haut). Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
+à côté.
+
+**Pas regardé sur Safari**, comme le site : sur son iPhone, regarder d'abord
+la carte qui s'écrit (un masque posé sur la carte entière, plus seulement sur
+l'image) et les téléphones des films qui se tournent avec un film dedans (la
+mécanique de Dictez dans `cause-2.html`).
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
