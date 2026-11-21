@@ -119,6 +119,10 @@ de l'écran.
   entière et la première proposition le portent encore.
 - **Les chantiers de l'accueil sont datés de juillet** quand l'histoire de
   Mme Costa est en novembre. Cela demande de rejouer la base.
+- **La visite entière demande une image qui n'existe pas en ligne** : ses
+  écrans du devis préchargent `/images/devis-note-chez-le-client.jpg` à la
+  racine du site, qui répond 404 (mesuré en ligne le 21 novembre). Rien ne
+  s'affiche de travers pour l'instant ; à corriger quand la visite se refait.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
