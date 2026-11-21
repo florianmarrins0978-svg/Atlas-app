@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-21
 
+- **L'électrovanne MM prend sa seconde photo** (planche sur `main`, l'outil sur la branche). Sa demande : « utilise cette photo-là à la place des électrovannes mal ». Prise plus droit au-dessus, elle ne montre presque plus l'intérieur du filetage du bas ; elle quitte la liste « à reprendre à plat ».
 - **Les mamelons et la vanne 3/4" plus grands, le manchon union à sa taille** (planche sur `main`, l'outil sur la branche). Sa remarque : « l'union, en face du coude femelle, est censée se visser dedans, elle est trop petite ; pareil pour la vanne ». Par « l'union », il désignait le mamelon : le lot d'avant avait agrandi le manchon union à sa place (L 69,5), il revient à 63,1. Le mamelon réduit passe à 32,5, le mamelon 1" à 33, la vanne à 50 : le filetage du mamelon a l'air d'entrer dans l'écrou du coude.
 - **Le té et le coude FF à l'allure du coude de gauche** (planche sur `main`, l'outil sur la branche). Sa remarque à 6 voies : ils paraissaient trop gros à côté de la clarinette et du coude de gauche. Leurs écrous avaient la bonne taille, leur corps était plus épais sur leurs photos ; le té passe de 53,5 à 47 px, le coude FF de 49,2 à 46.
 - **Le mamelon 1" des voies de goutte-à-goutte au gris clair** (`appli/arrosage-nourrice-vue-du-dessus.html` sur `main`, l'outil sur la branche). Sa remarque : entre le coude et l'électrovanne FF, la pièce était restée gris foncé. C'est encore la photo trouvée en ligne : passée au même gris que les autres pièces en PVC, elle attend sa photo à plat.

@@ -38026,6 +38026,11 @@ se visser dedans »*). Le manchon union revient à 63,1 ; le mamelon réduit
 passe à 32,5, le mamelon 1" à 33, la vanne à 50. **Dans ses mots, « union »
 peut désigner toute pièce qui en relie deux** : devant un nom de pièce
 ambigu, mesurer laquelle ne colle pas à sa voisine avant d'en toucher une.
+**L'électrovanne MM prend sa seconde photo** (même soir, *« utilise cette
+photo-là à la place des électrovannes mal »*) : prise plus droit au-dessus,
+elle ne montre presque plus l'intérieur du filetage du bas. Bouts mesurés
+comme la première (le haut au sommet de l'arc du filetage), taille au même 1"
+(L 74,3), fils au-dessus réduits à 6 px.
 
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).

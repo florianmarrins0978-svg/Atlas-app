@@ -85,8 +85,9 @@ export const COLONNE: Record<string, FormeColonne> = {
   // mamelon 1" et le régulateur gardent leur photo d'avant.
   "raccord-male25": { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },
   pehd: { a: [0, 0.509], b: [1, 0.509], L: 50.6 },
-  // Ses fils montent de 18 px au-dessus de son filetage : sans cet écart, ils entrent dans l'écrou du dessus.
-  "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 66.6, dessus: 18 },
+  // Sa photo du 21 au soir, prise plus droit au-dessus que la première. Le haut se lit au sommet de
+  // l'arc de son filetage (un fil longe son bord droit) ; ses fils montent de 6 px au-dessus.
+  "electrovanne-100dv": { a: [0.4556, 0.0779], b: [0.4737, 1], L: 74.3, dessus: 6.2 },
   "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
   "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 33 },
   "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 },
