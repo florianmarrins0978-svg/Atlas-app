@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le raccord à plat</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 21 novembre 2026,
+  devant la nourrice vue du dessus : « les raccords Plasson blancs ne sont pas à
+  plat, il faut que chaque pièce soit à plat ; si tu comprends, montre-moi juste
+  ce raccord posé à plat avant de tout modifier ».
+
+  À PLAT : la pièce couchée, vue de profil, son axe dans le plan de la photo ;
+  on ne voit la face d'aucun bout. Le raccord du dessin est une photo trouvée,
+  prise de trois quarts : l'écrou blanc s'y voit de face. Sa photo à lui est à
+  plat, les deux bouts à la même hauteur (401,7 et 400,5 px sur la photo
+  entière) ; c'est le 32 x 1", la seule qu'il ait envoyée. Le 25 x 1" de la
+  fiche a la même forme, un cran au-dessous.
+
+  Une seule voie, la pièce du dessus et celle du dessous en place, pour juger
+  le raccord là où il se visse : l'électrovanne MM, l'union FF, le raccord, le
+  PEHD. Les mêmes photos, les mêmes fractions et les mêmes longueurs que la
+  nourrice vue du dessus (appli/arrosage-nourrice-vue-du-dessus.html), en plus
+  grand. Le raccord à plat se pose comme les autres : ses deux bouts mesurés
+  (le filetage à gauche sur la photo, l'écrou à droite), la photo tournée d'un
+  quart pour mettre le filetage en haut.
+-->
+<style>
+:root{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#a3a698;--atlas-line:rgba(233,232,222,0.12);--atlas-rustTint:#1f211e}}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  ::selection{background:var(--atlas-or);color:#ffffff}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:16px 16px 70px;min-height:100vh}
+  .regard{border-radius:16px;background:#ffffff;padding:14px 0 8px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .regard canvas{display:block;width:358px;max-width:100%;margin:0 auto}
+</style>
+<body>
+<div class="entete">
+  <h1>Le raccord à plat</h1>
+  <p>Votre photo du raccord Plasson, celle du 32 x 1". Rien n’est codé.</p>
+</div>
+<main class="ecran">
+  <div class="regard"><canvas id="dessin" width="358" height="460" role="img" aria-label="Une voie, avec le raccord d’aujourd’hui et le raccord à plat"></canvas></div>
+</main>
+<script>
+(function () {
+  // Les mêmes que la nourrice vue du dessus : a, le bout du haut ; b, le bout du bas ; L, la longueur dessinée.
+  var COLONNE = {
+    "electrovanne-100dv": { photo: "electrovanne-100dv-dessus.png", a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 50 },
+    "union":              { photo: "union-ff-dessus.png", a: [0, 0.4929], b: [1, 0.4999], L: 46 },
+    "raccord-avant":      { photo: "raccord-male25.jpg", a: [0.092, 0.66], b: [0.931, 0.326], L: 40 },
+    // Sa photo à plat : le filetage à gauche, l'écrou blanc à droite ; mesurée bout à bout.
+    "raccord-a-plat":     { photo: "raccord-male32-dessus.png", a: [0, 0.497], b: [1, 0.4955], L: 40 },
+    "pehd":               { photo: "pehd.jpg", a: [0, 0.509], b: [1, 0.509], L: 44 }
+  };
+  var VOIES = [
+    { titre: "Aujourd’hui", pieces: ["electrovanne-100dv", "union", "raccord-avant", "pehd"] },
+    { titre: "À plat", pieces: ["electrovanne-100dv", "union", "raccord-a-plat", "pehd"] }
+  ];
+  var ECART = 9, Z = 1.55, W = 358;
+  function detourer(img) {
+    var c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    var d = g.getImageData(0, 0, c.width, c.height).data, x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (var y = 0; y < c.height; y += 2) for (var x = 0; x < c.width; x += 2) {
+      var i = (y * c.width + x) * 4;
+      if (d[i + 3] > 20 && (d[i] < 225 || d[i + 1] < 225 || d[i + 2] < 225)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    var k = document.createElement("canvas"); k.width = x1 - x0 + 1; k.height = y1 - y0 + 1;
+    k.getContext("2d").drawImage(c, x0, y0, k.width, k.height, 0, 0, k.width, k.height);
+    return k;
+  }
+  function charger(cle) {
+    return new Promise(function (ok) {
+      var img = new Image(); img.onload = function () { ok(detourer(img)); }; img.onerror = function () { ok(null); };
+      img.src = "arrosage-photos/" + COLONNE[cle].photo;
+    });
+  }
+  var images = {};
+  function dessiner() {
+    var hauteur = 0;
+    VOIES[0].pieces.forEach(function (cle) { hauteur += COLONNE[cle].L + ECART; });
+    var H = (hauteur + 30) * Z, c = document.getElementById("dessin"), r = window.devicePixelRatio || 1;
+    c.width = W * r; c.height = H * r; c.style.height = H + "px";
+    var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+    VOIES.forEach(function (v, n) {
+      var x = W * (n === 0 ? 0.3 : 0.7), y = 4;
+      v.pieces.forEach(function (cle) {
+        var f = COLONNE[cle], im = images[cle];
+        if (im) {
+          var ax = f.a[0] * im.width, ay = f.a[1] * im.height, bx = f.b[0] * im.width, by = f.b[1] * im.height;
+          var s = f.L * Z / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
+          g.save(); g.translate(x, y); g.rotate(angle); g.scale(s, s);
+          // En « multiplier », le blanc d'une photo disparaît : une pièce ne cache plus sa voisine.
+          g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
+        }
+        y += (f.L + ECART) * Z;
+      });
+      g.globalCompositeOperation = "source-over";
+      g.fillStyle = "#4a4a44"; g.font = "600 13px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+      g.fillText(v.titre, x, y + 4);
+    });
+  }
+  Promise.all(Object.keys(COLONNE).map(function (cle) { return charger(cle).then(function (im) { images[cle] = im; }); })).then(dessiner);
+})();
+</script>
+</body>
+</html>
