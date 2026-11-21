@@ -1,10 +1,10 @@
 # Reprendre le travail
 
-## LA MAIN D'ŒUVRE DE SON ÉQUIPE N'A QU'UNE FORME PAR TVA (20 novembre 2026), PAS ENCORE SUR `main`
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE N'A QU'UNE FORME PAR TVA (20 novembre 2026), SUR `main`
 
-La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Reste : la feuille rouverte après « Répartis » (planche, `TODO.md`). `ARCHITECTURE.md` §596.
+La part de son équipe se reconnaît à ses jours d'homme (`partDeSonEquipe`) ; poser son équipe la fait sortir des travaux que l'écran désigne (`travauxDeSaTva`), dans la même transaction que la ligne (`poserLaLigneDeSonEquipe`, qui emploie `insererLigne` et `reecrireLigne`). `ligneDejaAuDetail` prend la ligne visée entière. Répartie, la feuille se rouvre sur ses travaux (`equipeDeSesParts`). `ARCHITECTURE.md` §596.
 
-## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL (20 novembre 2026), PAS ENCORE SUR `main`
+## SES RÉPONSES À LA GRILLE SOUS LE TRAVAIL (20 novembre 2026), SUR `main`
 
 `reponsesSousLesLignes` (pur) assemble `liensDesLignesDuChantier` et `listerPrestationsDuDevis` dans la page du devis ; `ReponsesSousLeTravail` les montre sous la description. `mesureLisible` est la seule phrase d'une mesure. Plus rien ne s'écrit dans le libellé (`libelleEnrichi` est parti), 0192 nettoie ceux d'avant ; `debutsDUnLibelleEnrichi` et l'effacement de `libelleClient` restent jusqu'à ce que 0192 soit passée chez lui. `ARCHITECTURE.md` §597 et §598.
 

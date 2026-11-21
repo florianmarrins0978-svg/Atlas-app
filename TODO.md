@@ -263,14 +263,14 @@ s'ajoute au lot du 22 septembre (migration, donc niveau 3).
 légende de sa photo finit par un point, et `PhotosDeReference` en ajoute un
 (« feuille de peuplier.. »). Les fiches 1 à 3 n'en ont pas, d'où le silence.
 
-## LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » : CHOISIE ET CODÉE, SUITES SUR SON « OUI » (20 novembre 2026)
+## LA FEUILLE ROUVERTE APRÈS « RÉPARTIS » : SUR `main` (21 novembre 2026)
 
 **Son « code ça » du 20 novembre**, sans batterie. Codée sur la branche du lot
 §596 (même sujet), `ARCHITECTURE.md` §596. Joués : types, style, gardes,
 `test-feuille-main-oeuvre.ts` (ses parts redisent son équipe, l'arrondi au
-centime, le partenaire). **Pas joué** : `test-feuille-main-oeuvre-e2e.ts`, qui
-porte maintenant son geste (rouvrir sur « Répartis », la changer, la reposer en
-ligne), sur son « oui ».
+centime, le partenaire). `test-feuille-main-oeuvre-e2e.ts` porte son geste
+(rouvrir sur « Répartis », la changer, la reposer en ligne) ; batterie verte le
+21, écran regardé.
 
 Répartie, sa main d'œuvre n'a plus de ligne : la feuille rouverte repartait de
 la dictée (ici 1 homme, 1 journée), sur « Sur une ligne », avec « Ajouter la
@@ -318,7 +318,7 @@ range son virement à `CURRENT_DATE` de PostgreSQL (UTC) ; à l'heure où Paris 
 déjà changé de jour, les deux dates diffèrent. À vérifier si elle retombe à la
 même heure (confiance moyenne).
 
-## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : CODÉ, BATTERIE SUR SON « OUI » (20 novembre 2026)
+## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : SUR `main` (21 novembre 2026)
 
 Son « oui corrige les 2 défauts » du 20. `ARCHITECTURE.md` §596. Répartir une
 seconde fois remplace, reposer en ligne fait sortir ses parts, la ligne
@@ -326,10 +326,10 @@ renommée reste un doublon. **Le relevé du 19 se trompait sur le second** :
 rejouer la préparation garde déjà sa ligne changée ; le vrai trou était la
 ligne renommée. Joués : types, style, gardes, `test-feuille-main-oeuvre.ts`,
 `test-proposition-au-detail.ts`, `test-main-oeuvre-change-sa-ligne-db.ts`
-(quatre vus rouges). **Pas joués** : `test-feuille-main-oeuvre-e2e.ts` (ses
-deux gestes par l'écran) et la batterie (niveau 3 : argent), sur son « oui ».
+(quatre vus rouges). Batterie verte le 21 novembre (614 suites base,
+217 navigateur), après une première à trois rouges sans défaut du lot (§598).
 
-## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : CODÉ, SUITES SUR SON « OUI » (20 novembre 2026)
+## SES RÉPONSES À LA GRILLE DANS LEURS CASES, PLUS DANS LE NOM DU TRAVAIL : SUR `main` SAUF LE CONTRACT (21 novembre 2026)
 
 Sa question du 19 : *« on a empilé des règles sur des règles »*. Vrai pour cette
 chaîne : `libelleEnrichi` écrit ses réponses dans le libellé de la prestation
@@ -361,28 +361,16 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/devis-reponses-sous-l
 ai jamais accès »*. Cette moitié de la planche tombe : il ne relira ses réponses
 que sur le devis. Puis son « oui » à la ligne sous le travail.
 
-**Temps 1 codé le 20 novembre** (`ARCHITECTURE.md` §597) : la ligne sous le
-travail, lue dans les cases. Joués : types, style, gardes,
-`test-reponses-sous-le-travail.ts`. **Pas joués** : `test-cases-reglables-db.ts`
-(son chêne, sous `atlas_app`), l'écran regardé, puis le contrôle de son niveau ;
-il a refusé la batterie le 20 (*« Aucune batterie !!! »*), le lot attend donc
-hors de `main`.
+**Temps 1 et 2 sur `main` le 21 novembre** (`ARCHITECTURE.md` §597, §598) : la
+ligne sous le travail, lue dans les cases (écran regardé) ; plus rien dans le
+nom, et la migration 0192 rend leur nom aux travaux d'avant (éprouvée sur base
+habitée). Batterie verte : son chêne à 1 100 € se chiffre sans le texte.
 
-**Temps 2 codé le même jour** (son « ok tu peux le faire », §598) : plus rien ne
-s'écrit dans le nom, la migration 0192 rend leur nom aux travaux d'avant.
-Éprouvée sur base habitée (`test-migration-0192-base-habitee.ts`, vert). **Pas
-joués** : `test-cases-reglables-db.ts` (le prix du chêne sans le texte),
-`test-questions-chiffrage-db` et voisines, le contrôle du niveau 3. **Reste,
-plus tard** : retirer `debutsDUnLibelleEnrichi` et l'effacement de
-`libelleClient` une fois 0192 passée sur SA base (contract).
-
-**Ce que coûtera le code, une fois choisi** : la ligne du devis doit connaître
-la prestation qui l'a chiffrée et le NOM de sa technique (ses grilles, comme
-`listerPrestationsDuDevis` le fait déjà pour §588) ; rien ne s'imprime ni ne
-part chez le client. Puis `libelleEnrichi` n'écrit plus dans le libellé, une
-fois éprouvé que le prix de la case se trouve sans le texte : `mesuresResolues`
-lit déjà les colonnes, `mesures-arbre.ts` relit encore le texte. Argent :
-niveau 3.
+**Reste, et seulement quand 0192 sera passée sur SA base** (contract,
+`deployment-safety.md`) : retirer `debutsDUnLibelleEnrichi`
+(`correspondance-prestation.ts`, `devis-depuis-dictee.ts`) et l'effacement des
+réponses dans `libelleClient`. La fiche de son espace dit quand sa base est à
+jour (« Base : »). Niveau 3, argent.
 
 ## SON ESPACE N'AVANCE PLUS : LIRE LA RAISON SUR SA FICHE, PUIS LA CORRIGER (18 novembre 2026)
 
