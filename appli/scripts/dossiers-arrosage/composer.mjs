@@ -161,14 +161,13 @@ body:not([data-photo="non"]) [data-si-sans-photo] { display: none !important; }
 .pdf-page .resume { margin: 5px 0 0; color: #4a4a44; }
 .pdf-page .titre-reseau { display: flex; align-items: baseline; gap: 6px; }
 .pdf-page .titre-reseau .pastille { width: 8px; height: 8px; border-radius: 2px; flex: none; align-self: center; }
-.pdf-page .titre-reseau span:last-child { color: #6b6b5c; font-size: 8px; }
 .pdf-page .plan-couleur svg { display: block; width: 100%; height: auto; }
 .pdf-page .bloc-ecran { font-size: 16px; line-height: 1.5; }
 .pdf-page .bloc-ecran .choix-fige { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #4a4a44; }
-.pdf-page.couchee { width: 481px; min-height: 340px; padding: 20px 22px 22px; }
-.pdf-page .colonnes { display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 14px; margin-top: 4px; }
-.pdf-page .colonnes > div { min-width: 0; display: flex; flex-direction: column; }
-.pdf-page .colonnes h3 { margin-top: 6px; }
+.pdf-page .bandeau { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 12px; align-items: start; }
+.pdf-page .bandeau .zone { margin: 1px 0 0; color: #6b6b5c; }
+.pdf-page .bandeau .plan-couleur { margin-top: 2px; }
+.pdf-page .tete-de-bas-en-haut { position: relative; }
 [data-choix][aria-checked="true"] .pastille-choix { box-shadow: inset 0 0 0 7px var(--atlas-ink, #1c1c1a) !important; }
 [data-client][aria-checked="true"] { font-weight: 600; color: var(--atlas-orTexte, #8b6835) !important; }
 .pdf-gestes { width: 340px; max-width: calc(100% - 24px); margin: 16px auto 0; display: grid; gap: 10px; }
@@ -509,11 +508,11 @@ function retouches(etat, D) {
     pages.push(courante);
     if (titreSuite) poser(`<h3 style="margin-top: 0;">${titreSuite}</h3>`, null);
   };
-  // Le bas utile de la page, avec 8 % de jeu : la mesure se fait ici, avec les
+  // Le bas utile de la page, avec 5 % de jeu : la mesure se fait ici, avec les
   // polices de ce poste, et son iPhone écrit plus large. Sa remarque du 21 au
   // soir : des lignes du bas passaient sur d'autres mots. Une page qui
   // déborderait encore s'allonge (hauteur plancher), elle ne recouvre rien.
-  const limite = () => (courante.classList.contains("couchee") ? 340 : 481) * 0.92 - 22;
+  const limite = () => 481 * 0.95 - 22;
   // Pose un bloc ; s'il dépasse, il part sur une page neuve, précédé de son titre de suite.
   function poser(html, titreSuite, garderAvec, rappel) {
     const el = cree(html);
@@ -587,10 +586,12 @@ function retouches(etat, D) {
     courante.appendChild(boiteLegende);
   }
 
-  // Une page par réseau, en A4 couché : sur une page droite, un réseau carré
-  // n'avait que le bas de la page, et ses photos sortaient à 6 mm. À gauche le
-  // réseau en couleur, son tuyau et une tête de bas en haut ; à droite le
-  // dessin des pièces, aussi grand que la page le permet.
+  // Une page par réseau, A4 droit comme les autres : sa remarque du 21 au soir,
+  // *« pourquoi les pages des réseaux sont plus petites ? mets des grandes pages
+  // pour toutes »* (couchées, un téléphone les réduisait à sa largeur). Pour
+  // garder la place aux photos : en haut le nom, le matériel et le réseau en
+  // couleur dans le jardin, côte à côte ; au milieu le dessin des pièces, aussi
+  // grand que la page le permet ; en bas une tête, de bas en haut.
   const enBoite = (el, largeurEcran) => {
     const boite = cree(`<div class="bloc-ecran"></div>`);
     boite.appendChild(el);
@@ -600,10 +601,7 @@ function retouches(etat, D) {
   const haut = (el) => el.getBoundingClientRect().top - courante.getBoundingClientRect().top;
   reseaux.forEach((r) => {
     nouvellePage(null);
-    courante.classList.add("couchee");
     courante.setAttribute("data-atlas", "pdf-reseau-" + (r.i + 1));
-    poser(`<div class="titre-reseau"><span class="pastille" style="background-color: ${r.couleur};"></span><h2>${r.titre}</h2><span>${r.zone}</span></div>`, null);
-    poser(`<p class="resume">${r.materiel.join(". ")}.</p>`, null);
     const source = figer(E3.querySelector(`[data-atlas=pieces-reseau][data-reseau="${r.i}"]`).cloneNode(true));
     source.firstElementChild.remove();
     source.classList.remove("mt-7");
@@ -612,25 +610,29 @@ function retouches(etat, D) {
     const surCePlan = [...source.querySelectorAll("p")].find((p) => p.textContent.startsWith("Sur ce plan"));
     const chaine = source.querySelector("[data-atlas=chaine]");
     [tuyau, surCePlan, chaine].forEach((n) => n && n.remove());
-    const colonnes = poser(`<div class="colonnes"><div class="gauche"></div><div class="droite"></div></div>`, null);
-    colonnes.style.minHeight = limite() - colonnes.offsetTop + "px";
-    const gauche = colonnes.firstElementChild, droite = colonnes.lastElementChild;
-    gauche.insertAdjacentHTML("beforeend", `<h3>Le réseau</h3><div class="plan-couleur"></div>`);
-    gauche.querySelector(".plan-couleur").appendChild(r.svg);
-    const largeurG = gauche.clientWidth;
-    if (tuyau) { const b = enBoite(tuyau, 346); gauche.appendChild(b); b.style.zoom = String(largeurG / 346 * 0.9); }
+    // En haut : le nom et le matériel à gauche, le réseau en couleur à droite.
+    const bandeau = poser(`<div class="bandeau"><div><div class="titre-reseau"><span class="pastille" style="background-color: ${r.couleur};"></span><h2>${r.titre}</h2></div><p class="zone">${r.zone}</p><p class="resume">${r.materiel.join(". ")}.</p></div><div class="plan-couleur"></div></div>`, null);
+    bandeau.querySelector(".plan-couleur").appendChild(r.svg);
+    if (tuyau) { const b = enBoite(tuyau, 346); bandeau.firstElementChild.appendChild(b); b.style.zoom = "0.5"; }
+    // En bas : une tête, de bas en haut, posée d'abord pour savoir ce qu'il reste au milieu.
+    let pied = null;
     if (chaine) {
-      gauche.insertAdjacentHTML("beforeend", `<h3>Une tête, de bas en haut</h3>`);
-      const b = enBoite(chaine, 346); gauche.appendChild(b); b.style.zoom = String(largeurG / 346);
+      pied = cree(`<div class="tete-de-bas-en-haut"><h3>Une tête, de bas en haut</h3></div>`);
+      const b = enBoite(chaine, 346);
+      pied.appendChild(b);
+      courante.appendChild(pied);
+      b.style.zoom = String(largeurUtile() / 346 * 0.82);
+      b.style.marginInline = "auto";
     }
-    droite.insertAdjacentHTML("beforeend", `<h3>Les pièces</h3>`);
+    const titrePieces = cree(`<h3>Les pièces</h3>`);
     const boite = enBoite(source, 346);
-    droite.appendChild(boite);
-    const basDroite = haut(colonnes) + colonnes.getBoundingClientRect().height;
-    let k = Math.min(droite.clientWidth / 346, (basDroite - haut(boite)) / boite.getBoundingClientRect().height);
+    courante.insertBefore(titrePieces, pied);
+    courante.insertBefore(boite, pied);
+    const place = () => limite() - (pied ? pied.getBoundingClientRect().height + 6 : 0);
+    let k = Math.min(largeurUtile() / 346, (place() - haut(boite)) / boite.getBoundingClientRect().height);
     boite.style.zoom = String(k);
     boite.style.marginInline = "auto";
-    while (haut(boite) + boite.getBoundingClientRect().height > basDroite && k > 0.2) { k *= 0.98; boite.style.zoom = String(k); }
+    while (haut(boite) + boite.getBoundingClientRect().height > place() && k > 0.2) { k *= 0.98; boite.style.zoom = String(k); }
     renommerIds(courante, "pdf" + r.i);
   });
 
@@ -645,9 +647,6 @@ function retouches(etat, D) {
       premiereLigne = false;
     }
   }
-  // Mesurée à sa vraie taille, une page couchée se montre à la largeur d'une page
-  // droite, comme un lecteur de PDF la montre sur un téléphone.
-  pages.filter((p) => p.classList.contains("couchee")).forEach((p) => { p.style.zoom = String(340 / 481); });
 
   const fond = atelier;
   fond.insertAdjacentHTML("afterbegin", `<div class="pdf-barre"><button type="button" data-va="revu">Fermer</button><b>Plan d’arrosage de Madame Intel, 21 novembre 2026.pdf</b></div>`);

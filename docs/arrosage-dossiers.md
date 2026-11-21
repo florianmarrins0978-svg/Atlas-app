@@ -167,13 +167,15 @@ maintenant 8 pages :
 | page | ce qu'elle porte |
 |---|---|
 | 1 | l'entreprise, le dossier, la date, le résumé ; la légende des symboles (rond, carré, plein, creux, losange) |
-| 2 à 5 | **un réseau par page**, en A4 couché : à gauche le réseau en couleur dans le jardin, son tuyau, une tête de bas en haut avec ses photos ; à droite le dessin des pièces avec leurs photos, aussi grand que la page le permet |
+| 2 à 5 | **un réseau par page**, à la même taille que les autres : en haut son nom, son matériel, son tuyau, et le réseau en couleur dans le jardin ; au milieu le dessin de ses pièces avec leurs photos, aussi grand que la page le permet ; en bas une tête, de bas en haut, avec ses photos |
 | 6 à 8 | la liste des pièces, chaque groupe coupé redit son nom |
 
-**Pourquoi couché.** Sur une page droite, le dessin d'une pelouse carrée
-n'avait que le bas de la page : ses photos sortaient à 6 mm. Couché, le dessin
-prend la moitié droite et ses photos doublent. Les deux dessins sont ceux de
-l'écran, jamais redessinés.
+**Toutes les pages à la même taille** (sa remarque : couchées, les pages des
+réseaux sortaient plus petites sur le téléphone, qui les réduit à sa largeur).
+Pour garder la place aux photos, le réseau en couleur se pose en haut à
+droite, à côté du nom, et le dessin des pièces prend le milieu de la page :
+ses photos sont deux fois plus grandes que sur la première version. Les deux
+dessins sont ceux de l'écran, jamais redessinés.
 
 **Les réserves ne sont plus dans le PDF** (sa décision). Elles restent sous
 le plan à l'écran, et dans l'enregistrement figé : c'est lui qui sert si un
