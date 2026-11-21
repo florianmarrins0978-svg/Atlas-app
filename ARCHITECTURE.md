@@ -37913,8 +37913,11 @@ n'est enregistré ») : *« si un artisan me reproche un réseau qui ne se lève
 pas, ni lui ni moi ne pouvons montrer ce que Cause lui a rendu »*. Il veut un
 dossier à un nom choisi, chaque plan enregistré figé avec ce qui a été saisi,
 le plan et la liste affichés, les réserves, la version du calcul et la date.
-Revoir ne recalcule jamais ; un enregistrement ne s'écrase pas ; les réserves
-partent dans le téléchargement ; l'outil reste utilisable sans dossier (§125).
+Revoir ne recalcule jamais ; un enregistrement ne s'écrase pas ; l'outil
+reste utilisable sans dossier (§125). **Les réserves NE partent PAS dans le
+PDF** : son brief les y mettait, il les a retirées le soir même sur la
+planche (*« pas besoin de l'avoir sur le PDF »*). Elles restent sous le plan
+à l'écran (règle 3 de l'arrosage) et dans l'enregistrement figé.
 
 **Rien n'est codé.** La planche `appli/arrosage-dossiers.html` et cinq
 questions (`docs/arrosage-dossiers.md`) attendent ses réponses. Trois choses

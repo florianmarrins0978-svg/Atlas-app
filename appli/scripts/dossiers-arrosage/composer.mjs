@@ -2,7 +2,6 @@
 // figés par figer.mjs. Seul ce qui est proposé s’ajoute. Usage :
 //   node appli/scripts/dossiers-arrosage/composer.mjs <dossier de figer.mjs> <brut.html>
 import { readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
 import { composer } from "../../../scripts/planche-figee/composer.mjs";
 
 const S = process.argv[2]; // le dossier rempli par figer.mjs
@@ -19,10 +18,6 @@ const debutNav = paysage.html.indexOf('<nav aria-label="Outils"');
 const finNav = paysage.html.indexOf("</nav>", debutNav) + 6;
 const navPaysage = paysage.html.slice(debutNav, finNav);
 
-// L'empreinte d'un enregistrement se calcule sur ce qui est enregistré : ici,
-// le texte du plan figé. Elle n'est pas inventée.
-const textePlan = plan.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-const empreinte = createHash("sha256").update(textePlan).digest("hex").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
 
 // Le croquis photographié : un dessin au crayon sur une feuille quadrillée.
 // Ses couleurs sont celles d'une feuille, pas d'une charte (comme les photos).
@@ -146,8 +141,8 @@ body:not([data-photo="non"]) [data-si-sans-photo] { display: none !important; }
 .pdf-barre { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #2b2a27; color: #f5f3ee; font-size: 14px; }
 .pdf-barre b { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pdf-barre button { min-height: 40px; border: 0; background: transparent; color: #f5f3ee; font: inherit; font-weight: 600; font-size: 15px; cursor: pointer; }
-.pdf-page { width: 340px; height: 481px; margin: 14px auto 0; background: ${"#faf9f5"}; color: #1c1c1a;
-  box-shadow: 0 2px 10px rgba(0,0,0,.25); padding: 6.5% 6.5% 0; position: relative; overflow: hidden; font-size: 7.2px; line-height: 1.42; font-family: var(--font-body, system-ui); }
+.pdf-page { width: 340px; min-height: 481px; margin: 14px auto 0; background: ${"#faf9f5"}; color: #1c1c1a;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25); padding: 22px 22px 26px; position: relative; font-size: 7.2px; line-height: 1.42; font-family: var(--font-body, system-ui); }
 .pdf-page h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 15px; line-height: 1.15; }
 .pdf-page h3 { margin: 10px 0 4px; font-size: 6.4px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #B98B47; }
 .pdf-page .tete { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 7px; border-bottom: 0.6px solid #e2ded3; }
@@ -170,12 +165,10 @@ body:not([data-photo="non"]) [data-si-sans-photo] { display: none !important; }
 .pdf-page .plan-couleur svg { display: block; width: 100%; height: auto; }
 .pdf-page .bloc-ecran { font-size: 16px; line-height: 1.5; }
 .pdf-page .bloc-ecran .choix-fige { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #4a4a44; }
-.pdf-page.couchee { width: 481px; height: 340px; padding: 20px 22px 0; }
-.pdf-page.couchee .pied { left: 22px; right: 22px; }
+.pdf-page.couchee { width: 481px; min-height: 340px; padding: 20px 22px 22px; }
 .pdf-page .colonnes { display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 14px; margin-top: 4px; }
 .pdf-page .colonnes > div { min-width: 0; display: flex; flex-direction: column; }
 .pdf-page .colonnes h3 { margin-top: 6px; }
-.pdf-page .pied { position: absolute; left: 6.5%; right: 6.5%; bottom: 3.5%; padding-top: 4px; border-top: 0.6px solid #e2ded3; color: #6b6b5c; font-size: 5.6px; line-height: 1.4; }
 [data-choix][aria-checked="true"] .pastille-choix { box-shadow: inset 0 0 0 7px var(--atlas-ink, #1c1c1a) !important; }
 [data-client][aria-checked="true"] { font-weight: 600; color: var(--atlas-orTexte, #8b6835) !important; }
 .pdf-gestes { width: 340px; max-width: calc(100% - 24px); margin: 16px auto 0; display: grid; gap: 10px; }
@@ -503,11 +496,8 @@ function retouches(etat, D) {
     titre: g.dataset.titre,
     lignes: [...g.querySelectorAll("[data-atlas=ligne]")].map((l) => { const s = l.querySelectorAll("span"); return [s[0].textContent.trim(), s[1].textContent.trim()]; }),
   }));
-  const lesReserves = [...E3.querySelectorAll("[data-atlas=reserves] li")].map((li) => li.textContent.trim());
-  const pied = (n, total) => `<div class="pied">Atelier Démo, plan d’arrosage enregistré le 21 novembre 2026 à 9 h 41. Calcul de Cause ${D.versionCalcul}. Empreinte ${D.empreinte}. Page ${n} sur ${total}.</div>`;
   // Les pages se remplissent bloc par bloc, MESURÉES : ce qui ne tient pas passe
-  // à la page suivante, rien n'est coupé ni caché sous le pied (une réserve
-  // coupée serait une réserve tue).
+  // à la page suivante, rien n'est coupé ni recouvert.
   E6.innerHTML = "";
   const atelier = cree(`<div class="pdf-fond" data-atlas="apercu-pdf"></div>`);
   E6.appendChild(atelier);
@@ -515,24 +505,27 @@ function retouches(etat, D) {
   let courante = null;
   const nouvellePage = (titreSuite) => {
     courante = cree(`<section class="pdf-page"></section>`);
-    courante.insertAdjacentHTML("beforeend", pied(0, 0));
     atelier.appendChild(courante);
     pages.push(courante);
     if (titreSuite) poser(`<h3 style="margin-top: 0;">${titreSuite}</h3>`, null);
   };
-  const limite = () => courante.querySelector(".pied").offsetTop - 6;
+  // Le bas utile de la page, avec 8 % de jeu : la mesure se fait ici, avec les
+  // polices de ce poste, et son iPhone écrit plus large. Sa remarque du 21 au
+  // soir : des lignes du bas passaient sur d'autres mots. Une page qui
+  // déborderait encore s'allonge (hauteur plancher), elle ne recouvre rien.
+  const limite = () => (courante.classList.contains("couchee") ? 340 : 481) * 0.92 - 22;
   // Pose un bloc ; s'il dépasse, il part sur une page neuve, précédé de son titre de suite.
   function poser(html, titreSuite, garderAvec, rappel) {
     const el = cree(html);
-    courante.insertBefore(el, courante.querySelector(".pied"));
+    courante.appendChild(el);
     if (el.offsetTop + el.offsetHeight > limite()) {
       el.remove();
       const garde = garderAvec ? garderAvec.filter((g) => g.isConnected) : [];
       garde.forEach((g) => g.remove());
       nouvellePage(titreSuite);
-      garde.forEach((g) => courante.insertBefore(g, courante.querySelector(".pied")));
-      if (!garde.length && rappel) courante.insertBefore(cree(rappel), courante.querySelector(".pied"));
-      courante.insertBefore(el, courante.querySelector(".pied"));
+      garde.forEach((g) => courante.appendChild(g));
+      if (!garde.length && rappel) courante.appendChild(cree(rappel));
+      courante.appendChild(el);
     }
     return el;
   }
@@ -559,7 +552,7 @@ function retouches(etat, D) {
   // offsetHeight rend la hauteur d'avant réduction, et la boucle réduisait à vide.
   const basDe = (el) => el.getBoundingClientRect().bottom - courante.getBoundingClientRect().top;
   const reduire = (boite, largeurEcran) => {
-    courante.insertBefore(boite, courante.querySelector(".pied"));
+    courante.appendChild(boite);
     boite.style.width = largeurEcran + "px";
     boite.style.zoom = "1";
     const haut = boite.getBoundingClientRect().top - courante.getBoundingClientRect().top;
@@ -574,27 +567,24 @@ function retouches(etat, D) {
   courante.setAttribute("data-atlas", "pdf-page-1");
   poser(`<div class="tete"><div><b style="font-size: 8.6px;">Atelier Démo</b><p>Plan d’arrosage de Madame Intel</p></div><div style="text-align: right;"><h2>Plan d’arrosage</h2><p>21 novembre 2026</p></div></div>`, null);
   poser(`<p class="resume">${D.v2}.</p>`, null);
-  const titreReserves = poser(`<h3>Ce qui n’est pas calculé</h3>`, null);
-  let premiere = true;
-  for (const r of lesReserves) {
-    poser(`<ul class="reserve"><li>${r}</li></ul>`, "Ce qui n’est pas calculé, suite", premiere ? [titreReserves] : null);
-    premiere = false;
-  }
+  // « Ce qui n'est pas calculé, tu me l'enlèves. Pas besoin de l'avoir sur le
+  // PDF » : sa décision du 21 novembre au soir. Les réserves restent sous le
+  // plan à l'écran, et dans l'enregistrement figé.
   // La légende des symboles, celle de l'écran : elle fait lire les pages des réseaux.
   const titreLegende = poser(`<h3>Lire les plans</h3>`, null);
   const legende = figer(E3.querySelector("[data-atlas=symboles]").cloneNode(true));
   legende.setAttribute("data-atlas", "pdf-legende");
   const boiteLegende = cree(`<div class="bloc-ecran"></div>`);
   boiteLegende.appendChild(legende);
-  courante.insertBefore(boiteLegende, courante.querySelector(".pied"));
+  courante.appendChild(boiteLegende);
   // Écrite à la taille de l'écran, puis réduite à celle du texte de la page.
   boiteLegende.style.width = "640px";
   boiteLegende.style.zoom = String(largeurUtile() / 640);
   if (basDe(boiteLegende) > limite()) {
     boiteLegende.remove(); titreLegende.remove();
     nouvellePage(null);
-    courante.insertBefore(titreLegende, courante.querySelector(".pied"));
-    courante.insertBefore(boiteLegende, courante.querySelector(".pied"));
+    courante.appendChild(titreLegende);
+    courante.appendChild(boiteLegende);
   }
 
   // Une page par réseau, en A4 couché : sur une page droite, un réseau carré
@@ -623,7 +613,7 @@ function retouches(etat, D) {
     const chaine = source.querySelector("[data-atlas=chaine]");
     [tuyau, surCePlan, chaine].forEach((n) => n && n.remove());
     const colonnes = poser(`<div class="colonnes"><div class="gauche"></div><div class="droite"></div></div>`, null);
-    colonnes.style.height = limite() - colonnes.offsetTop + "px";
+    colonnes.style.minHeight = limite() - colonnes.offsetTop + "px";
     const gauche = colonnes.firstElementChild, droite = colonnes.lastElementChild;
     gauche.insertAdjacentHTML("beforeend", `<h3>Le réseau</h3><div class="plan-couleur"></div>`);
     gauche.querySelector(".plan-couleur").appendChild(r.svg);
@@ -633,7 +623,6 @@ function retouches(etat, D) {
       gauche.insertAdjacentHTML("beforeend", `<h3>Une tête, de bas en haut</h3>`);
       const b = enBoite(chaine, 346); gauche.appendChild(b); b.style.zoom = String(largeurG / 346);
     }
-    if (surCePlan) gauche.insertAdjacentHTML("beforeend", `<p class="resume">${surCePlan.textContent}</p>`);
     droite.insertAdjacentHTML("beforeend", `<h3>Les pièces</h3>`);
     const boite = enBoite(source, 346);
     droite.appendChild(boite);
@@ -656,7 +645,6 @@ function retouches(etat, D) {
       premiereLigne = false;
     }
   }
-  pages.forEach((p, i) => { p.querySelector(".pied").outerHTML = pied(i + 1, pages.length); });
   // Mesurée à sa vraie taille, une page couchée se montre à la largeur d'une page
   // droite, comme un lecteur de PDF la montre sur un téléphone.
   pages.filter((p) => p.classList.contains("couchee")).forEach((p) => { p.style.zoom = String(340 / 481); });
@@ -690,8 +678,6 @@ const n = await composer({
     clients: ["Mme Intel", "M. Bernard", "Mme Costa", "M. Faucher", "Mme Aubry"],
     v1: "3 réseaux, 83 m de tranchée, 38 pièces",
     v2: "4 réseaux, 83 m de tranchée, 45 pièces",
-    versionCalcul: "f7f9468",
-    empreinte,
   },
   scriptEnPlus: SCRIPT_EN_PLUS,
   sortie: SORTIE,

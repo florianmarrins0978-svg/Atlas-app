@@ -90,7 +90,7 @@
 </tr>
 <tr>
 <td>un plan revu, le téléchargement</td>
-<td><strong>fait</strong> : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 8 pages, un réseau par page</td>
+<td><strong>fait</strong> : le plan tel qu'enregistré, sans rien qui le modifie, « Voir la saisie », « Reprendre dans l'outil », l'aperçu du PDF en 8 pages, un réseau par page, sans les réserves (sa décision)</td>
 </tr>
 <tr>
 <td>chaque bouton fait quelque chose</td>
@@ -211,14 +211,15 @@
 </tbody></table></div>
 <h3 id="question-4-le-téléchargement-en-pdf-comme-les-devis-">Question 4. Le téléchargement en PDF, comme les devis ?</h3>
 <p><strong>Recommandation : oui</strong>, fait par l'appli comme le devis (<code>src/server/pdf/</code>), archivé au moment d'enregistrer.</p>
-<p><strong>Revu le soir même, sur sa demande</strong> : <em>« ce qui serait bien, c'est qu'on puisse voir les réseaux en grand »</em>, chaque réseau sur sa page, à la fois en couleur et avec ses pièces, <em>« qu'on voie la photo des pièces »</em>. C'était ma question ouverte (les dessins des pièces dans le PDF) : il l'a tranchée. La planche montre maintenant 8 pages :</p>
+<p><strong>Revu le soir même, sur sa demande</strong> : <em>« ce qui serait bien, c'est qu'on puisse voir les réseaux en grand »</em>, chaque réseau sur sa page, à la fois en couleur et avec ses pièces, <em>« qu'on voie la photo des pièces »</em>. C'était ma question ouverte (les dessins des pièces dans le PDF) : il l'a tranchée.</p>
+<p><strong>Puis, sur la planche</strong> : <em>« Ce qui n'est pas calculé, tu me l'enlèves. Pas besoin de l'avoir sur le PDF »</em>, et les petites lignes grises du bas des pages, qui passaient sur d'autres mots, retirées. La planche montre maintenant 8 pages :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>page</th>
 <th>ce qu'elle porte</th>
 </tr></thead><tbody>
 <tr>
 <td>1</td>
-<td>l'entreprise, le dossier, la date ; <strong>les réserves</strong>, puis la légende des symboles (rond, carré, plein, creux, losange)</td>
+<td>l'entreprise, le dossier, la date, le résumé ; la légende des symboles (rond, carré, plein, creux, losange)</td>
 </tr>
 <tr>
 <td>2 à 5</td>
@@ -228,13 +229,12 @@
 <td>6 à 8</td>
 <td>la liste des pièces, chaque groupe coupé redit son nom</td>
 </tr>
-<tr>
-<td>au pied de chaque page</td>
-<td>la date et l'heure, la version du calcul, l'empreinte de l'enregistrement</td>
-</tr>
 </tbody></table></div>
-<p><strong>Pourquoi couché.</strong> Sur une page droite, le dessin d'une pelouse carrée n'avait que le bas de la page : ses photos sortaient à 6 mm. Couché, le dessin prend la moitié droite et ses photos doublent. Les deux dessins sont ceux de l'écran, jamais redessinés. Les réserves restent en page 1, là où on commence à lire.</p>
-<p>Les pages se remplissent en mesurant chaque bloc : une réserve qui ne tient pas passe à la page suivante, elle n'est jamais coupée. Le PDF ne suit pas la charte de couleurs (comme les devis) et <strong>ne porte pas ses prix d'achat</strong>.</p>
+<p><strong>Pourquoi couché.</strong> Sur une page droite, le dessin d'une pelouse carrée n'avait que le bas de la page : ses photos sortaient à 6 mm. Couché, le dessin prend la moitié droite et ses photos doublent. Les deux dessins sont ceux de l'écran, jamais redessinés.</p>
+<p><strong>Les réserves ne sont plus dans le PDF</strong> (sa décision). Elles restent sous le plan à l'écran, et dans l'enregistrement figé : c'est lui qui sert si un réseau est contesté. Ce que cela change, pour qu'il le sache : un poseur qui n'a que le PDF ne lit plus « à mesurer sur place » ni « nous ne garantissons pas la bonne levée des arroseurs ».</p>
+<p><strong>Pourquoi des mots se chevauchaient chez lui.</strong> Les pages étaient mesurées ici, avec les polices de ce poste, et le pied gris posé à hauteur fixe : son iPhone écrit plus large, et la dernière ligne passait dessous. Le pied est parti, les pages gardent 8 % de jeu, et une page qui déborderait encore s'allonge au lieu de recouvrir. Éprouvé avec une police plus large que la sienne : aucun texte sur un autre. <strong>Pas vu sur Safari</strong> (ce poste n'a que Chromium).</p>
+<p><strong>Vu en regardant, et pas touché</strong> : sur le plan en couleur d'un réseau, le mot « nourrice » mord sur le losange du té égal. C'est le dessin de l'appli, le même qu'à l'écran : à corriger dans l'appli, sur son oui.</p>
+<p>Les pages se remplissent en mesurant chaque bloc : une ligne qui ne tient pas passe à la page suivante, elle n'est jamais coupée. Le PDF ne suit pas la charte de couleurs (comme les devis) et <strong>ne porte pas ses prix d'achat</strong>.</p>
 <h3 id="question-5-que-le-brief-navait-pas-sans-loption-à-6--ses-plans-">Question 5, que le brief n'avait pas. Sans l'option à 6 €, ses plans ?</h3>
 <p><strong>Recommandation : revoir et télécharger restent ouverts, en lecture seule, même sans l'option ; seul un nouveau plan la demande.</strong> Une trace sert au moment d'un litige, souvent après avoir arrêté l'option : la lui fermer reviendrait à garder ses propres données hors de sa portée. Aujourd'hui, <code>layout.tsx</code> ferme tout l'outil : les dossiers vivraient donc à une adresse hors de cette porte.</p>
 <hr>

@@ -32,7 +32,7 @@ document) : 1. dossier libre ou relié à une fiche client (conseillé : libre,
 lien facultatif) ; 2. supprimer un dossier (conseillé : nom, lien et photo
 effacés, le calcul seul gardé 5 ans, à écrire dans les conditions générales,
 avec le juriste) ; 3. garder la photo du croquis (conseillé : oui) ; 4. le PDF
-(conseillé : oui, archivé à l'enregistrement, sans ses prix d'achat ; sa demande du soir, déjà sur la planche : un réseau par page, en couleur et avec ses pièces et leurs photos) ; 5. sans
+(conseillé : oui, archivé à l'enregistrement, sans ses prix d'achat ; ses demandes du soir, déjà sur la planche : un réseau par page, en couleur et avec ses pièces et leurs photos ; ni les réserves, ni pied de page gris) ; 5. sans
 l'option à 6 €, revoir et télécharger restent ouverts (conseillé : oui).
 
 **Au codage, ce que le brief ne disait pas** : l'enregistrement se recalcule
@@ -40,6 +40,8 @@ au serveur et se compare à l'empreinte de l'écran ; les `retouches` de
 `LePlanDuJardin.tsx` (état local, absentes des paramètres) font partie de la
 saisie ; le PDF s'archive à l'enregistrement ; le numéro de migration se prend
 au-dessus de `main` ET des branches actives. Niveau 3, batterie sur son oui.
+
+**Vu en faisant le PDF, pas touché (l'appli, sur son oui)** : sur le plan en couleur d'un réseau (`PlanDessine.tsx`), le mot « nourrice » mord sur le losange du té égal, à l'écran comme dans la planche.
 
 **Avant de la lui redemander** : chercher `mes-dossiers` et
 `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
