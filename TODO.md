@@ -13,7 +13,7 @@ document) : 1. dossier libre ou relié à une fiche client (conseillé : libre,
 lien facultatif) ; 2. supprimer un dossier (conseillé : nom, lien et photo
 effacés, le calcul seul gardé 5 ans, à écrire dans les conditions générales,
 avec le juriste) ; 3. garder la photo du croquis (conseillé : oui) ; 4. le PDF
-(conseillé : oui, archivé à l'enregistrement, sans ses prix d'achat) ; 5. sans
+(conseillé : oui, archivé à l'enregistrement, sans ses prix d'achat ; sa demande du soir, déjà sur la planche : un réseau par page, en couleur et avec ses pièces et leurs photos) ; 5. sans
 l'option à 6 €, revoir et télécharger restent ouverts (conseillé : oui).
 
 **Au codage, ce que le brief ne disait pas** : l'enregistrement se recalcule
