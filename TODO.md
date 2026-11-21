@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
+
+À chaque poussée sur `main`, GitHub répond : *« found 5 vulnerabilities on the
+default branch (1 high, 4 moderate) »*. **Rien dans le dépôt ne le suivait.**
+Le détail est sur sa page Sécurité, Dependabot, qu'une session ne peut pas lire
+(pas d'accès à cette partie de GitHub).
+
+Ce qui a pu être mesuré ici, le 21 novembre : `npm audit` ne voit **aucune
+alerte grave**, ni à la racine (15 moyennes) ni dans `appli/` (3 moyennes).
+Toutes sont dans l'outillage de construction et de contrôle, pas dans ce qui
+tourne pour un artisan : `esbuild` par `drizzle-kit`, `glob` et `minimatch` par
+les greffons de construction de Sentry et par le lint. L'alerte grave de
+GitHub n'a donc pas été identifiée.
+
+**À faire :** qu'il ouvre la page (ou en envoie une capture), puis traiter la
+grave d'abord. Monter `drizzle-kit` ou `@sentry/nextjs` est un changement
+majeur de version : niveau 3 (`package.json`), donc une batterie, sur son
+« oui ».
+
 ## ⏳ UNE PLANCHE À REGARDER : LES DOSSIERS DU PLAN D'ARROSAGE (21 novembre 2026)
 
 Sa demande du 21 novembre : créer un dossier à un nom choisi, y enregistrer un
