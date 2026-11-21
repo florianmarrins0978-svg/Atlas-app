@@ -23,7 +23,7 @@ const sansCible = [];
 for (let k = 0; k < 150; k++) {
   await page.waitForTimeout(1600);
   // Pendant que les champs s'écrivent, le guide est en retrait : on attend qu'il revienne.
-  await page.waitForSelector(".v-guide:not(.en-retrait)", { timeout: 15000 });
+  await page.waitForFunction(() => !document.querySelector(".v-guide").classList.contains("en-retrait") || window.visite.etapes[window.visite.etape()].sansBulle, null, { timeout: 15000 });
   await page.waitForTimeout(500);
   const etat = await page.evaluate(() => ({
     ecran: document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran,

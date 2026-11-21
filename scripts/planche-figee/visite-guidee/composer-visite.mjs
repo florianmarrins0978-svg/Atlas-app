@@ -79,9 +79,9 @@ const ETAPES = [
   { etat: "25-termines", titre: "Le chantier est passé", dit: "Celui de M. Lefèvre attend sa facture.", cible: '[data-atlas="ligne-terminee"]:has-text("Lef")', geste: "Touchez le chantier." },
   { etat: "27-facture", titre: "La facture", dit: "Elle reprend le devis, ligne par ligne. À vous d'essayer : Voir le PDF, Travaux en plus, Facture acquittée.", essais: "facture" },
   { etat: "28-facture-envoi", titre: "L'envoi", dit: "Par SMS ou par e-mail.", cible: '[data-atlas="envoyer-la-facture"]', geste: "Touchez Envoyer la facture." },
-  { etat: "29-facture-envoyee", titre: "Elle est partie", dit: "Arrêtée et numérotée. Une correction passerait par un avoir." },
-  { etat: "30-client-facture", titre: "Chez votre client", dit: "Sa facture, l'IBAN et le numéro à écrire sur son virement.", chez: "client", cible: 'button:has-text("J\'ai bien reçu")', geste: "Touchez J'ai bien reçu cette facture." },
-  { etat: "31-client-facture-recue", titre: "Il a reçu", dit: "Vous le savez. Puis il paie par virement.", chez: "client" },
+  { etat: "29-facture-envoyee", titre: "Elle est partie", dit: "Arrêtée et numérotée. Une correction passerait par un avoir. Voyons ce que reçoit votre client : sa facture, l'IBAN et le numéro à écrire sur son virement." },
+  { etat: "30-client-facture", titre: "Chez votre client", dit: "Sa facture, l'IBAN et le numéro à écrire sur son virement.", chez: "client", cible: 'button:has-text("J\'ai bien reçu")', geste: "Touchez J'ai bien reçu cette facture.", sansBulle: true },
+  { etat: "31-client-facture-recue", titre: "Il a reçu", dit: "Vous le savez. Puis il paie par virement.", chez: "client", bulleEnHaut: true },
   { etat: "32-accueil-virement", titre: "Le virement arrive", dit: "Votre banque est reliée : Cause reconnaît le numéro de la facture.", cible: '[data-atlas="carte-virement"] button', geste: "Touchez Oui." },
   { etat: "33-accueil-virement-oui", titre: "Payée", dit: "La facture est réglée. Elle entre dans votre TVA." },
   { etat: "34-tva", titre: "Ma TVA", dit: "La TVA collectée, la déductible, et ce qu'il reste à payer.", cible: 'button:has-text("Écrire à la main")', geste: "Touchez Écrire à la main." },
@@ -231,7 +231,8 @@ const SCRIPT = `
   const cibleCourante = () => libre ? C.etapes.at(-1).cible : essai ? (essai.phase === "feuille" ? essai.x.applique : null) : C.etapes[rang].cible;
   const poserDoigt = () => {
     const c = cibleDe(cibleCourante());
-    if (!c) { doigt.style.opacity = 0; guide.className = "v-guide en-bas"; return null; }
+    // Sans cible, la bulle se pose en bas, sauf quand l'étape dit ce qu'elle couvrirait.
+    if (!c) { doigt.style.opacity = 0; guide.className = "v-guide " + (C.etapes[rang].bulleEnHaut && !essai ? "en-haut" : "en-bas") + (guide.classList.contains("en-retrait") ? " en-retrait" : ""); return null; }
     const r = c.getBoundingClientRect();
     if (r.top < 90 || r.bottom > innerHeight - 220) c.scrollIntoView({ block: "center", behavior: "instant" });
     // Le doigt épouse la FORME du geste : un bouton qui porte un rond (la note
@@ -284,7 +285,8 @@ const SCRIPT = `
       guide.classList.add("en-retrait"); doigt.style.opacity = 0;
       window.scrollTo(0, 0);
       ecrire(() => setTimeout(() => { guide.classList.remove("en-retrait"); poserDoigt(); }, 500));
-    } else guide.classList.remove("en-retrait");
+    } else if (e.sansBulle) guide.classList.add("en-retrait");
+    else guide.classList.remove("en-retrait");
     if (e.photo) { photo.classList.add("visible"); setTimeout(() => photo.classList.remove("visible"), 1300); }
     libre = !!e.libre;
     dire();
