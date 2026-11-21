@@ -136,6 +136,16 @@ niveau 2.
 
 ## ⚠️ VISITE GUIDÉE : CE QUI RESTE À RÉPARER DANS SES ÉCRANS FIGÉS (vu le 21 novembre 2026)
 
+- **Ce qui REFAIT les écrans ajoutés le 21 au soir existe** (fiche de
+  sécurité jusqu'au PDF, véhicules, portes des Réglages) :
+  `appli/scripts/visite-guidee/donnees.ts`, `figer-neufs.mjs`,
+  `composer-neufs.mjs`, mode d'emploi dans son `LISEZ-MOI.md`. Il demande une
+  base de démonstration neuve, donc son « oui ». Les 95 écrans d'origine, eux,
+  n'ont toujours pas leur script (ligne suivante). **Piège :** `donnees.ts`
+  est sous `appli/`, que `npm run niveau` classe au niveau 1, mais
+  `tsconfig.json` le vérifie avec tout le projet. Deux erreurs de types y ont
+  été vues le 21 avant de partir : toute retouche se vérifie par
+  `npx tsc --noEmit`.
 - **Ce qui la VÉRIFIE existe depuis le 21 au soir** :
   `appli/scripts/visite-guidee/parcourir.mjs` (la visite au doigt à quatre
   largeurs, les essais enchaînés, les boutons muets, le guide chronométré à

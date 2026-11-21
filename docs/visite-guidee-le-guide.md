@@ -102,6 +102,49 @@ propre à Safari, que ce poste ne sait pas jouer.
 chronomètre chaque étape, processeur ralenti quatre fois : il a rougi sur
 l'ancienne visite (3 546 ms) et passe au vert sur la nouvelle.
 
+## Ta demande suivante : la fiche de sécurité, les véhicules, toutes les portes des Réglages
+
+*« Montrer ce que le client reçoit à la fin, une fois qu'on a rempli la fiche,
+avec un petit croquis qui voit comment on dessine à l'intérieur. Expliquer que
+les véhicules, on les rentre pour que Cause nous prévienne du contrôle
+technique ou de l'anti-pollution. Qu'ils puissent avoir accès à n'importe
+quelle porte dans la page réglage. Que des informations bidons. »*
+
+Tu as dit oui pour lancer l'appli ici, sur une base de démonstration neuve.
+Rien n'a touché ton espace. Les nouveaux écrans sont les vrais écrans de
+l'appli, figés.
+
+**La fiche de sécurité, après le décret (quatre étapes de plus) :**
+
+| Étape | Ce qu'on voit |
+|---|---|
+| Touchez Modifier le croquis. | la fiche remplie, son croquis en entier |
+| Il se dessine au doigt. | l'éditeur : les repères apparaissent un à un (la parcelle, la voie, l'accès, la maison, le tilleul à tailler, la zone de chute, la haie au crayon, le stockage, le réseau, les secours), et l'outil de chacun s'allume dans la grille |
+| Touchez Ouvrir le PDF. | la fiche signée par Julien Morel (le chef d'entreprise, inventé), Paul et Kévin, le 25 au matin ; « Envoyer au client » à l'écran |
+| Ce que reçoit votre client. | le PDF de la fiche, croquis et signatures compris |
+
+**Les véhicules, avant les Réglages libres (quatre étapes de plus) :**
+
+| Étape | Ce qu'on voit |
+|---|---|
+| Touchez Véhicules. | « Cause vous prévient avant le contrôle technique et l'anti-pollution. » |
+| Touchez le Camion benne. | trois véhicules inventés, plaques DE-123-MO, DE-456-MO, DE-789-MO |
+| Contrôle technique avant le 3 décembre. | la fiche du camion : « Plus que 12 jours » |
+| Le rappel, sur l'accueil. | la carte du camion, éclairée : ambre à quinze jours, rouge une fois la date passée |
+
+**Les Réglages libres : 38 portes s'ouvrent**, dont les quatre catégories de
+« Devis & factures » (L'allure, Ce qui s'imprime, Mon message, Le numéro),
+l'exemple de facture, Nouveau compte et Zones (Équipe), Mes prix, Mes mesures
+et le Catalogue, Fermer mon compte, chaque véhicule. La flèche du haut ramène à
+l'écran d'avant. Ce qui n'ouvre pas d'écran le dit dans la bulle (« Mes
+données » se télécharge ; les flèches de mois changent de mois). La rubrique
+Véhicules porte l'explication des rappels.
+
+**Trouvé et corrigé en route :** la photo du ticket restait 1,3 seconde sur
+l'étape suivante si l'on passait vite.
+
+**Ce que la visite compte maintenant :** 83 étapes, dans 14 chapitres.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |

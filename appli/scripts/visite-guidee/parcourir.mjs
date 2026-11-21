@@ -13,6 +13,8 @@
 //             (« la petite barre noire cache les informations », 21 novembre)
 //   essais    les boutons à essayer s'enchaînent sans Retour, et Suivant fait
 //             avancer (« on est obligé de faire retour », 21 novembre)
+//   portes    dans les Réglages libres, chaque porte s'ouvre et sa flèche ramène
+//             (« n'importe quelle porte dans la page réglage », 21 novembre)
 //   muets     chaque bouton des écrans d'essai répond (CLAUDE.md §3 bis, 2 quater)
 //   chrono    à chaque étape, le guide est là en moins de 600 ms, processeur
 //             ralenti quatre fois comme un téléphone (« on reste sur la page
@@ -62,6 +64,11 @@ const etat = (p) => p.evaluate(() => {
 async function parcourirLaVisite(largeur, hauteur) {
   const cas = `visite ${largeur}`;
   const { p, ctx, erreurs } = await page({ viewport: { width: largeur, height: hauteur } });
+  // Rien ne vit hors d'un écran : un morceau d'écran échappé de son enveloppe se voit
+  // par-dessus toute la visite (une barre « Réglages » posée sur la fiche de sécurité,
+  // 21 novembre : un écran sur plusieurs lignes, recomposé ligne par ligne).
+  const echappes = await p.evaluate(() => [...document.body.children].filter((e) => !e.matches(".visite-ecran, .v-calque, .g, .v-photo, .v-ouverture, script, style")).length);
+  dire(cas, echappes === 0, `${echappes} morceaux d'écran hors de leur enveloppe, visibles par-dessus la visite`);
   const n = await p.evaluate(() => visite.etapes.length);
   for (let k = 0; k < n; k++) {
     await p.waitForTimeout(450);
@@ -188,6 +195,48 @@ async function aucunBoutonMuet() {
   return total;
 }
 
+// Les Réglages, libres : chaque porte de chaque rubrique, et des pages qu'elle
+// ouvre, mène à un écran, dit ce qu'elle ferait (un téléchargement), ou ramène.
+// Aucune ne fait trembler le guide (« n'importe quelle porte dans la page
+// réglage », 21 novembre). La barre de l'appli, en bas, sort des Réglages : hors compte.
+async function aucunePorteFermee() {
+  const cas = "portes";
+  const { p, ctx } = await page({ viewport: { width: 390, height: 664 } });
+  await p.evaluate(() => { while (!visite.libre()) document.querySelector(visite.plie() ? ".g-suivant-plie" : ".g-droite").click(); });
+  await p.waitForTimeout(300);
+  const lire = () => p.evaluate(() => ({ ecran: document.querySelector(".visite-ecran:not([hidden])").dataset.ecran, phrase: document.querySelector(".g p").textContent, secoue: document.querySelector(".g").classList.contains("secoue") }));
+  const liens = () => p.evaluate(() => [...new Set([...document.querySelectorAll(".visite-ecran:not([hidden]) a[href]")].filter((a) => !a.hasAttribute("data-geste-retour") && a.getBoundingClientRect().width && !a.closest("nav")).map((a) => a.getAttribute("href")))]);
+  let ouvertes = 0;
+  const visiter = async (profondeur) => {
+    const ici = (await lire()).ecran;
+    for (const h of await liens()) {
+      const avant = await lire();
+      await p.evaluate((h) => { const a = [...document.querySelectorAll(".visite-ecran:not([hidden]) a")].find((x) => x.getAttribute("href") === h && x.getBoundingClientRect().width); a.scrollIntoView({ block: "center" }); document.querySelector(".g").classList.remove("secoue"); a.click(); }, h);
+      await p.waitForTimeout(150);
+      const apres = await lire();
+      if (apres.ecran !== ici) {
+        ouvertes++;
+        if (profondeur < 3 && apres.ecran.startsWith("r-")) await visiter(profondeur + 1);
+        // Sa flèche, ou la barre du bas pour un écran qui n'en a pas (Terminés, le planning).
+        await p.evaluate(() => { const r = document.querySelector(".visite-ecran:not([hidden]) a[data-geste-retour]"); if (r) r.click(); else document.querySelector('.visite-ecran:not([hidden]) nav a[href="/reglages"]')?.click(); });
+        await p.waitForTimeout(150);
+        const retour = (await lire()).ecran;
+        // Sans flèche, la barre du bas ramène au sommaire ; on y rouvre l'écran d'où l'on venait.
+        if (retour !== ici && retour === "50-reglages" && !(await p.evaluate((n) => !!document.querySelector(`.visite-ecran[data-ecran="${n}"] a[data-geste-retour]`), apres.ecran))) {
+          await p.evaluate((ici) => { const a = [...document.querySelectorAll('.visite-ecran:not([hidden]) a[href^="/reglages/"]')].find((x) => "r-" + x.getAttribute("href").replace(/^\/reglages\//, "").replace(/\//g, "-") === ici); a?.click(); }, ici);
+          await p.waitForTimeout(150);
+        }
+        dire(cas, (await lire()).ecran === ici, `en revenant de ${apres.ecran}, on n'est pas revenu à ${ici}`);
+        if ((await lire()).ecran !== ici) return;
+      } else dire(cas, !apres.secoue && apres.phrase !== avant.phrase, `${ici} : la porte ${h} ne mène nulle part`);
+    }
+  };
+  await visiter(0);
+  dire(cas, ouvertes >= 35, `seulement ${ouvertes} portes ouvertes`);
+  await ctx.close();
+  return ouvertes;
+}
+
 // À chaque étape, le temps entre l'appui et un guide lisible à l'écran : opaque
 // ET immobile. Opaque seul ne suffit pas : un guide qui commence à s'effacer
 // l'est encore, et la première version de ce contrôle passait au vert sur la
@@ -227,6 +276,7 @@ for (const [l, h] of tailles) {
   if (jouer("essais")) await enchainerLesEssais(l, h);
   if (jouer("visite") || jouer("essais")) console.log(`${l} × ${h} : parcourue`);
 }
+if (jouer("portes")) console.log(`portes des Réglages ouvertes : ${await aucunePorteFermee()}`);
 if (jouer("muets")) console.log(`boutons des écrans d'essai touchés : ${await aucunBoutonMuet()}`);
 if (jouer("chrono")) console.log(`le guide le plus lent à paraître : ${await chronometrer()} ms (processeur ralenti quatre fois)`);
 await nav.close();

@@ -96,7 +96,7 @@ sous l'onglet de la fiche client est replacé par la règle de l'appli.
 
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 75 étapes, environ huit minutes. On peut en retirer.
+1. **La longueur** : 83 étapes, une dizaine de minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
@@ -111,6 +111,6 @@ démonstration neuve, donc ton accord.
 `tout.sh`, ni `histoire.mjs`, ni `parcourir-visite.mjs` n'ont été commités ;
 ils sont restés dans la session qui a fait la planche. Seuls `figer.mjs`,
 `composer.mjs` et `parcourir.mjs` existent sous `scripts/planche-figee/`.
-Refaire la visite demande donc de réécrire son parcours.
+Refaire la visite demande donc de réécrire son parcours. **Depuis le 21 au soir, les vingt écrans ajoutés** (fiche de sécurité jusqu'au PDF, véhicules, portes des Réglages) se refont, eux, par `appli/scripts/visite-guidee/` (son `LISEZ-MOI.md`).
 
 **Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
