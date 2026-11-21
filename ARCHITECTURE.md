@@ -38074,3 +38074,37 @@ goutte-à-goutte, les électrovannes FF se touchent presque.
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
 
+**Les clarinettes à plat, et leur détourage refait** (même soir, *« mets la
+clarinette 2, 3 et 4 voies à plat »*, et *« il y a des bouts qui manquent, et
+à d'autres endroits il y en a en trop »*). Leurs photos étaient prises d'un peu
+au-dessus (de l'ordre de 6°) : seul le bout de chaque sortie s'y voyait de face,
+l'anneau et le trou. **Cette face est retirée, droite, là où finit le flanc de
+l'écrou** : la ligne se lit sur la photo (le trou, puis en remontant le liseré
+plus sombre, jusqu'à retrouver la luminosité du flanc). On retire des pixels,
+on n'en déplace aucun : la règle « une image ne se déforme pas » tient. Le flanc
+avant de l'écrou a la longueur d'un écrou de profil ; ses côtés y perdent le
+demi-petit axe de l'ellipse du bout, quelques pixels. Le tube, l'écrou union et
+le filetage étaient déjà de profil.
+
+**Le détourage se refait sur la photo d'origine**, et le défaut qu'il voyait
+avait une cause : le bas du tube tombe sur l'ombre de contact, où la teinte
+bleutée du PVC hésite d'un bloc de compression JPEG (8 px) à l'autre ; un seuil
+de teinte y fait des crans et laisse des copeaux. Le tube, le col et l'écrou
+union tournent autour de l'axe du tube : **leur bord du bas est le reflet de leur
+bord du haut**, net sur le fond blanc (lu à la luminosité, pas à la teinte, qui
+bave d'un bloc). L'axe se mesure sur la pièce (médiane des milieux haut-bas) ;
+sur la photo de la 2 voies, le col, le tube, l'écrou et le filetage tombent à
+1 px près sur le même axe, ce qui confirme que la bande sombre sous le tube est
+son dessous et non une ombre : l'ancien détourage la rognait (109 px de tube au
+lieu de 124). Hors des sorties (coupées droit) et du filetage (ses dents ne
+sont pas symétriques : un filet est une hélice). Le seuil de teinte se règle
+par photo (4,5 ; 7 sur la 4 voies, dont l'ombre est bleutée ; 1 sur la 3 voies,
+dont la teinte est quantifiée par la compression). **Même échelle qu'avant**
+(`w` inchangé : leur étendue horizontale n'a pas bougé) ; `tube` et `sorties`
+remesurés. Le contrôle à 3x lit désormais le tube sur toute la hauteur de la
+clarinette et sur des colonnes de tube seul (il s'arrêtait à 62 % de la hauteur,
+là où l'ancien tube finissait), et **le milieu de chaque écrou de sortie sur
+l'axe de sa voie** : un contrôle neuf, vu rougir (4,8 px) sur une sortie décalée
+de 1 %. 725 mesures sur la planche, 1482 sur le vrai composant, toutes sous
+1 px. La légende ne porte plus « à reprendre à plat » : plus aucune pièce ne
+l'attend, et ce qui l'affichait est retiré.
