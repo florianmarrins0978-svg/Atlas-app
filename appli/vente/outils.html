@@ -54,11 +54,6 @@
       seul film bouge à la fois. Chaque outil a sa scène : sauge pour le
       plan, une clairière dans le vert nuit pour le diagnostic, sable pour
       les fiches ;
-    · « LA FICHE, À LIRE » : sur ordinateur, ses trois téléphones mesuraient
-      18 px de large (trois points noirs). Ce sont trois captures à plat, en
-      grand, où le texte se lit : côte à côte sur ordinateur, l'une sous
-      l'autre sur téléphone (rangées de côté, il fallait glisser du doigt
-      pour lire la deuxième, et rien ne montrait la troisième) ;
     · sur ordinateur, le texte tient une colonne et l'image l'autre, du haut
       en bas d'un outil (le diagnostic à l'envers) ; les films ne zigzaguent
       plus d'un bord à l'autre.
@@ -73,6 +68,33 @@
   et non au-dessus du film ; la barre montre ses liens dès 960 px, comme
   celle du site. Ce défaut d'ordre ne se voit qu'en descendant DOUCEMENT :
   d'un grand pas, les deux cartes entrent dans le même rendu.
+  LE RÉSEAU ENTIER, LE 21 NOVEMBRE. Sa demande devant le film des turbines,
+  qui s'approchait de la chaîne d'une tête et finissait sur la feuille
+  « Combien », le plan coupé en haut : « ça serait bien de pouvoir voir
+  l'ensemble du réseau avec les pièces et montrer qu'on peut cliquer dessus,
+  en supprimer et après on la voit griser et barrée ». Le film part du plan
+  du réseau entier ; une turbine s'y touche, se supprime, et y reste, grisée
+  et barrée. Dans le téléphone du film une pièce fait vingt-quatre pixels :
+  la pièce supprimée est donc aussi montrée de près, à côté de sa voisine
+  gardée (.de-pres), sous le film sur téléphone et sous le titre sur
+  ordinateur. Le film ne montre plus « les huit d'un coup ».
+  LE DIAGNOSTIC, LE 21 NOVEMBRE, ses trois demandes devant la page :
+    · « Supprime-moi la licence de la photo, la CC BY » : la ligne du crédit
+      sous le téléphone est partie. La photo reste sous licence CC BY, qui
+      oblige à citer son auteur : le crédit est donc dans les mentions
+      légales du site (mentions-legales-cause.html, « Crédits »), où le pied
+      de page mène. Pour ne le dire nulle part, il faut une autre photo ;
+    · « Supprime-moi les photos figées de la page diagnostic » : « La fiche,
+      à lire » et ses trois captures sont parties (il les avait proposées le
+      20) ;
+    · « montrer à l'écran qu'on puisse créer des dossiers pour enregistrer
+      les maladies » : un quatrième film, « Vos dossiers. », tourné sur sa
+      planche du 20 novembre (appli/soignee/diagnostic-dossiers.html). RIEN
+      N'EST CODÉ : comme pour la fiche soignée, le site montre l'écran qui
+      vient. La fiche de cette planche est celle de l'oïdium du chêne, et il
+      veut le peuplier seul en exemple : le film n'en montre que la feuille
+      « Ranger cette photo » et le bas de la fiche, qui valent pour toute
+      fiche (film-outils.cjs dit comment).
 
   LE MONDE EST CELUI DE cause-2.html, sans un écart : crème, vert nuit, vert
   feuille, or ; Instrument Serif et Hanken Grotesk ; les titres qui montent
@@ -111,12 +133,16 @@
       l'appli, qui faisaient une carte dans une carte (.nourrice-fig : 948 px
       sur 1320, à 45 px du bord gauche et 51 px du haut) ;
     · nov-film-outils-* : les films de la démonstration (même endroit) ;
-    · outils-diagnostic et outils-fiche-a-lire-* : la fiche du peuplier
-      soignée, vue Proposé de appli/soignee/fiche-de-diagnostic.html (la
-      vraie page figée, sa fiche refaite), sa demande du 20 novembre au
-      soir : « c'est cette fiche-là que je veux ». Une autre session la code ;
-      tant qu'elle n'est pas sur main, le site montre l'écran qui vient, pas
-      celui d'aujourd'hui. Prises par film-outils.cjs --images ;
+    · outils-piece-supprimee : deux têtes du plan du réseau 1, dans la même
+      démonstration, la turbine supprimée et sa voisine gardée. Prise par
+      film-outils.cjs --images deux fois plus fin que les autres captures
+      (six pixels pour un) : la page l'agrandit deux fois ;
+    · outils-diagnostic : la fiche du peuplier soignée, vue Proposé de
+      appli/soignee/fiche-de-diagnostic.html (la vraie page figée, sa fiche
+      refaite), sa demande du 20 novembre au soir : « c'est cette fiche-là
+      que je veux ». Une autre session la code ; tant qu'elle n'est pas sur
+      main, le site montre l'écran qui vient, pas celui d'aujourd'hui. Prise
+      par film-outils.cjs --images ;
     · outils-fiche : la fiche du jour, onglet « Aujourd'hui, en cours » de
       appli/fiche-de-chantier-ouverte-soignee.html, figée de même. Ses
       données d'essai ont été alignées sur le compte rendu ci-dessous (M.
@@ -127,7 +153,8 @@
       client, capture de l'appli (appli/soignee/aujourdhui/recoit-rapport.jpg) ;
     · outils-feuille : la photo de référence de la fiche du peuplier, de
       Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia
-      Commons, sous licence CC BY 3.0 US ; recadrée, son crédit sous la scène.
+      Commons, sous licence CC BY 3.0 US ; recadrée, son crédit dans les
+      mentions légales du site.
   Le croquis est un dessin du jardin de la démonstration, au trait de celui
   de appli/soignee/arrosage.html : c'est la feuille de papier de l'artisan,
   pas un écran de l'appli.
@@ -185,8 +212,8 @@
       la brunissure des feuilles de peuplier en exemple », « c'est cette
       fiche-là ». La démonstration n'a que la fiche publiable du platane, que
       le film ne montre plus. La fiche défile lentement (« qu'on ait un petit
-      peu le temps de lire »), et trois captures fixes la donnent à lire
-      sous les films (« ou même tu peux mettre à côté des captures figées ») ;
+      peu le temps de lire »). Le dernier film, les dossiers, se tourne sur
+      une autre planche, appli/soignee/diagnostic-dossiers.html ;
     · les fiches : le modèle fourni par l'appli, deux clients d'exemple, un
       compte rendu déjà envoyé chez M. Bernard ; le nommer sur une fiche
       neuve recoche ses cases de la dernière fois (cocherCommeLaDerniereFois).
@@ -314,8 +341,6 @@ html.anime .menu.ouvert a{opacity:1;transform:none;transition:opacity .5s ease c
 html.anime .gros[data-vu] img{transform:scale(1.035);transition:transform 1.6s var(--sortie)}
 html.anime .gros[data-vu].vu img{transform:none}
 .sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
-.credit{margin-top:14px;font-size:13.5px;line-height:1.45;color:var(--encre-2)}
-.nuit .credit{color:var(--sur-nuit-2)}
 .scene{position:relative;border-radius:30px;background:radial-gradient(70% 55% at 30% 20%,rgba(255,255,255,.55),transparent 70%),var(--sauge);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.05)}
 .scene.sable{background:radial-gradient(70% 55% at 70% 15%,rgba(255,255,255,.5),transparent 70%),var(--sable)}
 
@@ -516,7 +541,7 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 .plans{list-style:none;margin:clamp(36px,5vw,60px) 0 0;padding:0;display:grid;gap:clamp(64px,9vw,120px)}
 .plan{display:grid;min-width:0}
 .plan-texte{display:grid;gap:6px;max-width:24em}
-.plan-texte h3,.a-lire h3{font-size:clamp(28px,6.8vw,34px);line-height:1.08;letter-spacing:-.01em}
+.plan-texte h3{font-size:clamp(28px,6.8vw,34px);line-height:1.08;letter-spacing:-.01em}
 .plan-texte p{color:var(--encre-2);font-size:16.5px}
 .nuit .plan-texte p{color:var(--sur-nuit-2)}
 .plan-vue{display:contents}
@@ -530,6 +555,11 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 /* Sur le vert nuit, la scène est une clairière : plus claire d'un rien. */
 .nuit .scene-plan{background:radial-gradient(70% 55% at 30% 18%,rgba(243,239,227,.08),transparent 70%),rgba(243,239,227,.045);box-shadow:inset 0 0 0 1px var(--trait-nuit)}
 .plan > .faits{order:2;margin-top:26px}
+/* La pièce supprimée, vue de près, sous le film du réseau entier : dans le
+   téléphone du film, une pièce du plan fait vingt-quatre pixels, et « grisée
+   et barrée » s'y devine plus qu'il ne se voit. La capture est prise deux
+   fois plus fin que les autres, pour rester nette agrandie. */
+.plan > .de-pres{order:2;margin-top:14px;border-radius:16px}
 /* La nourrice, dessinée pièce par pièce, ouvre le film où l'on en change une. */
 /* Sa capture porte la marge et le filet de sa carte dans l'appli : montrée
    telle quelle, c'était une carte dans une carte. On n'en montre que
@@ -547,18 +577,6 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 .film video.joue{opacity:1}
 .film img.film-fin{z-index:3;opacity:0}
 .film img.film-fin.vue{opacity:1}
-/* « La fiche, à lire » : trois captures fixes, sa proposition du 20 novembre
-   (« ou même tu peux mettre à côté des captures figées »), pour lire sans
-   que rien ne bouge. À plat et en grand, pour que le texte se lise : dans un
-   téléphone de plus, il faisait huit pixels. Sur téléphone elles sont l'une
-   sous l'autre : rangées de côté, il fallait glisser du doigt pour lire la
-   deuxième, dont les mots dépassaient coupés, et rien ne disait qu'il y en
-   avait une troisième. Ici on ne fait que descendre. */
-.a-lire{margin-top:clamp(64px,9vw,112px)}
-.captures{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:18px;justify-items:center}
-.captures li{width:min(100%,420px)}
-.captures .gros{border-radius:20px}
-.nuit .gros{box-shadow:0 34px 70px -40px rgba(0,0,0,.75),0 0 0 1px rgba(243,239,227,.08)}
 @media (min-width:960px){
   .suite{padding-top:44px;border-top:1px solid var(--trait)}
   .nuit .suite{border-top-color:var(--trait-nuit)}
@@ -570,16 +588,15 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
   .plan.avec-note .plan-vue{grid-row:1 / span 2}
   .plans.inverse .plan-texte{grid-column:2}
   .plans.inverse .plan-vue{grid-column:1}
-  .plan-texte h3,.a-lire h3{font-size:clamp(34px,3.3vw,46px)}
+  .plan-texte h3{font-size:clamp(34px,3.3vw,46px)}
   .plan-texte p{font-size:18px}
   .scene-plan{margin-top:0;padding:48px 40px 52px}
   .scene-plan .socle{width:min(320px,calc((100vh - 240px) * .5873 + 18px))}
   .plan > .faits{grid-column:1;grid-row:2;align-self:start;margin-top:34px}
+  .plan > .de-pres{grid-column:1;grid-row:2;align-self:start;width:min(100%,430px);margin-top:34px}
   .plans.inverse .plan > .faits{grid-column:2}
   .plan.avec-note .plan-texte{align-self:end}
   .plan .nourrice-fig{width:min(100%,430px);margin:0 auto 28px}
-  .captures{margin:30px 0 0;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
-  .captures li{width:auto}
 }
 /* Pas assez large pour deux images côte à côte : la nourrice se range sous
    son titre, à gauche, et le film garde la droite. Empilée au-dessus du
@@ -803,9 +820,10 @@ html.anime .geant.vu span{transform:none}
           <div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La légende de la nourrice dans Cause : la pièce 9 changée pour une électrovanne Toro EZ FLO+ 1 pouce MM, solénoïde 9 V à impulsion" width="1170" height="1992" decoding="async"></div></div></div></div></div>
         </div>
       </li>
-      <li class="plan">
-        <div class="plan-texte"><h3>Les turbines.</h3><p>Une seule, ou les huit d’un coup.</p></div>
-        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 : huit turbines 3504, chaque maillon de la chaîne dessiné, du té taraudé à la turbine" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+      <li class="plan avec-note">
+        <div class="plan-texte"><h3>Le réseau entier.</h3><p>Touchez une pièce pour la supprimer. Elle reste sur le plan, grisée et barrée.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-turbines"><img class="film-pose" src="images/nov-film-outils-turbines-fin.jpg" alt="Les pièces du réseau 1 dans Cause : le plan du réseau entier, ses dix-sept pièces à leur place, une turbine 3504 supprimée restée sur le plan, grisée et barrée, et le compte « 7x turbine 3504 » dessous" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+        <figure class="gros de-pres" data-vu="0.2"><img src="images/outils-piece-supprimee.jpg" alt="Deux têtes du plan, vues de près : une turbine 3504 gardée, et la turbine supprimée, grisée et barrée, chacune à côté de son té taraudé" width="1140" height="384" decoding="async"></figure>
       </li>
       <li class="plan">
         <div class="plan-texte"><h3>Au fournisseur.</h3><p>Tout est additionné, pièce par pièce. Le message part tel quel, ou retouché.</p></div>
@@ -830,7 +848,6 @@ html.anime .geant.vu span{transform:none}
         <figure class="tirage"><div class="balaye"><img src="images/outils-feuille.jpg" alt="Photo d'une feuille de peuplier couverte de petites taches brunes" width="650" height="650" decoding="async"></div></figure>
         <div class="appareil"><div class="ecran"><img src="images/outils-diagnostic.jpg" alt="La fiche du diagnostic dans Cause : brunissure des feuilles de peuplier, probable sur un peuplier, ce qu'est la maladie et les photos pour comparer" width="1170" height="1992" decoding="async"></div></div>
       </div>
-      <p class="credit">Photo de Manfred Mielke, USDA Forest Service, Bugwood.org, via Wikimedia Commons, sous licence CC BY 3.0 US, recadrée.</p>
       </div>
     </div>
     <p class="suite" data-monte><span class="bloc">Une feuille de peuplier,</span> <span class="bloc">et la fiche qui répond.</span></p>
@@ -850,15 +867,11 @@ html.anime .geant.vu span{transform:none}
         <div class="plan-texte"><h3>Les détails.</h3><p>Comment la reconnaître, comment elle arrive, et tout le reste de la fiche.</p></div>
         <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t style="--cote:19deg"><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-details"><img class="film-pose" src="images/nov-film-outils-details-fin.jpg" alt="Les détails de la fiche du peuplier, ouverts : l’agent en cause, quand ça se voit, et les autres arbres du jardin" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
       </li>
+      <li class="plan">
+        <div class="plan-texte"><h3>Vos dossiers.</h3><p>Créez un dossier et rangez-y la maladie, avec votre note.</p></div>
+        <div class="plan-vue"><div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-dossiers"><img class="film-pose" src="images/nov-film-outils-dossiers-fin.jpg" alt="La fiche du diagnostic dans Cause, une fois la photo rangée : « Rangée dans Peupliers, le 20 novembre. », la note « Peuplier du fond, à surveiller. », et Modifier" width="1170" height="1992" decoding="async"></div></div></div></div></div></div>
+      </li>
     </ol>
-    <div class="a-lire">
-      <h3>La fiche, à lire.</h3>
-      <ul class="captures">
-        <li><figure class="gros"><img src="images/outils-diagnostic.jpg" alt="La fiche du peuplier dans Cause : brunissure des feuilles de peuplier, Drepanopeziza brunnea, les feuilles, les rameaux et le houppier, probable sur un peuplier" width="1170" height="1992" decoding="async"></figure></li>
-        <li><figure class="gros"><img src="images/outils-fiche-a-lire-gravite.jpg" alt="Est-ce grave pour l’arbre ? Impact faible, agressivité moyenne, fréquence forte, et ce que la maladie fait à l’arbre" width="1170" height="1992" decoding="async"></figure></li>
-        <li><figure class="gros"><img src="images/outils-fiche-a-lire-que-faire.jpg" alt="Que faire ? Aucun traitement ni méthode de lutte, surveiller l’arbre, puis comment la reconnaître" width="1170" height="1992" decoding="async"></figure></li>
-      </ul>
-    </div>
   </div>
 </section>
 

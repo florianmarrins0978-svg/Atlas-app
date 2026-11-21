@@ -1,12 +1,16 @@
 # État du projet
 
+## LE DÉBUT DE LA VISITE GUIDÉE : DEUX PROPOSITIONS SUR SES QUATRE PREMIÈRES ÉTAPES (21 novembre 2026), PAS ENCORE CHOISIES
+
+Sa demande du 21, reçue par deux sessions. `appli/visite-guidee-le-debut.html` (le geste en titre, bulle courte) et `appli/visite-guidee-le-debut-2.html` (l'appli à ses couleurs, la page qui arrive en haut puis glisse, la main, le surligneur). Mêmes écrans, rien dans `src/`, la visite d'aujourd'hui intacte. Safari d'iPhone non vérifié ici pour la seconde. `TODO.md` dit ce qui les sépare et ce qu'il doit trancher.
+
 ## LES DOSSIERS DU PLAN D'ARROSAGE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 21 : enregistrer un plan d'arrosage dans un dossier, le revoir figé, le télécharger avec ses réserves. `appli/arrosage-dossiers.html` sur le vrai écran ; cinq questions dans `docs/arrosage-dossiers.md`. Rien n'est codé.
 
-## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), VUE PAR LUI, RETOUCHÉE DEUX FOIS LE JOUR MÊME
 
-Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.
+Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun prix changé, rien dans `src/`. **Sa demande du 21 en la voyant** : le film des turbines montre maintenant le réseau entier, une pièce touchée, supprimée, restée sur le plan grisée et barrée, et la pièce se voit de près sous le film. **Puis trois demandes sur le diagnostic, le même jour** : la licence de la photo n'est plus sous le téléphone (son crédit est dans les mentions légales, la licence l'exige), les captures figées sont parties, et un film « Vos dossiers. » montre un dossier créé pour y ranger la maladie, tourné sur sa planche du 20 : les dossiers ne sont pas codés. Il n'a pas encore vu cette version. `TODO.md` dit ce qui a été décidé sans lui et ce qui lui revient.
 
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : SUR `main` (21 novembre 2026)
 

@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
+
+À chaque poussée sur `main`, GitHub répond : *« found 5 vulnerabilities on the
+default branch (1 high, 4 moderate) »*. **Rien dans le dépôt ne le suivait.**
+Le détail est sur sa page Sécurité, Dependabot, qu'une session ne peut pas lire
+(pas d'accès à cette partie de GitHub).
+
+Ce qui a pu être mesuré ici, le 21 novembre : `npm audit` ne voit **aucune
+alerte grave**, ni à la racine (15 moyennes) ni dans `appli/` (3 moyennes).
+Toutes sont dans l'outillage de construction et de contrôle, pas dans ce qui
+tourne pour un artisan : `esbuild` par `drizzle-kit`, `glob` et `minimatch` par
+les greffons de construction de Sentry et par le lint. L'alerte grave de
+GitHub n'a donc pas été identifiée.
+
+**À faire :** qu'il ouvre la page (ou en envoie une capture), puis traiter la
+grave d'abord. Monter `drizzle-kit` ou `@sentry/nextjs` est un changement
+majeur de version : niveau 3 (`package.json`), donc une batterie, sur son
+« oui ».
+
 ## ⏳ UNE PLANCHE À REGARDER : LES DOSSIERS DU PLAN D'ARROSAGE (21 novembre 2026)
 
 Sa demande du 21 novembre : créer un dossier à un nom choisi, y enregistrer un
@@ -48,6 +67,58 @@ Codé sur la branche de session (`ARCHITECTURE.md` §593, migration 0188),
 parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
 20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
 612). Ce qui suit est la planche telle qu'elle a été posée.
+
+## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, DEUX PROPOSITIONS (21 novembre 2026)
+
+Sa demande, devant la visite : *« propose une version améliorée juste pour les
+4 premières étapes seulement, arrête-toi avant d'entrer dans le devis, au
+client »*. **Deux sessions l'ont reçue et y ont répondu chacune**, sans le
+savoir : la seconde ne l'a vu qu'en fusionnant `main`. Les deux planches
+gardent les quatre mêmes écrans figés et ne touchent ni `src/` ni
+`appli/visite-guidee.html`.
+
+| | `appli/visite-guidee-le-debut.html` | `appli/visite-guidee-le-debut-2.html` |
+|---|---|---|
+| Retour | `docs/visite-guidee-le-debut.md` | `docs/visite-guidee-le-debut-2.md` |
+| L'appli autour de la cible | grisée, comme aujourd'hui | à ses couleurs |
+| La bulle | le geste en titre, la phrase dessous, 116 points (180 à la dernière étape) | la phrase, puis le geste en or, 151 points (99 à la dernière) |
+| L'arrivée sur un écran | la page est posée sur la cible | la page arrive en haut, puis glisse jusqu'à la cible |
+| Toucher à côté | la bulle tremble, le cadre se rappelle | une main revient montrer où toucher |
+| Ce qu'on regarde sans le toucher | la ligne de la facture éclairée | « Ouverte le 21/11 » surligné |
+| Sortir | pas avant la fin, comme aujourd'hui | une croix à chaque étape |
+
+**À trancher par lui :** l'une, l'autre, ou un mélange (par exemple la bulle
+courte de la première avec la main et les couleurs de la seconde). **Tant
+qu'il n'a pas choisi, aucune des deux ne se porte sur la visite entière, et
+aucune session ne retouche la planche de l'autre.**
+
+**Pas vérifié pour la seconde : Safari sur son iPhone.** Ce poste n'a que
+Chromium ; dix parcours y passent, dont un qui imite Safari (aucun clic hors
+des boutons). Elle lit le doigt (`pointerdown` puis `pointerup`), parce que ses
+écrans figés ne répondent plus eux-mêmes. Ce qui la refait et la rejoue est
+dans `appli/scripts/visite-le-debut-2/`, sans serveur ni base.
+
+**Si la seconde est retenue, restent à porter sur la visite entière :**
+l'anneau rond pour un bouton rond (sa remarque du 20, `formeDe`), les essais
+libres du devis et de la facture, les Réglages libres, la bulle retirée pendant
+que les champs s'écrivent, et la bulle en haut quand la cible est collée au bas
+de l'écran.
+
+## ⚠️ VISITE GUIDÉE : CE QUI RESTE À RÉPARER DANS SES ÉCRANS FIGÉS (vu le 21 novembre 2026)
+
+- **Le script qui la refait manque** (`scripts/planche-figee/visite-guidee/`,
+  jamais enregistré : l'entrée ci-dessous le dit). **Le plus court** : si la
+  session qui a fait la visite (`claude/sleepy-sagan-gq6c0x`) est encore
+  ouverte, lui faire enregistrer ce dossier. Sinon le réécrire, sur une base de
+  démonstration neuve, donc sur son « oui ». `verifier:memoire` ne pouvait pas
+  le voir : il ne lit ni les `.sh` ni un nom de fichier cité sans son dossier.
+- **Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
+  qu'à 390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un
+  ordinateur) : sa place a été figée avec l'écran. La seconde proposition du
+  début le replace par la règle de l'appli (`recalerLesOnglets`) ; la visite
+  entière et la première proposition le portent encore.
+- **Les chantiers de l'accueil sont datés de juillet** quand l'histoire de
+  Mme Costa est en novembre. Cela demande de rejouer la base.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
@@ -104,7 +175,9 @@ réécrire son parcours.
 `appli/visite-guidee-le-debut.html`, les quatre premières étapes jusqu'aux
 factures de Costa, sur ses mêmes écrans figés. Retour :
 `docs/visite-guidee-le-debut.md`. S'il la retient, la même bulle passe sur
-les 74 étapes de `appli/visite-guidee.html`.
+les 74 étapes de `appli/visite-guidee.html`. **Une seconde proposition existe
+pour la même demande** (`appli/visite-guidee-le-debut-2.html`) : l'entrée « DEUX
+PROPOSITIONS » plus haut dit ce qui les sépare.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
@@ -124,7 +197,8 @@ disponible ici » est retiré du ticket lu. Et partout, l'exemple
 « 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
 
 **Sa demande du soir, faite** : entrer dans la fiche d'un client. Mme Costa a
-une histoire jouée avant la visite (`histoire.mjs`) : devis signé, retour
+une histoire jouée avant la visite (`histoire.mjs`, non enregistré lui non
+plus) : devis signé, retour
 d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
 « Dernier devis » avec « + 10 % ». **Les retours d'intervention ne sont pas sur
 la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y
@@ -831,8 +905,9 @@ retournent alors.
 du 20 au soir, devant la page : *« J'aimerais que tu améliores ce qu'il a
 fait [...] dans le même esprit que ce qu'on a fait sur notre site
 internet. »* La page est la même adresse, refaite en place ; celle d'avant
-est dans l'historique (`git show f65c7fa:appli/vente/outils.html`). **Il ne
-l'a pas encore vue.** Ce qui a changé est dit en tête de la page, avec ses
+est dans l'historique (`git show f65c7fa:appli/vente/outils.html`). **Il l'a
+vue le 21 sur son téléphone**, et n'a demandé qu'une chose : le film du
+réseau (plus bas). Ce qui a changé est dit en tête de la page, avec ses
 raisons ; en trois lignes :
 - une histoire par outil, dans une seule bande : son nom, sa phrase, la
   scène, puis ses films (plus de « de bout en bout » en second titre), et
@@ -873,6 +948,62 @@ barre dès 960 px. **Ce qu'il a laissé à sa décision** : la scène du
 diagnostic est la seule des trois où rien n'est « porté » (la photo attend
 seule une seconde et demie, puis la fiche arrive en fondu) ; à ne reprendre
 que s'il le demande, et sans rien dessiner sur l'écran.
+
+**LE RÉSEAU ENTIER, LE 21 NOVEMBRE.** Sa demande devant le film des
+turbines : *« ça serait bien de pouvoir voir l'ensemble du réseau avec les
+pièces et montrer qu'on peut cliquer dessus, en supprimer et après on la voit
+griser et barrée »*. Le film est retourné (`film-outils.cjs --film
+outils-turbines`) : le plan du réseau 1 entier, une turbine touchée,
+supprimée, restée sur le plan grisée et barrée, le compte qui passe de 8 à 7.
+La pièce supprimée se voit aussi de près, à côté de sa voisine gardée
+(`outils-piece-supprimee.jpg`, prise par `--images` à six pixels pour un),
+sous le film sur téléphone et sous le titre sur ordinateur. Le bloc
+s'appelle « Le réseau entier. ». **Il n'a pas encore vu cette version.**
+**Ce que le film ne montre plus** : changer ou supprimer « les huit d'un
+coup » (la feuille « Combien ») ; à remettre s'il le redemande. **À savoir
+avant de retourner ce film** : la barre d'une pièce supprimée est écrite
+rouge (`colors.alert`, `Vignette.tsx`, comme sur sa planche
+`appli/arrosage-plan.html`) et se peint grise des deux côtés, parce qu'elle
+est dans le cadre que `grayscale(1)` grise. Le film et le gros plan montrent
+ce que l'appli peint.
+
+**LE DIAGNOSTIC, LE 21 NOVEMBRE : trois demandes, et deux choses qui lui
+reviennent.** Devant la page, sur son téléphone : *« Supprime-moi la licence
+de la photo, la CC BY »*, *« Supprime-moi les photos figées de la page
+diagnostic »*, et *« ce qui serait bien, c'est de pouvoir montrer à l'écran
+qu'on puisse créer des dossiers pour enregistrer les maladies »*. Fait le jour
+même (`CHANGELOG.md`). **Il n'a pas encore vu cette version.**
+- **La licence.** La photo de la feuille (Manfred Mielke, USDA Forest
+  Service, Bugwood.org, via Wikimedia Commons) est sous licence CC BY
+  3.0 US : on n'a le droit de la montrer qu'en citant son auteur. La ligne
+  a donc quitté la page pour les mentions légales du site
+  (`appli/vente/mentions-legales-cause.html`, « Crédits »), où mène le pied
+  de page ; `appli/tests/e2e.js` vérifie les deux. **À lui** : s'il ne veut
+  ce crédit nulle part, il faut une photo à lui (la scène du chapitre et le
+  film « Une photo. » la montrent), et le film se retourne. Le lien vers la
+  licence (creativecommons.org) n'a pas pu être ouvert depuis ce poste, son
+  mandataire le refuse ; celui de la photo répond.
+- **Les dossiers ne sont pas codés.** Le film « Vos dossiers. » est tourné
+  sur sa planche du 20 novembre (`appli/soignee/diagnostic-dossiers.html`,
+  posée par une autre session, qui n'en a rien écrit ici) ; sa réponse à
+  cette planche n'est écrite nulle part, et ses deux questions restent
+  ouvertes (le dossier d'un chantier se montre-t-il aussi sur la fiche du
+  chantier ? la note se dicte-t-elle ?). **À lui** : dire s'il la valide,
+  pour qu'elle se code ; sinon le site promet un écran qui n'existe pas.
+- **Avant de retourner ce film** (`film-outils.cjs --film outils-dossiers`) :
+  la planche est posée sur la fiche de l'oïdium du chêne, et il veut le
+  peuplier seul en exemple. Le film commence donc la feuille ouverte, vide la
+  note de la planche, et finit en bas de la fiche, cadré entre la dernière
+  ligne du paragraphe sur l'oïdium et les libellés de la barre du bas (les
+  coins arrondis du téléphone du site les rognaient). Le tournage refuse une
+  prise qui sortirait de ces deux bornes. Si la planche est reposée sur le
+  peuplier, tout cela se simplifie : le film peut partir du bouton « Ranger
+  dans un dossier » et montrer « Mes dossiers ».
+- **Vu en préparant le gros plan, pour qui reprendra l'outil** : une capture
+  plus fine demandée au navigateur par une seconde session de pilotage
+  ramène la finesse de l'écran à 1 jusqu'à la capture suivante. Le gros plan
+  se prend donc sur un plateau à part, peint deux fois plus fin
+  (`grosPlan`, `--images`).
 
 **Vu en livrant, hors de ce lot : la vérification du site en ligne tombe
 sur un seul 503 de passage.** Le 21 novembre, la publication de la page a

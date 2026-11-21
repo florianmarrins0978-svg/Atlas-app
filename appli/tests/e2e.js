@@ -785,11 +785,10 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // chaque scène. En descendant sans s'arrêter (260 px toutes les 700 ms),
   // la carte du réseau ne sortait JAMAIS, la fiche du diagnostic non plus :
   // la scène ne partait qu'à moitié visible, durait six secondes, et
-  // s'arrêtait dès qu'on la quittait. Et sur ordinateur, les trois captures
-  // de « La fiche, à lire » mesuraient 18 px de large : trois points noirs.
-  // On descend donc à cette allure à travers chacune des trois scènes, et
-  // l'on regarde ce qu'il en reste ; puis on mesure les captures sur un
-  // écran d'ordinateur. Vu rouge sur la page d'avant.
+  // s'arrêtait dès qu'on la quittait. On descend donc à cette allure à
+  // travers chacune des trois scènes, et l'on regarde ce qu'il en reste. Vu
+  // rouge sur la page d'avant. (Les trois captures de « La fiche, à lire »,
+  // mesurées ici jusqu'au 21 novembre, sont parties à sa demande.)
   {
     const cDe = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
     const page = await cDe.newPage();
@@ -813,17 +812,38 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       ok('vente, les outils : en descendant sans s\'arrêter, ' + nom, fini);
     }
 
-    // Trois retouches du même jour, après une relecture à froid de la page
-    // refaite (vues rouges sur elle). Sur téléphone, les captures « à lire »
-    // étaient rangées de côté : il fallait glisser du doigt pour lire la
-    // deuxième, dont les mots dépassaient coupés, et rien ne montrait la
-    // troisième. Elles tiennent toutes dans la largeur de l'écran. Et le
-    // téléphone du client passait à dix pour cent sous celui de l'artisan :
-    // le début de chaque ligne de ce que lit M. Bernard était caché. On
-    // touche donc le bord gauche de son écran, et c'est bien lui qu'on touche.
-    const rangees = await page.evaluate(() => Array.from(document.querySelectorAll('.captures img')).map((i) => { const r = i.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }));
-    ok('vente, les outils : sur téléphone, les trois captures « à lire » tiennent dans l\'écran, sans glisser',
-       rangees.length === 3 && rangees.every((r) => r[0] >= 0 && r[1] <= 390), JSON.stringify(rangees));
+    // Ses demandes du 21 novembre 2026, devant la page sur son téléphone.
+    // « Supprime-moi la licence de la photo, la CC BY » et « Supprime-moi les
+    // photos figées de la page diagnostic » : ni l'une ni les autres ne
+    // reviennent. La licence oblige pourtant à citer l'auteur de la photo
+    // tant qu'elle est montrée : le crédit a quitté la page pour les mentions
+    // légales, où mène son pied de page, et l'on vérifie qu'il y est. Devant
+    // le film des turbines : voir une pièce supprimée « grisée et barrée » ;
+    // dans le téléphone du film elle fait vingt-quatre pixels, elle se montre
+    // donc aussi de près, sur une capture assez fine pour rester nette. Vus
+    // rouges sur la page d'avant.
+    const demandes = await page.evaluate(() => {
+      const i = document.querySelector('.plan > .de-pres img'), r = i ? i.getBoundingClientRect() : null;
+      return {
+        licence: (document.body.innerText.match(/CC BY|Mielke|Bugwood/) || [''])[0],
+        figees: document.querySelectorAll('.a-lire, .captures, img[src*="fiche-a-lire"]').length,
+        dePres: i ? { pixels: i.naturalWidth, large: Math.round(r.width), gauche: Math.round(r.left), droite: Math.round(r.right) } : null,
+      };
+    });
+    ok('vente, les outils : la licence de la photo n\'est plus écrite sur la page', !demandes.licence, 'trouvé : ' + demandes.licence);
+    ok('vente, les outils : le diagnostic ne porte plus de captures figées', demandes.figees === 0, demandes.figees + ' trouvée(s)');
+    ok('vente, les outils : la pièce supprimée se voit de près, nette, dans la largeur de l\'écran',
+       !!demandes.dePres && demandes.dePres.pixels >= 3 * demandes.dePres.large && demandes.dePres.gauche >= 0 && demandes.dePres.droite <= 390, JSON.stringify(demandes.dePres));
+    const legal = await cDe.newPage();
+    await legal.goto(`${B}/vente/mentions-legales-cause.html`, { waitUntil: 'domcontentloaded' });
+    const credit = await legal.evaluate(() => { const t = document.getElementById('credits'), p = t && t.nextElementSibling; return p ? p.innerText : ''; });
+    ok('vente, les mentions légales : la photo du peuplier y garde son crédit', /Manfred Mielke/.test(credit) && /CC BY 3\.0 US/.test(credit) && /recadrée/.test(credit), credit || 'aucun crédit');
+    await legal.close();
+    // Une retouche du 21, après une relecture à froid de la page refaite (vue
+    // rouge sur elle) : le téléphone du client passait à dix pour cent sous
+    // celui de l'artisan, et le début de chaque ligne de ce que lit
+    // M. Bernard était caché. On touche donc le bord gauche de son écran, et
+    // c'est bien lui qu'on touche.
     await page.evaluate(() => document.getElementById('duo').scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.waitForTimeout(1800);
     const touche = await page.evaluate(() => {
@@ -837,8 +857,6 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     const cOr = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const grande = await cOr.newPage();
     await grande.goto(`${B}/vente/outils.html`, { waitUntil: 'networkidle' });
-    const captures = await grande.evaluate(() => Array.from(document.querySelectorAll('.captures img')).map((i) => Math.round(i.getBoundingClientRect().width)));
-    ok('vente, les outils : sur ordinateur, les trois captures « à lire » se lisent', captures.length === 3 && captures.every((l) => l >= 240), captures.join(', ') + ' px de large');
     // Sur ordinateur les deux cartes du plan sont côte à côte, et celle du
     // réseau 2 s'écrivait AVANT celle du réseau 1, pendant que « 20 m » volait
     // encore vers la première : une carte pleine à côté d'une carte vide, qui
@@ -879,10 +897,11 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // qui repasse). Le film reste donc dessous, sur sa dernière image.
   //
   // La page des outils (20 novembre 2026) montre chaque outil de bout en
-  // bout en douze films de l'appli, tournés dans ses démonstrations par
+  // bout en films de l'appli, tournés dans ses démonstrations par
   // appli/scripts/film-outils.cjs (sa correction : « comme s'il regardait un
-  // film »). Ils passent le même contrôle.
-  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-gravite', 'outils-details', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
+  // film »). Ils passent le même contrôle. Le treizième, les dossiers du
+  // diagnostic (21 novembre), est tourné sur sa planche : rien n'est codé.
+  const FILMS_DES_OUTILS = ['outils-tuyau', 'outils-options', 'outils-nourrice', 'outils-turbines', 'outils-liste', 'outils-photo', 'outils-gravite', 'outils-details', 'outils-dossiers', 'outils-composer', 'outils-bernard', 'outils-envoyer', 'outils-client'];
   for (const [fichier, nomPage, films, resteDessous] of PAGES_DE_VENTE.concat([['outils.html', 'vente, les outils', FILMS_DES_OUTILS, true]])) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
