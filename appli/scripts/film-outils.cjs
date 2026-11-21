@@ -38,10 +38,15 @@
    Utilisation, depuis la racine du dépôt :
      node appli/scripts/film-outils.cjs appli/vente/images
      node appli/scripts/film-outils.cjs appli/vente/images --seulement diagnostic
+     node appli/scripts/film-outils.cjs appli/vente/images --film outils-turbines
+       (un seul film à refaire : ceux qui le précèdent jouent leurs gestes
+       sans être photographiés, pour laisser l'écran où ce film le trouve ;
+       les images du chapitre ne sont pas refaites)
      node appli/scripts/film-outils.cjs <dossier> --apercu
        (une photo par quart de seconde, sans film, pour régler le récit)
      node appli/scripts/film-outils.cjs appli/vente/images --images
-       (seulement les deux images du chapitre du plan, sans film)
+       (seulement les images fixes : celles du chapitre du plan et le gros
+       plan de la pièce supprimée, sans film)
 
    Il faut Playwright et ffmpeg (libx264, libvpx-vp9). Le navigateur est
    celui du poste (scripts/_navigateur.mjs), ou PLAYWRIGHT_EXECUTABLE_PATH.
@@ -61,10 +66,10 @@ const { ouvrirBobine } = require('./_pellicule.cjs');
 // pixels pour un : les images fixes font 1170 × 1992, comme celles des
 // téléphones de cause-2.html, et le film 780 × 1328, comme son film de
 // l'envoi signé.
-const ECRAN = { l: 390, h: 664 }, ECHELLE = 3;
+const ECRAN = { l: 390, h: 664 }, ECHELLE = 3, LOUPE = 2;
 const FILM = { l: 780, h: 1328 };
 const IPS = 60, PAS = 1000 / IPS;
-// Douze films ralentis font sept mille images : aux réglages les plus lents
+// Une douzaine de films ralentis font sept à huit mille images : aux réglages les plus lents
 // de _pellicule.cjs, une heure et demie d'encodage. Ces réglages-ci (les
 // derniers donnés l'emportent) le font trois fois plus vite, pour un écran
 // d'appli, à plat, une différence qui ne se voit pas.
@@ -80,10 +85,14 @@ const ORIGINE = 'http://cause.essai';
 const JOUR = new Date('2026-11-20T17:36:00+01:00');
 
 const dossier = process.argv[2];
-if (!dossier) { console.error('Usage : node appli/scripts/film-outils.cjs <dossier des images du site> [--seulement <outil>] [--apercu]'); process.exit(2); }
+if (!dossier) { console.error('Usage : node appli/scripts/film-outils.cjs <dossier des images du site> [--seulement <outil>] [--film <nom>] [--apercu]'); process.exit(2); }
 const APERCU = process.argv.includes('--apercu');
 const IMAGES_SEULES = process.argv.includes('--images');
 const seul = process.argv.indexOf('--seulement') > 0 ? process.argv[process.argv.indexOf('--seulement') + 1] : null;
+// Un seul film à refaire. Les films d'un outil se tournent d'une traite, et
+// chacun part de l'état que les précédents ont laissé (le réseau 1 passé en
+// Ø32, la sonde ajoutée) : on rejoue donc leurs gestes, sans les photographier.
+const UN_FILM = process.argv.indexOf('--film') > 0 ? process.argv[process.argv.indexOf('--film') + 1] : null;
 
 // ── Ce qui se pose dans la page avant l'appli ──────────────────────────────
 // Le défilement doux glisse sur le temps de la page, et les animations sont
@@ -163,8 +172,8 @@ function dansLaPage() {
 }
 
 // ── Le plateau : une démonstration ouverte, et les gestes qu'on y fait ─────
-async function plateau(navigateur, demo) {
-  const contexte = await navigateur.newContext({ viewport: { width: ECRAN.l, height: ECRAN.h }, deviceScaleFactor: ECHELLE, hasTouch: true, isMobile: true, locale: 'fr-FR', timezoneId: 'Europe/Paris' });
+async function plateau(navigateur, demo, echelle = ECHELLE) {
+  const contexte = await navigateur.newContext({ viewport: { width: ECRAN.l, height: ECRAN.h }, deviceScaleFactor: echelle, hasTouch: true, isMobile: true, locale: 'fr-FR', timezoneId: 'Europe/Paris' });
   // Les fichiers du site se servent depuis le disque : aucun serveur.
   await contexte.route(ORIGINE + '/**', (route) => {
     const fichier = path.join(APPLI, decodeURIComponent(new URL(route.request().url()).pathname));
@@ -262,6 +271,13 @@ async function plateau(navigateur, demo) {
       page = await ouvrir(adresse, pret, style);
     },
     async film(nom, jouer) {
+      if (UN_FILM && UN_FILM !== nom) {
+        // Hors film, le temps avance sans photo : les gestes se font, rien ne s'écrit.
+        await jouer();
+        if (erreurs.length) throw new Error(nom + ' : ' + erreurs.join(' ; '));
+        camera = PLEIN; mouvement = null;
+        return;
+      }
       nomDuFilm = 'nov-film-' + nom;
       rang = 0;
       if (!APERCU) bobine = ouvrirBobine({ base: path.join(dossier, nomDuFilm), film: FILM, ips: IPS, x264: ENCODAGE.x264, vp9: ENCODAGE.vp9, fixes: { l: ECRAN.l * ECHELLE, h: ECRAN.h * ECHELLE } });
@@ -363,6 +379,24 @@ async function plateau(navigateur, demo) {
       await page.screenshot({ path: path.join(dossier, fichier), type: 'jpeg', quality: 88, clip: cadre });
       console.log(fichier + ' : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
     },
+    /**
+     * Une photo fixe serrée sur quelques éléments, là où l'écran se trouve : le
+     * plus petit cadre qui les tient tous, étendu de « marge » des quatre côtés.
+     */
+    async photographierAutour(fichier, sels, marge = 0) {
+      const cadre = await page.evaluate(([sels, marge]) => {
+        const boites = sels.map((sel) => document.querySelector(sel)).map((el) => el && el.getBoundingClientRect());
+        if (boites.some((b) => !b)) return null;
+        const gauche = Math.min(...boites.map((b) => b.left)) - marge, droite = Math.max(...boites.map((b) => b.right)) + marge;
+        const haut = Math.min(...boites.map((b) => b.top)) - marge, bas = Math.max(...boites.map((b) => b.bottom)) + marge;
+        return { x: gauche, y: haut, width: droite - gauche, height: bas - haut };
+      }, [sels, marge]);
+      if (!cadre) throw new Error('introuvable dans ' + demo.page + ' : ' + sels.join(' ou '));
+      if (cadre.x < 0 || cadre.y < 0 || cadre.x + cadre.width > ECRAN.l || cadre.y + cadre.height > ECRAN.h) throw new Error('hors de l\'écran : le cadre de ' + fichier);
+      await page.evaluate(() => window.__film.synchro());
+      await page.screenshot({ path: path.join(dossier, fichier), type: 'jpeg', quality: 90, clip: cadre });
+      console.log(fichier + ' : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height) + ', à ' + echelle + ' pixels pour un');
+    },
     /** Une photo fixe de l'écran entier, à trois pixels pour un. */
     async photographierEcran(fichier) {
       await page.evaluate(() => window.__film.synchro());
@@ -379,11 +413,16 @@ async function plateau(navigateur, demo) {
 
 // ── Les récits ─────────────────────────────────────────────────────────────
 const SOMMAIRE = '[data-atlas="sommaire-du-plan"] button';
-const GARDER = { texte: 'Garder' };
 const OBSERVATIONS = 'textarea[placeholder^="Ce que le client"]';
 const BASCULE = '[data-atlas="bascule"] [role="switch"]';
 const TUYAU_DU_RESEAU_1 = '[data-atlas="carte-reseau"] [data-atlas="choix-du-tuyau"]';
 const EZ_FLO = 'EZ FLO+ 1" MM solénoïde 9V';
+// Le plan du réseau 1, dans « Pièces », et la turbine que le film y supprime.
+// À côté d'elle sur le même bord, la tête voisine, gardée : le gros plan les
+// prend toutes les deux.
+const PLAN_DES_PIECES = '[data-atlas="plan-des-pieces"]';
+const TURBINE_SUPPRIMEE = PLAN_DES_PIECES + ' [data-cle="r0:t2:corps"]';
+const RACCORD_DE_LA_VOISINE = PLAN_DES_PIECES + ' [data-cle="r0:t4:raccord"]';
 // Le rapprochement de la caméra. Les cartes de l'appli prennent toute la
 // largeur de l'écran, à 22 pixels des bords : au-delà de 1,12, un mot sur
 // deux se coupait au bord du cadre. C'est aussi ce que font les films de
@@ -393,7 +432,12 @@ const ZOOM = 1.12;
 // sans le titre ni les notes de la planche.
 const FICHE_SOIGNEE = '/soignee/fiche-de-diagnostic.html';
 const PRET_FICHE = '[data-atlas="ecran-diagnostic-resultat"]';
-const CACHER_LA_PLANCHE = '.planche-tete,.planche-notes,.planche-dit{display:none!important}';
+const CACHER_LA_PLANCHE = '.planche-tete,.planche-etapes,.planche-notes,.planche-dit{display:none!important}';
+// Les dossiers de diagnostics, sur leur planche (soignee/diagnostic-dossiers.html,
+// sa demande du 20 novembre, rien n'est codé) : les vrais écrans figés, et le
+// rangement posé dessus.
+const DOSSIERS = '/soignee/diagnostic-dossiers.html';
+const PRET_DOSSIERS = '[data-atlas="ecran-diagnostic"]';
 const RECITS = {
   arrosage: {
     page: 'arrosage.html', pret: '[data-atlas="plan-arrosage"]',
@@ -430,6 +474,23 @@ const RECITS = {
       console.log('outils-plan-reseau.jpg : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
       console.log('CIBLE_COTE = ' + JSON.stringify(cadre.cible));
       await p.photographier('outils-nourrice.jpg', '[data-atlas="nourrice-eclatee"] > div', { jusqua: ':scope > div', marge: 14 });
+    },
+    // La pièce supprimée, vue de près : l'image fixe posée sous le film du
+    // réseau entier. Dans le téléphone de ce film, une pièce du plan fait
+    // vingt-quatre pixels, et « grisée et barrée » s'y devine plus qu'il ne se
+    // voit. Le cadre tient deux têtes du même bord, la turbine supprimée et sa
+    // voisine gardée, chacune à côté de son té. Les gestes sont ceux des
+    // films : le réseau 1 en Ø32, puis la turbine touchée et supprimée.
+    async grosPlan(p) {
+      await p.placer('[data-atlas="reseaux"]', {}, 64);
+      await p.toucher(TUYAU_DU_RESEAU_1 + ' button', { texte: '32' });
+      await p.pendant(0.6);
+      await p.placer(PLAN_DES_PIECES, {}, 70);
+      await p.toucher(TURBINE_SUPPRIMEE);
+      await p.pendant(0.6);
+      await p.toucher('[role="dialog"] button', { texte: 'Supprimer' });
+      await p.pendant(0.8);
+      await p.photographierAutour('outils-piece-supprimee.jpg', [RACCORD_DE_LA_VOISINE, TURBINE_SUPPRIMEE], 16);
     },
     async jouer(p) {
       const DIALOGUE = '[role="dialog"]';
@@ -487,21 +548,41 @@ const RECITS = {
         await p.cadrer({ sel: PIECE_9, o: { rang: 8 }, z: ZOOM }, 1.0);
         await p.pendant(2.8);
       });
-      // Les turbines : une, ou toutes. La chaîne d'une tête monte juste sous
-      // le sommaire : la ligne du PEHD, au-dessus d'elle, dit encore « Ø25 »
-      // après le passage en Ø32 (PiecesDuReseau.tsx l'écrit en dur, TODO.md),
-      // et le site ne montre pas un libellé faux.
-      await p.placer('[data-atlas="chaine"]', {}, 230);
+      // Le réseau entier. Sa demande du 21 novembre 2026, devant le film
+      // d'avant, qui s'approchait de la chaîne d'une tête et finissait sur la
+      // feuille « Combien », le plan coupé en haut : « ça serait bien de
+      // pouvoir voir l'ensemble du réseau avec les pièces et montrer qu'on
+      // peut cliquer dessus, en supprimer et après on la voit griser et
+      // barrée ». Le film part donc du plan du réseau entier, ses dix-sept
+      // pièces à leur place ; une turbine se touche, se supprime, et reste sur
+      // le plan, grisée et barrée, pendant que le compte écrit dessous passe
+      // de 8 à 7 turbines.
+      // Le plan monte juste sous le sommaire : la ligne du PEHD, au-dessus
+      // de lui, dit encore « Ø25 » après le passage en Ø32
+      // (PiecesDuReseau.tsx l'écrit en dur, TODO.md), et le site ne montre
+      // pas un libellé faux. C'est aussi ce qui borne le rapprochement : plus
+      // près, le compte sous le plan se couperait aux bords du cadre. La pièce
+      // supprimée se voit donc de près sur une image fixe (grosPlan).
+      await p.placer(PLAN_DES_PIECES, {}, 70);
       await p.film('outils-turbines', async () => {
-        await p.pendant(1.0);
-        await p.cadrer({ sel: '[data-atlas="chaine"]', z: ZOOM }, 1.1);
+        await p.pendant(1.6);
+        await p.cadrer({ sel: PLAN_DES_PIECES, z: ZOOM }, 1.1);
         await p.pendant(1.3);
-        await p.toucher('[data-atlas="maillon"]', { rang: 4 });
+        await p.toucher(TURBINE_SUPPRIMEE);
         await p.pendant(0.3);
         await p.cadrer({ sel: DIALOGUE, z: ZOOM }, 1.0);
-        await p.pendant(3.2);
+        await p.pendant(1.8);
+        await p.toucher(DIALOGUE + ' button', { texte: 'Supprimer' });
+        await p.pendant(0.4);
+        await p.cadrer({ sel: PLAN_DES_PIECES, z: ZOOM }, 1.0);
+        await p.pendant(3.4);
       });
-      await p.toucher(DIALOGUE + ' button', GARDER);
+      // La turbine se remet, hors film : le film de la liste, qui suit, a été
+      // tourné sur ses huit têtes.
+      await p.toucher(TURBINE_SUPPRIMEE);
+      await p.pendant(0.6);
+      await p.toucher(DIALOGUE + ' button', { texte: 'Remettre la pièce' });
+      await p.pendant(0.6);
       // La liste, additionnée, puis le message au fournisseur.
       await p.placer('[data-atlas="liste"]', {}, 64);
       await p.film('outils-liste', async () => {
@@ -527,16 +608,13 @@ const RECITS = {
     // n'a que la fiche du platane : le film y prend la photo, coupe pendant
     // l'analyse, et la réponse est la fiche du peuplier telle que la planche
     // la pose sur la vraie page. « Et pareil, tu vas trop vite. Fais défiler
-    // doucement, qu'on ait un petit peu le temps de lire. Ou même tu peux
-    // mettre à côté des captures figées » : les trois captures de « La
-    // fiche, à lire » (images, plus bas).
+    // doucement, qu'on ait un petit peu le temps de lire. » Les captures
+    // figées qu'il avait proposées ce soir-là (« La fiche, à lire ») sont
+    // parties le 21, à sa demande : seule reste l'image de la scène du
+    // chapitre.
     async images(p) {
       await p.passerA(FICHE_SOIGNEE, PRET_FICHE, CACHER_LA_PLANCHE);
       await p.photographierEcran('outils-diagnostic.jpg');
-      await p.placer('h2', { contient: 'Est-ce grave' }, 90);
-      await p.photographierEcran('outils-fiche-a-lire-gravite.jpg');
-      await p.placer('h2', { contient: 'Que faire' }, 90);
-      await p.photographierEcran('outils-fiche-a-lire-que-faire.jpg');
     },
     async jouer(p) {
       // Une photo, et la réponse.
@@ -572,6 +650,74 @@ const RECITS = {
         await p.pendant(1.2);
         await p.defiler(360, 3.4);
         await p.pendant(3.0);
+      });
+      // Les dossiers. Sa demande du 21 novembre 2026 : « ce qui serait bien,
+      // c'est de pouvoir montrer à l'écran qu'on puisse créer des dossiers
+      // pour enregistrer les maladies ». Rien n'est codé : le film se tourne
+      // sur sa planche du 20 novembre, d'une coupe, comme la fiche soignée.
+      // On y voit la feuille « Ranger cette photo », un dossier créé et nommé,
+      // une note, « Ranger », et la fiche qui dit où la photo est rangée.
+      // La fiche de cette planche est celle de l'oïdium du chêne, et il veut
+      // le peuplier seul en exemple : le film ne montre donc d'elle que ce qui
+      // vaut pour toute fiche. Il commence la feuille ouverte (le bouton
+      // « Ranger dans un dossier » est sous un paragraphe du chêne), la note
+      // de la planche est vidée avant de tourner, et à la fin l'écran reste en
+      // bas de la fiche, où l'appli le laisserait : la planche, elle, remonte
+      // en haut à chaque changement d'état, sur le titre du chêne.
+      const FEUILLE = '[data-feuille]';
+      await p.passerA(DOSSIERS, PRET_DOSSIERS, CACHER_LA_PLANCHE);
+      await p.page.evaluate(() => {
+        document.querySelector('.planche-etapes button[data-va="ranger"]').click();
+        document.querySelector('[data-note]').value = '';
+      });
+      await p.pendant(0.5);
+      await p.film('outils-dossiers', async () => {
+        await p.pendant(1.5);
+        // La feuille monte jusqu'à « Mes dossiers » pendant que la caméra
+        // s'approche. Le cadre reste ensuite le même jusqu'au bout : il
+        // laisse hors champ le haut de la fiche, sous la feuille.
+        await p.cadrer({ sel: FEUILLE + ' [data-ranger]', z: ZOOM }, 1.3);
+        await p.amenerDansLaFeuille(FEUILLE + ' [data-mes-dossiers]', {}, 12, 1.3);
+        await p.pendant(0.8);
+        await p.toucher(FEUILLE + ' [data-nouveau]');
+        await p.pendant(0.5);
+        await p.ecrire('Peupliers', 9);
+        await p.pendant(1.2);
+        // Le champ et le dossier créé ont allongé la feuille : elle remonte
+        // encore, pour que la note et « Ranger » tiennent à l'écran.
+        await p.amenerDansLaFeuille(FEUILLE + ' [data-mes-dossiers]', {}, 12, 1.0);
+        await p.toucher(FEUILLE + ' [data-note]');
+        await p.pendant(0.4);
+        await p.ecrire('Peuplier du fond, à surveiller.', 14);
+        await p.pendant(0.8);
+        await p.toucher(FEUILLE + ' [data-ranger]');
+        // La planche vient de remonter en haut de la fiche ; l'appli, elle, la
+        // laisserait où elle était, en bas, là où se lit « Rangée dans… ».
+        // Le cadre tient entre deux bornes, à cinq pixels de chacune : en
+        // haut, la dernière ligne du paragraphe sur l'oïdium ; en bas, les
+        // libellés de la barre, que les coins arrondis du téléphone du site
+        // rognaient (« hantiers », « Réglage ») quand le cadre descendait
+        // jusqu'au bord de l'écran.
+        const BARRE = '[data-planche="range"] nav.atlas-nav-basse';
+        const hors = await p.page.evaluate((sel) => {
+          window.scrollTo(0, document.documentElement.scrollHeight - window.innerHeight);
+          const etat = document.querySelector('[data-planche="range"]'), encadre = etat.querySelector('[data-atlas="planche-range"]').previousElementSibling;
+          // Les lignes de texte, pas les boîtes qui les portent : ce sont des mots qu'on ne veut pas couper.
+          const lignes = (el) => {
+            const boites = [], marche = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            for (let n = marche.nextNode(); n; n = marche.nextNode()) {
+              if (!n.textContent.trim()) continue;
+              const plage = document.createRange(); plage.selectNodeContents(n);
+              for (const r of plage.getClientRects()) if (r.width > 0 && r.height > 0) boites.push(r);
+            }
+            return boites;
+          };
+          return { paragraphe: Math.max(...lignes(encadre.previousElementSibling).map((r) => r.bottom)), libelles: Math.min(...lignes(etat.querySelector(sel)).map((r) => r.top)) };
+        }, 'nav.atlas-nav-basse');
+        await p.cadrer({ sel: BARRE, z: ZOOM, dy: -307 }, 0);
+        const milieu = (await p.page.evaluate((sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return r.top + r.height / 2; }, BARRE)) - 307, demi = ECRAN.h / ZOOM / 2;
+        if (hors.paragraphe > milieu - demi - 3 || hors.libelles < milieu + demi + 3) throw new Error('outils-dossiers : la fin du film montrerait un mot de trop (paragraphe jusqu\'à ' + hors.paragraphe.toFixed(1) + ', libellés dès ' + hors.libelles.toFixed(1) + ', cadre de ' + (milieu - demi).toFixed(1) + ' à ' + (milieu + demi).toFixed(1) + ')');
+        await p.pendant(3.2);
       });
     },
   },
@@ -647,11 +793,22 @@ const RECITS = {
   const { cheminDuNavigateur } = await import('../../scripts/_navigateur.mjs');
   const exe = cheminDuNavigateur();
   const navigateur = await chromium.launch(exe ? { executablePath: exe } : {});
+  if (UN_FILM && !Object.values(RECITS).some((r) => String(r.jouer).includes("'" + UN_FILM + "'"))) throw new Error('aucun film ne s\'appelle « ' + UN_FILM + ' »');
   for (const [nom, recit] of Object.entries(RECITS)) {
     if (seul && seul !== nom) continue;
-    if (recit.images) {
+    // Un seul film : seul l'outil qui le porte se tourne.
+    if (UN_FILM && !String(recit.jouer).includes("'" + UN_FILM + "'")) continue;
+    if (recit.images && !UN_FILM) {
       const p = await plateau(navigateur, recit);
       await recit.images(p);
+      await p.fermer();
+    }
+    // Le gros plan s'agrandit deux fois sur le site : pris à trois pixels pour
+    // un comme les autres images, il y serait flou. Son plateau peint donc
+    // deux fois plus fin, sur le même écran.
+    if (recit.grosPlan && !UN_FILM) {
+      const p = await plateau(navigateur, recit, ECHELLE * LOUPE);
+      await recit.grosPlan(p);
       await p.fermer();
     }
     if (IMAGES_SEULES) continue;

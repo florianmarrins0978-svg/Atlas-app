@@ -163,6 +163,18 @@ body:not([data-photo="non"]) [data-si-sans-photo] { display: none !important; }
 .pdf-page .ligne { display: flex; gap: 8px; padding: 2px 0; border-top: 0.5px solid #e2ded3; }
 .pdf-page .ligne b { width: 30px; flex: none; font-weight: 600; color: #8b6835; }
 .pdf-page .groupe { margin: 7px 0 2px; font-family: var(--font-display); font-size: 9px; }
+.pdf-page .resume { margin: 5px 0 0; color: #4a4a44; }
+.pdf-page .titre-reseau { display: flex; align-items: baseline; gap: 6px; }
+.pdf-page .titre-reseau .pastille { width: 8px; height: 8px; border-radius: 2px; flex: none; align-self: center; }
+.pdf-page .titre-reseau span:last-child { color: #6b6b5c; font-size: 8px; }
+.pdf-page .plan-couleur svg { display: block; width: 100%; height: auto; }
+.pdf-page .bloc-ecran { font-size: 16px; line-height: 1.5; }
+.pdf-page .bloc-ecran .choix-fige { margin: 6px 0 0; font-size: 12px; font-weight: 600; color: #4a4a44; }
+.pdf-page.couchee { width: 481px; height: 340px; padding: 20px 22px 0; }
+.pdf-page.couchee .pied { left: 22px; right: 22px; }
+.pdf-page .colonnes { display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 14px; margin-top: 4px; }
+.pdf-page .colonnes > div { min-width: 0; display: flex; flex-direction: column; }
+.pdf-page .colonnes h3 { margin-top: 6px; }
 .pdf-page .pied { position: absolute; left: 6.5%; right: 6.5%; bottom: 3.5%; padding-top: 4px; border-top: 0.6px solid #e2ded3; color: #6b6b5c; font-size: 5.6px; line-height: 1.4; }
 [data-choix][aria-checked="true"] .pastille-choix { box-shadow: inset 0 0 0 7px var(--atlas-ink, #1c1c1a) !important; }
 [data-client][aria-checked="true"] { font-weight: 600; color: var(--atlas-orTexte, #8b6835) !important; }
@@ -474,14 +486,18 @@ function retouches(etat, D) {
     </div>
   `));
 
-  // ═══ 6. LE PDF : le plan, ses réserves, puis la liste. ═══
+  // ═══ 6. LE PDF : ses réserves, une page par réseau, puis la liste. ═══
+  // Sa demande du 21 novembre au soir : « voir les réseaux en grand », chacun
+  // sur sa page, à la fois le réseau en couleur et le réseau avec ses pièces,
+  // qu'on voie la photo des pièces. Les deux dessins sont ceux de l'écran.
   const E6 = etat("pdf");
   const reseaux = [...E3.querySelectorAll("[data-atlas=carte-reseau]")].map((c, i) => {
     const titre = c.querySelector("b").textContent.trim();
     const zone = (c.querySelector("[data-atlas=zone-du-reseau] span") || {}).textContent || "";
     const svg = c.querySelector("[data-atlas=plan-reseau] svg").cloneNode(true);
     const materiel = [...c.querySelectorAll("ul li")].map((li) => [...li.querySelectorAll("span")].map((x) => x.textContent.trim()).join(" "));
-    return { titre, zone, svg, materiel, i };
+    const couleur = c.querySelector("p span").style.backgroundColor;
+    return { titre, zone, svg, materiel, couleur, i };
   });
   const groupes = [...E3.querySelectorAll("[data-atlas=liste-des-pieces] [data-atlas=groupe]")].map((g) => ({
     titre: g.dataset.titre,
@@ -520,36 +536,130 @@ function retouches(etat, D) {
     }
     return el;
   }
+  // Ce qui se touche à l'écran devient une image : un bouton dans un PDF ne fait rien.
+  const figer = (racine) => {
+    racine.querySelectorAll("[data-atlas=ajouter-piece]").forEach((n) => n.remove());
+    racine.querySelectorAll('[role="group"]').forEach((g) => {
+      const choisis = [...g.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent.trim());
+      g.replaceWith(cree(`<p class="choix-fige">${choisis.join(". ")}.</p>`));
+    });
+    racine.querySelectorAll("button").forEach((b) => {
+      const span = doc.createElement("span");
+      for (const a of b.attributes) if (!["type", "aria-pressed"].includes(a.name)) span.setAttribute(a.name, a.value);
+      span.append(...b.childNodes);
+      b.replaceWith(span);
+    });
+    return racine;
+  };
+  // Un bloc de l'écran, réduit pour tenir dans ce qui reste de la page : sa
+  // largeur de mise en page est fixée, puis il est réduit d'un seul tenant
+  // (`zoom`), photos et positions des pièces comprises.
+  const largeurUtile = () => courante.clientWidth - 2 * parseFloat(getComputedStyle(courante).paddingLeft);
+  // La mesure se lit sur ce qui est PEINT (getBoundingClientRect) : sous `zoom`,
+  // offsetHeight rend la hauteur d'avant réduction, et la boucle réduisait à vide.
+  const basDe = (el) => el.getBoundingClientRect().bottom - courante.getBoundingClientRect().top;
+  const reduire = (boite, largeurEcran) => {
+    courante.insertBefore(boite, courante.querySelector(".pied"));
+    boite.style.width = largeurEcran + "px";
+    boite.style.zoom = "1";
+    const haut = boite.getBoundingClientRect().top - courante.getBoundingClientRect().top;
+    let k = Math.min(largeurUtile() / largeurEcran, (limite() - haut) / boite.getBoundingClientRect().height);
+    boite.style.zoom = String(k);
+    boite.style.marginInline = "auto";
+    while (basDe(boite) > limite() && k > 0.2) { k *= 0.98; boite.style.zoom = String(k); }
+    return k;
+  };
+
   nouvellePage(null);
   courante.setAttribute("data-atlas", "pdf-page-1");
   poser(`<div class="tete"><div><b style="font-size: 8.6px;">Atelier Démo</b><p>Plan d’arrosage de Madame Intel</p></div><div style="text-align: right;"><h2>Plan d’arrosage</h2><p>21 novembre 2026</p></div></div>`, null);
-  poser(`<h3>Le plan</h3>`, null);
-  const grille = poser(`<div class="grille"></div>`, null);
-  reseaux.forEach((r) => {
-    const fig = cree(`<figure><figcaption>${r.titre}, <span>${r.zone}</span></figcaption></figure>`);
-    fig.prepend(r.svg);
-    r.materiel.forEach((m) => fig.insertAdjacentHTML("beforeend", `<figcaption><span>${m}</span></figcaption>`));
-    grille.appendChild(fig);
-  });
-  renommerIds(grille, "pdf");
+  poser(`<p class="resume">${D.v2}.</p>`, null);
   const titreReserves = poser(`<h3>Ce qui n’est pas calculé</h3>`, null);
   let premiere = true;
   for (const r of lesReserves) {
     poser(`<ul class="reserve"><li>${r}</li></ul>`, "Ce qui n’est pas calculé, suite", premiere ? [titreReserves] : null);
     premiere = false;
   }
+  // La légende des symboles, celle de l'écran : elle fait lire les pages des réseaux.
+  const titreLegende = poser(`<h3>Lire les plans</h3>`, null);
+  const legende = figer(E3.querySelector("[data-atlas=symboles]").cloneNode(true));
+  legende.setAttribute("data-atlas", "pdf-legende");
+  const boiteLegende = cree(`<div class="bloc-ecran"></div>`);
+  boiteLegende.appendChild(legende);
+  courante.insertBefore(boiteLegende, courante.querySelector(".pied"));
+  // Écrite à la taille de l'écran, puis réduite à celle du texte de la page.
+  boiteLegende.style.width = "640px";
+  boiteLegende.style.zoom = String(largeurUtile() / 640);
+  if (basDe(boiteLegende) > limite()) {
+    boiteLegende.remove(); titreLegende.remove();
+    nouvellePage(null);
+    courante.insertBefore(titreLegende, courante.querySelector(".pied"));
+    courante.insertBefore(boiteLegende, courante.querySelector(".pied"));
+  }
+
+  // Une page par réseau, en A4 couché : sur une page droite, un réseau carré
+  // n'avait que le bas de la page, et ses photos sortaient à 6 mm. À gauche le
+  // réseau en couleur, son tuyau et une tête de bas en haut ; à droite le
+  // dessin des pièces, aussi grand que la page le permet.
+  const enBoite = (el, largeurEcran) => {
+    const boite = cree(`<div class="bloc-ecran"></div>`);
+    boite.appendChild(el);
+    boite.style.width = largeurEcran + "px";
+    return boite;
+  };
+  const haut = (el) => el.getBoundingClientRect().top - courante.getBoundingClientRect().top;
+  reseaux.forEach((r) => {
+    nouvellePage(null);
+    courante.classList.add("couchee");
+    courante.setAttribute("data-atlas", "pdf-reseau-" + (r.i + 1));
+    poser(`<div class="titre-reseau"><span class="pastille" style="background-color: ${r.couleur};"></span><h2>${r.titre}</h2><span>${r.zone}</span></div>`, null);
+    poser(`<p class="resume">${r.materiel.join(". ")}.</p>`, null);
+    const source = figer(E3.querySelector(`[data-atlas=pieces-reseau][data-reseau="${r.i}"]`).cloneNode(true));
+    source.firstElementChild.remove();
+    source.classList.remove("mt-7");
+    source.setAttribute("data-atlas", "pdf-pieces-reseau");
+    const tuyau = source.querySelector('[data-cle$=":pe"]')?.parentElement;
+    const surCePlan = [...source.querySelectorAll("p")].find((p) => p.textContent.startsWith("Sur ce plan"));
+    const chaine = source.querySelector("[data-atlas=chaine]");
+    [tuyau, surCePlan, chaine].forEach((n) => n && n.remove());
+    const colonnes = poser(`<div class="colonnes"><div class="gauche"></div><div class="droite"></div></div>`, null);
+    colonnes.style.height = limite() - colonnes.offsetTop + "px";
+    const gauche = colonnes.firstElementChild, droite = colonnes.lastElementChild;
+    gauche.insertAdjacentHTML("beforeend", `<h3>Le réseau</h3><div class="plan-couleur"></div>`);
+    gauche.querySelector(".plan-couleur").appendChild(r.svg);
+    const largeurG = gauche.clientWidth;
+    if (tuyau) { const b = enBoite(tuyau, 346); gauche.appendChild(b); b.style.zoom = String(largeurG / 346 * 0.9); }
+    if (chaine) {
+      gauche.insertAdjacentHTML("beforeend", `<h3>Une tête, de bas en haut</h3>`);
+      const b = enBoite(chaine, 346); gauche.appendChild(b); b.style.zoom = String(largeurG / 346);
+    }
+    if (surCePlan) gauche.insertAdjacentHTML("beforeend", `<p class="resume">${surCePlan.textContent}</p>`);
+    droite.insertAdjacentHTML("beforeend", `<h3>Les pièces</h3>`);
+    const boite = enBoite(source, 346);
+    droite.appendChild(boite);
+    const basDroite = haut(colonnes) + colonnes.getBoundingClientRect().height;
+    let k = Math.min(droite.clientWidth / 346, (basDroite - haut(boite)) / boite.getBoundingClientRect().height);
+    boite.style.zoom = String(k);
+    boite.style.marginInline = "auto";
+    while (haut(boite) + boite.getBoundingClientRect().height > basDroite && k > 0.2) { k *= 0.98; boite.style.zoom = String(k); }
+    renommerIds(courante, "pdf" + r.i);
+  });
+
+  // La liste des pièces, à partir d'une page neuve.
+  nouvellePage(null);
+  poser(`<h3 style="margin-top: 0;">La liste des pièces</h3>`, null);
   for (const g of groupes) {
-    const titreGroupe = poser(`<p class="groupe">${g.titre}</p>`, "La liste des pièces");
+    const titreGroupe = poser(`<p class="groupe">${g.titre}</p>`, "La liste des pièces, suite");
     let premiereLigne = true;
     for (const [q, n] of g.lignes) {
       poser(`<div class="ligne"><b>${q}</b><span>${n}</span></div>`, `La liste des pièces, suite`, premiereLigne ? [titreGroupe] : null, `<p class="groupe">${g.titre}, suite</p>`);
       premiereLigne = false;
     }
   }
-  // Le titre de la liste ouvre la page où elle commence.
-  const premierGroupe = atelier.querySelector(".groupe");
-  if (premierGroupe && premierGroupe.previousElementSibling?.tagName !== "H3") premierGroupe.insertAdjacentHTML("beforebegin", `<h3>La liste des pièces</h3>`);
   pages.forEach((p, i) => { p.querySelector(".pied").outerHTML = pied(i + 1, pages.length); });
+  // Mesurée à sa vraie taille, une page couchée se montre à la largeur d'une page
+  // droite, comme un lecteur de PDF la montre sur un téléphone.
+  pages.filter((p) => p.classList.contains("couchee")).forEach((p) => { p.style.zoom = String(340 / 481); });
 
   const fond = atelier;
   fond.insertAdjacentHTML("afterbegin", `<div class="pdf-barre"><button type="button" data-va="revu">Fermer</button><b>Plan d’arrosage de Madame Intel, 21 novembre 2026.pdf</b></div>`);
