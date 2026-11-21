@@ -92,7 +92,10 @@ for (const h of liens) {
   const e = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);
   if (e?.startsWith("r-")) ouvertes++; else console.log("rubrique muette", h, e);
   if (h === "/reglages/idee") await page.screenshot({ path: `${sortie}/zz-idee.png` });
-  await page.click(".v-retour");
+  // On revient comme le visiteur : par la flèche de l'écran, la sortie restant visible.
+  if (!(await page.locator(".v-quitter").isVisible())) console.log("   SANS SORTIE dans", h);
+  const retour = page.locator('.visite-ecran:not([hidden]) a[href="/reglages"], .visite-ecran:not([hidden]) a[aria-label^="Retour"]').first();
+  await retour.click();
   await page.waitForTimeout(300);
 }
 console.log("rubriques ouvertes", ouvertes, "/", liens.length, "| cible manquante :", sansCible, "| erreurs", erreurs);

@@ -42,6 +42,9 @@ const ETAPES = [
   { etat: "02c-client-factures", titre: "Ses factures", dit: "Chacune, avec ce que le client en a fait : ouverte, payée ou due.", cible: 'button:has-text("Dernier devis")', geste: "Touchez Dernier devis." },
   { etat: "02d-dernier-devis", titre: "Le dernier devis, repris", dit: "Le même travail l'an prochain ? Le devis repart, ligne par ligne.", cible: 'button:has-text("+ 10 %")', geste: "Touchez + 10 %." },
   { etat: "02e-dernier-devis-hausse", titre: "Les prix montent", dit: "Chaque ligne prend 10 %. Il ne reste qu'à choisir la date." },
+  { etat: "01-accueil", titre: "L'assistant", dit: "Il connaît l'appli par cœur, et tous vos devis, même anciens.", cible: 'button[aria-label="Ouvrir l\'assistant"]', geste: "Touchez la bulle verte." },
+  { etat: "01c-assistant-question", titre: "Demandez-lui", dit: "« Dans le devis chez Costa, il y avait une ligne de claustra. Retrouve-la avec son prix. »", cible: 'button[aria-label="Envoyer"], button:has-text("Envoyer")', geste: "Touchez Envoyer." },
+  { etat: "01d-assistant-reponse", titre: "Il la retrouve", dit: "La ligne, son prix, et le devis d'où elle vient. On peut aussi lui parler, ou lui montrer une photo." },
   { etat: "01-accueil", titre: "Un nouveau devis", dit: "Partons d'un nouveau client.", cible: '[data-atlas="nouveau-chantier"]', geste: "Touchez Créer un devis." },
   { etat: "03-nouveau-mr", titre: "La fiche du client", dit: "Un particulier, une entreprise ou une mairie : la fiche s'adapte.", cible: '[data-atlas="civilite-entreprise"]', geste: "Touchez Entreprise." },
   { etat: "04-nouveau-entreprise", titre: "Une entreprise", dit: "Le SIRET et le numéro de TVA apparaissent.", cible: '[data-atlas="civilite-public"]', geste: "Touchez Public." },
@@ -100,7 +103,13 @@ const ETAPES = [
   { etat: "46-arreter", titre: "Arrêter le dossier", dit: "Du 1er janvier à aujourd'hui.", cible: '[data-atlas="arreter-et-ranger"]', geste: "Touchez Arrêter et ranger." },
   { etat: "47-dossier-range", titre: "Le dossier est rangé", dit: "Gardé dix ans.", cible: '[data-atlas="ouvrir-dossier"]', geste: "Touchez le PDF." },
   { etat: "49-dossier-pdf", titre: "Le document comptable", dit: "Ce que reçoit votre comptable. Un bouton l'envoie." },
-  { etat: "50-reglages", titre: "À vous", dit: "Touchez chaque rubrique des Réglages. Et dites-nous ce qui vous manque.", libre: true, cible: '[data-atlas="porte-idee"]', geste: "Une idée pour l'appli : on lit tout." },
+  { etat: "50-reglages", titre: "Les réglages", dit: "Tout se règle ici. Deux rubriques d'abord.", cible: '[data-atlas="porte-idee"]', geste: "Touchez Une idée pour l'appli." },
+  { etat: "r-idee", titre: "Une idée pour l'appli", dit: "Ce qui vous manque, dit ou écrit : on lit tout.", cible: 'button:has-text("J\'écris")', geste: "Touchez J'écris mon idée." },
+  { etat: "r-idee-ecrite", titre: "Votre idée", dit: "Elle part chez nous, avec votre nom. Les meilleures arrivent dans l'appli." },
+  { etat: "50-reglages", titre: "Vos fournisseurs", dit: "Ce que vous payez, et à qui.", cible: 'a[href="/reglages/fournisseurs"]', geste: "Touchez Fournisseurs et partenaires." },
+  { etat: "r-fournisseurs", titre: "Ce que vous payez", dit: "Vos fournisseurs, et votre marge sur le matériel.", cible: '[data-atlas="societe"]:has-text("Pépinière")', geste: "Touchez la Pépinière des Saules." },
+  { etat: "r-fournisseurs-fiche", titre: "Ses prix", dit: "Chaque prix d'achat. Sur vos devis, il revient avec votre marge. Ajoutez-en, ou prenez son devis en photo." },
+  { etat: "50-reglages", titre: "À vous", dit: "Promenez-vous : chaque rubrique s'ouvre, la flèche du haut ramène ici.", libre: true },
 ];
 
 // Les boutons du devis, à essayer librement : chacun ouvre sa vraie feuille, et
@@ -170,6 +179,9 @@ html,body{overflow-x:clip}
 .v-barre i{display:block;height:100%;background:var(--v-or);transition:width 300ms}
 .v-pied button{min-height:40px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .v-retour{background:transparent;color:rgba(245,243,238,.7)}
+.v-quitter{background:transparent;color:var(--v-creme);box-shadow:inset 0 0 0 1px rgba(245,243,238,.35)}
+.v-pied [hidden]{display:none}
+.v-guide .v-pied .v-quitter:not([hidden]) ~ .v-suivant{margin-left:auto}
 .v-suivant{background:var(--v-creme);color:var(--v-encre)}
 .v-guide.en-retrait{opacity:0;pointer-events:none}
 .v-guide.secoue{animation:v-secoue 380ms}
@@ -196,6 +208,8 @@ const SCRIPT = `
   const guide = document.querySelector(".v-guide"), doigt = document.querySelector(".v-doigt");
   const photo = document.querySelector(".v-photo");
   let rang = 0, libre = false, courant = null, minuteur = null;
+  // Une rubrique ouverte librement à la fin (et non une étape guidée qui en montre une).
+  let enRubrique = false;
   // Un essai en cours, sur l'étape qui en propose : { x, phase: "feuille" | "pose" }.
   let essai = null;
 
@@ -272,12 +286,14 @@ const SCRIPT = `
     guide.querySelector(".v-dit").textContent = e.dit;
     const g = guide.querySelector(".v-geste"); g.textContent = e.geste || ""; g.hidden = !e.geste;
     guide.querySelector(".v-barre i").style.width = ((rang + 1) / C.etapes.length) * 100 + "%";
-    guide.querySelector(".v-retour").hidden = rang === 0 && !libre;
+    guide.querySelector(".v-retour").hidden = rang === 0 || libre;
+    guide.querySelector(".v-quitter").hidden = !libre;
+    guide.querySelector(".v-barre").hidden = libre;
     const s = guide.querySelector(".v-suivant");
-    s.textContent = libre || rang === C.etapes.length - 1 ? "Recommencer" : e.cible ? "Passer" : "Suivant";
+    s.textContent = libre ? "Recommencer" : e.cible ? "Passer" : "Suivant";
   };
   const aller = (n) => {
-    essai = null; libre = false; rang = Math.max(0, Math.min(C.etapes.length - 1, n));
+    essai = null; libre = false; enRubrique = false; rang = Math.max(0, Math.min(C.etapes.length - 1, n));
     const e = C.etapes[rang];
     montrer(e.etat);
     // Pendant que les champs s'écrivent, le guide se retire : il cachait ce qu'il
@@ -296,10 +312,10 @@ const SCRIPT = `
   const rubrique = (href) => {
     const nom = "r-" + href.replace(/^\\/reglages\\//, "").replace(/\\//g, "-");
     if (!ecrans.has(nom)) return false;
-    montrer(nom, 0); doigt.style.opacity = 0;
+    montrer(nom, 0); doigt.style.opacity = 0; enRubrique = true;
     guide.className = "v-guide en-bas";
     guide.querySelector("h2").textContent = courant.querySelector("h1")?.textContent || "Réglages";
-    guide.querySelector(".v-dit").textContent = nom === "r-idee" ? "Dictez ou écrivez votre idée : elle arrive chez nous, avec votre nom." : "Revenez aux Réglages avec la flèche, et ouvrez la rubrique suivante.";
+    guide.querySelector(".v-dit").textContent = "Revenez aux Réglages avec la flèche du haut, et ouvrez la suivante.";
     guide.querySelector(".v-geste").hidden = true;
     return true;
   };
@@ -323,13 +339,15 @@ const SCRIPT = `
   document.addEventListener("click", (ev) => {
     if (ev.target.closest(".v-ouverture")) { document.querySelector(".v-ouverture").remove(); aller(0); return; }
     if (ev.target.closest(".v-suivant")) { if (libre || rang === C.etapes.length - 1) aller(0); else aller(rang + 1); return; }
-    if (ev.target.closest(".v-retour")) { if (essai) finirEssai(); else if (courant?.dataset.ecran.startsWith("r-")) aller(C.etapes.length - 1); else aller(rang - 1); return; }
+    // Une sortie toujours à portée : la visite n'est jamais un cul-de-sac (sa demande du 21 novembre).
+    if (ev.target.closest(".v-quitter")) { const r = document.referrer; location.href = r && new URL(r).origin === location.origin && !r.includes("visite-guidee") ? r : "vente/index.html"; return; }
+    if (ev.target.closest(".v-retour")) { if (essai) finirEssai(); else aller(rang - 1); return; }
     if (ev.target.closest(".v-guide")) return;
     const el = ev.target.closest("a, button, label, input, [role=button], [data-atlas]");
     const lien = ev.target.closest("a");
     if (lien) ev.preventDefault();
     // Les Réglages, à la fin : chaque rubrique s'ouvre, la flèche ramène au sommaire.
-    if (libre || courant?.dataset.ecran.startsWith("r-")) {
+    if (libre || enRubrique) {
       const h = lien?.getAttribute("href") || "";
       if (h.startsWith("/reglages/") && rubrique(h)) return;
       if (courant?.dataset.ecran === "r-idee" && el?.textContent.includes("J'écris")) { montrer("r-idee-ecrite", 0); return; }
@@ -389,7 +407,7 @@ ${blocs}
 <section class="v-guide en-bas" aria-live="polite">
   <span class="v-chez" hidden>Chez votre client</span>
   <h2></h2><p class="v-dit"></p><p class="v-geste"></p>
-  <div class="v-pied"><button type="button" class="v-retour">Retour</button><div class="v-barre"><i></i></div><button type="button" class="v-suivant">Suivant</button></div>
+  <div class="v-pied"><button type="button" class="v-retour">Retour</button><button type="button" class="v-quitter" hidden>Quitter la visite</button><div class="v-barre"><i></i></div><button type="button" class="v-suivant">Suivant</button></div>
 </section>
 <div class="v-photo" aria-hidden="true"><img alt="" src="${ticket}"></div>
 <div class="v-ouverture" role="dialog" aria-label="Visite de Cause"><div>

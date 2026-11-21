@@ -12,6 +12,8 @@ const SUITE = process.env.SUITE === "1";
 const LIGNES = [
   ["Plantation d'une haie de photinias", "18", "ml", "45"],
   ["Paillage du pied de haie", "1", "forfait", "120"],
+  // La ligne que l'assistant retrouvera pendant la visite (sa demande du 21 novembre).
+  ["Pose de claustras en bois, 3 panneaux", "3", "u", "165"],
 ];
 let id = SUITE ? readFileSync(`${TRAVAIL}/chantier-costa.txt`, "utf8").trim() : null;
 if (!SUITE) {
