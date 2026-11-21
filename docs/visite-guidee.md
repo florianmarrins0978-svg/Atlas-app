@@ -18,7 +18,7 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 | Le devis | le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, **les boutons à essayer librement** (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, le retour au devis, Choisir la date |
 | La date | deux dates proposées, le devis envoyé |
 | Chez le client | sa page, la date qu'il choisit, sa signature au doigt |
-| Le planning | le 25, la journée, Paul et Kévin ajoutés, la fiche d'intervention |
+| Le planning | le 25, la journée, Paul et Kévin ajoutés matin et après-midi, la fiche d'intervention, la fiche de sécurité (sa page s'ouvre sur le décret 2021-1833), les travaux à faire |
 | La facture | Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, l'envoi, ce que reçoit le client |
 | Le paiement | le virement vu par la banque sur l'accueil, « Oui », la facture payée |
 | Ma TVA | toute la page, un achat écrit à la main, le ticket de carburant scanné, les chiffres de gauche (collectée, déductible, par taux) |
@@ -68,12 +68,14 @@ Fait. Mme Costa a maintenant une histoire, jouée pour de vrai avant la visite :
 | Montrer la note vocale en haut à droite | une étape la montre, puis l'écoute |
 | Le PDF flou | **corrigé à la racine** : la page se peignait à la densité d'un vieil écran. Elle est figée à la densité d'un téléphone récent (trois fois plus de points) |
 | Après l'aperçu : retour, puis Choisir la date | fait dans cet ordre |
+| Le doigt restait en l'air quand on faisait défiler | il suit son bouton à chaque instant, page ou feuille |
+| Après la signature : l'accueil et sa notification, puis le planning | fait : « Devis accepté », puis Planning |
 
 Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : la visite le dit, et c'est le bouton du bas qui pose.
 
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 59 étapes, environ six minutes. On peut en retirer.
+1. **La longueur** : 64 étapes, environ sept minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
@@ -84,4 +86,4 @@ Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : l
 l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de
 démonstration neuve, donc ton accord.
 
-**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 59 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
+**Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 64 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.
