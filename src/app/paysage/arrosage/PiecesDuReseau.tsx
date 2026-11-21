@@ -36,7 +36,8 @@ export default function PiecesDuReseau({
   retouches: Retouches;
   onPiece: (poste: Poste) => void;
   onChaine: (maillon: Maillon, nomPropose: string) => void;
-  onAjouter: (ou: string) => void;
+  /** Absent : un plan enregistré, qu'on revoit sans le changer (`ARCHITECTURE.md` §599). */
+  onAjouter?: (ou: string) => void;
   onSortie: (v: "ligne" | "boucle") => void;
   onCouronne: (v: 50 | 100) => void;
 }) {
@@ -120,7 +121,7 @@ export default function PiecesDuReseau({
         </div>
       )}
 
-      <BoutonAjouter libelle={`Ajouter une pièce au réseau ${r.i + 1}`} onClick={() => onAjouter(`r${r.i}`)} />
+      {onAjouter && <BoutonAjouter libelle={`Ajouter une pièce au réseau ${r.i + 1}`} onClick={() => onAjouter(`r${r.i}`)} />}
     </div>
   );
 }

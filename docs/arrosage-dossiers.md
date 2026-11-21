@@ -1,10 +1,118 @@
-# Les dossiers du plan d'arrosage : la planche, et les cinq questions
+# Les dossiers du plan d'arrosage : codés
 
 *21 novembre 2026. Réponse au brief « les dossiers du plan d'arrosage ».
-**Rien n'est codé** : la planche d'abord (`CLAUDE.md` §3 bis), le code
-seulement une fois ses réponses données.*
+La planche d'abord, ses cinq questions, puis son « tu peux tout coder » du
+même soir, qui vaut oui à mes cinq recommandations.*
 
 **La planche :** https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-dossiers.html
+
+---
+
+## 0. Le code, le 21 novembre au soir
+
+### Ce que fait l'appli maintenant
+
+| Le brief, et ses réponses | Verdict | Où |
+|---|---|---|
+| créer un dossier à un nom choisi | **fait** : « Nouveau dossier » dans « Mes dossiers », ou dans la feuille d'enregistrement | `MesDossiers.tsx`, `EnregistrerDansUnDossier.tsx` |
+| relié à une fiche client, facultatif (réponse 1) | **fait** : la barre de recherche de l'appli, six clients au plus ; choisir remplit le nom | `ChoixDuClient.tsx` |
+| y enregistrer le plan de l'outil | **fait** : sous les réserves. Le serveur refait le plan et compare son empreinte à celle de l'écran avant d'écrire | `dossiers-arrosage/actions.ts` |
+| la saisie, le plan, la liste, les réserves, la version du calcul, la date | **fait** : tout est figé dans la ligne, avec les retouches des pièces et le modèle qui a lu la photo | `plans_arrosage`, migration 0193 |
+| un enregistrement ne s'écrase pas | **fait** : une version de plus. Le même plan deux fois n'en fait pas, et le dit | `enregistrerPlan` |
+| revoir ne recalcule jamais | **fait** : le plan revu affiche le plan stocké, et rien de ce qui le change ne répond | `PlanRevu.tsx`, `LePlanDuJardin.tsx` (`fige`) |
+| la photo gardée (réponse 3) | **fait** : nettoyée par la porte commune (GPS retiré), montrée par « Voir la saisie » | `…/[plan]/croquis` |
+| le PDF (réponse 4) | **fait** : archivé à l'enregistrement, servi tel quel. Un réseau par page en couleur, avec les photos des pièces, puis la liste. Ni réserves, ni la phrase « Nous ne garantissons pas… », ni prix d'achat, ni pied de page | `plan-arrosage-pdf.ts` |
+| supprimer (réponse 2) | **fait** : le nom, le lien, la photo, la lecture de l'IA et le PDF s'effacent ; le calcul est gardé 5 ans puis purgé. Effacer le client et fermer le compte font la même chose | `oublierDesDossiersDans` |
+| sans l'option à 6 € (réponse 5) | **fait** : les dossiers restent ouverts, et « Mes dossiers » apparaît sous la fermeture de l'outil quand il en a. Seul enregistrer demande l'option | `SesDossiersSansLOption.tsx` |
+| l'outil sans dossier | **inchangé** : faire un plan n'écrit toujours rien | |
+
+### Ce qui a été fait autrement, ou ajouté
+
+1. **« Reprendre dans l'outil »** : le plan enregistré se rouvre dans l'outil
+   avec ses paramètres et ses retouches, et se refait avec le calcul du jour.
+   Revoir et reprendre sont deux gestes ; enregistré de nouveau, il fait une
+   version de plus.
+2. **Une cadence sur l'enregistrement** : chaque appel range une photo et un
+   PDF. Sans plafond, une boucle remplirait le stockage. Vingt par minute.
+3. **L'export « Télécharger mes données »** emporte les dossiers, les plans,
+   leurs PDF et leurs croquis, dans « Plans d'arrosage ».
+4. **Le plan revu n'affiche pas de prix.** Les prix de vos fournisseurs sont
+   ceux d'aujourd'hui ; posés sur un plan d'un autre jour, ils feraient croire
+   qu'ils en sont.
+
+### Ce que j'ai écrit et qui était faux (corrigé ici)
+
+1. **« Ses prix d'achat restent à l'écran, dans le plan revu »** (point 3.4
+   plus bas) : faux, pour la raison du point 4 juste au-dessus.
+2. **« Chaque réserve est dans le PDF, un contrôle qui sait rougir »** (point
+   5) : c'est l'inverse depuis ta décision. Le contrôle vérifie qu'AUCUNE
+   réserve n'y est, et qu'il y en a bien dans le plan d'essai, sans quoi il
+   ne mesurerait rien.
+3. **Les noms du point 5** : la table s'appelle `plans_arrosage`, pas
+   `plans_enregistres`, et il n'y a pas de colonne `moteur` : le modèle
+   enregistré dit déjà qui a lu la photo.
+
+### Les défauts trouvés avant toi
+
+Par la suite navigateur qui fait ton geste, du dessin au dossier supprimé :
+
+1. **« Reprendre dans l'outil » ne répondait pas.** Il était posé dans la
+   partie rendue inerte du plan revu. Seuls les blocs qui modifient le sont
+   maintenant.
+2. **Après une suppression, la flèche de « Mes dossiers » ramenait au dossier
+   supprimé.** Il sort maintenant de l'historique, comme une fiche client
+   effacée.
+
+Un trouvé en relisant le code : **un enregistrement refusé (un nom déjà pris,
+par exemple) laissait la photo du croquis et le PDF dans le stockage**, sans
+rien qui y renvoie : la photo de ton client serait restée chez Cause pour
+toujours. Ils partent maintenant à la purge, comme ceux d'un plan enregistré
+deux fois.
+
+Et deux vus en regardant les écrans : la feuille « Supprimer ce dossier ? »
+promettait d'effacer une photo qu'un plan dessiné n'a pas ; « 3 bar » se
+coupait en fin de ligne.
+
+### La batterie
+
+Deux batteries entières, le 21 novembre au soir.
+
+| | première | seconde |
+|---|---|---|
+| types, lint, construction, mémoire du dépôt, connexion derrière un proxy | vert | vert |
+| suites base | **613 sur 617** | **617 sur 617** |
+| suites navigateur | 218 sur 218 | **218 sur 218** |
+
+**Les quatre rouges de la première étaient de mon lot, et vrais :**
+
+1. la file qui efface un dossier oublié au bout de 5 ans ne liait pas le
+   dossier à son entreprise. La base doit refuser d'elle-même une file qui
+   nommerait le dossier d'une autre entreprise ;
+2. les deux colonnes qui portent la photo et le PDF n'étaient pas déclarées
+   au contrôle qui compare la base et le stockage des fichiers ;
+3. une fiche du mode d'emploi de l'assistant citait une ligne de code que
+   j'avais déplacée : l'assistant aurait enseigné un geste qu'il ne
+   retrouvait plus ;
+4. « Télécharger le PDF » était un simple lien : sur iPhone, le PDF se serait
+   ouvert au lieu de se ranger. Il passe maintenant par le bouton commun des
+   devis et des factures, et la suite navigateur fait l'appui et reçoit le
+   fichier.
+
+La suite des dossiers, qui fait ton geste du dessin au dossier supprimé :
+8 cas sur 8.
+
+### Ce qui reste, et qui le tranche
+
+| | qui |
+|---|---|
+| la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
+| le mot « nourrice » qui mord sur le losange du té égal, sur le plan en couleur (écran et PDF) | toi : c'est l'appli, sur ton oui |
+| « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite | à faire, si tu le veux |
+| le PDF ouvert sur ton iPhone | toi |
+
+---
+
+# La planche et les cinq questions (avant le code)
 
 ---
 
@@ -210,7 +318,7 @@ hors de cette porte.
 
 ---
 
-## 5. Comment ce sera codé, une fois ses réponses
+## 5. Comment ce serait codé (écrit avant le code ; ce qui a changé est au point 0)
 
 | | |
 |---|---|

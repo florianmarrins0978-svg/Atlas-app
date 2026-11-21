@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Les dossiers du plan d'arrosage : la planche, et les cinq questions</title>
+<title>Atlas — Les dossiers du plan d'arrosage : codés</title>
 <style>
   :root{
     --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
@@ -57,9 +57,150 @@
 </head>
 <body>
 <main>
-<h1 id="les-dossiers-du-plan-darrosage--la-planche-et-les-cinq-questions">Les dossiers du plan d'arrosage : la planche, et les cinq questions</h1>
-<p><em>21 novembre 2026. Réponse au brief « les dossiers du plan d'arrosage ». <strong>Rien n'est codé</strong> : la planche d'abord (<code>CLAUDE.md</code> §3 bis), le code seulement une fois ses réponses données.</em></p>
+<h1 id="les-dossiers-du-plan-darrosage--codés">Les dossiers du plan d'arrosage : codés</h1>
+<p><em>21 novembre 2026. Réponse au brief « les dossiers du plan d'arrosage ». La planche d'abord, ses cinq questions, puis son « tu peux tout coder » du même soir, qui vaut oui à mes cinq recommandations.</em></p>
 <p><strong>La planche :</strong> https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-dossiers.html</p>
+<hr>
+<h2 id="0-le-code-le-21-novembre-au-soir">0. Le code, le 21 novembre au soir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-que-fait-lappli-maintenant">Ce que fait l'appli maintenant</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Le brief, et ses réponses</th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>créer un dossier à un nom choisi</td>
+<td><strong>fait</strong> : « Nouveau dossier » dans « Mes dossiers », ou dans la feuille d'enregistrement</td>
+<td><code>MesDossiers.tsx</code>, <code>EnregistrerDansUnDossier.tsx</code></td>
+</tr>
+<tr>
+<td>relié à une fiche client, facultatif (réponse 1)</td>
+<td><strong>fait</strong> : la barre de recherche de l'appli, six clients au plus ; choisir remplit le nom</td>
+<td><code>ChoixDuClient.tsx</code></td>
+</tr>
+<tr>
+<td>y enregistrer le plan de l'outil</td>
+<td><strong>fait</strong> : sous les réserves. Le serveur refait le plan et compare son empreinte à celle de l'écran avant d'écrire</td>
+<td><code>dossiers-arrosage/actions.ts</code></td>
+</tr>
+<tr>
+<td>la saisie, le plan, la liste, les réserves, la version du calcul, la date</td>
+<td><strong>fait</strong> : tout est figé dans la ligne, avec les retouches des pièces et le modèle qui a lu la photo</td>
+<td><code>plans_arrosage</code>, migration 0193</td>
+</tr>
+<tr>
+<td>un enregistrement ne s'écrase pas</td>
+<td><strong>fait</strong> : une version de plus. Le même plan deux fois n'en fait pas, et le dit</td>
+<td><code>enregistrerPlan</code></td>
+</tr>
+<tr>
+<td>revoir ne recalcule jamais</td>
+<td><strong>fait</strong> : le plan revu affiche le plan stocké, et rien de ce qui le change ne répond</td>
+<td><code>PlanRevu.tsx</code>, <code>LePlanDuJardin.tsx</code> (<code>fige</code>)</td>
+</tr>
+<tr>
+<td>la photo gardée (réponse 3)</td>
+<td><strong>fait</strong> : nettoyée par la porte commune (GPS retiré), montrée par « Voir la saisie »</td>
+<td><code>…/[plan]/croquis</code></td>
+</tr>
+<tr>
+<td>le PDF (réponse 4)</td>
+<td><strong>fait</strong> : archivé à l'enregistrement, servi tel quel. Un réseau par page en couleur, avec les photos des pièces, puis la liste. Ni réserves, ni la phrase « Nous ne garantissons pas… », ni prix d'achat, ni pied de page</td>
+<td><code>plan-arrosage-pdf.ts</code></td>
+</tr>
+<tr>
+<td>supprimer (réponse 2)</td>
+<td><strong>fait</strong> : le nom, le lien, la photo, la lecture de l'IA et le PDF s'effacent ; le calcul est gardé 5 ans puis purgé. Effacer le client et fermer le compte font la même chose</td>
+<td><code>oublierDesDossiersDans</code></td>
+</tr>
+<tr>
+<td>sans l'option à 6 € (réponse 5)</td>
+<td><strong>fait</strong> : les dossiers restent ouverts, et « Mes dossiers » apparaît sous la fermeture de l'outil quand il en a. Seul enregistrer demande l'option</td>
+<td><code>SesDossiersSansLOption.tsx</code></td>
+</tr>
+<tr>
+<td>l'outil sans dossier</td>
+<td><strong>inchangé</strong> : faire un plan n'écrit toujours rien</td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-a-été-fait-autrement-ou-ajouté">Ce qui a été fait autrement, ou ajouté</h3>
+<ol>
+<li><strong>« Reprendre dans l'outil »</strong> : le plan enregistré se rouvre dans l'outil avec ses paramètres et ses retouches, et se refait avec le calcul du jour. Revoir et reprendre sont deux gestes ; enregistré de nouveau, il fait une version de plus.</li>
+<li><strong>Une cadence sur l'enregistrement</strong> : chaque appel range une photo et un PDF. Sans plafond, une boucle remplirait le stockage. Vingt par minute.</li>
+<li><strong>L'export « Télécharger mes données »</strong> emporte les dossiers, les plans, leurs PDF et leurs croquis, dans « Plans d'arrosage ».</li>
+<li><strong>Le plan revu n'affiche pas de prix.</strong> Les prix de vos fournisseurs sont ceux d'aujourd'hui ; posés sur un plan d'un autre jour, ils feraient croire qu'ils en sont.</li>
+</ol>
+<h3 id="ce-que-jai-écrit-et-qui-était-faux-corrigé-ici">Ce que j'ai écrit et qui était faux (corrigé ici)</h3>
+<ol>
+<li><strong>« Ses prix d'achat restent à l'écran, dans le plan revu »</strong> (point 3.4 plus bas) : faux, pour la raison du point 4 juste au-dessus.</li>
+<li><strong>« Chaque réserve est dans le PDF, un contrôle qui sait rougir »</strong> (point 5) : c'est l'inverse depuis ta décision. Le contrôle vérifie qu'AUCUNE réserve n'y est, et qu'il y en a bien dans le plan d'essai, sans quoi il ne mesurerait rien.</li>
+<li><strong>Les noms du point 5</strong> : la table s'appelle <code>plans_arrosage</code>, pas <code>plans_enregistres</code>, et il n'y a pas de colonne <code>moteur</code> : le modèle enregistré dit déjà qui a lu la photo.</li>
+</ol>
+<h3 id="les-défauts-trouvés-avant-toi">Les défauts trouvés avant toi</h3>
+<p>Par la suite navigateur qui fait ton geste, du dessin au dossier supprimé :</p>
+<ol>
+<li><strong>« Reprendre dans l'outil » ne répondait pas.</strong> Il était posé dans la partie rendue inerte du plan revu. Seuls les blocs qui modifient le sont maintenant.</li>
+<li><strong>Après une suppression, la flèche de « Mes dossiers » ramenait au dossier supprimé.</strong> Il sort maintenant de l'historique, comme une fiche client effacée.</li>
+</ol>
+<p>Un trouvé en relisant le code : <strong>un enregistrement refusé (un nom déjà pris, par exemple) laissait la photo du croquis et le PDF dans le stockage</strong>, sans rien qui y renvoie : la photo de ton client serait restée chez Cause pour toujours. Ils partent maintenant à la purge, comme ceux d'un plan enregistré deux fois.</p>
+<p>Et deux vus en regardant les écrans : la feuille « Supprimer ce dossier ? » promettait d'effacer une photo qu'un plan dessiné n'a pas ; « 3 bar » se coupait en fin de ligne.</p>
+<h3 id="la-batterie">La batterie</h3>
+<p>Deux batteries entières, le 21 novembre au soir.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>première</th>
+<th>seconde</th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, construction, mémoire du dépôt, connexion derrière un proxy</td>
+<td>vert</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>suites base</td>
+<td><strong>613 sur 617</strong></td>
+<td><strong>617 sur 617</strong></td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td>218 sur 218</td>
+<td><strong>218 sur 218</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Les quatre rouges de la première étaient de mon lot, et vrais :</strong></p>
+<ol>
+<li>la file qui efface un dossier oublié au bout de 5 ans ne liait pas le dossier à son entreprise. La base doit refuser d'elle-même une file qui nommerait le dossier d'une autre entreprise ;</li>
+<li>les deux colonnes qui portent la photo et le PDF n'étaient pas déclarées au contrôle qui compare la base et le stockage des fichiers ;</li>
+<li>une fiche du mode d'emploi de l'assistant citait une ligne de code que j'avais déplacée : l'assistant aurait enseigné un geste qu'il ne retrouvait plus ;</li>
+<li>« Télécharger le PDF » était un simple lien : sur iPhone, le PDF se serait ouvert au lieu de se ranger. Il passe maintenant par le bouton commun des devis et des factures, et la suite navigateur fait l'appui et reçoit le fichier.</li>
+</ol>
+<p>La suite des dossiers, qui fait ton geste du dessin au dossier supprimé : 8 cas sur 8.</p>
+<h3 id="ce-qui-reste-et-qui-le-tranche">Ce qui reste, et qui le tranche</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>qui</th>
+</tr></thead><tbody>
+<tr>
+<td>la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client</td>
+<td>toi, avec ton juriste</td>
+</tr>
+<tr>
+<td>le mot « nourrice » qui mord sur le losange du té égal, sur le plan en couleur (écran et PDF)</td>
+<td>toi : c'est l'appli, sur ton oui</td>
+</tr>
+<tr>
+<td>« Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite</td>
+<td>à faire, si tu le veux</td>
+</tr>
+<tr>
+<td>le PDF ouvert sur ton iPhone</td>
+<td>toi</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h1 id="la-planche-et-les-cinq-questions-avant-le-code">La planche et les cinq questions (avant le code)</h1>
 <hr>
 <h2 id="1-ce-qui-a-été-fait">1. Ce qui a été fait</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -238,7 +379,7 @@
 <h3 id="question-5-que-le-brief-navait-pas-sans-loption-à-6--ses-plans-">Question 5, que le brief n'avait pas. Sans l'option à 6 €, ses plans ?</h3>
 <p><strong>Recommandation : revoir et télécharger restent ouverts, en lecture seule, même sans l'option ; seul un nouveau plan la demande.</strong> Une trace sert au moment d'un litige, souvent après avoir arrêté l'option : la lui fermer reviendrait à garder ses propres données hors de sa portée. Aujourd'hui, <code>layout.tsx</code> ferme tout l'outil : les dossiers vivraient donc à une adresse hors de cette porte.</p>
 <hr>
-<h2 id="5-comment-ce-sera-codé-une-fois-ses-réponses">5. Comment ce sera codé, une fois ses réponses</h2>
+<h2 id="5-comment-ce-serait-codé-écrit-avant-le-code--ce-qui-a-changé-est-au-point-0">5. Comment ce serait codé (écrit avant le code ; ce qui a changé est au point 0)</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th></th>

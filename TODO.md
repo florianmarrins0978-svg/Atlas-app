@@ -19,32 +19,29 @@ grave d'abord. Monter `drizzle-kit` ou `@sentry/nextjs` est un changement
 majeur de version : niveau 3 (`package.json`), donc une batterie, sur son
 « oui ».
 
-## ⏳ UNE PLANCHE À REGARDER : LES DOSSIERS DU PLAN D'ARROSAGE (21 novembre 2026)
+## LES DOSSIERS DU PLAN D'ARROSAGE : CODÉS LE 21 NOVEMBRE 2026, CE QUI RESTE
 
-Sa demande du 21 novembre : créer un dossier à un nom choisi, y enregistrer un
-plan, le revoir tel qu'il était, le télécharger avec sa liste et ses réserves.
-**Il a levé lui-même « aucune persistance »** (`ARCHITECTURE.md` §599).
-Planche `appli/arrosage-dossiers.html`, posée sur le vrai écran figé ;
-document de retour `docs/arrosage-dossiers.md`. **Rien n'est codé.**
+Sa planche du 21 (`appli/arrosage-dossiers.html`), et son « tout coder » du
+même soir, qui vaut oui aux cinq recommandations de `docs/arrosage-dossiers.md`.
+Codé : `ARCHITECTURE.md` §599. **Avant de lui redemander quoi que ce soit** :
+chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
-**Ses cinq réponses attendues** (le détail et mes recommandations sont dans le
-document) : 1. dossier libre ou relié à une fiche client (conseillé : libre,
-lien facultatif) ; 2. supprimer un dossier (conseillé : nom, lien et photo
-effacés, le calcul seul gardé 5 ans, à écrire dans les conditions générales,
-avec le juriste) ; 3. garder la photo du croquis (conseillé : oui) ; 4. le PDF
-(conseillé : oui, archivé à l'enregistrement, sans ses prix d'achat ; ses demandes du soir, déjà sur la planche : un réseau par page, en couleur et avec ses pièces et leurs photos ; ni les réserves, ni la phrase « Nous ne garantissons pas… », ni pied de page gris) ; 5. sans
-l'option à 6 €, revoir et télécharger restent ouverts (conseillé : oui).
+**Ce qui reste, et à qui :**
 
-**Au codage, ce que le brief ne disait pas** : l'enregistrement se recalcule
-au serveur et se compare à l'empreinte de l'écran ; les `retouches` de
-`LePlanDuJardin.tsx` (état local, absentes des paramètres) font partie de la
-saisie ; le PDF s'archive à l'enregistrement ; le numéro de migration se prend
-au-dessus de `main` ET des branches actives. Niveau 3, batterie sur son oui.
-
-**Vu en faisant le PDF, pas touché (l'appli, sur son oui)** : sur le plan en couleur d'un réseau (`PlanDessine.tsx`), le mot « nourrice » mord sur le losange du té égal, à l'écran comme dans la planche.
-
-**Avant de la lui redemander** : chercher `mes-dossiers` et
-`enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
+- **la clause des conditions générales** (le calcul d'un dossier supprimé gardé
+  5 ans, sans rien qui désigne le client) : **à lui et à son juriste**. Les
+  conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la
+  durée ;
+- **le mot « nourrice » mord sur le losange du té égal**, sur le plan en
+  couleur d'un réseau (`PlanDessine.tsx`), à l'écran comme dans le PDF, qui
+  reprend ce dessin. Vu en faisant le PDF, pas touché : l'appli, sur son oui ;
+- **« Voir la saisie » ne dit pas ce qu'il a corrigé** de la lecture de l'IA
+  (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée dans
+  la saisie, la comparaison zone par zone n'est pas écrite. Les cotes montrées
+  sont celles qui ont servi au calcul ;
+- **le PDF n'a pas été lu sur son iPhone** : les pages se mesurent avec les
+  polices embarquées (Inter, la serif d'Atlas), donc la même chose partout,
+  mais personne ne l'a ouvert là.
 
 ## ⚠️ ARROSAGE : « LES PIÈCES DES RÉSEAUX » DIT PEHD Ø25 APRÈS LE CHOIX DU Ø32 (vu le 20 novembre 2026, non corrigé)
 

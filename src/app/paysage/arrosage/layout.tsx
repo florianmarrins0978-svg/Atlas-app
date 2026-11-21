@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import OuvertParLaFormule from "../OuvertParLaFormule";
+import SesDossiersSansLOption from "../dossiers-arrosage/SesDossiersSansLOption";
 
 // Un outil d'« Entreprise » depuis le 24 septembre 2026 : tout ce qui vit sous
 // ce dossier passe par cette porte, aujourd'hui comme demain.
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <OuvertParLaFormule fonction="arrosage" titre="Plan d’arrosage">
+    <OuvertParLaFormule fonction="arrosage" titre="Plan d’arrosage" aussi={<SesDossiersSansLOption />}>
       {children}
     </OuvertParLaFormule>
   );

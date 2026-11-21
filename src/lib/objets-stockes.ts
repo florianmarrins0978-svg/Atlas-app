@@ -4,7 +4,7 @@
 // **POURQUOI CE FICHIER EXISTE.**
 //
 // Atlas range ses octets dans un stockage objet (S3), et la base ne garde que
-// la CLÉ qui y mène. Dix-sept colonnes, réparties sur quatorze tables, portent une de ces
+// la CLÉ qui y mène. Trente-deux colonnes, réparties sur vingt-cinq tables, portent une de ces
 // clés. Personne ne peut deviner cette liste : ni PostgreSQL, ni l'hébergeur, ni
 // un outil de sauvegarde. C'est la seule chose, dans tout le sujet
 // « sauvegarde », que le produit doit savoir à la place de sa machine.
@@ -56,7 +56,7 @@ export type ColonneObjet = {
 };
 
 /**
- * Les dix-sept colonnes, dans l'ordre où on les lit dans `schema.ts`.
+ * Les trente-deux colonnes, dans l'ordre où on les lit dans `schema.ts`.
  *
  * **Cette liste se vérifie contre le schéma**, elle ne se maintient pas à la
  * main : `scripts/test-objets-stockes.ts` relit `schema.ts` et refuse toute
@@ -297,6 +297,21 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     quoi: "une photo de diagnostic en attente de purge",
     absenceNormale: true,
     raisonAbsence: "même raison que les autres files",
+  },
+  // Un dossier d'arrosage OUBLIÉ perd ses deux clés dans la transaction même
+  // qui met ses fichiers à la purge (`oublierDesDossiersDans`) : une clé
+  // présente sans son objet n'a jamais d'excuse.
+  {
+    table: "plans_arrosage",
+    colonne: "photo_cle",
+    quoi: "la photo du croquis d'un plan d'arrosage enregistré",
+    absenceNormale: false,
+  },
+  {
+    table: "plans_arrosage",
+    colonne: "pdf_cle",
+    quoi: "le PDF archivé d'un plan d'arrosage enregistré",
+    absenceNormale: false,
   },
 ] as const;
 

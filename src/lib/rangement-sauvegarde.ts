@@ -33,7 +33,10 @@ export type OrigineFichier =
   /** L'attestation que le comptable signe (27 octobre 2026). */
   | "attestation-comptable"
   /** La facture d'abonnement qu'Atlas lui a émise (6 novembre 2026). */
-  | "abonnement-atlas";
+  | "abonnement-atlas"
+  /** Un plan d'arrosage enregistré, son PDF et la photo de son croquis (21 novembre 2026). */
+  | "plan-arrosage"
+  | "croquis-arrosage";
 
 export type FichierARanger = {
   storageKey: string;
@@ -63,6 +66,8 @@ const DOSSIER_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "bilan-comptable": "Pour mon comptable",
   "attestation-comptable": "Pour mon comptable",
   "abonnement-atlas": "Abonnement Cause",
+  "plan-arrosage": "Plans d’arrosage",
+  "croquis-arrosage": "Plans d’arrosage",
 };
 
 const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
@@ -80,6 +85,8 @@ const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "bilan-comptable": "Bilan",
   "attestation-comptable": "Attestation",
   "abonnement-atlas": "Facture",
+  "plan-arrosage": "Plan",
+  "croquis-arrosage": "Croquis",
 };
 
 /**
@@ -127,7 +134,7 @@ export function rangerLesFichiers(
       dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else if (f.origine === "logo") {
       dossiers.push(DOSSIER_PAR_ORIGINE.logo);
-    } else if (f.origine === "ticket-tva" || f.origine === "vehicule" || f.origine === "devis-recu" || f.origine === "facture-recue" || f.origine === "dossier-comptable" || f.origine === "bilan-comptable" || f.origine === "attestation-comptable") {
+    } else if (f.origine === "ticket-tva" || f.origine === "vehicule" || f.origine === "devis-recu" || f.origine === "facture-recue" || f.origine === "dossier-comptable" || f.origine === "bilan-comptable" || f.origine === "attestation-comptable" || f.origine === "plan-arrosage" || f.origine === "croquis-arrosage") {
       dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else {
       // Un diagnostic fait hors chantier : rien ne le rattache à un client.
