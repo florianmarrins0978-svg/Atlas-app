@@ -38108,3 +38108,20 @@ l'axe de sa voie** : un contrôle neuf, vu rougir (4,8 px) sur une sortie décal
 de 1 %. 725 mesures sur la planche, 1482 sur le vrai composant, toutes sous
 1 px. La légende ne porte plus « à reprendre à plat » : plus aucune pièce ne
 l'attend, et ce qui l'affichait est retiré.
+
+**Le gris de ses photos, au choix** (même soir : *« pourquoi tu n'utilises pas
+la photo que je t'ai envoyée ? On a l'impression qu'elle est beaucoup plus
+claire, comme sous le soleil »*). C'est bien sa photo : le gris clair qu'il
+avait demandé (médiane 145) l'éclaircissait de 30 à 80 sur 255, ses photos
+ayant une médiane de 65 à 116. La planche montre les deux : « Gris de vos
+photos » ramène toutes les pièces en PVC gris à la médiane de ses photos (100),
+même écart (70), un seul gris toujours. Chaque photo a sa variante
+`*-dessus-naturel.png`, faite du même détourage ; **la boîte que la planche
+retrouve (pixel < 225, un sur deux) est identique au pixel près**, donc les
+fractions servent aux deux. Ses reflets de bord y restent de la pièce : la
+première version recopiait la valeur claire partout où le gris clair n'était
+pas compté, et laissait un liseré clair au bord des écrous, que le contrôle des
+sorties a fait rougir (1,07 px) ; seuls les pixels qui élargiraient la boîte
+reprennent désormais la valeur claire. 725 mesures sous 1 px dans chaque gris.
+**L'outil garde le gris clair** tant qu'il n'a pas choisi ; s'il prend le
+sien, les variantes passent dans `PHOTOS` et `public/`, à boîtes égales.
