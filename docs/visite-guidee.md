@@ -80,9 +80,23 @@ Dans une feuille, les autres choix (5 %, 10 %…) ne changent pas le montant : l
 
 **L'assistant, honnêtement :** la recherche de la ligne est la vraie, dans la vraie base. La phrase de sa réponse vient du modèle d'essai de ce poste, sans clé d'IA ; chez toi, la réponse sera formulée par la vraie IA.
 
+## Le 21 au soir : le guide revu sur toute la visite
+
+Le début revu a été retenu, puis porté sur les 75 étapes (l'étape des
+factures se regarde, puis « Touchez Dernier devis. »). Le guide dit le geste
+en grand, se replie en une ligne dès qu'on fait défiler, se met en haut sur
+les feuilles, et la page garde de la place sous son contenu : il ne cache plus
+rien pour de bon. Le détail, les phrases raccourcies et les informations
+cachées trouvées en route : `docs/visite-guidee-le-guide.md`.
+
+**Retouches de la planche ajoutées ce soir-là :** la liste de l'accueil des
+deux étapes du virement ne part plus figée défilée (elle cachait le haut de la
+carte), ses crans sont coupés sur ce que la visite montre, et le trait d'or
+sous l'onglet de la fiche client est replacé par la règle de l'appli.
+
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 74 étapes, environ huit minutes. On peut en retirer.
+1. **La longueur** : 75 étapes, environ huit minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».

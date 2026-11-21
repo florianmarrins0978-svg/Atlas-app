@@ -67,7 +67,15 @@ parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
 20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
 612). Ce qui suit est la planche telle qu'elle a été posée.
 
-## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, DEUX PROPOSITIONS (21 novembre 2026)
+## ✅ LE DÉBUT DE LA VISITE GUIDÉE : LA PREMIÈRE PROPOSITION, PORTÉE SUR TOUTE LA VISITE (21 novembre 2026)
+
+**Sa réponse, le 21 au soir, devant la première :** *« Très bien tu peux tout
+faire maintenant en gardant en tête que l'utilisateur puisse avoir accès à
+toutes les informations. Des fois, la petite barre noire cache les
+informations. Il faut trouver une manière de soit la masquer temporairement,
+soit la déplacer. »* Fait le soir même dans `appli/visite-guidee.html` :
+retour dans `docs/visite-guidee-le-guide.md`. Ce qui suit raconte les deux
+propositions telles qu'elles ont été posées.
 
 Sa demande, devant la visite : *« propose une version améliorée juste pour les
 4 premières étapes seulement, arrête-toi avant d'entrer dans le devis, au
@@ -86,10 +94,10 @@ gardent les quatre mêmes écrans figés et ne touchent ni `src/` ni
 | Ce qu'on regarde sans le toucher | la ligne de la facture éclairée | « Ouverte le 21/11 » surligné |
 | Sortir | pas avant la fin, comme aujourd'hui | une croix à chaque étape |
 
-**À trancher par lui :** l'une, l'autre, ou un mélange (par exemple la bulle
-courte de la première avec la main et les couleurs de la seconde). **Tant
-qu'il n'a pas choisi, aucune des deux ne se porte sur la visite entière, et
-aucune session ne retouche la planche de l'autre.**
+**Tranché le 21 au soir : la première** (sa réponse ci-dessus). De la seconde,
+la visite entière a repris le trait d'or recalé sous l'onglet
+(`recalerLesOnglets`) et le `cursor: pointer` posé sur la cible, sans lequel
+Safari n'envoie aucun clic hors d'un bouton.
 
 **Pas vérifié pour la seconde : Safari sur son iPhone.** Ce poste n'a que
 Chromium ; dix parcours y passent, dont un qui imite Safari (aucun clic hors
@@ -111,11 +119,16 @@ de l'écran.
   ouverte, lui faire enregistrer ce dossier. Sinon le réécrire, sur une base de
   démonstration neuve, donc sur son « oui ». `verifier:memoire` ne pouvait pas
   le voir : il ne lit ni les `.sh` ni un nom de fichier cité sans son dossier.
-- **Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
-  qu'à 390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un
-  ordinateur) : sa place a été figée avec l'écran. La seconde proposition du
-  début le replace par la règle de l'appli (`recalerLesOnglets`) ; la visite
-  entière et la première proposition le portent encore.
+- ~~**Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
+  qu'à 390 points de large~~ **réglé le 21 au soir dans la visite entière**
+  (`recalerLesOnglets`, repris de la seconde proposition). La première
+  proposition du début, restée planche, le porte encore.
+- **Les crans de la liste de l'accueil** (`scroll-snap-type`, `globals.css`) :
+  replacée par la visite, la liste revenait d'elle-même au premier chantier et
+  cachait le haut de la carte du virement, sur ordinateur. La visite coupe les
+  crans sur ce qu'elle montre. **Pas vérifié dans l'appli elle-même** : si la
+  même liste s'ouvre déjà défilée chez lui, sur ordinateur, avec une carte en
+  tête, c'est un défaut de `src/`, à regarder sur son espace.
 - **Les chantiers de l'accueil sont datés de juillet** quand l'histoire de
   Mme Costa est en novembre. Cela demande de rejouer la base.
 - **La visite entière demande une image qui n'existe pas en ligne** : ses
@@ -174,13 +187,10 @@ dossier du comptable). Retour : `docs/visite-guidee.md`. **Corrigé le
 `histoire.mjs`, ni `parcourir-visite.mjs`) ; refaire la visite demande de
 réécrire son parcours.
 
-**⏳ Le début revu, en attente de son choix (21 novembre)** :
-`appli/visite-guidee-le-debut.html`, les quatre premières étapes jusqu'aux
-factures de Costa, sur ses mêmes écrans figés. Retour :
-`docs/visite-guidee-le-debut.md`. S'il la retient, la même bulle passe sur
-les 74 étapes de `appli/visite-guidee.html`. **Une seconde proposition existe
-pour la même demande** (`appli/visite-guidee-le-debut-2.html`) : l'entrée « DEUX
-PROPOSITIONS » plus haut dit ce qui les sépare.
+**Le début revu, retenu le 21 au soir et porté sur toute la visite** :
+`appli/visite-guidee-le-debut.html` reste comme planche ; la visite compte
+désormais 75 étapes (l'étape des factures se regarde, puis « Touchez Dernier
+devis. »). Retour : `docs/visite-guidee-le-guide.md`.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi

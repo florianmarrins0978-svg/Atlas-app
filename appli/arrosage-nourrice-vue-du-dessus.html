@@ -18,13 +18,16 @@
   Le bouton « Avant » remet la planche du 18 octobre, pour comparer AVANT tout
   remplacement dans l'outil (la consigne de TODO.md).
 
-  SES PHOTOS, PRÉPARÉES (appli/arrosage-photos/dessus/) : le fond et l'ombre
-  portée retirés (le PVC est bleuté, l'ombre sur la table est neutre), puis
-  tournées d'un quart de tour quand leur axe était couché (électrovanne FF,
-  vanne, coude FF). Le té est retourné en miroir : photographié mâle à gauche,
-  il se pose femelle à gauche (le filetage de la clarinette y entre), donc son
-  « DURA » se lit à l'envers ; une photo prise dans l'autre sens le remettrait
-  à l'endroit. Aucune pièce n'est étirée ni déformée.
+  SES PHOTOS, PRÉPARÉES (appli/arrosage-photos/, suffixe « -dessus ») : le fond et l'ombre
+  portée retirés (le PVC est bleuté, l'ombre sur la table est neutre), et
+  gardées dans le sens où il les a prises, puisque les listes de pièces les
+  montrent aussi. Le dessin les pose : une pièce de colonne tourne de l'angle
+  qui met ses deux bouts l'un sous l'autre (un quart pour l'électrovanne FF,
+  la vanne et l'union, couchées sur la photo), le coude FF tourne d'un quart
+  (quart), le té se retourne en miroir : photographié mâle à gauche, il se
+  pose femelle à gauche (le filetage de la clarinette y entre), donc son
+  « DURA » se lit à l'envers dans le dessin. Aucune pièce n'est étirée ni
+  déformée.
 
   LES FRACTIONS SONT MESURÉES, PAS RÉGLÉES À L'ŒIL (§475). Le milieu d'un bout
   est la moyenne, ligne par ligne, du milieu entre ses deux bords, sur une
@@ -40,12 +43,25 @@
   dessinés pour que leurs écrous fassent la même largeur (28 px de dessin),
   comme sur le chantier. Les colonnes gardent les longueurs du 18 octobre.
 
-  DEUX DE SES PHOTOS NE SONT PAS POSÉES, et ce n'est pas à la planche de
-  trancher (« aucune valeur d'arrosage ne se devine ») :
-  - le raccord Plasson est le 32 x 1" ; la fiche dit 25 x 1", pour du PEHD Ø25 ;
-  - le régulateur porte DN 15 (1/2") ; la fiche dit FF 3/4", entre deux
-    mamelons réduits 1" x 3/4".
-  Ces deux places gardent la photo d'avant, et la légende le dit. L'union MF
+  LE RACCORD PLASSON, À PLAT : sa photo du 32 x 1" (appli/arrosage-raccord-a-plat.html,
+  son « très bien, c'est comme tu m'as montré »). Le 25 x 1" de la fiche a la
+  même forme ; la légende garde le nom de la fiche.
+
+  TOUTES LES PIÈCES À PLAT, sa règle du même soir : couchées, vues de profil,
+  leur axe dans le plan de la photo, sans qu'on voie la face d'un bout. Les
+  photos qui ne le sont pas (prises d'un peu au-dessus : on voit l'intérieur
+  d'un bout) le disent dans la légende, « à reprendre à plat » ; aucune ne se
+  redresse à l'ordinateur, une image ne se déforme pas.
+
+  UN SEUL GRIS, CLAIR, pour toutes les pièces en PVC gris (sa demande du même
+  soir : « soit toutes grises claires, soit toutes grises foncées ; gris clair,
+  ça devrait être plus joli »). Coudes, té, clarinettes, union et mamelon ont
+  leur luminosité ramenée par une droite à la même médiane (145) et au même
+  écart (70 de p10 à p90), et la même teinte, un gris très légèrement bleuté :
+  leurs ombres et leurs reflets restent.
+
+  LE RÉGULATEUR garde la photo d'avant : le sien porte DN 15 (1/2"), la fiche
+  dit FF 3/4", entre deux mamelons réduits 1" x 3/4". L'union MF
   de son premier envoi a été remplacée le même soir par sa photo de l'union
   FF, celle de la fiche : posée sur ses deux écrous, son corps ne touche pas
   la table, et l'ombre qui s'y glissait a été coupée par symétrie autour de
@@ -96,7 +112,7 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>La nourrice vue du dessus</h1>
-  <p>Avec vos photos du 21 novembre. Rien n’est codé.</p>
+  <p>Avec vos photos du 21 novembre, à plat, en gris clair. Rien n’est codé.</p>
   <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="nuit">Nuit</option></select>
 </div>
 <main class="ecran">
@@ -120,10 +136,9 @@
   <ol class="legende" id="legende"></ol>
 
   <div class="hors" id="hors">
-    <h3>Vos photos que la fiche ne prend pas</h3>
+    <h3>Votre photo que la fiche ne prend pas</h3>
     <div class="rangee">
-      <div class="p"><span class="ph"><img src="arrosage-photos/dessus/raccord-male32.png" alt="Raccord Plasson mâle 32 x 1 pouce"></span><span class="n">Raccord 32&nbsp;x&nbsp;1"</span><span class="f">La fiche dit 25&nbsp;x&nbsp;1".</span></div>
-      <div class="p"><span class="ph"><img src="arrosage-photos/dessus/regulateur-dn15.png" alt="Régulateur DN 15"></span><span class="n">Régulateur DN 15, du 1/2"</span><span class="f">La fiche dit 3/4".</span></div>
+      <div class="p"><span class="ph"><img src="arrosage-photos/regulateur-dn15-dessus.png" alt="Régulateur DN 15"></span><span class="n">Régulateur DN 15, du 1/2"</span><span class="f">La fiche dit 3/4".</span></div>
     </div>
   </div>
 </main>
@@ -172,21 +187,25 @@
   // déjà de face. Les deux pièces dont sa photo n'est pas celle de la fiche
   // gardent celle d'avant, et la légende le dit (« photo d'avant »).
   var TES = {
-    aRefaire: ["raccord-male25", "regulateur-ff34"],
+    aRefaire: ["regulateur-ff34"],
+    // Prises d'un peu au-dessus : l'intérieur d'un bout se voit. Elles attendent une photo à plat.
+    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v", "electrovanne-100dv", "mamelon", "mamelon-droit-1"],
     photos: {
-      "coude-mf": "dessus/coude-mf.png", "coude-ff": "dessus/coude-ff.png", "te-mmf": "dessus/te-mmf.png",
-      "clarinette-2v": "dessus/clarinette-2v.png", "clarinette-3v": "dessus/clarinette-3v.png", "clarinette-4v": "dessus/clarinette-4v.png",
-      "electrovanne-100dv": "dessus/electrovanne-100dv.png", "electrovanne-100dv-ff": "dessus/electrovanne-100dv-ff.png",
-      "vanne-purge": "dessus/vanne-purge.png", "mamelon": "dessus/mamelon.png",
-      "union": "dessus/union-ff.png", "raccord-male25": "raccord-male25.jpg", "pehd": "pehd.jpg",
+      "coude-mf": "coude-mf-dessus.png", "coude-ff": "coude-ff-dessus.png", "te-mmf": "te-mmf-dessus.png",
+      "clarinette-2v": "clarinette-2v-dessus.png", "clarinette-3v": "clarinette-3v-dessus.png", "clarinette-4v": "clarinette-4v-dessus.png",
+      "electrovanne-100dv": "electrovanne-100dv-dessus.png", "electrovanne-100dv-ff": "electrovanne-100dv-ff-dessus.png",
+      "vanne-purge": "vanne-purge-dessus.png", "mamelon": "mamelon-dessus.png",
+      "union": "union-ff-dessus.png", "raccord-male25": "raccord-male32-dessus.png", "pehd": "pehd.jpg",
       "mamelon-droit-1": "mamelon-droit-1.jpg", "regulateur-ff34": "regulateur-ff34.jpg"
     },
-    // Les photos sont déjà tournées et retournées : aucune ne se dessine en miroir ni à l'envers.
+    // Ses photos restent dans le sens où il les a prises (les listes de pièces les montrent ainsi) :
+    // c'est le dessin qui tourne le coude FF d'un quart (quart) et retourne le té (miroir). Les
+    // fractions vertical/horizontal se lisent sur la pièce TELLE QU'ELLE EST DESSINÉE.
     // h et w : l'écrou 1" de chaque pièce fait 28 px de dessin.
     haut: {
       "coude-mf":      { h: 47, vertical: 0.2557, horizontal: 0.2389 },
-      "coude-ff":      { h: 51.5, vertical: 0.7276, horizontal: 0.2613 },
-      "te-mmf":        { h: 53.5, vertical: 0.5137, horizontal: 0.247 },
+      "coude-ff":      { h: 51.5, vertical: 0.7276, horizontal: 0.2613, quart: true },
+      "te-mmf":        { h: 53.5, vertical: 0.5137, horizontal: 0.247, miroir: true },
       "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
       "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
       "clarinette-4v": { w: 271, sorties: [0.1679, 0.4038, 0.6373, 0.8721], tube: 0.3125 }
@@ -195,14 +214,15 @@
       "mamelon":            { a: [0.495, 0], b: [0.4883, 1], L: 28 },
       "mamelon-demi":       { a: [0.4883, 1], b: [0.495, 0], L: 28, src: "mamelon" },
       // La vis de purge en haut, la poignée rouge à gauche (sa demande du 18 octobre 2026).
-      "vanne-purge":        { a: [0.6645, 0.4907], b: [0.6821, 1], L: 40 },
-      "union":              { a: [0.5071, 0], b: [0.5001, 1], L: 46 },
-      "raccord-male25":     AVANT.colonne["raccord-male25"],
+      "vanne-purge":        { a: [0.5093, 0.6645], b: [0, 0.6821], L: 40 },
+      "union":              { a: [0, 0.4929], b: [1, 0.4999], L: 46 },
+      // À plat : le filetage à gauche sur sa photo, l'écrou blanc à droite.
+      "raccord-male25":     { a: [0, 0.497], b: [1, 0.4955], L: 40 },
       "pehd":               AVANT.colonne.pehd,
       "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 50 },
       // Vue du dessus, sa bobine et ses fils montent de 18 px au-dessus du bout du haut :
       // l'écart d'avant s'agrandit d'autant, sans quoi ils couvrent le mamelon 1" posé au-dessus.
-      "electrovanne-100dv-ff": { a: [0.3336, 0.2679], b: [0.423, 1], L: 50, dessus: 18 },
+      "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 50, dessus: 18 },
       "mamelon-droit-1":    AVANT.colonne["mamelon-droit-1"],
       "regulateur-ff34":    AVANT.colonne["regulateur-ff34"]
     }
@@ -233,8 +253,10 @@
   function taille(ref) {
     var f = J.haut[ref], im = image(ref);
     if (!im) return { w: f.w || 40, h: f.h || 40 };
-    if (f.w) return { w: f.w, h: f.w * im.height / im.width };
-    return { w: f.h * im.width / im.height, h: f.h };
+    // Tournée d'un quart, la photo dessinée a la largeur de sa hauteur.
+    var iw = f.quart ? im.height : im.width, ih = f.quart ? im.width : im.height;
+    if (f.w) return { w: f.w, h: f.w * ih / iw };
+    return { w: f.h * iw / ih, h: f.h };
   }
 
   var J = TES, jeu = "tes", fiche, reste, poses, ordre;
@@ -315,9 +337,11 @@
         if (im) {
           g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
           if (f.demi) g.rotate(Math.PI);
+          if (f.quart) g.rotate(Math.PI / 2);
           if (f.miroir) g.scale(-1, 1);
           // En « multiplier », le blanc d'une photo disparaît : une pièce ne cache plus sa voisine.
-          g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+          var dw = f.quart ? p.h : p.w, dh = f.quart ? p.w : p.h;
+          g.globalCompositeOperation = "multiply"; g.drawImage(im, -dw / 2, -dh / 2, dw, dh); g.restore();
         }
         numero(p.ref);
         if (!nu) badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
@@ -352,7 +376,8 @@
       "pehd": "PEHD Ø25", "raccord-male25": nom("raccord-male25") };
     $("legende").innerHTML = ordre.map(function (ref, i) {
       var avant = jeu === "tes" && TES.aRefaire.indexOf(ref) >= 0;
-      return "<li><b>" + (i + 1) + "</b><span>" + texte(NOMS[ref] || nom(ref)) + (avant ? '<span class="avant">photo d’avant</span>' : "") + "</span></li>";
+      var penche = jeu === "tes" && TES.pasAPlat.indexOf(ref) >= 0;
+      return "<li><b>" + (i + 1) + "</b><span>" + texte(NOMS[ref] || nom(ref)) + (avant ? '<span class="avant">photo d’avant</span>' : "") + (penche ? '<span class="avant">à reprendre à plat</span>' : "") + "</span></li>";
     }).join("");
     $("hors").hidden = jeu !== "tes";
     $("legende").hidden = nu;
