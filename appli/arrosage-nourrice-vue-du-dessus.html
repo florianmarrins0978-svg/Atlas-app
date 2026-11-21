@@ -40,15 +40,19 @@
   dessinés pour que leurs écrous fassent la même largeur (28 px de dessin),
   comme sur le chantier. Les colonnes gardent les longueurs du 18 octobre.
 
-  TROIS DE SES PHOTOS NE SONT PAS POSÉES, et ce n'est pas à la planche de
+  DEUX DE SES PHOTOS NE SONT PAS POSÉES, et ce n'est pas à la planche de
   trancher (« aucune valeur d'arrosage ne se devine ») :
-  - l'union est une MF (un bout fileté) ; la fiche dit « Manchon union 1" FF »,
-    et sous une électrovanne MM, avec un raccord Plasson mâle dessous, il faut
-    deux femelles : une MF ferait visser un mâle dans un mâle ;
   - le raccord Plasson est le 32 x 1" ; la fiche dit 25 x 1", pour du PEHD Ø25 ;
   - le régulateur porte DN 15 (1/2") ; la fiche dit FF 3/4", entre deux
     mamelons réduits 1" x 3/4".
-  Ces trois places gardent la photo d'avant, et la légende le dit.
+  Ces deux places gardent la photo d'avant, et la légende le dit. L'union MF
+  de son premier envoi a été remplacée le même soir par sa photo de l'union
+  FF, celle de la fiche : posée sur ses deux écrous, son corps ne touche pas
+  la table, et l'ombre qui s'y glissait a été coupée par symétrie autour de
+  l'axe des écrous (le bord du dessus, net sur le blanc, donne la silhouette).
+
+  SANS NUMÉRO NI NOM, sa demande du même soir : le dessin seul, sans pastilles,
+  sans « Voie », sans « Arrivée d'eau » ni sa flèche, et sans la légende.
 -->
 <style>
 [data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
@@ -81,7 +85,7 @@
   /* Ses photos que la fiche ne prend pas : montrées, jamais posées. */
   .hors{margin-top:22px}
   .hors h3{margin:0;font-size:14px;font-weight:600}
-  .rangee{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
+  .rangee{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
   .p{display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
   .p .ph{display:flex;align-items:center;justify-content:center;width:100%;max-width:84px;aspect-ratio:1;background:#ffffff;border-radius:10px;padding:6px}
   .p .ph img{max-width:100%;max-height:100%;object-fit:contain}
@@ -99,6 +103,9 @@
   <div class="voies" role="group" aria-label="Photos">
     <button type="button" data-jeu="tes" aria-pressed="true">Vos photos</button><button type="button" data-jeu="avant" aria-pressed="false">Avant</button>
   </div>
+  <div class="voies" role="group" aria-label="Numéros et noms">
+    <button type="button" data-nu="0" aria-pressed="true">Avec les numéros</button><button type="button" data-nu="1" aria-pressed="false">Sans numéro ni nom</button>
+  </div>
   <span class="caps" style="margin-top:16px">Combien de voies</span>
   <div class="voies" role="group" aria-label="Nombre de voies">
     <button type="button" data-voies="1">1</button><button type="button" data-voies="2">2</button>
@@ -115,7 +122,6 @@
   <div class="hors" id="hors">
     <h3>Vos photos que la fiche ne prend pas</h3>
     <div class="rangee">
-      <div class="p"><span class="ph"><img src="arrosage-photos/dessus/union-mf.png" alt="Union MF"></span><span class="n">Union MF</span><span class="f">La fiche dit FF.</span></div>
       <div class="p"><span class="ph"><img src="arrosage-photos/dessus/raccord-male32.png" alt="Raccord Plasson mâle 32 x 1 pouce"></span><span class="n">Raccord 32&nbsp;x&nbsp;1"</span><span class="f">La fiche dit 25&nbsp;x&nbsp;1".</span></div>
       <div class="p"><span class="ph"><img src="arrosage-photos/dessus/regulateur-dn15.png" alt="Régulateur DN 15"></span><span class="n">Régulateur DN 15, du 1/2"</span><span class="f">La fiche dit 3/4".</span></div>
     </div>
@@ -163,16 +169,16 @@
   };
 
   // SES PHOTOS DU 21 NOVEMBRE. Le PEHD et le mamelon 1" gardent leur photo,
-  // déjà de face. Les trois pièces dont sa photo n'est pas celle de la fiche
+  // déjà de face. Les deux pièces dont sa photo n'est pas celle de la fiche
   // gardent celle d'avant, et la légende le dit (« photo d'avant »).
   var TES = {
-    aRefaire: ["union", "raccord-male25", "regulateur-ff34"],
+    aRefaire: ["raccord-male25", "regulateur-ff34"],
     photos: {
       "coude-mf": "dessus/coude-mf.png", "coude-ff": "dessus/coude-ff.png", "te-mmf": "dessus/te-mmf.png",
       "clarinette-2v": "dessus/clarinette-2v.png", "clarinette-3v": "dessus/clarinette-3v.png", "clarinette-4v": "dessus/clarinette-4v.png",
       "electrovanne-100dv": "dessus/electrovanne-100dv.png", "electrovanne-100dv-ff": "dessus/electrovanne-100dv-ff.png",
       "vanne-purge": "dessus/vanne-purge.png", "mamelon": "dessus/mamelon.png",
-      "union": "union-ff.jpg", "raccord-male25": "raccord-male25.jpg", "pehd": "pehd.jpg",
+      "union": "dessus/union-ff.png", "raccord-male25": "raccord-male25.jpg", "pehd": "pehd.jpg",
       "mamelon-droit-1": "mamelon-droit-1.jpg", "regulateur-ff34": "regulateur-ff34.jpg"
     },
     // Les photos sont déjà tournées et retournées : aucune ne se dessine en miroir ni à l'envers.
@@ -190,7 +196,7 @@
       "mamelon-demi":       { a: [0.4883, 1], b: [0.495, 0], L: 28, src: "mamelon" },
       // La vis de purge en haut, la poignée rouge à gauche (sa demande du 18 octobre 2026).
       "vanne-purge":        { a: [0.6645, 0.4907], b: [0.6821, 1], L: 40 },
-      "union":              AVANT.colonne.union,
+      "union":              { a: [0.5071, 0], b: [0.5001, 1], L: 46 },
       "raccord-male25":     AVANT.colonne["raccord-male25"],
       "pehd":               AVANT.colonne.pehd,
       "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 50 },
@@ -268,7 +274,7 @@
     y = colonne("mamelon", xL, y) + ECART;
     y = colonne("union", xL, y) + ECART;
     y = colonne("raccord-male25", xL, y) + ECART;
-    var fin = colonne("pehd", xL, y), finArrivee = fin, etiquettes = [[xL, fin + 28, "Arrivée"], [xL, fin + 41, "d’eau"]];
+    var fin = colonne("pehd", xL, y), finArrivee = fin, finPieces = fin, etiquettes = [[xL, fin + 28, "Arrivée"], [xL, fin + 41, "d’eau"]];
     axes.forEach(function (xv, i) {
       // Les voies de goutte-à-goutte sont les dernières, à droite (validé le 18 octobre 2026).
       var goutte = i >= axes.length - nbGoutte, yv = bas;
@@ -289,13 +295,14 @@
       var dy = goutte && (i - (axes.length - nbGoutte)) % 2 === 1 ? 26 : 0;
       etiquettes.push([xv, yv + dy, "Voie " + (i + 1)]);
       if (goutte) etiquettes.push([xv, yv + dy + 13, "goutte-à-goutte"]);
-      fin = Math.max(fin, yv + dy);
+      fin = Math.max(fin, yv + dy); finPieces = Math.max(finPieces, yv);
     });
     fin = Math.max(fin, finArrivee + 41);
 
     // La largeur : la bobine de la dernière électrovanne déborde à droite de son axe.
     var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
-    var k = Math.min(1, W / largeur), Ht = (fin + 46) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
+    // Sans numéro ni nom, le dessin s'arrête sous le dernier PEHD : plus de place pour les libellés.
+    var k = Math.min(1, W / largeur), Ht = (nu ? finPieces + 12 : fin + 46) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
     c.width = W * r; c.height = Ht * r; c.style.height = Ht + "px";
     var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, Ht);
@@ -312,7 +319,8 @@
           // En « multiplier », le blanc d'une photo disparaît : une pièce ne cache plus sa voisine.
           g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
         }
-        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
+        numero(p.ref);
+        if (!nu) badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
         return;
       }
       var fc = J.colonne[p.cle];
@@ -322,16 +330,19 @@
         g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
         g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
       }
-      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
+      numero(p.ref);
+      if (!nu) badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
     });
     g.globalCompositeOperation = "source-over";
     // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD
     // (sa demande du 18 octobre 2026). Elle montre d'où vient l'eau, elle ne décore pas.
-    g.strokeStyle = "#4a4a44"; g.fillStyle = "#4a4a44"; g.lineWidth = 1.6;
-    g.beginPath(); g.moveTo(xL, finArrivee + 30); g.lineTo(xL, finArrivee + 9); g.stroke();
-    g.beginPath(); g.moveTo(xL, finArrivee + 4); g.lineTo(xL - 5, finArrivee + 11); g.lineTo(xL + 5, finArrivee + 11); g.closePath(); g.fill();
-    g.font = "11px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
-    etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
+    if (!nu) {
+      g.strokeStyle = "#4a4a44"; g.fillStyle = "#4a4a44"; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(xL, finArrivee + 30); g.lineTo(xL, finArrivee + 9); g.stroke();
+      g.beginPath(); g.moveTo(xL, finArrivee + 4); g.lineTo(xL - 5, finArrivee + 11); g.lineTo(xL + 5, finArrivee + 11); g.closePath(); g.fill();
+      g.font = "11px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+      etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
+    }
     // Pour le contrôle au rendu : où chaque pièce est posée, en pixels du canvas.
     window.__nourrice = { r: r, k: k, dx: dx, poses: poses, axes: axes, xL: xL, axe: axe, jeu: jeu };
 
@@ -344,6 +355,8 @@
       return "<li><b>" + (i + 1) + "</b><span>" + texte(NOMS[ref] || nom(ref)) + (avant ? '<span class="avant">photo d’avant</span>' : "") + "</span></li>";
     }).join("");
     $("hors").hidden = jeu !== "tes";
+    $("legende").hidden = nu;
+    document.querySelectorAll("[data-nu]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.nu === "1") === nu)); });
     document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === n)); });
     document.querySelectorAll("[data-jeu]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.jeu === jeu)); });
     var gg = "";
@@ -357,9 +370,10 @@
     g.fillText(String(n), x, y + 0.5);
   }
 
-  var voies = 3, nbGoutte = 0;
+  var voies = 3, nbGoutte = 0, nu = false;
   document.addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]");
+    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]"), bn = e.target.closest("button[data-nu]");
+    if (bn) { nu = bn.dataset.nu === "1"; dessiner(voies, nbGoutte); }
     if (b) { voies = Number(b.dataset.voies); nbGoutte = Math.min(nbGoutte, voies); dessiner(voies, nbGoutte); }
     if (bg) { nbGoutte = Number(bg.dataset.goutte); dessiner(voies, nbGoutte); }
     if (bj) { jeu = bj.dataset.jeu; J = JEUX[jeu]; dessiner(voies, nbGoutte); }
