@@ -32,9 +32,20 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
   5 ans, sans rien qui désigne le client) : **à lui et à son juriste**. Les
   conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la
   durée ;
-- **le mot « nourrice » mord sur le losange du té égal**, sur le plan en
-  couleur d'un réseau (`PlanDessine.tsx`), à l'écran comme dans le PDF, qui
-  reprend ce dessin. Vu en faisant le PDF, pas touché : l'appli, sur son oui ;
+- **le mot « nourrice » est barré par ce qui part de la nourrice**, sur le
+  plan en couleur d'un réseau (`PlanDessine.tsx`), à l'écran comme dans le
+  PDF, qui reprend ce dessin : la tranchée grise, le tuyau du réseau, les
+  pointillés du goutte-à-goutte. Sur le réseau 2 du jardin d'essai, le
+  losange du té égal est à moitié sous le rectangle de la nourrice, et le
+  rond vert couvre la fin du mot. Regardé le 21 novembre au soir sur les
+  quatre réseaux ; d'abord décrit, à tort, comme « le mot mord sur le
+  losange ». L'appli, sur son oui ;
+- **le plan revu rougit à l'hydratation, en développement** : l'angle de
+  rotation d'une pièce de la nourrice éclatée (`NourriceEclatee.tsx`) ne
+  tombe pas pareil au serveur et dans le navigateur à la 14ᵉ décimale. Rien ne
+  se voit ; React garde la valeur du serveur. Apparu avec le plan revu, le
+  premier à rendre la nourrice au serveur. La racine : arrondir l'angle
+  avant de l'écrire. Niveau 2, sur son oui ;
 - **« Voir la saisie » ne dit pas ce qu'il a corrigé** de la lecture de l'IA
   (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée dans
   la saisie, la comparaison zone par zone n'est pas écrite. Les cotes montrées
