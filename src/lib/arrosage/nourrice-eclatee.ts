@@ -32,6 +32,12 @@ import type { Retouches } from "./retouches";
  * dessin) ; chaque bout a été remesuré sur le rendu à 3x, à moins d'1 px de
  * l'axe de sa colonne.
  *
+ * **Une seule échelle pour toutes les pièces** (sa demande du même soir,
+ * « mets toutes les pièces à la même dimension ») : un filetage ou un tube 1"
+ * fait 17,7 px de dessin, un écrou union 27 px, le PEHD Ø25 13,3 px. Les
+ * longueurs `L` des colonnes en sortent ; celles du 18 octobre les faisaient
+ * 30 % plus petites que la rangée du haut.
+ *
  * **Pourquoi une fonction pure et non un canvas.** La planche détourait et
  * dessinait dans le navigateur ; l'écran de l'application rend un SVG que les
  * contrôles peuvent lire et capturer sans serveur. Les boîtes détourées sont
@@ -57,7 +63,7 @@ type FormeHaut = {
 };
 export const HAUT: Record<string, FormeHaut> = {
   "coude-mf": { h: 47, vertical: 0.2557, horizontal: 0.2389 },
-  "coude-ff": { h: 51.5, vertical: 0.7276, horizontal: 0.2613, quart: true },
+  "coude-ff": { h: 49.2, vertical: 0.7276, horizontal: 0.2613, quart: true },
   "te-mmf": { h: 53.5, vertical: 0.5137, horizontal: 0.247, miroir: true },
   "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
   "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
@@ -70,19 +76,20 @@ export const HAUT: Record<string, FormeHaut> = {
  *  couvre la pièce posée au-dessus. */
 type FormeColonne = { a: [number, number]; b: [number, number]; L: number; src?: string; dessus?: number };
 export const COLONNE: Record<string, FormeColonne> = {
-  mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 28 },
-  "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 28, src: "mamelon" },
+  mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 25.6 },
+  "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 25.6, src: "mamelon" },
   // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
-  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 40 },
-  union: { a: [0, 0.4929], b: [1, 0.4999], L: 46 },
+  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 36.4 },
+  union: { a: [0, 0.4929], b: [1, 0.4999], L: 63.1 },
   // À plat, sa photo du 32 x 1" : le filetage à gauche, l'écrou blanc à droite. Le PEHD, le
   // mamelon 1" et le régulateur gardent leur photo d'avant.
-  "raccord-male25": { a: [0, 0.497], b: [1, 0.4955], L: 40 },
-  pehd: { a: [0, 0.509], b: [1, 0.509], L: 44 },
-  "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 50 },
-  "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 50, dessus: 18 },
-  "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 26 },
-  "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 44 },
+  "raccord-male25": { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },
+  pehd: { a: [0, 0.509], b: [1, 0.509], L: 50.6 },
+  // Ses fils montent de 18 px au-dessus de son filetage : sans cet écart, ils entrent dans l'écrou du dessus.
+  "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 66.6, dessus: 18 },
+  "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
+  "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 28.6 },
+  "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 },
 };
 
 /** Un écart constant entre deux pièces, comme sur la planche. */
@@ -116,6 +123,8 @@ export type PoseColonne = {
   /** Le bout `a` dans la photo détourée, en pixels. */
   ax: number;
   ay: number;
+  /** Jusqu'où la pièce dessinée va à droite de son axe : sa pastille se pose au-delà. */
+  droite: number;
 };
 export type Pose = PoseHaut | PoseColonne;
 
@@ -220,14 +229,19 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
     const b = boite(ref);
     // Sans photo mesurée, la pièce occupe sa longueur sans se dessiner : le
     // numéro reste, la place aussi, et l'écran montre un cadre vide.
-    let angle = 0, echelle = 1, ax = 0, ay = 0;
+    let angle = 0, echelle = 1, ax = 0, ay = 0, droite = 0;
     if (b) {
       ax = f.a[0] * b.w; ay = f.a[1] * b.h;
       const bx = f.b[0] * b.w, by = f.b[1] * b.h;
       echelle = f.L / Math.hypot(bx - ax, by - ay);
-      angle = ((Math.PI / 2 - Math.atan2(by - ay, bx - ax)) * 180) / Math.PI;
+      const t = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
+      angle = (t * 180) / Math.PI;
+      // Les coins de la photo, tournés autour du bout a : le plus à droite borne la pièce.
+      for (const [cx, cy] of [[0, 0], [b.w, 0], [0, b.h], [b.w, b.h]]) {
+        droite = Math.max(droite, echelle * ((cx - ax) * Math.cos(t) - (cy - ay) * Math.sin(t)));
+      }
     }
-    poses.push({ haut: false, ref, numero: numero(ref), x, y, L: f.L, angle, echelle, ax, ay });
+    poses.push({ haut: false, ref, numero: numero(ref), x, y, L: f.L, angle, echelle, ax, ay, droite });
     pris(ref);
     return y + f.L;
   };

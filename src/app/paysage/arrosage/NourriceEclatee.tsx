@@ -200,7 +200,8 @@ export function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceCompos
           <g key={i} data-etat={etats[i] || "proposee"}>
             <g transform={`translate(${p.x} ${p.y}) rotate(${p.angle}) scale(${p.echelle}) translate(${-p.ax} ${-p.ay})`} style={grise(etats[i])}>{fenetre(cw, ch)}</g>
             {etats[i] === "retiree" && barre(p.x, p.y + p.L / 2, 16)}
-            <Badge n={p.numero} x={p.x + 24} y={p.y + p.L / 2} teinte={teinte(etats[i])} />
+            {/* À droite de la pièce : à la même échelle que le haut, une électrovanne ou un raccord dépassent 24 px. */}
+            <Badge n={p.numero} x={p.x + Math.max(24, p.droite + 9)} y={p.y + p.L / 2} teinte={teinte(etats[i])} />
           </g>
         );
       })}

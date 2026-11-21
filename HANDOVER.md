@@ -9,7 +9,7 @@ régénéré, `nourrice-eclatee.ts`, `NourriceEclatee.tsx`, les photos
 **n'a pas joué `npm run verifier:avant-fusion`** : il demande son accord
 (CLAUDE.md §5). Joué ici sans serveur : types, lint, `test-arrosage-postes`
 (29/29), les gardes de texte, et le rendu du vrai composant mesuré à 3x (1295
-mesures sous 1 px, gris clair et raccord à plat compris). **Pas vu sur l'écran
+mesures sous 1 px, gris clair, raccord à plat et échelle commune compris). **Pas vu sur l'écran
 de l'appli** (`npm run voir` demande un serveur) : à regarder sur
 `/paysage/arrosage` avec un plan. **Reste à lui** : les photos à plat des trois
 clarinettes, de l'électrovanne MM, du mamelon réduit et du mamelon 1", et le

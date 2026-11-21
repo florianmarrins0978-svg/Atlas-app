@@ -37994,6 +37994,22 @@ ramenée par une droite à la même médiane (145) et au même écart (70 de p10
 p90), et une seule teinte ; ombres et reflets restent. Le dessin l'a pris tel
 quel : à mêmes photos, mêmes boîtes, et le rendu à 3x est resté sous 1 px.
 
+**Une seule échelle pour toutes les pièces**, sa remarque du même soir : *« le
+coude en haut à droite, on dirait qu'il est plus gros que la clarinette ;
+essaie de mettre toutes les pièces à la même dimension »*. Mesuré sur le
+dessin à 3x, les écrous du haut avaient déjà la même taille (74 à 84 px) ; les
+colonnes, gardées aux longueurs du 18 octobre, étaient 30 % plus petites
+(l'union sous la clarinette : 57 px d'écrou contre 80 pour les sorties
+au-dessus). Chaque pièce se dessine désormais à l'échelle de ses repères 1",
+mesurés sur sa photo : filetage ou tube 1" à 17,7 px de dessin, écrou union à
+27 px, PEHD Ø25 à 13,3 px, douille femelle 1" à 21 px ; la longueur `L` d'une
+pièce de colonne en sort. Le coude FF a son écrou ramené à celui de la
+clarinette voisine (h 49,2) : son corps, presque aussi large que ses écrous
+sur sa photo, le fait paraître plus gros. Deux conséquences dans le dessin :
+les fils des deux électrovannes ont leur place au-dessus d'elles (`dessus`),
+et chaque pastille se pose à droite de sa pièce (`droite`, les coins de la
+photo tournés), et non plus à 24 px de l'axe, où elle couvrait la bobine.
+
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
 
