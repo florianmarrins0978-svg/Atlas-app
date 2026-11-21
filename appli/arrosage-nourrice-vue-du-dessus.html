@@ -101,6 +101,16 @@
   côté 1" en haut ; la légende garde le nom de la fiche. Sa photo de mamelon
   est tenue pour à plat.
 
+  LE GRIS DE VOS PHOTOS, au choix (sa remarque du même soir : « pourquoi tu
+  n'utilises pas la photo que je t'ai envoyée ? On a l'impression que celle que
+  tu utilises est beaucoup plus claire, comme sous le soleil »). C'est bien sa
+  photo : le gris clair qui suit l'éclaircissait de 30 à 80 sur 255. « Gris de
+  vos photos » ramène toutes les pièces en PVC gris au même gris, la médiane de
+  ses photos (100), avec le même écart. Un seul gris toujours, mais le sien.
+  Chaque pièce a sa variante « -naturel » : même détourage, même boîte au pixel
+  près, donc mêmes fractions. « Gris clair » reste le choix par défaut tant
+  qu'il n'a pas tranché.
+
   UN SEUL GRIS, CLAIR, pour toutes les pièces en PVC gris (sa demande du même
   soir : « soit toutes grises claires, soit toutes grises foncées ; gris clair,
   ça devrait être plus joli »). Coudes, té, clarinettes, union et mamelon ont
@@ -160,12 +170,15 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>La nourrice vue du dessus</h1>
-  <p>Avec vos photos du 21 novembre, à plat, en gris clair. Rien n’est codé.</p>
+  <p>Avec vos photos du 21 novembre, à plat. Rien n’est codé.</p>
   <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="nuit">Nuit</option></select>
 </div>
 <main class="ecran">
   <div class="voies" role="group" aria-label="Photos">
     <button type="button" data-jeu="tes" aria-pressed="true">Vos photos</button><button type="button" data-jeu="avant" aria-pressed="false">Avant</button>
+  </div>
+  <div class="voies" id="gris" role="group" aria-label="Gris">
+    <button type="button" data-gris="clair" aria-pressed="true">Gris clair</button><button type="button" data-gris="photos" aria-pressed="false">Gris de vos photos</button>
   </div>
   <div class="voies" role="group" aria-label="Numéros et noms">
     <button type="button" data-nu="0" aria-pressed="true">Avec les numéros</button><button type="button" data-nu="1" aria-pressed="false">Sans numéro ni nom</button>
@@ -299,7 +312,16 @@
     return k;
   }
   var images = {};
-  function image(ref) { return images[J.photos[ref]]; }
+  // LE GRIS DE SES PHOTOS : chaque pièce en PVC gris a sa variante « -naturel », même détourage,
+  // même boîte au pixel près (donc mêmes fractions), le gris ramené à la médiane de ses photos.
+  var NATUREL = ["coude-mf-dessus.png", "coude-ff-dessus.png", "te-mmf-dessus.png", "clarinette-2v-dessus.png",
+    "clarinette-3v-dessus.png", "clarinette-4v-dessus.png", "union-ff-dessus.png", "mamelon-dessus.png"];
+  var gris = "clair";
+  function fichier(ref) {
+    var f = J.photos[ref];
+    return jeu === "tes" && gris === "photos" && NATUREL.indexOf(f) >= 0 ? f.replace("-dessus.png", "-dessus-naturel.png") : f;
+  }
+  function image(ref) { return images[fichier(ref)]; }
   function taille(ref) {
     var f = J.haut[ref], im = image(ref);
     if (!im) return { w: f.w || 40, h: f.h || 40 };
@@ -438,7 +460,7 @@
       etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
     }
     // Pour le contrôle au rendu : où chaque pièce est posée, en pixels du canvas.
-    window.__nourrice = { r: r, k: k, dx: dx, poses: poses, axes: axes, xL: xL, axe: axe, jeu: jeu };
+    window.__nourrice = { r: r, k: k, dx: dx, poses: poses, axes: axes, xL: xL, axe: axe, jeu: jeu, gris: gris };
 
     $("titre").textContent = fiche.nom;
     $("sous-titre").textContent = n + " voie" + (n > 1 ? "s" : "") + ", l’arrivée à gauche, puis les voies de gauche à droite.";
@@ -453,6 +475,9 @@
     document.querySelectorAll("[data-nu]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.nu === "1") === nu)); });
     document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === n)); });
     document.querySelectorAll("[data-jeu]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.jeu === jeu)); });
+    // « Avant » montre les photos d'avant : le gris ne s'y choisit pas, le choix se retire.
+    $("gris").hidden = jeu !== "tes";
+    document.querySelectorAll("[data-gris]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.gris === gris)); });
     var gg = "";
     for (var j = 0; j <= n; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === nbGoutte) + '">' + (j ? j : "Aucune") + "</button>";
     $("goutte").innerHTML = gg;
@@ -466,7 +491,8 @@
 
   var voies = 3, nbGoutte = 0, nu = false;
   document.addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]"), bn = e.target.closest("button[data-nu]");
+    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]"), bn = e.target.closest("button[data-nu]"), bgr = e.target.closest("button[data-gris]");
+    if (bgr) { gris = bgr.dataset.gris; dessiner(voies, nbGoutte); }
     if (bn) { nu = bn.dataset.nu === "1"; dessiner(voies, nbGoutte); }
     if (b) { voies = Number(b.dataset.voies); nbGoutte = Math.min(nbGoutte, voies); dessiner(voies, nbGoutte); }
     if (bg) { nbGoutte = Number(bg.dataset.goutte); dessiner(voies, nbGoutte); }
@@ -474,6 +500,7 @@
   });
   var chemins = [];
   [TES, AVANT].forEach(function (j) { Object.keys(j.photos).forEach(function (r) { if (chemins.indexOf(j.photos[r]) < 0) chemins.push(j.photos[r]); }); });
+  NATUREL.forEach(function (f) { chemins.push(f.replace("-dessus.png", "-dessus-naturel.png")); });
   Promise.all(chemins.map(function (ch) { return charger(ch).then(function (im) { images[ch] = im; }); }))
     .then(function () { dessiner(voies, nbGoutte); });
 })();
