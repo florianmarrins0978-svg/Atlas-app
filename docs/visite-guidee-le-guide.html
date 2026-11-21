@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La visite guidée : le guide revu sur toute la visite</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-visite-guidée--le-guide-revu-sur-toute-la-visite">La visite guidée : le guide revu sur toute la visite</h1>
+<p><em>21 novembre 2026, au soir. Ta réponse devant le début revu : « Très bien tu peux tout faire maintenant en gardant en tête que l'utilisateur puisse avoir accès à toutes les informations. Des fois, la petite barre noire cache les informations. Il faut trouver une manière de soit la masquer temporairement, soit la déplacer. »</em></p>
+<p><strong>La planche :</strong> <code>appli/visite-guidee.html</code>, la visite entière, sur les mêmes vrais écrans figés. Rien dans <code>src/</code>.</p>
+<h2 id="ce-que-la-barre-noire-fait-maintenant-pour-ne-plus-rien-cacher">Ce que la barre noire fait maintenant pour ne plus rien cacher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Il fallait les deux : la masquer et la déplacer. Et rendre tout l'écran atteignable même quand elle est là.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui se passe</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Vous faites défiler</strong></td>
+<td>elle se replie tout de suite en une seule ligne, qui garde le geste (« Touchez Costa. »)</td>
+</tr>
+<tr>
+<td><strong>Vous touchez la ligne</strong></td>
+<td>elle se déplie</td>
+</tr>
+<tr>
+<td><strong>Le petit chevron, en haut de la barre</strong></td>
+<td>la replie à la main, sans défiler (une feuille ne défile pas toujours)</td>
+</tr>
+<tr>
+<td><strong>Tout en bas de la page</strong></td>
+<td>la page garde sous son contenu la hauteur de la barre : en défilant, la dernière ligne remonte au-dessus d'elle</td>
+</tr>
+<tr>
+<td><strong>La cible est en bas</strong></td>
+<td>la page défile pour la poser au-dessus de la barre</td>
+</tr>
+<tr>
+<td><strong>Une feuille monte du bas</strong> (remise, date, achat, ticket, signature)</td>
+<td>la barre se met en haut, sur ce qui est grisé, et arrive repliée : toute la feuille se lit, jusqu'à « Annuler »</td>
+</tr>
+<tr>
+<td><strong>Chez votre client</strong></td>
+<td>la barre arrive repliée, avec « Chez votre client » au-dessus du geste</td>
+</tr>
+<tr>
+<td><strong>Rien d'autre ne dégage la cible</strong></td>
+<td>la barre se replie d'elle-même</td>
+</tr>
+<tr>
+<td><strong>Sur ordinateur</strong></td>
+<td>elle se tient à côté de l'écran de l'appli et se rétrécit pour y tenir ; elle ne passe dessus qu'en dessous de 1024 points</td>
+</tr>
+</tbody></table></div>
+<p>Sur les feuilles et chez le client, la barre était retirée (tes captures du 20 novembre). Elle y revient repliée : le geste reste lu sans rien couvrir de la feuille, et un appui sur la ligne rend Retour et Passer.</p>
+<h2 id="ce-qui-change-sur-toute-la-visite">Ce qui change sur toute la visite</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Le titre de la barre</td>
+<td>le nom de l'écran</td>
+<td>le geste, en grand</td>
+</tr>
+<tr>
+<td>Retour et Passer</td>
+<td>Passer en bouton blanc plein</td>
+<td>discrets en haut ; « Suivant » n'est plein que là où il n'y a rien à toucher</td>
+</tr>
+<tr>
+<td>Le progrès</td>
+<td>une barre de 74</td>
+<td>des traits, un par étape du chapitre en cours (12 chapitres)</td>
+</tr>
+<tr>
+<td>Toucher à côté</td>
+<td>la barre tremble</td>
+<td>la barre tremble et le cadre doré se rappelle</td>
+</tr>
+<tr>
+<td>Regarder sans toucher</td>
+<td>rien</td>
+<td>la lumière sans cadre (les factures de Costa)</td>
+</tr>
+<tr>
+<td>Les champs</td>
+<td>le clavier du téléphone s'ouvrait</td>
+<td>aucun clavier</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les quatre premières étapes</strong> sont celles que tu as validées, plus une : l'étape des factures se regarde (« Vous savez s'il l'a ouverte. »), puis « Touchez Dernier devis. ». La visite compte 75 étapes.</p>
+<p><strong>Trois phrases raccourcies</strong>, parce qu'elles redisaient l'étape suivante :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Le devis est parti</td>
+<td>« Par SMS. Voyons ce que reçoit votre client : il choisit sa date, accepte et signe au doigt, sans compte ni mot de passe. »</td>
+<td>« Par SMS. Voyons ce que reçoit votre client. »</td>
+</tr>
+<tr>
+<td>Elle est partie</td>
+<td>« … Voyons ce que reçoit votre client : sa facture, l'IBAN et le numéro à écrire sur son virement. »</td>
+<td>« … Voyons ce que reçoit votre client. »</td>
+</tr>
+<tr>
+<td>Ma TVA</td>
+<td>« … Un achat sans ticket s'écrit à la main : la TVA se calcule toute seule. »</td>
+<td>« La TVA collectée, la déductible, et ce qu'il reste à payer. »</td>
+</tr>
+</tbody></table></div>
+<h2 id="des-informations-cachées-trouvées-en-route">Des informations cachées, trouvées en route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Ce qui était caché</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le virement reçu</strong>, sur l'accueil (deux étapes)</td>
+<td>le haut de la carte : « Virement reçu, M. Lefèvre, 924,00 € », puis « La facture est payée »</td>
+<td>la liste avait été figée déjà défilée. Elle repart du haut, et la visite garde la carte en vue</td>
+</tr>
+<tr>
+<td><strong>Le même virement, sur ordinateur</strong></td>
+<td>le haut de la carte, encore</td>
+<td>la liste de l'accueil défile par crans (<code>globals.css</code>) et revenait d'elle-même au premier chantier. La visite coupe les crans sur ce qu'elle montre</td>
+</tr>
+<tr>
+<td><strong>Le trait d'or sous l'onglet</strong> de la fiche client</td>
+<td>à côté du mot, sauf à 390 points</td>
+<td>replacé par la règle de l'appli, repris de la seconde proposition du début</td>
+</tr>
+<tr>
+<td><strong>Le calendrier de la date</strong></td>
+<td>le 25 était sous la barre « Envoyer le devis » de la feuille</td>
+<td>la visite vérifie que la cible se voit vraiment, et fait défiler la feuille sinon</td>
+</tr>
+<tr>
+<td><strong>La feuille Main d'œuvre</strong></td>
+<td>son bouton « Ajouter » sous le bas de l'écran</td>
+<td>même chose</td>
+</tr>
+<tr>
+<td><strong>Le ticket scanné, sur ordinateur</strong></td>
+<td>son bouton dépassait de 8 points sous l'écran</td>
+<td>même chose</td>
+</tr>
+</tbody></table></div>
+<p><strong>Une question pour l'appli elle-même, pas vérifiable ici :</strong> sur ordinateur, la liste de l'accueil s'ouvre-t-elle déjà défilée quand une carte (virement, devis accepté) est en tête ? Si oui, c'est un défaut de l'appli. À regarder sur ton espace.</p>
+<h2 id="vérifié-ici">Vérifié ici</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>La visite entière jouée au doigt à 390 × 664 (ton écran), 375 × 667, 320 × 568, 1024 × 768 et 1280 × 800 : à chacune des 75 étapes, le doigt mène à la suivante, la cible n'est jamais sous la barre ni hors de l'écran, aucune page ne déborde.</li>
+<li>Les huit boutons à essayer (devis et facture) : chacun ouvre sa feuille, se pose, et Retour ramène.</li>
+<li>Les 19 rubriques des Réglages libres s'ouvrent et reviennent.</li>
+<li>Faire défiler replie la barre, la toucher la déplie, le chevron la replie.</li>
+<li>Chaque étape regardée en image à 390 points, et des étapes choisies sur ordinateur.</li>
+</ul>
+<p><strong>Pas vérifiable ici : Safari sur ton iPhone.</strong> Ce poste n'a que Chromium. Safari n'envoie un appui que sur ce qui se touche : la visite pose <code>cursor: pointer</code> sur chaque cible pour qu'il le fasse (repris de la seconde proposition). Si un cadre doré ne réagit pas sur ton téléphone, dis-moi lequel.</p>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>La longueur</strong> : 75 étapes, environ huit minutes.</li>
+<li><strong>Le bouton sur le site</strong> : où poser la visite sur <code>appli/vente/</code>.</li>
+<li><strong>Le script qui refait la visite</strong> n'a jamais été enregistré (<code>docs/visite-guidee.md</code>). Un écran de l'appli qui change ne se reporte donc pas tout seul dans la visite.</li>
+</ol>
+</main>
+</body>
+</html>

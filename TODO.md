@@ -70,7 +70,15 @@ parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
 20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
 612). Ce qui suit est la planche telle qu'elle a été posée.
 
-## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, DEUX PROPOSITIONS (21 novembre 2026)
+## ✅ LE DÉBUT DE LA VISITE GUIDÉE : LA PREMIÈRE PROPOSITION, PORTÉE SUR TOUTE LA VISITE (21 novembre 2026)
+
+**Sa réponse, le 21 au soir, devant la première :** *« Très bien tu peux tout
+faire maintenant en gardant en tête que l'utilisateur puisse avoir accès à
+toutes les informations. Des fois, la petite barre noire cache les
+informations. Il faut trouver une manière de soit la masquer temporairement,
+soit la déplacer. »* Fait le soir même dans `appli/visite-guidee.html` :
+retour dans `docs/visite-guidee-le-guide.md`. Ce qui suit raconte les deux
+propositions telles qu'elles ont été posées.
 
 Sa demande, devant la visite : *« propose une version améliorée juste pour les
 4 premières étapes seulement, arrête-toi avant d'entrer dans le devis, au
@@ -89,10 +97,10 @@ gardent les quatre mêmes écrans figés et ne touchent ni `src/` ni
 | Ce qu'on regarde sans le toucher | la ligne de la facture éclairée | « Ouverte le 21/11 » surligné |
 | Sortir | pas avant la fin, comme aujourd'hui | une croix à chaque étape |
 
-**À trancher par lui :** l'une, l'autre, ou un mélange (par exemple la bulle
-courte de la première avec la main et les couleurs de la seconde). **Tant
-qu'il n'a pas choisi, aucune des deux ne se porte sur la visite entière, et
-aucune session ne retouche la planche de l'autre.**
+**Tranché le 21 au soir : la première** (sa réponse ci-dessus). De la seconde,
+la visite entière a repris le trait d'or recalé sous l'onglet
+(`recalerLesOnglets`) et le `cursor: pointer` posé sur la cible, sans lequel
+Safari n'envoie aucun clic hors d'un bouton.
 
 **Pas vérifié pour la seconde : Safari sur son iPhone.** Ce poste n'a que
 Chromium ; dix parcours y passent, dont un qui imite Safari (aucun clic hors
@@ -114,11 +122,16 @@ de l'écran.
   ouverte, lui faire enregistrer ce dossier. Sinon le réécrire, sur une base de
   démonstration neuve, donc sur son « oui ». `verifier:memoire` ne pouvait pas
   le voir : il ne lit ni les `.sh` ni un nom de fichier cité sans son dossier.
-- **Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
-  qu'à 390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un
-  ordinateur) : sa place a été figée avec l'écran. La seconde proposition du
-  début le replace par la règle de l'appli (`recalerLesOnglets`) ; la visite
-  entière et la première proposition le portent encore.
+- ~~**Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
+  qu'à 390 points de large~~ **réglé le 21 au soir dans la visite entière**
+  (`recalerLesOnglets`, repris de la seconde proposition). La première
+  proposition du début, restée planche, le porte encore.
+- **Les crans de la liste de l'accueil** (`scroll-snap-type`, `globals.css`) :
+  replacée par la visite, la liste revenait d'elle-même au premier chantier et
+  cachait le haut de la carte du virement, sur ordinateur. La visite coupe les
+  crans sur ce qu'elle montre. **Pas vérifié dans l'appli elle-même** : si la
+  même liste s'ouvre déjà défilée chez lui, sur ordinateur, avec une carte en
+  tête, c'est un défaut de `src/`, à regarder sur son espace.
 - **Les chantiers de l'accueil sont datés de juillet** quand l'histoire de
   Mme Costa est en novembre. Cela demande de rejouer la base.
 - **La visite entière demande une image qui n'existe pas en ligne** : ses
@@ -177,13 +190,10 @@ dossier du comptable). Retour : `docs/visite-guidee.md`. **Corrigé le
 `histoire.mjs`, ni `parcourir-visite.mjs`) ; refaire la visite demande de
 réécrire son parcours.
 
-**⏳ Le début revu, en attente de son choix (21 novembre)** :
-`appli/visite-guidee-le-debut.html`, les quatre premières étapes jusqu'aux
-factures de Costa, sur ses mêmes écrans figés. Retour :
-`docs/visite-guidee-le-debut.md`. S'il la retient, la même bulle passe sur
-les 74 étapes de `appli/visite-guidee.html`. **Une seconde proposition existe
-pour la même demande** (`appli/visite-guidee-le-debut-2.html`) : l'entrée « DEUX
-PROPOSITIONS » plus haut dit ce qui les sépare.
+**Le début revu, retenu le 21 au soir et porté sur toute la visite** :
+`appli/visite-guidee-le-debut.html` reste comme planche ; la visite compte
+désormais 75 étapes (l'étape des factures se regarde, puis « Touchez Dernier
+devis. »). Retour : `docs/visite-guidee-le-guide.md`.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
@@ -3227,7 +3237,7 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | | qui |
 |---|---|
 | ~~**les prix d'achat de ses devis fournisseurs dans la liste du plan**~~ **remplis le 20 octobre 2026** sur la branche `claude/arrosage-prix-et-devis` (`ARCHITECTURE.md` §474), pas encore sur `main`. Avant : la colonne et le total sont codés (`ARCHITECTURE.md` §472), la table est vide ; elle se remplit quand l'application gardera ses devis fournisseurs (planches `arrosage-prix-fournisseurs.html`, `reglages-fournisseurs-partenaires.html`, session des fournisseurs), par le paramètre `prix` de `LePlanDuJardin` | lui (valider la planche des fournisseurs), puis nous |
-| ~~**six photos de face à refaire pour la nourrice éclatée**~~ **REÇUES LE 21 NOVEMBRE 2026, treize photos vues du dessus**, posées sur la planche `appli/arrosage-nourrice-vue-du-dessus.html` (« Avant » pour comparer), toutes à moins d'1 px de leur axe à 3x. ~~l'union MF~~ remplacée le soir même par sa photo de l'union FF, celle de la fiche. **Reste à lui, deux photos qui ne sont pas la pièce de sa fiche** : le raccord Plasson est le 32 x 1" (la fiche dit 25 x 1"), le régulateur porte DN 15, du 1/2" (la fiche dit FF 3/4"). Soit ses photos sont les bonnes pièces et la fiche change, soit il refait ces deux photos. La planche a aussi une version sans numéro ni nom (sa demande du même soir). ~~Reste ensuite à nous : porter les photos dans l'outil~~ **CODÉ LE 21 NOVEMBRE 2026 sur `claude/upbeat-pascal-mzremi`** (son « Continue », `ARCHITECTURE.md` §600) : `photos.ts`, `photos-nourrice.ts`, `nourrice-eclatee.ts`, `NourriceEclatee.tsx`, photos dans `public/`. **Attend son « oui » pour `npm run verifier:avant-fusion`** (niveau 2), puis `main`. Les planches d'avant (`arrosage-plan.html`, `arrosage-plan-robinet.html`, `arrosage-nourrice-eclatee.html`, `arrosage-import-devis.html` et son paquet) gardent leurs photos et leurs chiffres : elles restent justes entre elles, et montrent la nourrice d'avant. Le té est retourné en miroir (photographié mâle à gauche) : son « DURA » se lit à l'envers. Avant : (électrovanne MM 9, électrovanne FF 11, vanne 3/4" 5, union 6, raccord Plasson 7, té 1" MMF) : prises de trois quarts, elles restent de biais quel que soit l'angle, et on ne déforme jamais une image (`ARCHITECTURE.md` §475). Consignes données le 18 octobre : pièce à plat sur une feuille blanche, axe d'écoulement horizontal, appareil à hauteur de la pièce, à 1 m avec le zoom, aucun filetage vu de l'intérieur, rien d'autre dans le cadre. À la réception : remesurer les deux bouts sur le rendu 3x, planche de comparaison ancienne/nouvelle AVANT tout remplacement | lui pour les photos, puis une session |
+| ~~**six photos de face à refaire pour la nourrice éclatée**~~ **REÇUES LE 21 NOVEMBRE 2026, treize photos vues du dessus**, posées sur la planche `appli/arrosage-nourrice-vue-du-dessus.html` (« Avant » pour comparer), toutes à moins d'1 px de leur axe à 3x. ~~l'union MF~~ remplacée le soir même par sa photo de l'union FF, celle de la fiche. ~~le raccord Plasson~~ posé à plat avec sa photo du 32 x 1" (son « très bien » du soir). **Reste à lui** : le régulateur porte DN 15, du 1/2" (la fiche dit FF 3/4") ; soit c'est le sien et la fiche change, soit il le reprend en photo. **Et six photos à plat** (sa règle du soir, « toutes les pièces comme ça ») : les clarinettes 2, 3 et 4 voies, l'électrovanne MM, le mamelon réduit 1" x 3/4" et le mamelon 1" ; les siennes sont prises d'un peu au-dessus, on voit l'intérieur d'un bout. Toutes les pièces grises sont passées au gris clair (§600). La planche a aussi une version sans numéro ni nom (sa demande du même soir). ~~Reste ensuite à nous : porter les photos dans l'outil~~ **CODÉ LE 21 NOVEMBRE 2026 sur `claude/upbeat-pascal-mzremi`** (son « Continue », `ARCHITECTURE.md` §600) : `photos.ts`, `photos-nourrice.ts`, `nourrice-eclatee.ts`, `NourriceEclatee.tsx`, photos dans `public/`. **Attend son « oui » pour `npm run verifier:avant-fusion`** (niveau 2), puis `main`. Les planches d'avant (`arrosage-plan.html`, `arrosage-plan-robinet.html`, `arrosage-nourrice-eclatee.html`, `arrosage-import-devis.html` et son paquet) gardent leurs photos et leurs chiffres : elles restent justes entre elles, et montrent la nourrice d'avant. Le té est retourné en miroir (photographié mâle à gauche) : son « DURA » se lit à l'envers. Avant : (électrovanne MM 9, électrovanne FF 11, vanne 3/4" 5, union 6, raccord Plasson 7, té 1" MMF) : prises de trois quarts, elles restent de biais quel que soit l'angle, et on ne déforme jamais une image (`ARCHITECTURE.md` §475). Consignes données le 18 octobre : pièce à plat sur une feuille blanche, axe d'écoulement horizontal, appareil à hauteur de la pièce, à 1 m avec le zoom, aucun filetage vu de l'intérieur, rien d'autre dans le cadre. À la réception : remesurer les deux bouts sur le rendu 3x, planche de comparaison ancienne/nouvelle AVANT tout remplacement | lui pour les photos, puis une session |
 | **pousser sur `main`** le grisé de la nourrice, les blocs supprimés, les prix : son « oui » est donné, mais il faut le contrôle de niveau 2 (`verifier:avant-fusion`) et il a dit « aucune batterie » ; à lui demander quand le lancer | lui |
 | ~~**le montage au robinet** : à coder quand il aura validé la planche~~ **CODÉ le 18 octobre au soir** sur son « tu peux coder, pas de batterie » (`ARCHITECTURE.md` §471) : ses deux montages, la double sortie, le départ, la pile des pièces. ~~Reste à lui demander : au nez de robinet, la pression se calcule encore avec l'amenée et le trajet du croquis~~ **tranché le 19 octobre** : *« ça ne change rien »*, le calcul de perte de charge au robinet est celui du compteur, avec la pression et le débit mesurés, dans les deux montages (`.claude/rules/arrosage.md`, `test-regles-du-patron.ts`) | fait |
 | **la photo de pièce en `<img>`, pas en `next/image`** : sept `pansement assumé` dans les écrans du plan (`Vignette`, `FeuillePiece`, `PiecesDuReseau`, `NourriceEclatee`, `MontageAuRobinet`, `LePlanDuJardin`). `next/image` n'a rien à optimiser sur une photo servie telle quelle depuis `public/`, et il exige des dimensions que la pile du robinet (hauteur fixe, largeur libre) n'a pas. À trancher un jour : `next/image` avec `unoptimized`, ou la règle éteinte pour ce dossier dans la configuration du lint | nous |

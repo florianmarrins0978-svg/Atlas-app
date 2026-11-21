@@ -37980,7 +37980,20 @@ son filetage, lu sur une photo qui penche de 1,7°, n'a pas son sommet au
 milieu), 1,3 px au tube de la clarinette 3 voies ; une seconde passe a corrigé
 les deux fractions.
 
-**Deux pièces gardent leur photo d'avant** : le raccord Plasson (sa photo est
-le 32 x 1", la fiche dit 25 x 1") et le régulateur (le sien porte DN 15, du
-1/2", la fiche dit FF 3/4"). Ce n'est pas au dessin de trancher (`TODO.md`).
+**Le même soir, deux règles de plus, les siennes.** *« Il faut que toutes les
+pièces soient comme ça »*, devant le raccord Plasson posé à plat
+(`appli/arrosage-raccord-a-plat.html`) : chaque pièce couchée, vue de profil,
+son axe dans le plan de la photo, sans qu'on voie la face d'un bout. Le
+raccord prend sa photo à plat du 32 x 1" (même forme que le 25 x 1" de la
+fiche, comme le coude taraudé en 32 plus haut dans `PHOTOS`). Une photo prise
+d'un peu au-dessus ne se redresse pas à l'ordinateur : les trois clarinettes,
+l'électrovanne MM, le mamelon réduit et le mamelon 1" attendent la sienne, et
+la planche le dit. Et *« gris clair, ça devrait être plus joli »* : les pièces
+en PVC gris (coudes, té, clarinettes, union, mamelon) ont leur luminosité
+ramenée par une droite à la même médiane (145) et au même écart (70 de p10 à
+p90), et une seule teinte ; ombres et reflets restent. Le dessin l'a pris tel
+quel : à mêmes photos, mêmes boîtes, et le rendu à 3x est resté sous 1 px.
+
+**Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
+fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
 

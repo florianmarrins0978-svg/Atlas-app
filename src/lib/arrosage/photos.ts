@@ -16,8 +16,10 @@ export const PHOTOS: Record<string, string> = {
   // LA NOURRICE, SES PHOTOS VUES DU DESSUS (21 novembre 2026) : elles remplacent
   // celles trouvées en ligne et ses électrovannes prises de trois quarts
   // (TODO.md), détourées et gardées dans le sens où il les a prises ; le dessin
-  // de la nourrice les tourne (nourrice-eclatee.ts). Le raccord Plasson et le
-  // régulateur gardent les leurs : ses photos n'étaient pas la pièce de la fiche.
+  // de la nourrice les tourne (nourrice-eclatee.ts). Les pièces en PVC gris sont
+  // ramenées à un seul gris clair, sa demande du même soir. Le raccord Plasson
+  // prend sa photo à plat du 32 x 1" : le 25 x 1" a la même forme, un cran
+  // au-dessous. Le régulateur garde le sien : sa photo est un 1/2".
   "electrovanne-100dv": "electrovanne-100dv-dessus.png",
   "electrovanne-100dv-ff": "electrovanne-100dv-ff-dessus.png",
   "pebd16": "pebd16.png",
@@ -53,7 +55,7 @@ export const PHOTOS: Record<string, string> = {
   "RA3504SAM": "RA3504SAM.jpg",
   "RA5004FC": "RA5004FC.jpg",
   "RA5006PC": "RA5006PC.jpg",
-  "raccord-male25": "raccord-male25.jpg",
+  "raccord-male25": "raccord-male32-dessus.png",
   "raccord-male32": "raccord-male25.jpg",
   "regard-jumbo5": "regard-jumbo5.jpg",
   "regard-jumbo6": "regard-jumbo6.jpg",
@@ -268,9 +270,9 @@ export const PHOTOS: Record<string, string> = {
   "OPL70202026": "raccord-male25.jpg",
   "OPL70202515": "raccord-male25.jpg",
   "OPL70202520": "raccord-male25.jpg",
-  "OPL70202526": "raccord-male25.jpg",
+  "OPL70202526": "raccord-male32-dessus.png",
   "OPL70203220": "raccord-male25.jpg",
-  "OPL70203226": "raccord-male25.jpg",
+  "OPL70203226": "raccord-male32-dessus.png",
   "OPL70203233": "raccord-male25.jpg",
   "OPL70203240": "raccord-male25.jpg",
   "OPL70204026": "raccord-male25.jpg",

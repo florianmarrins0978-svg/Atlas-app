@@ -8,10 +8,13 @@ régénéré, `nourrice-eclatee.ts`, `NourriceEclatee.tsx`, les photos
 `*-dessus.png` dans `appli/` et `public/`) est sur la branche, de niveau 2, et
 **n'a pas joué `npm run verifier:avant-fusion`** : il demande son accord
 (CLAUDE.md §5). Joué ici sans serveur : types, lint, `test-arrosage-postes`
-(29/29), les gardes de texte, et le rendu du vrai composant mesuré à 3x (1017
-mesures sous 1 px). **Pas vu sur l'écran de l'appli** (`npm run voir` demande
-un serveur) : à regarder sur `/paysage/arrosage` avec un plan. **Reste à lui** :
-le raccord Plasson et le régulateur (`TODO.md`).
+(29/29), les gardes de texte, et le rendu du vrai composant mesuré à 3x (1295
+mesures sous 1 px, gris clair et raccord à plat compris). **Pas vu sur l'écran
+de l'appli** (`npm run voir` demande un serveur) : à regarder sur
+`/paysage/arrosage` avec un plan. **Reste à lui** : les photos à plat des trois
+clarinettes, de l'électrovanne MM, du mamelon réduit et du mamelon 1", et le
+régulateur (`TODO.md`). Une photo qui arrive se détoure, passe au gris clair
+(`median 145, écart 70`, §600), se mesure à 3x, et se pose dans `PHOTOS`.
 
 ## LE DÉBUT DE LA VISITE GUIDÉE : DEUX PROPOSITIONS (21 novembre 2026), PAS ENCORE CHOISIES
 
