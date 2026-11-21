@@ -53,6 +53,32 @@ l'étape des factures se regarde (« Vous savez s'il l'a ouverte. »), puis
 | Elle est partie | « … Voyons ce que reçoit votre client : sa facture, l'IBAN et le numéro à écrire sur son virement. » | « … Voyons ce que reçoit votre client. » |
 | Ma TVA | « … Un achat sans ticket s'écrit à la main : la TVA se calcule toute seule. » | « La TVA collectée, la déductible, et ce qu'il reste à payer. » |
 
+## Ta remarque suivante : essayer les boutons à la suite
+
+*« À chaque fois que c'est à nous d'essayer, dès qu'on touche un bouton, on est
+obligé de faire retour pour essayer les autres. Il faudrait pouvoir toucher
+tous les boutons à la suite, et quand on en a marre, faire passer. »*
+
+| | Maintenant |
+|---|---|
+| **Le devis** (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne) | une fois un bouton essayé, les quatre autres sont là, sur le même écran : on les touche à la suite. La barre dit « Un autre bouton, ou Suivant. », et ce qui vient d'être posé dessous |
+| **La facture** (Voir le PDF, Travaux en plus, Facture acquittée) | pareil. L'aperçu du PDF n'a pas d'autre bouton : sa flèche, ou « Revenir à la facture », ramène à la facture, où les autres attendent |
+| **Le même bouton une seconde fois** | l'interrupteur « Facture acquittée » se rabat ; « Ajouter une ligne » fait trembler la barre (une seconde ligne ne se montre pas ici) |
+| **Quand on en a assez** | « Suivant » fait avancer la visite, à tout moment |
+| **La barre, pendant les essais** | repliée en une ligne, avec son bouton Suivant : la feuille, ce qui vient d'être posé et les autres boutons gardent l'écran |
+
+Sur ton écran, les boutons du devis se touchent sans défiler. Sur un
+téléphone plus petit (375 ou 320 points), « Ajouter un acompte » demande de
+faire défiler un peu : il est sous la barre fixe « Choisir la date » de l'appli.
+
+**Ce qui ne se cumule pas, et c'est une limite des écrans figés :** chaque essai
+repart du devis d'origine. Une remise puis un acompte montrent l'acompte seul,
+sans la remise. Les cumuler demanderait de figer chaque combinaison.
+
+Vérifié ici : les cinq essais du devis et les trois de la facture enchaînés au
+doigt sans Retour, à 320, 390, 1024 et 1280 points ; les 233 boutons des
+écrans d'essai touchés un par un, aucun muet.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |
