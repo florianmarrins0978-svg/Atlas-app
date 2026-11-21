@@ -24,6 +24,59 @@ parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
 20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
 612). Ce qui suit est la planche telle qu'elle a été posée.
 
+## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, PROPOSÉ (21 novembre 2026)
+
+Sa demande, devant la visite : *« propose une version améliorée juste pour les
+4 premières étapes seulement, arrête-toi avant d'entrer dans le devis, au
+client »*.
+
+**La planche : `appli/visite-guidee-debut.html`.** Les quatre premiers écrans de
+la visite (l'accueil, Vos clients, la fiche de Mme Costa, ses factures),
+recopiés tels quels, et un guide refait. Rien dans `src/`, et
+`appli/visite-guidee.html` n'est pas touchée. Retour : `docs/visite-guidee.md`.
+
+Ce que le guide change : la page arrive en haut puis glisse jusqu'au geste ; la
+bulle tient en une phrase et un geste, posée sur la barre du bas ; l'appli n'est
+plus grisée ; ce qu'on regarde sans le toucher est surligné ; une main montre où
+toucher et revient quand on touche à côté, au lieu d'une bulle qui tremble ; le
+geste se lit au doigt et non au clic, que Safari n'envoie pas hors d'un bouton.
+
+**À trancher par lui :** cette direction pour toute la visite ; la main ou
+l'anneau seul ; les deux temps (regarder, puis toucher) là où ce qu'on regarde
+n'est pas ce qu'on touche.
+
+**Pas vérifié : Safari sur son iPhone.** Ce poste n'a que Chromium ; dix
+parcours y passent, dont un qui imite Safari (aucun clic hors des boutons).
+
+**Si la direction est retenue, restent à porter sur la visite entière :**
+l'anneau rond pour un bouton rond (sa remarque du 20, `formeDe`), les essais
+libres du devis et de la facture, les Réglages libres, la bulle retirée pendant
+que les champs s'écrivent, et la bulle en haut quand la cible est collée au bas
+de l'écran.
+
+## ⚠️ LE SCRIPT QUI REFAIT LA VISITE GUIDÉE N'EST PAS DANS LE DÉPÔT (vu le 21 novembre 2026)
+
+`docs/visite-guidee.md`, `CHANGELOG.md` et l'entrée ci-dessous disaient que
+`scripts/planche-figee/visite-guidee/tout.sh` rejoue tout le parcours. **Ce
+dossier n'a jamais été enregistré** : ni `tout.sh`, ni `histoire.mjs`, ni
+`parcourir-visite.mjs` ne sont sur `main`, ni sur `claude/sleepy-sagan-gq6c0x`,
+la branche de la session qui a fait la visite. La planche est là ; ce qui la
+refait ne l'est pas. `verifier:memoire` ne l'a pas vu : il ne lit ni les `.sh`
+ni un nom de fichier cité sans son dossier.
+
+**Le plus court :** si cette session est encore ouverte, lui faire enregistrer
+le dossier. Sinon le réécrire (rejouer le parcours sur une base de
+démonstration neuve, figer chaque écran avec `scripts/planche-figee/figer.mjs`,
+assembler), donc sur son « oui » pour la base.
+
+**Vu au passage dans les écrans figés de la visite, non corrigé là-bas :** le
+trait d'or sous l'onglet ouvert de la fiche d'un client n'est juste qu'à
+390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un ordinateur),
+parce que sa place a été figée avec l'écran. La proposition du début le replace
+par la règle de l'appli (`recalerLesOnglets`). Et les chantiers de l'accueil
+sont datés de juillet quand l'histoire de Mme Costa est en novembre : cela
+demande de rejouer la base.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
 Sa demande : sur le site, une visite guidée de l'application, sur les VRAIS
@@ -68,9 +121,9 @@ tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
 
 **La planche : `appli/visite-guidee.html`**, faite (49 étapes, puis les
 dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
-l'appli bâtie, joué pour de vrai sur la base de démonstration
-(`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
-dossier du comptable). Retour : `docs/visite-guidee.md`.
+l'appli bâtie, joué pour de vrai sur la base de démonstration. **Corrigé le
+21 novembre : le script qui refaisait tout (`tout.sh`) n'a jamais été
+enregistré, voir l'entrée au-dessus.** Retour : `docs/visite-guidee.md`.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
@@ -90,7 +143,8 @@ disponible ici » est retiré du ticket lu. Et partout, l'exemple
 « 06 12 34 56 78 » des champs devient « 06 39 98 00 00 ».
 
 **Sa demande du soir, faite** : entrer dans la fiche d'un client. Mme Costa a
-une histoire jouée avant la visite (`histoire.mjs`) : devis signé, retour
+une histoire jouée avant la visite (`histoire.mjs`, non enregistré lui non
+plus) : devis signé, retour
 d'intervention, facture envoyée et due ; sa fiche montre Devis, Factures, et
 « Dernier devis » avec « + 10 % ». **Les retours d'intervention ne sont pas sur
 la fiche du client** dans l'appli : la visite les montre dans Terminés. Les y

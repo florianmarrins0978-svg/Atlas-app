@@ -1,5 +1,9 @@
 # État du projet
 
+## LE DÉBUT DE LA VISITE GUIDÉE, PROPOSÉ SUR SES QUATRE PREMIÈRES ÉTAPES : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 21. `appli/visite-guidee-debut.html` : les quatre premiers écrans de la visite, un guide refait (une phrase et un geste, la page qui arrive en haut puis glisse, le surligneur, la main), arrêté avant le devis. Rien dans `src/`, la visite d'aujourd'hui intacte. Safari d'iPhone non vérifié ici. `TODO.md` dit ce qu'il doit trancher, et que le script qui refait la visite manque au dépôt.
+
 ## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.
