@@ -76,11 +76,11 @@ export const HAUT: Record<string, FormeHaut> = {
  *  couvre la pièce posée au-dessus. */
 type FormeColonne = { a: [number, number]; b: [number, number]; L: number; src?: string; dessus?: number };
 export const COLONNE: Record<string, FormeColonne> = {
-  mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 25.6 },
-  "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 25.6, src: "mamelon" },
+  mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 32.5 },
+  "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 32.5, src: "mamelon" },
   // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
-  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 42 },
-  union: { a: [0, 0.4929], b: [1, 0.4999], L: 69.5 },
+  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 50 },
+  union: { a: [0, 0.4929], b: [1, 0.4999], L: 63.1 },
   // À plat, sa photo du 32 x 1" : le filetage à gauche, l'écrou blanc à droite. Le PEHD, le
   // mamelon 1" et le régulateur gardent leur photo d'avant.
   "raccord-male25": { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },
@@ -88,7 +88,7 @@ export const COLONNE: Record<string, FormeColonne> = {
   // Ses fils montent de 18 px au-dessus de son filetage : sans cet écart, ils entrent dans l'écrou du dessus.
   "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 66.6, dessus: 18 },
   "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
-  "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 28.6 },
+  "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 33 },
   "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 },
 };
 

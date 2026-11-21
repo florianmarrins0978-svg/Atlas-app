@@ -38019,7 +38019,13 @@ photos à la même échelle quand l'une est prise de plus près : c'est l'œil s
 le dessin entier qui tranche, et c'est le sien. La remarque suivante l'a
 confirmé dans l'autre sens : les unions et la vanne 3/4" lui paraissaient plus
 petites, alors que les écrous des unions mesuraient ceux de la clarinette ;
-l'union passe de L 63,1 à 69,5, la vanne de 36,4 à 42.
+l'union passe de L 63,1 à 69,5, la vanne de 36,4 à 42. **Mal lu, et corrigé
+le soir même** : par « l'union », il désignait le mamelon, la pièce qui se
+visse dans l'écrou femelle du coude (*« en face du coude femelle, il est censé
+se visser dedans »*). Le manchon union revient à 63,1 ; le mamelon réduit
+passe à 32,5, le mamelon 1" à 33, la vanne à 50. **Dans ses mots, « union »
+peut désigner toute pièce qui en relie deux** : devant un nom de pièce
+ambigu, mesurer laquelle ne colle pas à sa voisine avant d'en toucher une.
 
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
