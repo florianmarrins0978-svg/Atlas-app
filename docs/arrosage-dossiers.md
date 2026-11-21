@@ -168,7 +168,7 @@ maintenant 8 pages :
 |---|---|
 | 1 | l'entreprise, le dossier, la date, le résumé ; la légende des symboles (rond, carré, plein, creux, losange) |
 | 2 à 5 | **un réseau par page**, à la même taille que les autres : en haut son nom, son matériel, son tuyau, et le réseau en couleur dans le jardin ; au milieu le dessin de ses pièces avec leurs photos, aussi grand que la page le permet ; en bas une tête, de bas en haut, avec ses photos |
-| 6 à 8 | la liste des pièces, chaque groupe coupé redit son nom ; **à la toute fin, la phrase qui protège** : « Nous ne garantissons pas la bonne levée des arroseurs. » |
+| 6 à 8 | la liste des pièces, chaque groupe coupé redit son nom |
 
 **Toutes les pages à la même taille** (sa remarque : couchées, les pages des
 réseaux sortaient plus petites sur le téléphone, qui les réduit à sa largeur).
@@ -179,10 +179,9 @@ dessins sont ceux de l'écran, jamais redessinés.
 
 **Les réserves ne sont plus dans le PDF** (sa décision). Elles restent sous
 le plan à l'écran, et dans l'enregistrement figé : c'est lui qui sert si un
-réseau est contesté. **Une seule y revient, à la toute fin, sur sa demande** :
-« Nous ne garantissons pas la bonne levée des arroseurs. », reprise mot pour
-mot de la réserve de l'écran (écrite à part, elle finirait par différer). Un
-poseur qui n'a que le PDF ne lit plus, en revanche, « à mesurer sur place ».
+réseau est contesté. La phrase « Nous ne garantissons pas la bonne levée des arroseurs. » y est
+revenue un temps à la toute fin, sur sa demande, puis **il l'a retirée** : le
+PDF ne porte plus aucune réserve.
 
 **Pourquoi des mots se chevauchaient chez lui.** Les pages étaient mesurées
 ici, avec les polices de ce poste, et le pied gris posé à hauteur fixe : son

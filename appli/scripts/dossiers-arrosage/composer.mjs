@@ -159,7 +159,6 @@ body:not([data-photo="non"]) [data-si-sans-photo] { display: none !important; }
 .pdf-page .ligne b { width: 30px; flex: none; font-weight: 600; color: #8b6835; }
 .pdf-page .groupe { margin: 7px 0 2px; font-family: var(--font-display); font-size: 9px; }
 .pdf-page .resume { margin: 5px 0 0; color: #4a4a44; }
-.pdf-page .protection { margin: 14px 0 0; font-size: 7.8px; font-weight: 600; color: #1c1c1a; }
 .pdf-page .titre-reseau { display: flex; align-items: baseline; gap: 6px; }
 .pdf-page .titre-reseau .pastille { width: 8px; height: 8px; border-radius: 2px; flex: none; align-self: center; }
 .pdf-page .plan-couleur svg { display: block; width: 100%; height: auto; }
@@ -648,12 +647,8 @@ function retouches(etat, D) {
       premiereLigne = false;
     }
   }
-  // LA PHRASE QUI PROTÈGE, à la toute fin : sa demande du 21 au soir, une fois
-  // les réserves retirées du PDF. Elle se reprend des réserves de l'écran, mot
-  // pour mot : écrite ici, elle finirait par différer de celle de l'appli.
-  const protection = [...E3.querySelectorAll("[data-atlas=reserves] li")].map((li) => li.textContent.trim()).find((t) => t.startsWith("Nous ne garantissons pas"));
-  if (!protection) throw new Error("La phrase « Nous ne garantissons pas… » manque aux réserves de l'écran figé.");
-  poser(`<p class="protection" data-atlas="pdf-protection">${protection}</p>`, null);
+  // La phrase « Nous ne garantissons pas… », posée ici un temps, est retirée :
+  // sa décision du 21 novembre au soir. Rien des réserves ne part dans le PDF.
 
   const fond = atelier;
   fond.insertAdjacentHTML("afterbegin", `<div class="pdf-barre"><button type="button" data-va="revu">Fermer</button><b>Plan d’arrosage de Madame Intel, 21 novembre 2026.pdf</b></div>`);
