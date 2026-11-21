@@ -50,9 +50,9 @@ for (let k = 0; k < 150; k++) {
     await page.evaluate(() => window.scrollTo(0, 0));
   }
   // L'étape des essais : chaque bouton du devis s'ouvre, se pose, et l'on revient.
-  const essais = await page.evaluate(() => { const e = window.visite.etapes[window.visite.etape()].essais; return e ? window.visite.essais[e].map((x) => x.ouvre) : []; });
+  const essais = await page.evaluate(() => { const e = window.visite.etapes[window.visite.etape()].essais; return e ? window.visite.essais[e].map((x) => [x.ouvre, x.pose]) : []; });
   if (essais.length) {
-    for (const ouvre of essais) {
+    for (const [ouvre, pose] of essais) {
       const b = page.locator(`.visite-ecran:not([hidden]) ${ouvre}`).first();
       await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(900);
       const e1 = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);
@@ -63,7 +63,7 @@ for (let k = 0; k < 150; k++) {
         e2 = await page.evaluate(() => document.querySelector(".visite-ecran:not([hidden])")?.dataset.ecran);
       }
       await page.screenshot({ path: `${sortie}/${String(i).padStart(2, "0")}-essai-${e2}.png` });
-      console.log("   essai", ouvre, "→", e1, "→", e2, e2.endsWith("-pose") ? "" : "   <<< NE POSE RIEN");
+      console.log("   essai", ouvre, "→", e1, "→", e2, e2 === pose ? "" : "   <<< NE POSE RIEN");
       await page.click(".v-retour"); await page.waitForTimeout(700);
     }
   }
