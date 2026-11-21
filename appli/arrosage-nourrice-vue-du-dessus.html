@@ -83,9 +83,11 @@
   redresse à l'ordinateur, une image ne se déforme pas.
 
   LE MAMELON 1" (la pièce entre le coude ou le té et l'électrovanne FF d'une
-  voie de goutte-à-goutte), sa remarque du même soir : « resté en gris foncé et
-  pas à plat ». C'est encore la photo trouvée en ligne : passée au gris clair
-  comme les autres (mamelon-droit-1-dessus.png), elle attend sa photo à plat.
+  voie de goutte-à-goutte) : la photo trouvée en ligne était de biais. Sa
+  demande : « mets-les à plat comme les autres unions ». Il prend sa photo de
+  mamelon, celle des autres colonnes (un réduit 1" x 3/4", la même forme), le
+  côté 1" en haut ; la légende garde le nom de la fiche. Sa photo de mamelon
+  quitte aussi la liste « à reprendre à plat » : il la tient pour à plat.
 
   UN SEUL GRIS, CLAIR, pour toutes les pièces en PVC gris (sa demande du même
   soir : « soit toutes grises claires, soit toutes grises foncées ; gris clair,
@@ -223,14 +225,14 @@
   var TES = {
     aRefaire: ["regulateur-ff34"],
     // Prises d'un peu au-dessus : l'intérieur d'un bout se voit. Elles attendent une photo à plat.
-    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v", "mamelon", "mamelon-droit-1"],
+    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v"],
     photos: {
       "coude-mf": "coude-mf-dessus.png", "coude-ff": "coude-ff-dessus.png", "te-mmf": "te-mmf-dessus.png",
       "clarinette-2v": "clarinette-2v-dessus.png", "clarinette-3v": "clarinette-3v-dessus.png", "clarinette-4v": "clarinette-4v-dessus.png",
       "electrovanne-100dv": "electrovanne-100dv-dessus.png", "electrovanne-100dv-ff": "electrovanne-100dv-ff-dessus.png",
       "vanne-purge": "vanne-purge-dessus.png", "mamelon": "mamelon-dessus.png",
       "union": "union-ff-dessus.png", "raccord-male25": "raccord-male32-dessus.png", "pehd": "pehd.jpg",
-      "mamelon-droit-1": "mamelon-droit-1-dessus.png", "regulateur-ff34": "regulateur-ff34.jpg"
+      "mamelon-droit-1": "mamelon-dessus.png", "regulateur-ff34": "regulateur-ff34.jpg"
     },
     // Ses photos restent dans le sens où il les a prises (les listes de pièces les montrent ainsi) :
     // c'est le dessin qui tourne le coude FF d'un quart (quart) et retourne le té (miroir). Les
@@ -259,7 +261,9 @@
       // Vue du dessus, sa bobine et ses fils montent de 25,6 px au-dessus du bout du haut :
       // l'écart d'avant s'agrandit d'autant, sans quoi ils couvrent le mamelon 1" posé au-dessus.
       "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
-      "mamelon-droit-1":    { a: [0.478, 0.02], b: [0.51, 0.98], L: 33 },
+      // Sa photo de mamelon, celle des autres colonnes (sa demande : « à plat, comme les autres
+      // unions »), le côté 1" en haut, dans l'écrou du coude ou du té.
+      "mamelon-droit-1":    { a: [0.4883, 1], b: [0.495, 0], L: 32.5 },
       "regulateur-ff34":    { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 }
     }
   };
@@ -383,21 +387,35 @@
         if (!nu) badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
         return;
       }
-      var fc = J.colonne[p.cle], droite = 0;
+      var fc = J.colonne[p.cle];
+      p.droite = 0; p.gauche = 0; p.y0 = p.y; p.y1 = p.y + fc.L;
       if (im) {
         var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
         var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
         g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
         g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
-        // Jusqu'où la pièce dessinée va à droite de son axe : les coins de sa photo, tournés.
+        // Ce que la pièce dessinée occupe autour de son axe : les coins de sa photo, tournés.
         [[0, 0], [im.width, 0], [0, im.height], [im.width, im.height]].forEach(function (c) {
-          droite = Math.max(droite, s * ((c[0] - ax) * Math.cos(angle) - (c[1] - ay) * Math.sin(angle)));
+          var cx = s * ((c[0] - ax) * Math.cos(angle) - (c[1] - ay) * Math.sin(angle));
+          var cy = s * ((c[0] - ax) * Math.sin(angle) + (c[1] - ay) * Math.cos(angle));
+          p.droite = Math.max(p.droite, cx); p.gauche = Math.min(p.gauche, cx);
+          p.y0 = Math.min(p.y0, p.y + cy); p.y1 = Math.max(p.y1, p.y + cy);
         });
       }
       numero(p.ref);
-      // La pastille se pose à droite de la pièce : à la même échelle que le haut, une électrovanne
-      // ou un raccord dépassent les 24 px d'avant, et la pastille les couvrait.
-      if (!nu) badge(g, numero(p.ref), p.x + Math.max(24, droite + 9), p.y + fc.L / 2);
+    });
+    // LES PASTILLES DES COLONNES, une fois toutes les pièces posées : à droite de la pièce (à la
+    // même échelle que le haut, une électrovanne ou un raccord dépassent les 24 px d'avant), mais
+    // jamais sur la pièce de la colonne voisine. À 6 voies de goutte-à-goutte, les électrovannes FF
+    // se touchent presque, et la pastille de l'une tombait sur l'autre : elle s'arrête avant.
+    if (!nu) poses.forEach(function (p) {
+      if (p.haut) return;
+      var fc = J.colonne[p.cle], by = p.y + fc.L / 2, bx = p.x + Math.max(24, p.droite + 9);
+      poses.forEach(function (q) {
+        if (q.haut || q.x <= p.x + 1 || by < q.y0 - 8 || by > q.y1 + 8) return;
+        bx = Math.min(bx, q.x + q.gauche - 8);
+      });
+      badge(g, numero(p.ref), Math.max(bx, p.x + 10), by);
     });
     g.globalCompositeOperation = "source-over";
     // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD
