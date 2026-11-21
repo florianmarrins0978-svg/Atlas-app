@@ -37917,10 +37917,9 @@ Revoir ne recalcule jamais ; un enregistrement ne s'écrase pas ; l'outil
 reste utilisable sans dossier (§125). **Les réserves NE partent PAS dans le
 PDF** : son brief les y mettait, il les a retirées le soir même sur la
 planche (*« pas besoin de l'avoir sur le PDF »*). Elles restent sous le plan
-à l'écran (règle 3 de l'arrosage) et dans l'enregistrement figé. **Une seule
-revient, à la toute fin du PDF, sur sa demande** (*« la phrase qui nous
-protège »*) : « Nous ne garantissons pas la bonne levée des arroseurs. », lue
-dans les réserves du calcul, jamais écrite une seconde fois.
+à l'écran (règle 3 de l'arrosage) et dans l'enregistrement figé. La phrase « Nous ne garantissons
+pas la bonne levée des arroseurs. », remise un temps à la fin du PDF, en est
+retirée aussi : sa décision du même soir.
 
 **Rien n'est codé.** La planche `appli/arrosage-dossiers.html` et cinq
 questions (`docs/arrosage-dossiers.md`) attendent ses réponses. Trois choses
