@@ -223,7 +223,7 @@
   var TES = {
     aRefaire: ["regulateur-ff34"],
     // Prises d'un peu au-dessus : l'intérieur d'un bout se voit. Elles attendent une photo à plat.
-    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v", "electrovanne-100dv", "mamelon", "mamelon-droit-1"],
+    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v", "mamelon", "mamelon-droit-1"],
     photos: {
       "coude-mf": "coude-mf-dessus.png", "coude-ff": "coude-ff-dessus.png", "te-mmf": "te-mmf-dessus.png",
       "clarinette-2v": "clarinette-2v-dessus.png", "clarinette-3v": "clarinette-3v-dessus.png", "clarinette-4v": "clarinette-4v-dessus.png",
@@ -253,8 +253,9 @@
       // À plat : le filetage à gauche sur sa photo, l'écrou blanc à droite.
       "raccord-male25":     { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },
       "pehd":               { a: [0, 0.509], b: [1, 0.509], L: 50.6 },
-      // Ses fils montent de 18 px au-dessus de son filetage : sans cet écart, ils entrent dans l'écrou du dessus.
-      "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 66.6, dessus: 18 },
+      // Sa photo du 21 au soir, prise plus droit au-dessus que la première. Le haut se lit au
+      // sommet de l'arc de son filetage (un fil longe son bord droit) ; ses fils montent de 6 px.
+      "electrovanne-100dv": { a: [0.4556, 0.0779], b: [0.4737, 1], L: 74.3, dessus: 6.2 },
       // Vue du dessus, sa bobine et ses fils montent de 25,6 px au-dessus du bout du haut :
       // l'écart d'avant s'agrandit d'autant, sans quoi ils couvrent le mamelon 1" posé au-dessus.
       "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
