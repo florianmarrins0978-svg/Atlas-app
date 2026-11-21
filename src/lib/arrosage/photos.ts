@@ -19,7 +19,9 @@ export const PHOTOS: Record<string, string> = {
   // de la nourrice les tourne (nourrice-eclatee.ts). Les pièces en PVC gris sont
   // ramenées à un seul gris clair, sa demande du même soir. Le raccord Plasson
   // prend sa photo à plat du 32 x 1" : le 25 x 1" a la même forme, un cran
-  // au-dessous. Le régulateur garde le sien : sa photo est un 1/2".
+  // au-dessous. Le mamelon 1" garde la photo trouvée en ligne, passée au même
+  // gris clair, en attendant la sienne. Le régulateur garde le sien : sa photo
+  // est un 1/2".
   "electrovanne-100dv": "electrovanne-100dv-dessus.png",
   "electrovanne-100dv-ff": "electrovanne-100dv-ff-dessus.png",
   "pebd16": "pebd16.png",
@@ -41,7 +43,7 @@ export const PHOTOS: Record<string, string> = {
   "HT1544": "HT1544.jpg",
   "HT1546": "HT1546.png",
   "mamelon": "mamelon-dessus.png",
-  "mamelon-droit-1": "mamelon-droit-1.jpg",
+  "mamelon-droit-1": "mamelon-droit-1-dessus.png",
   "OD501": "OD501.jpg",
   "OD502": "OD502.jpg",
   "pile-9v": "pile-9v.jpg",
@@ -321,7 +323,7 @@ export const PHOTOS: Record<string, string> = {
   "ELD60481": "pile-9v.jpg",
   "ELD550077": "connexion.jpg",
   "REV100DV9V": "electrovanne-100dv-ff-dessus.png",
-  "ODU8303": "mamelon-droit-1.jpg",
+  "ODU8303": "mamelon-droit-1-dessus.png",
   "SP1721": "prog-1.jpg",
   "SP1722": "prog-2.jpg",
   "SP1724": "prog-4.jpg",
