@@ -19,7 +19,7 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 | La date | deux dates proposées, le devis envoyé |
 | Chez le client | sa page, la date qu'il choisit, sa signature au doigt |
 | Le planning | le 25, la journée, Paul et Kévin ajoutés matin et après-midi, la fiche d'intervention, la fiche de sécurité (sa page s'ouvre sur le décret 2021-1833), les travaux à faire |
-| La facture | Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, l'envoi, ce que reçoit le client |
+| La facture | Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, **ses boutons à essayer** (Voir le PDF, Travaux en plus, Facture acquittée ; l'envoi par SMS reste hors d'atteinte), l'envoi, ce que reçoit le client |
 | Le paiement | le virement vu par la banque sur l'accueil, « Oui », la facture payée |
 | Ma TVA | toute la page, un achat écrit à la main, le ticket de carburant scanné, les chiffres de gauche (collectée, déductible, par taux) |
 | Le comptable | Ma banque, le check up, les lignes justifiées, le relevé du mois, le dossier arrêté, le document du comptable |
