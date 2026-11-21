@@ -19,11 +19,6 @@ const champ = "mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] p
 const virgule = (x: number) => String(Math.round(x * 100) / 100).replace(".", ",");
 const nombre = (s: string) => Number(s.replace(",", "."));
 
-/** « 12 m sur 10 m », ou « 6 m » pour une haie. */
-export function cotesEcrites(z: ZoneParametre): string {
-  return z.type === "haie" ? `${virgule(z.ml ?? 0)} m` : `${virgule(z.L ?? 0)} m sur ${virgule(z.l ?? 0)} m`;
-}
-
 export function ModifierLaZone({
   zone,
   parametres,

@@ -13,6 +13,7 @@ import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
 import type { SourcesVehicule } from "../../lib/vehicules";
 import type { LigneImprimee } from "../../lib/ticket-imprime";
+import type { PlanFige, SaisieDuPlan } from "../../lib/arrosage/plan-enregistre";
 import { NATURES_ABSENCE } from "../../lib/nature-absence";
 
 import {
@@ -4915,3 +4916,103 @@ export const ideesAlertes = pgTable("idees_alertes", {
   jour: date("jour").primaryKey(),
   envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// --- Les dossiers du plan d'arrosage (migration 0193) ----------------------
+
+/**
+ * Un dossier de plans d'arrosage, à un nom qu'il choisit (sa demande du
+ * 21 novembre 2026, `ARCHITECTURE.md` §599). Le client est FACULTATIF : l'outil
+ * sert en visite de devis, avant que le client existe (§125) ; relié, le
+ * dossier part avec l'effacement du client.
+ *
+ * **Supprimer, c'est OUBLIER** (`oublieLe`) : le nom et le lien partent, le
+ * calcul reste cinq ans (sa réponse 2, `docs/arrosage-dossiers.md`).
+ */
+export const dossiersArrosage = pgTable(
+  "dossiers_arrosage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    nom: text("nom"),
+    clientId: uuid("client_id"),
+    oublieLe: timestamp("oublie_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("dossiers_arrosage_id_entreprise_uk").on(t.id, t.entrepriseId),
+    index("dossiers_arrosage_entreprise_idx").on(t.entrepriseId, t.updatedAt),
+    index("dossiers_arrosage_client_idx").on(t.clientId),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "dossiers_arrosage_client_fk",
+    }),
+  ]
+);
+
+/**
+ * Un plan enregistré : une VERSION, jamais écrasée. `saisie` refait le plan,
+ * `resultat` est ce que le serveur a calculé ce jour-là et ne se recalcule
+ * jamais pour être revu. `versionCalcul` et `modele` ne servent jamais à
+ * l'écran : ils sauvent une enquête, comme dans `diagnostics`.
+ */
+export const plansArrosage = pgTable(
+  "plans_arrosage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    dossierId: uuid("dossier_id").notNull(),
+    version: integer("version").notNull(),
+    saisie: jsonb("saisie").$type<SaisieDuPlan>().notNull(),
+    resultat: jsonb("resultat").$type<PlanFige>().notNull(),
+    empreinte: text("empreinte").notNull(),
+    resume: text("resume").notNull(),
+    photoCle: text("photo_cle"),
+    pdfCle: text("pdf_cle"),
+    versionCalcul: text("version_calcul").notNull(),
+    modele: text("modele"),
+    enregistrePar: uuid("enregistre_par").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("plans_arrosage_version_uk").on(t.dossierId, t.version),
+    index("plans_arrosage_dossier_idx").on(t.dossierId, t.version),
+    foreignKey({
+      columns: [t.dossierId, t.entrepriseId],
+      foreignColumns: [dossiersArrosage.id, dossiersArrosage.entrepriseId],
+      name: "plans_arrosage_dossier_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
+ * La file des dossiers oubliés à effacer, cinq ans après (migration 0193). Le
+ * travail de fond emprunte l'entreprise qu'elle porte : la RLS n'est pas
+ * contournée. Des identifiants et une date, aucune donnée d'artisan.
+ */
+export const dossiersArrosageAPurger = pgTable(
+  "dossiers_arrosage_a_purger",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dossierId: uuid("dossier_id").notNull(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    purgerLe: timestamp("purger_le", { withTimezone: true }).notNull(),
+    misEnFileLe: timestamp("mis_en_file_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("dossiers_arrosage_a_purger_uk").on(t.dossierId),
+    index("dossiers_arrosage_a_purger_echeance_idx").on(t.purgerLe),
+    foreignKey({
+      columns: [t.dossierId, t.entrepriseId],
+      foreignColumns: [dossiersArrosage.id, dossiersArrosage.entrepriseId],
+      name: "dossiers_arrosage_a_purger_dossier_fk",
+    }).onDelete("cascade"),
+  ]
+);

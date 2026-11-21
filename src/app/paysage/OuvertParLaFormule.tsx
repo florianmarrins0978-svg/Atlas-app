@@ -20,15 +20,22 @@ import FonctionReservee from "@/components/atlas/FonctionReservee";
  *
  * **Elle ne remplace pas la garde des actions** (`exigerFonction`) : une action
  * serveur s'appelle sans écran.
+ *
+ * **`aussi` : ce qui reste ouvert sans l'option**, posé sous la fermeture. Les
+ * dossiers d'arrosage en sont (sa réponse 5 du 21 novembre 2026) : un élément
+ * React ne s'exécute que s'il est rendu, donc rien n'est lu quand l'option est
+ * ouverte.
  */
 export default async function OuvertParLaFormule({
   fonction,
   titre,
   children,
+  aussi,
 }: {
   fonction: Fonction;
   titre: string;
   children: ReactNode;
+  aussi?: ReactNode;
 }) {
   const ctx = await getCurrentCtx();
   const abonnement = await abonnementDeLEntreprise(ctx);
@@ -38,6 +45,7 @@ export default async function OuvertParLaFormule({
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran surtitre="Paysage" titre={titre} retour={{ href: "/paysage", libelle: "Retour à Paysage" }} />
       <FonctionReservee fonction={fonction} />
+      {aussi}
     </div>
   );
 }

@@ -19,6 +19,7 @@ import {
   messagesAssistant,
   piecesImportees,
 } from "../db/schema";
+import { dossiersDuClientDans, oublierDesDossiersDans } from "./dossiers-arrosage";
 import type { Ctx } from "./context";
 import { genererJeton } from "./envois-devis";
 import { CONSERVATION_LEGALE, motifConservation } from "../retention";
@@ -670,6 +671,12 @@ export async function effacerClientDans(
     rowCount?: number;
   };
   detail.inscriptionUrssaf = rInscription?.rowCount ?? 0;
+
+  // **Ses dossiers d'arrosage sont OUBLIÉS avec lui** (migration 0193) : le nom
+  // du dossier, le lien, la photo du croquis et le PDF portent le sien. Le
+  // calcul seul reste, cinq ans, sans rien qui le désigne : la même règle que
+  // la suppression d'un dossier (`oublierDesDossiersDans`).
+  detail.dossiersArrosage = await oublierDesDossiersDans(tx, ctx.entrepriseId, await dossiersDuClientDans(tx, clientId), maintenant);
 
   const echeance = pieces.length > 0 ? pieces.map((p) => p.jusquAu).sort().at(-1) ?? null : null;
   const motif = motifConservation(pieces.length, echeance ? new Date(`${echeance}T00:00:00Z`) : null);

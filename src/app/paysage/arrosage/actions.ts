@@ -27,10 +27,10 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
  * « une fois qu'on a mis la photo et que tu as analysé ce qu'il faut, tu fais
  * apparaître un plan ».
  *
- * **Rien n'est enregistré.** Un plan d'arrosage se refait à chaque client,
- * comme un devis : il n'a pas de raison de vivre en base tant qu'il n'est pas
- * rattaché à un chantier. Le jour où il le sera, ce sera une décision, pas un
- * effet de bord.
+ * **Rien n'est enregistré ICI.** Faire le plan n'écrit rien en base : un
+ * plan s'enregistre sur son geste, « Enregistrer dans un dossier », par
+ * `../dossiers-arrosage/actions.ts` (sa décision du 21 novembre 2026,
+ * `ARCHITECTURE.md` §599), qui refait le plan avant de le figer.
  */
 
 export type EtatPlan =
@@ -249,9 +249,8 @@ function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
   // *Sa demande du 21 août : une interface pour discuter du plan.* La
   // discussion refait le plan en posant un paramètre — il lui faut donc ceux-ci,
   // au message suivant. **Rien n'est enregistré pour autant** : ils voyagent
-  // avec l'écran, comme le plan lui-même. Un plan d'arrosage se refait à chaque
-  // client ; le jour où il vivra en base, ce sera une décision, pas un effet de
-  // bord.
+  // avec l'écran, comme le plan lui-même, et n'entrent en base que sur son
+  // geste, dans un dossier (`ARCHITECTURE.md` §599).
   const parametres: ParametresPlan = {
     regardVersZone: trajet.ok ? trajet.metres : 0,
     amenee: amenee.ok ? amenee.metres : 0,

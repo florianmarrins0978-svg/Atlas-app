@@ -114,7 +114,10 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "À « Les réseaux », un plan par réseau, les autres en pâle : la zone arrosée, le matériel et sa buse avec sa portée, " +
       "« bridée à » quand la vis la réduit, et les mètres de tuyau. Plus bas, à « Les pièces des réseaux », chaque pièce à sa place sur le plan.",
     source: PLAN,
-    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"', '{m.bridee ? "bridée à" : "portée"} {virgule(m.portee)} m'],
+    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"'],
+    // La ligne du matériel s'écrit dans une règle pure depuis le 21 novembre
+    // 2026 : l'écran et le PDF du plan enregistré la lisent au même endroit.
+    ailleurs: [{ source: "src/lib/arrosage/lignes-du-reseau.ts", preuves: ['${m.bridee ? "bridée à" : "portée"} ${virgule(m.portee)} m'] }],
     lieu: true,
   },
   {

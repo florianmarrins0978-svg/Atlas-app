@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
@@ -13,6 +14,8 @@ import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import type { PlanLu as LePlanLu } from "@/lib/arrosage/plan-lu";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import Icone from "./Icones";
+import EnregistrerDansUnDossier from "./EnregistrerDansUnDossier";
+import type { Retouches } from "@/lib/arrosage/retouches";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -40,12 +43,19 @@ import Icone from "./Icones";
 export default function ArrosageClient({
   iaPrete,
   motifIA,
+  repris,
 }: {
   iaPrete: boolean;
   /** Pourquoi la lecture ne se fera pas, en français. `null` quand elle se fera. */
   motifIA: string | null;
+  /**
+   * **Un plan enregistré, repris dans l'outil** (« Reprendre dans l'outil ») :
+   * ses paramètres et ses retouches, RECALCULÉS avec le calcul d'aujourd'hui.
+   * Enregistré, il fera une version de plus (`ARCHITECTURE.md` §599).
+   */
+  repris?: { etat: Extract<EtatPlan, { etat: "lu" }>; retouches: Retouches };
 }) {
-  const [etat, agir, enCours] = useActionState<EtatPlan, FormData>(lireLeCroquis, { etat: "vide" });
+  const [etat, agir, enCours] = useActionState<EtatPlan, FormData>(lireLeCroquis, repris?.etat ?? { etat: "vide" });
   /**
    * **Les mesures n'apparaissent QUE si le piquage n'est pas au compteur.**
    *
@@ -82,7 +92,9 @@ export default function ArrosageClient({
    * haut de l'écran, et « Modifier » rouvre le piquage, le croquis et le
    * dessin. Replié, rien n'est démonté : le dessin garde ce qu'il a posé.
    */
-  const [replie, setReplie] = useState(false);
+  const [replie, setReplie] = useState(repris !== undefined);
+  // La photo du croquis, pour l'enregistrer avec le plan (sa réponse 3).
+  const champPhoto = useRef<HTMLInputElement>(null);
   // Une lecture neuve se reçoit pendant le rendu, comme React le recommande
   // pour un état qui suit une valeur reçue : un effet la rendrait en deux temps.
   const [etatVu, setEtatVu] = useState(etat);
@@ -356,6 +368,7 @@ export default function ArrosageClient({
         {/* `capture` ouvre l'appareil photo du téléphone plutôt que la pellicule :
             le croquis est sous ses yeux, il le photographie. */}
         <input
+          ref={champPhoto}
           id="croquis"
           name="croquis"
           type="file"
@@ -425,7 +438,26 @@ export default function ArrosageClient({
 
       {/* ─── Un devis déjà fait, sous le croquis (sa décision du 21 octobre 2026) ─── */}
       {/* Au départ seulement, comme sur la planche : une fois qu'il lit, dessine ou a son plan, ce n'est plus une porte. */}
-      {!dessiner && !(enCours && !parDessin) && etat.etat !== "lu" && <DepuisUnDevis />}
+      {!dessiner && !(enCours && !parDessin) && etat.etat !== "lu" && (
+        <>
+          <DepuisUnDevis />
+          {/* **« Mes dossiers », sous « J’ai déjà un devis fournisseur »** : sa
+              planche du 21 novembre 2026. Rien entre le titre et le piquage. */}
+          <section className="mx-[22px]">
+            <Link
+              href="/paysage/dossiers-arrosage"
+              data-atlas="mes-dossiers"
+              className="inline-flex min-h-[48px] items-center gap-[6px] rounded-full px-1 text-left text-[16px] font-semibold"
+              style={{ color: colors.ink }}
+            >
+              <span style={{ color: colors.or }}>
+                <Icone nom="dossier" taille={20} />
+              </span>
+              Mes dossiers
+            </Link>
+          </section>
+        </>
+      )}
 
       {etat.etat === "refus" && etat.croquis ? (
         /* **LE REFUS COMPTE AUTANT QUE LE PLAN** — sa consigne du 11 septembre
@@ -476,7 +508,16 @@ export default function ArrosageClient({
           sur le plan d'un autre ferait répondre Atlas à côté. */}
       </div>
 
-      {etat.etat === "lu" && <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} actionVisible={replie} />}
+      {etat.etat === "lu" && (
+        <PlanLu
+          key={etat.zones.map((z) => z.nom ?? z.type).join("|")}
+          etat={etat}
+          actionVisible={replie}
+          retouchesDeDepart={etat === repris?.etat ? repris.retouches : undefined}
+          lecture={planLu}
+          photo={() => (planLu ? champPhoto.current?.files?.[0] ?? null : null)}
+        />
+      )}
     </form>
   );
 }
@@ -487,7 +528,19 @@ export default function ArrosageClient({
  * même fonction. La discussion se pose APRÈS le plan, et seulement avec lui :
  * sa borne du 21 août, *« la discussion ne doit jamais créer un plan »*.
  */
-function PlanLu({ etat, actionVisible }: { etat: Extract<EtatPlan, { etat: "lu" }>; actionVisible: boolean }) {
+function PlanLu({
+  etat,
+  actionVisible,
+  retouchesDeDepart,
+  lecture,
+  photo,
+}: {
+  etat: Extract<EtatPlan, { etat: "lu" }>;
+  actionVisible: boolean;
+  retouchesDeDepart?: Retouches;
+  lecture: LePlanLu | null;
+  photo: () => File | null;
+}) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
   // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
   // et le total de la liste. Le patron seul les reçoit ; sinon, aucun prix.
@@ -513,6 +566,8 @@ function PlanLu({ etat, actionVisible }: { etat: Extract<EtatPlan, { etat: "lu" 
         surMessageGarde={(id, champs) =>
           setSesPrix((d) => d && { ...d, fournisseurs: d.fournisseurs.map((f) => (f.id === id ? { ...f, ...champs } : f)) })
         }
+        retouchesDeDepart={retouchesDeDepart}
+        apresLesReserves={(courant) => <EnregistrerDansUnDossier saisie={courant.saisie} plan={courant.plan} lecture={lecture} photo={photo} />}
       />
       <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
     </>

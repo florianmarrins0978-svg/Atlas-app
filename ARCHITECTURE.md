@@ -14736,9 +14736,10 @@ message. **Aucune persistance** : un plan d'arrosage se refait à chaque client,
 comme un devis. Le jour où il vivra en base, ce sera une décision, pas un effet
 de bord.
 
-**Cette décision a été levée par lui le 21 novembre 2026** (§599) : un plan
-s'enregistrera dans un dossier. Tant que ce n'est pas codé, ce paragraphe
-décrit toujours le code.
+**Cette décision a été levée par lui le 21 novembre 2026, et c'est codé**
+(§599) : un plan s'enregistre dans un dossier, sur son geste. L'outil, lui,
+n'écrit toujours rien tant qu'on ne le lui demande pas : les paramètres
+continuent de voyager avec l'écran.
 
 Les zones y portent un **identifiant stable**, parce que les consignes les
 désignent par lui (« passe la zone 2 en tuyères »). Le laisser au calcul le
@@ -37906,34 +37907,66 @@ Depuis §588, ce qu'il a choisi dans sa grille ne s'écrit plus sur la désignat
 
 `test-cases-reglables-db.ts` (son chêne : le nom reste « Abattage d'un chêne », ses cases portent la technique et 80 cm, la ligne vaut toujours 1 100 €), `test-migration-0192-base-habitee.ts` (cinq cas, dont la RLS qui mord sans la boucle), `test-questions-chiffrage.ts`, `test-correspondance-prestation.ts` (les noms d'avant, écrits en toutes lettres).
 
-## §599 : Le plan d'arrosage s'enregistrera dans un dossier, figé ; la forme attend ses réponses
+## §599 : Le plan d'arrosage s'enregistre dans un dossier, figé
 
 **Sa décision du 21 novembre 2026** lève « aucune persistance » (§167, « Rien
 n'est enregistré ») : *« si un artisan me reproche un réseau qui ne se lève
-pas, ni lui ni moi ne pouvons montrer ce que Cause lui a rendu »*. Il veut un
-dossier à un nom choisi, chaque plan enregistré figé avec ce qui a été saisi,
-le plan et la liste affichés, les réserves, la version du calcul et la date.
-Revoir ne recalcule jamais ; un enregistrement ne s'écrase pas ; l'outil
-reste utilisable sans dossier (§125). **Les réserves NE partent PAS dans le
-PDF** : son brief les y mettait, il les a retirées le soir même sur la
-planche (*« pas besoin de l'avoir sur le PDF »*). Elles restent sous le plan
-à l'écran (règle 3 de l'arrosage) et dans l'enregistrement figé. La phrase « Nous ne garantissons
-pas la bonne levée des arroseurs. », remise un temps à la fin du PDF, en est
-retirée aussi : sa décision du même soir.
+pas, ni lui ni moi ne pouvons montrer ce que Cause lui a rendu »*. Un dossier
+à un nom choisi ; chaque plan enregistré figé avec ce qui a été saisi, le plan
+et la liste affichés, les réserves, la version du calcul et la date. Revoir ne
+recalcule jamais ; un enregistrement ne s'écrase pas (une version de plus) ;
+l'outil reste utilisable sans dossier (§125). Planche :
+`appli/arrosage-dossiers.html` ; ses cinq réponses (son « tout coder » du même
+soir vaut oui aux cinq recommandations) : `docs/arrosage-dossiers.md`.
 
-**Rien n'est codé.** La planche `appli/arrosage-dossiers.html` et cinq
-questions (`docs/arrosage-dossiers.md`) attendent ses réponses. Trois choses
-y sont établies, parce qu'elles ne dépendent pas de ses réponses :
+**Codé le 21 novembre 2026.**
 
-| | pourquoi |
-|---|---|
-| le serveur refait le plan à l'enregistrement et compare l'empreinte de l'écran | un plan reçu tout fait du navigateur ferait de la trace ce qu'elle doit réfuter : un plan que Cause n'a jamais calculé (envoi bricolé, ou page restée ouverte sur un code ancien) |
-| la saisie enregistrée porte les `retouches` | elles ne vivent que dans l'état de `LePlanDuJardin.tsx`, hors de `ParametresPlan` : sans elles, le plan revu ne serait pas celui qu'il a vu |
-| le PDF s'archive à l'enregistrement, comme celui d'une facture | l'écran revu redessine des données figées avec le dessin du jour ; le PDF est l'image de ce jour-là, et c'est lui qui fait foi |
+| | ce qui le tient | pourquoi |
+|---|---|---|
+| deux tables, plus une file | `drizzle/0193_dossiers_d_arrosage.sql` : `dossiers_arrosage`, `plans_arrosage`, `dossiers_arrosage_a_purger`, sous `FORCE RLS` | en expansion seulement : rien d'existant ne bouge |
+| le serveur refait le plan | `enregistrerLePlanAction` : `lireLaSaisie`, `figerLePlan`, puis l'empreinte comparée à celle de l'écran | un plan reçu tout fait ferait de la trace ce qu'elle doit réfuter : un plan que Cause n'a jamais calculé |
+| l'empreinte porte sur le discret | `empreinteDuPlan` (`src/lib/arrosage/plan-enregistre.ts`) : les lignes de la liste au centième, les réseaux, les têtes | `Math.pow` ne rend pas le même dernier chiffre d'un moteur JS à l'autre : une empreinte sur les flottants refuserait des plans justes |
+| la saisie porte les `retouches` | `SaisieDuPlan` | elles ne vivent que dans `LePlanDuJardin.tsx` : sans elles, le plan revu ne serait pas celui qu'il a vu |
+| le même plan deux fois | `enregistrerPlan` : même empreinte que la dernière version, rien de neuf, et les fichiers déjà rangés partent à la purge | une version de plus qui ne diffère de rien noierait celles qui comptent |
+| revoir sans recalculer | `LePlanDuJardin` reçoit `fige` : le `PlanFige` stocké en entier (plan, dessin, postes, nourrice, groupes, réserves), le contenu qui modifie rendu `inert` | sa règle, *« revoir un plan ne le recalcule jamais »* |
+| reprendre recalcule | `/paysage/arrosage?reprendre=<dossier>/<plan>` : les paramètres et retouches d'alors, le calcul d'aujourd'hui | revoir et reprendre sont deux gestes ; enregistré de nouveau, le plan repris fait une version de plus |
+| le PDF s'archive à l'enregistrement | `composerLePdfDuPlan` (`src/server/pdf/plan-arrosage-pdf.ts`), servi tel quel par `…/[plan]/pdf` | l'écran revu redessine des données figées avec le dessin du jour ; le PDF est l'image de ce jour-là |
+| le dessin du PDF est celui de l'écran | `donnees-du-pdf.ts` (couche app) parcourt les éléments de `PlanDessine` en données simples ; `svg-vers-pdf.ts` (serveur) les trace | le serveur ne peut pas importer un écran (§4 sexies) ; un second dessin divergerait. `test-pdf-du-plan-arrosage.ts` refuse tout élément laissé de côté |
+| supprimer, c'est oublier | `oublierDesDossiersDans` : nom, lien client, photo, lecture de l'IA et PDF effacés ; le calcul gardé 5 ans, puis `purgerLesDossiersOublies` (cron de purge) | sa réponse 2 : la trace sans rien qui désigne le client. La file est exemptée de RLS (identifiants et dates seulement), comme `photos_diagnostic_a_purger` |
+| effacer un client, fermer un compte | `effacerClientDans`, `effacerCeQuiNAppartientAAucunClient` appellent le même oubli | le droit à l'effacement atteint ses dossiers sans qu'on y pense |
+| ouvert sans l'option | les écrans vivent sous `/paysage/dossiers-arrosage`, hors du `layout.tsx` de l'outil ; sous la fermeture de l'outil, `SesDossiersSansLOption` montre « Mes dossiers » | sa réponse 5 : une trace sert au moment d'un litige, souvent après avoir arrêté l'option. Seul enregistrer demande l'option (`exigerFonction`) |
+| une cadence | `verifierLimite("plan-arrosage:…", televersementFichier)` avant la photo et le PDF | chaque appel range deux fichiers ; tenu par `test-cadences-gardees.ts` |
 
-Le modèle de la table est `diagnostics` (le résultat figé, `moteur`, `modele`,
-`version_base`). `EnregistrerLaDemande.tsx`, cité par le brief, range un
-message chez un fournisseur et ne fige rien : ce n'en est pas un.
+**Les réserves NE partent PAS dans le PDF**, ni la phrase « Nous ne
+garantissons pas la bonne levée des arroseurs. » : ses deux décisions du soir
+même, sur la planche. Elles restent sous le plan à l'écran (règle 3 de
+l'arrosage) et dans l'enregistrement figé. Le PDF ne porte pas non plus ses prix
+d'achat, ni de pied de page.
+
+**Un geste sous un ancêtre `inert` ne répond plus, sans exception possible.**
+La première version rendait inerte tout le contenu du plan revu, emplacement
+« après les réserves » compris : « Reprendre dans l'outil » s'affichait et ne
+s'ouvrait pas. Seuls les blocs qui modifient sont désormais inertes, et
+`test-dossiers-arrosage-e2e.ts` touche le lien.
+
+**Un refus ne laisse aucun fichier derrière lui.** L'action range la photo et
+le PDF avant que le dépôt tranche (nom déjà pris, dossier ou client disparu) ;
+chaque refus de `enregistrerPlan` les rend donc à `fichiers_a_purger`, comme le
+même plan enregistré deux fois. Le PDF se compose avant de ranger quoi que ce
+soit : une panne de composition ne laisse rien. Trouvé à la relecture, tenu par
+`test-dossiers-arrosage-db.ts`.
+
+**La première batterie a trouvé quatre oublis, tous tenus par un contrôle
+existant** : la file de purge sans clé composite (`test-liens-dans-l-entreprise-db.ts`),
+les colonnes de fichiers non déclarées (`src/lib/objets-stockes.ts`), une
+fiche du mode d'emploi qui citait une ligne déplacée (`ailleurs`), un lien
+posé à la main vers le PDF au lieu de `BoutonTelechargerDocument`
+(`test-tous-les-pdf.ts`). Une table neuve qui porte un fichier, une file ou un
+PDF se confronte à ces quatre-là avant la batterie.
+
+**Supprimer un dossier le retire du journal de navigation**, lui et ses plans,
+comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
+dossiers » ramenait sinon sur le dossier supprimé.
 
 ## §600 : La nourrice de l'outil dessine SES photos vues du dessus, gardées dans leur sens et tournées par le dessin
 

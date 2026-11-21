@@ -22,6 +22,7 @@ import {
   type Fermeture,
 } from "@/lib/fermeture-compte";
 import { effacerChantiersSansClientDans, effacerClientDans } from "./donnees-client";
+import { oublierDesDossiersDans, tousLesDossiersDans } from "./dossiers-arrosage";
 import { logger } from "../logger";
 import { envoyerCourriel } from "../courriel";
 import { adressesDesPatronsDans } from "./membres-entreprise";
@@ -128,6 +129,7 @@ export async function retirerLaFermeture(ctx: Ctx, maintenant: Date = new Date()
  * | la liaison bancaire | l'accès à son compte en banque : plus personne ne s'en sert, et c'est un secret |
  * | les messages de l'assistant posés hors d'un chantier | ce qu'il a demandé, et qui peut nommer quelqu'un ; ceux d'un chantier sont partis avec lui |
  * | les photos de diagnostic | le fichier part, la fiche reste sans image, comme à la purge des quatre-vingt-dix jours (`purgerPhotosDiagnostic`) |
+ * | les dossiers d'arrosage | oubliés : nom, photo et PDF partent, le calcul reste cinq ans (`oublierDesDossiersDans`, migration 0193) |
  *
  * **Ce qui reste, et c'est délibéré** : les mouvements et virements de la
  * banque. Ils sont reliés aux pièces de son comptable (migration 0145, en
@@ -140,6 +142,9 @@ async function effacerCeQuiNAppartientAAucunClient(
   maintenant: Date
 ): Promise<void> {
   await effacerChantiersSansClientDans(tx, { entrepriseId }, maintenant);
+  // Les dossiers d'arrosage qu'aucun client ne porte (ceux d'un client sont
+  // partis avec lui) : oubliés, par la même règle qu'une suppression (0193).
+  await oublierDesDossiersDans(tx, entrepriseId, await tousLesDossiersDans(tx), maintenant);
   await tx.delete(liaisonsBancaires).where(eq(liaisonsBancaires.entrepriseId, entrepriseId));
   await tx
     .delete(messagesAssistant)

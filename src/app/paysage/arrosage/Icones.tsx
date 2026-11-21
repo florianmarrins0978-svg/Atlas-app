@@ -37,6 +37,9 @@ const TRACES = {
       <path d="M14 3.5v4h4M9.5 12.5h5M9.5 16h5" />
     </>
   ),
+  // Les dossiers du plan d'arrosage (planche `appli/arrosage-dossiers.html`).
+  dossier: <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.2h7a2 2 0 0 1 2 2v8.3a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" />,
+  telecharger: <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

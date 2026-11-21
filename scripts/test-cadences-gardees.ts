@@ -55,6 +55,13 @@ essai("le croquis : la cadence passe AVANT la porte des images et l'appel de vis
   cadenceAvant("src/app/paysage/arrosage/actions.ts", "croquis:", "preparerPhotoEntrante(");
 });
 
+// Un plan enregistré range une photo et un PDF composé au serveur, à chaque
+// appel (21 novembre 2026) : sans cadence, une boucle remplirait le stockage.
+essai("un plan enregistré : la cadence passe AVANT la photo et le PDF", () => {
+  cadenceAvant("src/app/paysage/dossiers-arrosage/actions.ts", "plan-arrosage:", "preparerPhotoEntrante(");
+  cadenceAvant("src/app/paysage/dossiers-arrosage/actions.ts", "plan-arrosage:", "composerLePdfDuPlan(");
+});
+
 // **Audit du 25 octobre 2026, E17** : choisir le nouveau mot de passe hachait
 // (bcrypt, le geste le plus coûteux du serveur) avant de vérifier le jeton, et
 // rien ne bornait les essais. Une adresse connue et un jeton inventé suffisaient
