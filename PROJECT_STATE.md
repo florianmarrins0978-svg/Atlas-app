@@ -4,6 +4,10 @@
 
 Sa demande du 21, reçue par deux sessions. `appli/visite-guidee-le-debut.html` (le geste en titre, bulle courte) et `appli/visite-guidee-le-debut-2.html` (l'appli à ses couleurs, la page qui arrive en haut puis glisse, la main, le surligneur). Mêmes écrans, rien dans `src/`, la visite d'aujourd'hui intacte. Safari d'iPhone non vérifié ici pour la seconde. `TODO.md` dit ce qui les sépare et ce qu'il doit trancher.
 
+## LES DOSSIERS DU PLAN D'ARROSAGE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 21 : enregistrer un plan d'arrosage dans un dossier, le revoir figé, le télécharger avec ses réserves. `appli/arrosage-dossiers.html` sur le vrai écran ; cinq questions dans `docs/arrosage-dossiers.md`. Rien n'est codé.
+
 ## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.

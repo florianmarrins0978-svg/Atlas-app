@@ -93,6 +93,12 @@ conditions de Safari ont été imitées, pas jouées. **À essayer sur ton
 téléphone** : si un appui sur le cadre doré ne fait rien, dis-le-moi, c'est là
 que ça se jouerait.
 
+## Pour la refaire
+
+Tout est dans le dépôt, dans `appli/scripts/visite-le-debut-2/` : le guide,
+ce qui l'assemble sur les quatre écrans, et le parcours au doigt dans dix cas.
+Ni serveur ni base : rien n'y demande ton accord.
+
 ## Ce que tu as à trancher
 
 1. **La première, la seconde, ou un mélange.**
