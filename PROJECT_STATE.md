@@ -1,5 +1,9 @@
 # État du projet
 
+## LES DOSSIERS DU PLAN D'ARROSAGE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 21 : enregistrer un plan d'arrosage dans un dossier, le revoir figé, le télécharger avec ses réserves. `appli/arrosage-dossiers.html` sur le vrai écran ; cinq questions dans `docs/arrosage-dossiers.md`. Rien n'est codé.
+
 ## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.
