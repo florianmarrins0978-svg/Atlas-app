@@ -1,8 +1,8 @@
 # État du projet
 
-## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), PAS ENCORE VUE PAR LUI
+## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), VUE PAR LUI, UN FILM RETOURNÉ
 
-Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun film ni prix changé, rien dans `src/`. `TODO.md` dit ce qui a été décidé sans lui.
+Sa demande du 20 au soir. `appli/vente/outils.html`, même adresse : une histoire par outil (la scène, puis ses films), les trois scènes qui ne restent plus vides quand on descend, « La fiche, à lire » réparée sur ordinateur. Aucun prix changé, rien dans `src/`. **Sa demande du 21 en la voyant** : le film des turbines montre maintenant le réseau entier, une pièce touchée, supprimée, restée sur le plan grisée et barrée, et la pièce se voit de près sous le film. **Puis trois demandes sur le diagnostic, le même jour** : la licence de la photo n'est plus sous le téléphone (son crédit est dans les mentions légales, la licence l'exige), les captures figées sont parties, et un film « Vos dossiers. » montre un dossier créé pour y ranger la maladie, tourné sur sa planche du 20 : les dossiers ne sont pas codés. Il n'a pas encore vu cette version. `TODO.md` dit ce qui a été décidé sans lui et ce qui lui revient.
 
 ## LA MAIN D'ŒUVRE DE SON ÉQUIPE NE COMPTE PLUS DEUX FOIS : SUR `main` (21 novembre 2026)
 

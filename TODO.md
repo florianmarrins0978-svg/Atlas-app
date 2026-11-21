@@ -806,8 +806,9 @@ retournent alors.
 du 20 au soir, devant la page : *« J'aimerais que tu améliores ce qu'il a
 fait [...] dans le même esprit que ce qu'on a fait sur notre site
 internet. »* La page est la même adresse, refaite en place ; celle d'avant
-est dans l'historique (`git show f65c7fa:appli/vente/outils.html`). **Il ne
-l'a pas encore vue.** Ce qui a changé est dit en tête de la page, avec ses
+est dans l'historique (`git show f65c7fa:appli/vente/outils.html`). **Il l'a
+vue le 21 sur son téléphone**, et n'a demandé qu'une chose : le film du
+réseau (plus bas). Ce qui a changé est dit en tête de la page, avec ses
 raisons ; en trois lignes :
 - une histoire par outil, dans une seule bande : son nom, sa phrase, la
   scène, puis ses films (plus de « de bout en bout » en second titre), et
@@ -848,6 +849,62 @@ barre dès 960 px. **Ce qu'il a laissé à sa décision** : la scène du
 diagnostic est la seule des trois où rien n'est « porté » (la photo attend
 seule une seconde et demie, puis la fiche arrive en fondu) ; à ne reprendre
 que s'il le demande, et sans rien dessiner sur l'écran.
+
+**LE RÉSEAU ENTIER, LE 21 NOVEMBRE.** Sa demande devant le film des
+turbines : *« ça serait bien de pouvoir voir l'ensemble du réseau avec les
+pièces et montrer qu'on peut cliquer dessus, en supprimer et après on la voit
+griser et barrée »*. Le film est retourné (`film-outils.cjs --film
+outils-turbines`) : le plan du réseau 1 entier, une turbine touchée,
+supprimée, restée sur le plan grisée et barrée, le compte qui passe de 8 à 7.
+La pièce supprimée se voit aussi de près, à côté de sa voisine gardée
+(`outils-piece-supprimee.jpg`, prise par `--images` à six pixels pour un),
+sous le film sur téléphone et sous le titre sur ordinateur. Le bloc
+s'appelle « Le réseau entier. ». **Il n'a pas encore vu cette version.**
+**Ce que le film ne montre plus** : changer ou supprimer « les huit d'un
+coup » (la feuille « Combien ») ; à remettre s'il le redemande. **À savoir
+avant de retourner ce film** : la barre d'une pièce supprimée est écrite
+rouge (`colors.alert`, `Vignette.tsx`, comme sur sa planche
+`appli/arrosage-plan.html`) et se peint grise des deux côtés, parce qu'elle
+est dans le cadre que `grayscale(1)` grise. Le film et le gros plan montrent
+ce que l'appli peint.
+
+**LE DIAGNOSTIC, LE 21 NOVEMBRE : trois demandes, et deux choses qui lui
+reviennent.** Devant la page, sur son téléphone : *« Supprime-moi la licence
+de la photo, la CC BY »*, *« Supprime-moi les photos figées de la page
+diagnostic »*, et *« ce qui serait bien, c'est de pouvoir montrer à l'écran
+qu'on puisse créer des dossiers pour enregistrer les maladies »*. Fait le jour
+même (`CHANGELOG.md`). **Il n'a pas encore vu cette version.**
+- **La licence.** La photo de la feuille (Manfred Mielke, USDA Forest
+  Service, Bugwood.org, via Wikimedia Commons) est sous licence CC BY
+  3.0 US : on n'a le droit de la montrer qu'en citant son auteur. La ligne
+  a donc quitté la page pour les mentions légales du site
+  (`appli/vente/mentions-legales-cause.html`, « Crédits »), où mène le pied
+  de page ; `appli/tests/e2e.js` vérifie les deux. **À lui** : s'il ne veut
+  ce crédit nulle part, il faut une photo à lui (la scène du chapitre et le
+  film « Une photo. » la montrent), et le film se retourne. Le lien vers la
+  licence (creativecommons.org) n'a pas pu être ouvert depuis ce poste, son
+  mandataire le refuse ; celui de la photo répond.
+- **Les dossiers ne sont pas codés.** Le film « Vos dossiers. » est tourné
+  sur sa planche du 20 novembre (`appli/soignee/diagnostic-dossiers.html`,
+  posée par une autre session, qui n'en a rien écrit ici) ; sa réponse à
+  cette planche n'est écrite nulle part, et ses deux questions restent
+  ouvertes (le dossier d'un chantier se montre-t-il aussi sur la fiche du
+  chantier ? la note se dicte-t-elle ?). **À lui** : dire s'il la valide,
+  pour qu'elle se code ; sinon le site promet un écran qui n'existe pas.
+- **Avant de retourner ce film** (`film-outils.cjs --film outils-dossiers`) :
+  la planche est posée sur la fiche de l'oïdium du chêne, et il veut le
+  peuplier seul en exemple. Le film commence donc la feuille ouverte, vide la
+  note de la planche, et finit en bas de la fiche, cadré entre la dernière
+  ligne du paragraphe sur l'oïdium et les libellés de la barre du bas (les
+  coins arrondis du téléphone du site les rognaient). Le tournage refuse une
+  prise qui sortirait de ces deux bornes. Si la planche est reposée sur le
+  peuplier, tout cela se simplifie : le film peut partir du bouton « Ranger
+  dans un dossier » et montrer « Mes dossiers ».
+- **Vu en préparant le gros plan, pour qui reprendra l'outil** : une capture
+  plus fine demandée au navigateur par une seconde session de pilotage
+  ramène la finesse de l'écran à 1 jusqu'à la capture suivante. Le gros plan
+  se prend donc sur un plateau à part, peint deux fois plus fin
+  (`grosPlan`, `--images`).
 
 **Vu en livrant, hors de ce lot : la vérification du site en ligne tombe
 sur un seul 503 de passage.** Le 21 novembre, la publication de la page a
