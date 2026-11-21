@@ -1994,7 +1994,7 @@ html,body{overflow-x:clip}
   };
   const etape = () => (libre ? C.etapes.at(-1) : C.etapes[rang]);
   const guidee = () => !libre && !enRubrique && !essai;
-  const cibleCourante = () => (libre || enRubrique ? null : essai ? (essai.phase === "feuille" ? essai.x.applique : null) : etape().cible);
+  const cibleCourante = () => (libre || enRubrique ? null : essai ? (essai.phase === "feuille" ? essai.x.applique : essai.retour) : etape().cible);
   const montre = () => cibleDe(cibleCourante()) || (guidee() ? cibleDe(etape().regard) : null);
 
   const plie = () => guide.classList.contains("pliee");
@@ -2008,7 +2008,7 @@ html,body{overflow-x:clip}
     if (enRubrique) { titre = courant.querySelector("h1")?.textContent || "Réglages"; phrase = "Revenez aux Réglages avec la flèche du haut, et ouvrez la suivante."; aDroite = "quitter"; aGauche = "recommencer"; }
     else if (libre) { titre = e.titre; phrase = e.dit; aDroite = "quitter"; aGauche = "recommencer"; }
     else if (essai?.phase === "feuille") { titre = essai.x.geste; phrase = message || "Sa vraie feuille, telle que l'appli l'ouvre."; aDroite = "passer"; }
-    else if (essai) { titre = essai.x.titre; phrase = essai.x.fait; aDroite = "suivant"; }
+    else if (essai) { titre = essai.retour ? (etape().essais === "facture" ? "Revenez à la facture." : "Revenez au devis.") : "Un autre bouton, ou Suivant."; phrase = essai.x.fait; aDroite = "suivant"; }
     else { titre = e.geste || e.titre; phrase = e.dit; aDroite = e.cible ? "passer" : "suivant"; }
     $("h2").textContent = titre;
     $("p").textContent = phrase;
@@ -2113,7 +2113,7 @@ html,body{overflow-x:clip}
   const disposer = () => {
     const c = montre(), v = guidee() ? cibleDe(etape().voir) : null;
     // Les boutons à essayer doivent se voir, hors du guide, comme une cible.
-    const ouvreurs = guidee() && etape().essais ? C.essais[etape().essais].map((x) => cibleDe(x.ouvre)).filter(Boolean) : [];
+    const ouvreurs = (guidee() || essai?.phase === "pose") && C.etapes[rang].essais ? C.essais[C.etapes[rang].essais].map((x) => cibleDe(x.ouvre)).filter(Boolean) : [];
     // Sans « cursor: pointer », Safari n'envoie aucun clic pour un appui hors d'un bouton.
     [c, ...ouvreurs].forEach((o) => o && (o.style.cursor = "pointer"));
     // Une feuille monte du bas de l'écran : le guide se pose en haut, sur ce
@@ -2187,10 +2187,15 @@ html,body{overflow-x:clip}
     return true;
   };
   const essayer = (x, phase) => {
-    essai = { x, phase }; reserve = 0;
+    essai = { x, phase, retour: null }; reserve = 0;
     montrer(phase === "feuille" ? x.feuille : x.pose);
-    // Une feuille s'ouvre avec le guide replié, comme les feuilles à remplir.
-    guide.classList.toggle("pliee", phase === "feuille");
+    // Un écran posé sans autre bouton à essayer (l'aperçu du PDF) : sa flèche
+    // ramène à l'étape, où les autres attendent.
+    if (phase === "pose" && !C.essais[C.etapes[rang].essais].some((y) => y !== x && cibleDe(y.ouvre))) essai.retour = "[data-geste-retour]";
+    // Pendant les essais, le guide reste replié : la feuille, ce qui vient
+    // d'être posé et les autres boutons gardent l'écran (à 320 points, « Ajouter
+    // un acompte » tombait sous le guide déplié). Sa ligne garde le geste, et Suivant.
+    guide.classList.add("pliee");
     dire(); doigt.style.opacity = 0;
     requestAnimationFrame(() => requestAnimationFrame(disposer));
   };
@@ -2251,7 +2256,22 @@ html,body{overflow-x:clip}
       if (el) { dire("Dans l'appli, ce choix change le montant. Ici, touchez le bouton du bas."); secouer(); }
       return;
     }
-    if (essai?.phase === "pose") { if (el) { ev.preventDefault(); secouer(); } return; }
+    // Une fois un essai posé, les autres boutons s'essaient tout de suite, sans
+    // repasser par Retour (sa demande du 21 au soir) ; quand on en a assez,
+    // Suivant fait avancer la visite.
+    if (essai?.phase === "pose") {
+      if (!el) return;
+      ev.preventDefault();
+      const y = C.essais[C.etapes[rang].essais].find((y) => touche(y.ouvre));
+      // Le même bouton, une seconde fois : un interrupteur se rabat (la facture
+      // n'est plus acquittée) ; un ajout ne s'ajoute pas deux fois ici.
+      if (y === essai.x && !y.feuille) { if (el.closest('[role="switch"]')) finirEssai(); else secouer(); return; }
+      if (y) { essayer(y, y.feuille ? "feuille" : "pose"); return; }
+      // Ce qui ramène, dans l'écran lui-même (sa flèche, « Revenir à la facture »), ramène à l'étape.
+      if (el.closest("[data-geste-retour]") || /^(Revenir|Retour|Annuler|Fermer)/.test((el.getAttribute("aria-label") || el.textContent || "").trim())) { finirEssai(); return; }
+      secouer();
+      return;
+    }
     if (C.etapes[rang].essais && el) {
       const x = C.essais[C.etapes[rang].essais].find((x) => touche(x.ouvre));
       if (x) { ev.preventDefault(); essayer(x, x.feuille ? "feuille" : "pose"); return; }
