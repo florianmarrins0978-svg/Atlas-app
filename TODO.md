@@ -24,58 +24,56 @@ parcouru dans un navigateur sur la base de démonstration. Batterie jouée le
 20 novembre 2026 : 216 sur 217, le rouge corrigé et rejoué vert (612 sur
 612). Ce qui suit est la planche telle qu'elle a été posée.
 
-## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, PROPOSÉ (21 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : LE DÉBUT DE LA VISITE GUIDÉE, DEUX PROPOSITIONS (21 novembre 2026)
 
 Sa demande, devant la visite : *« propose une version améliorée juste pour les
 4 premières étapes seulement, arrête-toi avant d'entrer dans le devis, au
-client »*.
+client »*. **Deux sessions l'ont reçue et y ont répondu chacune**, sans le
+savoir : la seconde ne l'a vu qu'en fusionnant `main`. Les deux planches
+gardent les quatre mêmes écrans figés et ne touchent ni `src/` ni
+`appli/visite-guidee.html`.
 
-**La planche : `appli/visite-guidee-debut.html`.** Les quatre premiers écrans de
-la visite (l'accueil, Vos clients, la fiche de Mme Costa, ses factures),
-recopiés tels quels, et un guide refait. Rien dans `src/`, et
-`appli/visite-guidee.html` n'est pas touchée. Retour : `docs/visite-guidee.md`.
+| | `appli/visite-guidee-le-debut.html` | `appli/visite-guidee-le-debut-2.html` |
+|---|---|---|
+| Retour | `docs/visite-guidee-le-debut.md` | `docs/visite-guidee-le-debut-2.md` |
+| L'appli autour de la cible | grisée, comme aujourd'hui | à ses couleurs |
+| La bulle | le geste en titre, la phrase dessous, 116 points (180 à la dernière étape) | la phrase, puis le geste en or, 151 points (99 à la dernière) |
+| L'arrivée sur un écran | la page est posée sur la cible | la page arrive en haut, puis glisse jusqu'à la cible |
+| Toucher à côté | la bulle tremble, le cadre se rappelle | une main revient montrer où toucher |
+| Ce qu'on regarde sans le toucher | la ligne de la facture éclairée | « Ouverte le 21/11 » surligné |
+| Sortir | pas avant la fin, comme aujourd'hui | une croix à chaque étape |
 
-Ce que le guide change : la page arrive en haut puis glisse jusqu'au geste ; la
-bulle tient en une phrase et un geste, posée sur la barre du bas ; l'appli n'est
-plus grisée ; ce qu'on regarde sans le toucher est surligné ; une main montre où
-toucher et revient quand on touche à côté, au lieu d'une bulle qui tremble ; le
-geste se lit au doigt et non au clic, que Safari n'envoie pas hors d'un bouton.
+**À trancher par lui :** l'une, l'autre, ou un mélange (par exemple la bulle
+courte de la première avec la main et les couleurs de la seconde). **Tant
+qu'il n'a pas choisi, aucune des deux ne se porte sur la visite entière, et
+aucune session ne retouche la planche de l'autre.**
 
-**À trancher par lui :** cette direction pour toute la visite ; la main ou
-l'anneau seul ; les deux temps (regarder, puis toucher) là où ce qu'on regarde
-n'est pas ce qu'on touche.
+**Pas vérifié pour la seconde : Safari sur son iPhone.** Ce poste n'a que
+Chromium ; dix parcours y passent, dont un qui imite Safari (aucun clic hors
+des boutons). Elle lit le doigt (`pointerdown` puis `pointerup`), parce que ses
+écrans figés ne répondent plus eux-mêmes.
 
-**Pas vérifié : Safari sur son iPhone.** Ce poste n'a que Chromium ; dix
-parcours y passent, dont un qui imite Safari (aucun clic hors des boutons).
-
-**Si la direction est retenue, restent à porter sur la visite entière :**
+**Si la seconde est retenue, restent à porter sur la visite entière :**
 l'anneau rond pour un bouton rond (sa remarque du 20, `formeDe`), les essais
 libres du devis et de la facture, les Réglages libres, la bulle retirée pendant
 que les champs s'écrivent, et la bulle en haut quand la cible est collée au bas
 de l'écran.
 
-## ⚠️ LE SCRIPT QUI REFAIT LA VISITE GUIDÉE N'EST PAS DANS LE DÉPÔT (vu le 21 novembre 2026)
+## ⚠️ VISITE GUIDÉE : CE QUI RESTE À RÉPARER DANS SES ÉCRANS FIGÉS (vu le 21 novembre 2026)
 
-`docs/visite-guidee.md`, `CHANGELOG.md` et l'entrée ci-dessous disaient que
-`scripts/planche-figee/visite-guidee/tout.sh` rejoue tout le parcours. **Ce
-dossier n'a jamais été enregistré** : ni `tout.sh`, ni `histoire.mjs`, ni
-`parcourir-visite.mjs` ne sont sur `main`, ni sur `claude/sleepy-sagan-gq6c0x`,
-la branche de la session qui a fait la visite. La planche est là ; ce qui la
-refait ne l'est pas. `verifier:memoire` ne l'a pas vu : il ne lit ni les `.sh`
-ni un nom de fichier cité sans son dossier.
-
-**Le plus court :** si cette session est encore ouverte, lui faire enregistrer
-le dossier. Sinon le réécrire (rejouer le parcours sur une base de
-démonstration neuve, figer chaque écran avec `scripts/planche-figee/figer.mjs`,
-assembler), donc sur son « oui » pour la base.
-
-**Vu au passage dans les écrans figés de la visite, non corrigé là-bas :** le
-trait d'or sous l'onglet ouvert de la fiche d'un client n'est juste qu'à
-390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un ordinateur),
-parce que sa place a été figée avec l'écran. La proposition du début le replace
-par la règle de l'appli (`recalerLesOnglets`). Et les chantiers de l'accueil
-sont datés de juillet quand l'histoire de Mme Costa est en novembre : cela
-demande de rejouer la base.
+- **Le script qui la refait manque** (`scripts/planche-figee/visite-guidee/`,
+  jamais enregistré : l'entrée ci-dessous le dit). **Le plus court** : si la
+  session qui a fait la visite (`claude/sleepy-sagan-gq6c0x`) est encore
+  ouverte, lui faire enregistrer ce dossier. Sinon le réécrire, sur une base de
+  démonstration neuve, donc sur son « oui ». `verifier:memoire` ne pouvait pas
+  le voir : il ne lit ni les `.sh` ni un nom de fichier cité sans son dossier.
+- **Le trait d'or sous l'onglet ouvert** de la fiche d'un client n'est juste
+  qu'à 390 points de large (15 points d'écart à 360, 12 à 414, 141 sur un
+  ordinateur) : sa place a été figée avec l'écran. La seconde proposition du
+  début le replace par la règle de l'appli (`recalerLesOnglets`) ; la visite
+  entière et la première proposition le portent encore.
+- **Les chantiers de l'accueil sont datés de juillet** quand l'histoire de
+  Mme Costa est en novembre. Cela demande de rejouer la base.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA VISITE GUIDÉE DU SITE (20 novembre 2026)
 
@@ -121,9 +119,20 @@ tranche de fiction de l'ARCEP (06 39 98, 02 61 91), domaine réservé
 
 **La planche : `appli/visite-guidee.html`**, faite (49 étapes, puis les
 dix-neuf rubriques des Réglages libres). Chaque écran est le vrai écran de
-l'appli bâtie, joué pour de vrai sur la base de démonstration. **Corrigé le
-21 novembre : le script qui refaisait tout (`tout.sh`) n'a jamais été
-enregistré, voir l'entrée au-dessus.** Retour : `docs/visite-guidee.md`.
+l'appli bâtie, joué pour de vrai sur la base de démonstration
+(`scripts/planche-figee/visite-guidee/tout.sh` refait tout, de la dictée au
+dossier du comptable). Retour : `docs/visite-guidee.md`. **Corrigé le
+21 novembre : ce dossier n'a jamais été commité** (ni `tout.sh`, ni
+`histoire.mjs`, ni `parcourir-visite.mjs`) ; refaire la visite demande de
+réécrire son parcours.
+
+**⏳ Le début revu, en attente de son choix (21 novembre)** :
+`appli/visite-guidee-le-debut.html`, les quatre premières étapes jusqu'aux
+factures de Costa, sur ses mêmes écrans figés. Retour :
+`docs/visite-guidee-le-debut.md`. S'il la retient, la même bulle passe sur
+les 74 étapes de `appli/visite-guidee.html`. **Une seconde proposition existe
+pour la même demande** (`appli/visite-guidee-le-debut-2.html`) : l'entrée « DEUX
+PROPOSITIONS » plus haut dit ce qui les sépare.
 
 **Ce qui a été fait autrement que sa liste, et pourquoi :**
 - **le client accepte le devis** (sa page, la date, la signature) entre l'envoi
@@ -883,6 +892,32 @@ haut). Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
 la carte qui s'écrit (un masque posé sur la carte entière, plus seulement sur
 l'image) et les téléphones des films qui se tournent avec un film dedans (la
 mécanique de Dictez dans `cause-2.html`).
+
+**Relue à froid le 21, et retouchée** (un second regard, sur des captures de
+la page finie ; ses constats sont dits en tête de la page) : les captures « à
+lire » l'une sous l'autre sur téléphone, le téléphone du client dégagé de
+celui de l'artisan, la carte du réseau 2 qui attend celle du réseau 1 sur
+ordinateur, la nourrice sous son titre entre 960 et 1179 px, les liens de la
+barre dès 960 px. **Ce qu'il a laissé à sa décision** : la scène du
+diagnostic est la seule des trois où rien n'est « porté » (la photo attend
+seule une seconde et demie, puis la fiche arrive en fondu) ; à ne reprendre
+que s'il le demande, et sans rien dessiner sur l'écran.
+
+**Vu en livrant, hors de ce lot : la vérification du site en ligne tombe
+sur un seul 503 de passage.** Le 21 novembre, la publication de la page a
+réussi (contrôles des planches verts, déploiement vert), puis l'étape
+« Vérifier que chaque écran est servi » de `.github/workflows/pages.yml` a
+reçu un 503 de GitHub Pages sur `main-d-oeuvre-repartie.html`, une planche
+sans rapport, qui répondait 200 trois fois de suite une minute plus tard.
+La publication s'affiche alors en rouge alors que le site est en ligne, et
+les deux étapes suivantes (la racine, les contrôles contre le site en
+ligne) ne se jouent pas. Le message accuse une planche qui va bien.
+**À faire, à part** (outillage, niveau 2, donc sur son « oui ») : redemander
+deux ou trois fois une adresse qui répond 5xx avant de la dire manquante, et
+garder le refus net sur un 404. **En attendant** : devant une publication
+rouge à cette étape, relire le journal (un 5xx isolé se rejoue avec
+« Re-run failed jobs »), et vérifier l'adresse elle-même avant de conclure
+que la page n'est pas en ligne.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 

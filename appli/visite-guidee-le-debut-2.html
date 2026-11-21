@@ -1,7 +1,7 @@
 <!doctype html><html lang="fr" style="--atlas-barre: 48px;"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f3ee">
-<title>Visite de Cause, le début proposé</title>
+<title>Visite de Cause, le début, seconde proposition</title>
 <style>@layer properties {
   @supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) {
   *, ::before, ::after, ::backdrop { --tw-translate-x: 0; --tw-translate-y: 0; --tw-translate-z: 0; --tw-rotate-x: initial; --tw-rotate-y: initial; --tw-rotate-z: initial; --tw-skew-x: initial; --tw-skew-y: initial; --tw-scroll-snap-strictness: proximity; --tw-space-y-reverse: 0; --tw-space-x-reverse: 0; --tw-border-style: solid; --tw-leading: initial; --tw-font-weight: initial; --tw-tracking: initial; --tw-ordinal: initial; --tw-slashed-zero: initial; --tw-numeric-figure: initial; --tw-numeric-spacing: initial; --tw-numeric-fraction: initial; --tw-shadow: 0 0 #0000; --tw-shadow-color: initial; --tw-shadow-alpha: 100%; --tw-inset-shadow: 0 0 #0000; --tw-inset-shadow-color: initial; --tw-inset-shadow-alpha: 100%; --tw-ring-color: initial; --tw-ring-shadow: 0 0 #0000; --tw-inset-ring-color: initial; --tw-inset-ring-shadow: 0 0 #0000; --tw-ring-inset: initial; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-offset-shadow: 0 0 #0000; --tw-outline-style: solid; --tw-blur: initial; --tw-brightness: initial; --tw-contrast: initial; --tw-grayscale: initial; --tw-hue-rotate: initial; --tw-invert: initial; --tw-opacity: initial; --tw-saturate: initial; --tw-sepia: initial; --tw-drop-shadow: initial; --tw-drop-shadow-color: initial; --tw-drop-shadow-alpha: 100%; --tw-drop-shadow-size: initial; --tw-backdrop-blur: initial; --tw-backdrop-brightness: initial; --tw-backdrop-contrast: initial; --tw-backdrop-grayscale: initial; --tw-backdrop-hue-rotate: initial; --tw-backdrop-invert: initial; --tw-backdrop-opacity: initial; --tw-backdrop-saturate: initial; --tw-backdrop-sepia: initial; --tw-duration: initial; --tw-ease: initial; --tw-content: ""; --tw-scale-x: 1; --tw-scale-y: 1; --tw-scale-z: 1; }
@@ -1749,6 +1749,9 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu { padding-bottom: 0px; }
 </style><style>
 /*
   LE GUIDE DE LA VISITE, PROPOSÉ SUR LES QUATRE PREMIÈRES ÉTAPES.
+  SECONDE PROPOSITION : une autre session a répondu à la même demande dans
+  `visite-guidee-le-debut.html`. Les deux se comparent ; aucune ne remplace
+  l'autre tant qu'il n'a pas choisi.
 
   Sa demande du 21 novembre 2026 : « propose une version améliorée juste pour
   les 4 premières étapes, arrête-toi avant d'entrer dans le devis, au client ».
@@ -2000,6 +2003,7 @@ html.g-sur-cible, html.g-sur-cible body { cursor: pointer; }
   <h1 id="g-titre-fin">La proposition s’arrête ici</h1>
   <p>Avant le devis, comme demandé. La suite reste celle d’aujourd’hui.</p>
   <button type="button" class="g-oui" data-va="recommencer">Recommencer</button>
+  <a class="g-autre" href="visite-guidee-le-debut.html">Voir l’autre proposition</a>
   <a class="g-autre" href="visite-guidee.html">Voir la visite d’aujourd’hui</a>
 </div></div>
 <script>
@@ -2023,7 +2027,8 @@ html.g-sur-cible, html.g-sur-cible body { cursor: pointer; }
     {
       ecran: "02-clients",
       dit: "Tous vos clients, et ce qu’ils vous doivent.",
-      geste: "Touchez Mme Costa.",
+      // La liste écrit « Costa » : on fait toucher le mot qui est à l'écran.
+      geste: "Touchez Costa.",
       cible: (e) =>
         [...e.querySelectorAll('a[href^="/clients/"]')].find(
           (a) => a.querySelector('[data-atlas="nom-client"]')?.textContent.trim() === "Costa"
