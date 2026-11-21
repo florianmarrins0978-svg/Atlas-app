@@ -116,6 +116,10 @@ de l'écran.
 
 ## ⚠️ VISITE GUIDÉE : CE QUI RESTE À RÉPARER DANS SES ÉCRANS FIGÉS (vu le 21 novembre 2026)
 
+- **Ce qui la VÉRIFIE existe depuis le 21 au soir** :
+  `appli/scripts/visite-guidee/parcourir.mjs` (la visite au doigt à quatre
+  largeurs, les essais enchaînés, les boutons muets, le guide chronométré à
+  chaque étape). À jouer après toute retouche de la visite.
 - **Le script qui la refait manque** (`scripts/planche-figee/visite-guidee/`,
   jamais enregistré : l'entrée ci-dessous le dit). **Le plus court** : si la
   session qui a fait la visite (`claude/sleepy-sagan-gq6c0x`) est encore

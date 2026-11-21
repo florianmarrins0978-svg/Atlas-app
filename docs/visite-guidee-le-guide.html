@@ -197,6 +197,16 @@
 <p>Sur ton écran, les boutons du devis se touchent sans défiler. Sur un téléphone plus petit (375 ou 320 points), « Ajouter un acompte » demande de faire défiler un peu : il est sous la barre fixe « Choisir la date » de l'appli.</p>
 <p><strong>Ce qui ne se cumule pas, et c'est une limite des écrans figés :</strong> chaque essai repart du devis d'origine. Une remise puis un acompte montrent l'acompte seul, sans la remise. Les cumuler demanderait de figer chaque combinaison.</p>
 <p>Vérifié ici : les cinq essais du devis et les trois de la facture enchaînés au doigt sans Retour, à 320, 390, 1024 et 1280 points ; les 233 boutons des écrans d'essai touchés un par un, aucun muet.</p>
+<h2 id="ta-remarque-suivante---on-reste-sur-la-page-plusieurs-secondes-">Ta remarque suivante : « on reste sur la page plusieurs secondes »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Trouvé, et c'était la seule étape sur 75 :</strong> « Un particulier », où la fiche du client se remplit toute seule. Le guide s'y retirait le temps que les quatre champs s'écrivent lettre à lettre (72 lettres, à 38 millisecondes chacune, plus une demi-seconde) : <strong>3,5 secondes sans rien à lire ni à toucher.</strong></p>
+<p><strong>Ce qui a été fait :</strong></p>
+<ul>
+<li>les champs s'écrivent en moins d'une seconde ;</li>
+<li>le guide ne se retire plus : il reste replié en bas, avec le geste, loin des champs qui s'écrivent en haut (déplié, il les cachait : ta capture du 20 novembre). Il se déplie, le doigt sur le micro, une fois tout écrit.</li>
+</ul>
+<p><strong>À vérifier sur ton téléphone :</strong> tu as écrit « après envoyer le devis ». J'ai chronométré l'étape qui suit « Envoyer le devis » : le guide y est là en un sixième de seconde, même processeur ralenti. Si l'attente que tu as vue est bien à cet endroit et pas sur la fiche du client, dis-le-moi : c'est alors propre à Safari, que ce poste ne sait pas jouer.</p>
+<p><strong>Ce qui le tient désormais :</strong> <code>appli/scripts/visite-guidee/parcourir.mjs</code> chronomètre chaque étape, processeur ralenti quatre fois : il a rougi sur l'ancienne visite (3 546 ms) et passe au vert sur la nouvelle.</p>
 <h2 id="des-informations-cachées-trouvées-en-route">Des informations cachées, trouvées en route</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

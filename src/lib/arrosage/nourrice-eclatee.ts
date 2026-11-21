@@ -79,8 +79,8 @@ export const COLONNE: Record<string, FormeColonne> = {
   mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 25.6 },
   "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 25.6, src: "mamelon" },
   // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
-  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 36.4 },
-  union: { a: [0, 0.4929], b: [1, 0.4999], L: 63.1 },
+  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 42 },
+  union: { a: [0, 0.4929], b: [1, 0.4999], L: 69.5 },
   // À plat, sa photo du 32 x 1" : le filetage à gauche, l'écrou blanc à droite. Le PEHD, le
   // mamelon 1" et le régulateur gardent leur photo d'avant.
   "raccord-male25": { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },

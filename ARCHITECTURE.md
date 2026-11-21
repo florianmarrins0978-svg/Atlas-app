@@ -38016,7 +38016,10 @@ photos (le filetage du té : 43 px à 3x, contre 38 pour le tube de la
 clarinette). Le té passe à h 47 (son filetage à l'épaisseur du tube), le coude
 FF à h 46 (l'allure du coude de gauche). Un écrou ne suffit pas à mettre deux
 photos à la même échelle quand l'une est prise de plus près : c'est l'œil sur
-le dessin entier qui tranche, et c'est le sien.
+le dessin entier qui tranche, et c'est le sien. La remarque suivante l'a
+confirmé dans l'autre sens : les unions et la vanne 3/4" lui paraissaient plus
+petites, alors que les écrous des unions mesuraient ceux de la clarinette ;
+l'union passe de L 63,1 à 69,5, la vanne de 36,4 à 42.
 
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
