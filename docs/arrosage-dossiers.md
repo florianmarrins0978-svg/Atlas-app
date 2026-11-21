@@ -75,7 +75,31 @@ coupait en fin de ligne.
 
 ### La batterie
 
-BATTERIE_A_REMPLIR
+Deux batteries entières, le 21 novembre au soir.
+
+| | première | seconde |
+|---|---|---|
+| types, lint, construction, mémoire du dépôt, connexion derrière un proxy | vert | vert |
+| suites base | **613 sur 617** | **617 sur 617** |
+| suites navigateur | 218 sur 218 | **218 sur 218** |
+
+**Les quatre rouges de la première étaient de mon lot, et vrais :**
+
+1. la file qui efface un dossier oublié au bout de 5 ans ne liait pas le
+   dossier à son entreprise. La base doit refuser d'elle-même une file qui
+   nommerait le dossier d'une autre entreprise ;
+2. les deux colonnes qui portent la photo et le PDF n'étaient pas déclarées
+   au contrôle qui compare la base et le stockage des fichiers ;
+3. une fiche du mode d'emploi de l'assistant citait une ligne de code que
+   j'avais déplacée : l'assistant aurait enseigné un geste qu'il ne
+   retrouvait plus ;
+4. « Télécharger le PDF » était un simple lien : sur iPhone, le PDF se serait
+   ouvert au lieu de se ranger. Il passe maintenant par le bouton commun des
+   devis et des factures, et la suite navigateur fait l'appui et reçoit le
+   fichier.
+
+La suite des dossiers, qui fait ton geste du dessin au dossier supprimé :
+8 cas sur 8.
 
 ### Ce qui reste, et qui le tranche
 

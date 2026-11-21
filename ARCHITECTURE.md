@@ -37956,6 +37956,14 @@ même plan enregistré deux fois. Le PDF se compose avant de ranger quoi que ce
 soit : une panne de composition ne laisse rien. Trouvé à la relecture, tenu par
 `test-dossiers-arrosage-db.ts`.
 
+**La première batterie a trouvé quatre oublis, tous tenus par un contrôle
+existant** : la file de purge sans clé composite (`test-liens-dans-l-entreprise-db.ts`),
+les colonnes de fichiers non déclarées (`src/lib/objets-stockes.ts`), une
+fiche du mode d'emploi qui citait une ligne déplacée (`ailleurs`), un lien
+posé à la main vers le PDF au lieu de `BoutonTelechargerDocument`
+(`test-tous-les-pdf.ts`). Une table neuve qui porte un fichier, une file ou un
+PDF se confronte à ces quatre-là avant la batterie.
+
 **Supprimer un dossier le retire du journal de navigation**, lui et ses plans,
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.
