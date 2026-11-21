@@ -111,8 +111,24 @@ libres du devis et de la facture, les Réglages libres, la bulle retirée pendan
 que les champs s'écrivent, et la bulle en haut quand la cible est collée au bas
 de l'écran.
 
+## ⚠️ LA PUBLICATION DES PLANCHES ÉCHOUE PAR INTERMITTENCE (vu trois fois le 21 novembre 2026)
+
+`pages.yml`, job « Déploiement » : l'artefact `github-pages` est bien envoyé
+(110 Mo, « successfully finalized »), puis `deploy-pages` le cherche une
+demi-seconde plus tard et répond « Found 0 artifact(s) » (runs 1034, 1035,
+1040). **Ce n'est pas le code du lot** : les tests sont verts et rien n'est
+publié. Remède du moment : relancer le job échoué, ou attendre la poussée
+suivante, qui republie tout `main`. **La racine probable**, non vérifiée :
+envoi et déploiement dans le même job, alors que GitHub les sépare (un job qui
+envoie, un job `needs:` qui déploie). Toucher `pages.yml` est de l'outillage,
+niveau 2.
+
 ## ⚠️ VISITE GUIDÉE : CE QUI RESTE À RÉPARER DANS SES ÉCRANS FIGÉS (vu le 21 novembre 2026)
 
+- **Ce qui la VÉRIFIE existe depuis le 21 au soir** :
+  `appli/scripts/visite-guidee/parcourir.mjs` (la visite au doigt à quatre
+  largeurs, les essais enchaînés, les boutons muets, le guide chronométré à
+  chaque étape). À jouer après toute retouche de la visite.
 - **Le script qui la refait manque** (`scripts/planche-figee/visite-guidee/`,
   jamais enregistré : l'entrée ci-dessous le dit). **Le plus court** : si la
   session qui a fait la visite (`claude/sleepy-sagan-gq6c0x`) est encore

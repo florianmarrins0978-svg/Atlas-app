@@ -52,7 +52,24 @@
   L = échelle x distance de ses deux bouts). Le coude FF est ramené de 51,5 à
   49,2 px, son écrou à celui de la clarinette voisine : sur sa photo, son corps
   est presque aussi large que ses écrous, et c'est ce qui le fait paraître plus
-  gros. Les fils des deux électrovannes ont leur place au-dessus d'elles
+  gros. Puis, sa remarque à 6 voies : « le coude de droite et le té, en
+  Dura, encore trop gros par rapport à la clarinette et au coude de gauche ».
+  Leurs écrous avaient la taille de ceux de la clarinette, mais leur corps
+  était plus épais (le filetage du té : 43 px à 3x, contre 38 pour le tube de
+  la clarinette et 36 pour le bras du coude MF). Le té passe de 53,5 à 47 px,
+  son filetage à l'épaisseur du tube de la clarinette ; le coude FF de 49,2 à
+  46, à l'allure du coude de gauche. Et, sa remarque suivante, « les unions
+  et la vanne 3/4 paraissent plus petites que les coudes et la clarinette » :
+  leurs écrous mesuraient pourtant ceux de la clarinette (80 px contre 82 à
+  3x), mais le corps de l'union est plus fin que ses écrous, et la vanne était
+  à la taille réelle d'un bout 3/4". L'union passe de 63,1 à 69,5, la vanne de
+  36,4 à 42 : c'est son œil sur le dessin entier qui tranche.
+  MAL LU, ET CORRIGÉ : par « l'union », il désignait le MAMELON, la pièce qui
+  se visse dans l'écrou femelle du coude (il l'a précisé : « en face du coude
+  femelle, il est censé se visser dedans, il est trop petit »). Le manchon
+  union revient à 63,1, ses écrous à la largeur de ceux des coudes ; le
+  mamelon réduit passe de 25,6 à 32,5 (son filetage 1" a l'air d'entrer dans
+  l'écrou du coude), le mamelon 1" de 28,6 à 33, la vanne de 42 à 50. Les fils des deux électrovannes ont leur place au-dessus d'elles
   (dessus), et chaque pastille se pose à droite de sa pièce.
 
   LE RACCORD PLASSON, À PLAT : sa photo du 32 x 1" (appli/arrosage-raccord-a-plat.html,
@@ -64,6 +81,13 @@
   photos qui ne le sont pas (prises d'un peu au-dessus : on voit l'intérieur
   d'un bout) le disent dans la légende, « à reprendre à plat » ; aucune ne se
   redresse à l'ordinateur, une image ne se déforme pas.
+
+  LE MAMELON 1" (la pièce entre le coude ou le té et l'électrovanne FF d'une
+  voie de goutte-à-goutte) : la photo trouvée en ligne était de biais. Sa
+  demande : « mets-les à plat comme les autres unions ». Il prend sa photo de
+  mamelon, celle des autres colonnes (un réduit 1" x 3/4", la même forme), le
+  côté 1" en haut ; la légende garde le nom de la fiche. Sa photo de mamelon
+  quitte aussi la liste « à reprendre à plat » : il la tient pour à plat.
 
   UN SEUL GRIS, CLAIR, pour toutes les pièces en PVC gris (sa demande du même
   soir : « soit toutes grises claires, soit toutes grises foncées ; gris clair,
@@ -201,14 +225,14 @@
   var TES = {
     aRefaire: ["regulateur-ff34"],
     // Prises d'un peu au-dessus : l'intérieur d'un bout se voit. Elles attendent une photo à plat.
-    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v", "electrovanne-100dv", "mamelon", "mamelon-droit-1"],
+    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v"],
     photos: {
       "coude-mf": "coude-mf-dessus.png", "coude-ff": "coude-ff-dessus.png", "te-mmf": "te-mmf-dessus.png",
       "clarinette-2v": "clarinette-2v-dessus.png", "clarinette-3v": "clarinette-3v-dessus.png", "clarinette-4v": "clarinette-4v-dessus.png",
       "electrovanne-100dv": "electrovanne-100dv-dessus.png", "electrovanne-100dv-ff": "electrovanne-100dv-ff-dessus.png",
       "vanne-purge": "vanne-purge-dessus.png", "mamelon": "mamelon-dessus.png",
       "union": "union-ff-dessus.png", "raccord-male25": "raccord-male32-dessus.png", "pehd": "pehd.jpg",
-      "mamelon-droit-1": "mamelon-droit-1.jpg", "regulateur-ff34": "regulateur-ff34.jpg"
+      "mamelon-droit-1": "mamelon-dessus.png", "regulateur-ff34": "regulateur-ff34.jpg"
     },
     // Ses photos restent dans le sens où il les a prises (les listes de pièces les montrent ainsi) :
     // c'est le dessin qui tourne le coude FF d'un quart (quart) et retourne le té (miroir). Les
@@ -216,27 +240,30 @@
     // h et w : l'écrou 1" de chaque pièce fait 28 px de dessin.
     haut: {
       "coude-mf":      { h: 47, vertical: 0.2557, horizontal: 0.2389 },
-      "coude-ff":      { h: 49.2, vertical: 0.7276, horizontal: 0.2613, quart: true },
-      "te-mmf":        { h: 53.5, vertical: 0.5137, horizontal: 0.247, miroir: true },
+      "coude-ff":      { h: 46, vertical: 0.7276, horizontal: 0.2613, quart: true },
+      "te-mmf":        { h: 47, vertical: 0.5137, horizontal: 0.247, miroir: true },
       "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
       "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
       "clarinette-4v": { w: 271, sorties: [0.1679, 0.4038, 0.6373, 0.8721], tube: 0.3125 }
     },
     colonne: {
-      "mamelon":            { a: [0.495, 0], b: [0.4883, 1], L: 25.6 },
-      "mamelon-demi":       { a: [0.4883, 1], b: [0.495, 0], L: 25.6, src: "mamelon" },
+      "mamelon":            { a: [0.495, 0], b: [0.4883, 1], L: 32.5 },
+      "mamelon-demi":       { a: [0.4883, 1], b: [0.495, 0], L: 32.5, src: "mamelon" },
       // La vis de purge en haut, la poignée rouge à gauche (sa demande du 18 octobre 2026).
-      "vanne-purge":        { a: [0.5093, 0.6645], b: [0, 0.6821], L: 36.4 },
+      "vanne-purge":        { a: [0.5093, 0.6645], b: [0, 0.6821], L: 50 },
       "union":              { a: [0, 0.4929], b: [1, 0.4999], L: 63.1 },
       // À plat : le filetage à gauche sur sa photo, l'écrou blanc à droite.
       "raccord-male25":     { a: [0, 0.497], b: [1, 0.4955], L: 66.3 },
       "pehd":               { a: [0, 0.509], b: [1, 0.509], L: 50.6 },
-      // Ses fils montent de 18 px au-dessus de son filetage : sans cet écart, ils entrent dans l'écrou du dessus.
-      "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 66.6, dessus: 18 },
+      // Sa photo du 21 au soir, prise plus droit au-dessus que la première. Le haut se lit au
+      // sommet de l'arc de son filetage (un fil longe son bord droit) ; ses fils montent de 6 px.
+      "electrovanne-100dv": { a: [0.4556, 0.0779], b: [0.4737, 1], L: 74.3, dessus: 6.2 },
       // Vue du dessus, sa bobine et ses fils montent de 25,6 px au-dessus du bout du haut :
       // l'écart d'avant s'agrandit d'autant, sans quoi ils couvrent le mamelon 1" posé au-dessus.
       "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
-      "mamelon-droit-1":    { a: [0.478, 0.02], b: [0.51, 0.98], L: 28.6 },
+      // Sa photo de mamelon, celle des autres colonnes (sa demande : « à plat, comme les autres
+      // unions »), le côté 1" en haut, dans l'écrou du coude ou du té.
+      "mamelon-droit-1":    { a: [0.4883, 1], b: [0.495, 0], L: 32.5 },
       "regulateur-ff34":    { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 }
     }
   };
@@ -360,21 +387,35 @@
         if (!nu) badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
         return;
       }
-      var fc = J.colonne[p.cle], droite = 0;
+      var fc = J.colonne[p.cle];
+      p.droite = 0; p.gauche = 0; p.y0 = p.y; p.y1 = p.y + fc.L;
       if (im) {
         var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
         var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
         g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
         g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
-        // Jusqu'où la pièce dessinée va à droite de son axe : les coins de sa photo, tournés.
+        // Ce que la pièce dessinée occupe autour de son axe : les coins de sa photo, tournés.
         [[0, 0], [im.width, 0], [0, im.height], [im.width, im.height]].forEach(function (c) {
-          droite = Math.max(droite, s * ((c[0] - ax) * Math.cos(angle) - (c[1] - ay) * Math.sin(angle)));
+          var cx = s * ((c[0] - ax) * Math.cos(angle) - (c[1] - ay) * Math.sin(angle));
+          var cy = s * ((c[0] - ax) * Math.sin(angle) + (c[1] - ay) * Math.cos(angle));
+          p.droite = Math.max(p.droite, cx); p.gauche = Math.min(p.gauche, cx);
+          p.y0 = Math.min(p.y0, p.y + cy); p.y1 = Math.max(p.y1, p.y + cy);
         });
       }
       numero(p.ref);
-      // La pastille se pose à droite de la pièce : à la même échelle que le haut, une électrovanne
-      // ou un raccord dépassent les 24 px d'avant, et la pastille les couvrait.
-      if (!nu) badge(g, numero(p.ref), p.x + Math.max(24, droite + 9), p.y + fc.L / 2);
+    });
+    // LES PASTILLES DES COLONNES, une fois toutes les pièces posées : à droite de la pièce (à la
+    // même échelle que le haut, une électrovanne ou un raccord dépassent les 24 px d'avant), mais
+    // jamais sur la pièce de la colonne voisine. À 6 voies de goutte-à-goutte, les électrovannes FF
+    // se touchent presque, et la pastille de l'une tombait sur l'autre : elle s'arrête avant.
+    if (!nu) poses.forEach(function (p) {
+      if (p.haut) return;
+      var fc = J.colonne[p.cle], by = p.y + fc.L / 2, bx = p.x + Math.max(24, p.droite + 9);
+      poses.forEach(function (q) {
+        if (q.haut || q.x <= p.x + 1 || by < q.y0 - 8 || by > q.y1 + 8) return;
+        bx = Math.min(bx, q.x + q.gauche - 8);
+      });
+      badge(g, numero(p.ref), Math.max(bx, p.x + 10), by);
     });
     g.globalCompositeOperation = "source-over";
     // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD

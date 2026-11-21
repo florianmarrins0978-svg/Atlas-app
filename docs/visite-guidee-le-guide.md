@@ -79,6 +79,29 @@ Vérifié ici : les cinq essais du devis et les trois de la facture enchaînés 
 doigt sans Retour, à 320, 390, 1024 et 1280 points ; les 233 boutons des
 écrans d'essai touchés un par un, aucun muet.
 
+## Ta remarque suivante : « on reste sur la page plusieurs secondes »
+
+**Trouvé, et c'était la seule étape sur 75 :** « Un particulier », où la fiche
+du client se remplit toute seule. Le guide s'y retirait le temps que les quatre
+champs s'écrivent lettre à lettre (72 lettres, à 38 millisecondes chacune, plus
+une demi-seconde) : **3,5 secondes sans rien à lire ni à toucher.**
+
+**Ce qui a été fait :**
+- les champs s'écrivent en moins d'une seconde ;
+- le guide ne se retire plus : il reste replié en bas, avec le geste, loin des
+  champs qui s'écrivent en haut (déplié, il les cachait : ta capture du
+  20 novembre). Il se déplie, le doigt sur le micro, une fois tout écrit.
+
+**À vérifier sur ton téléphone :** tu as écrit « après envoyer le devis ».
+J'ai chronométré l'étape qui suit « Envoyer le devis » : le guide y est là en
+un sixième de seconde, même processeur ralenti. Si l'attente que tu as vue est
+bien à cet endroit et pas sur la fiche du client, dis-le-moi : c'est alors
+propre à Safari, que ce poste ne sait pas jouer.
+
+**Ce qui le tient désormais :** `appli/scripts/visite-guidee/parcourir.mjs`
+chronomètre chaque étape, processeur ralenti quatre fois : il a rougi sur
+l'ancienne visite (3 546 ms) et passe au vert sur la nouvelle.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |
