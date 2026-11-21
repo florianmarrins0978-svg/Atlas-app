@@ -181,11 +181,15 @@ export function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceCompos
           const f = HAUT[p.ref];
           const transforms: string[] = [`translate(${p.x + p.w / 2} ${p.y + p.h / 2})`];
           if (f?.demi) transforms.push("rotate(180)");
+          // Tournée d'un quart (le coude FF, photographié ses écrous à droite et en bas) : la photo
+          // se pose dans la boîte de la pièce couchée, puis tourne.
+          if (f?.quart) transforms.push("rotate(90)");
           if (f?.miroir) transforms.push("scale(-1 1)");
+          const dw = f?.quart ? p.h : p.w, dh = f?.quart ? p.w : p.h;
           return (
             <g key={i} data-etat={etats[i] || "proposee"}>
               <g transform={transforms.join(" ")} style={grise(etats[i])}>
-                <g transform={`translate(${-p.w / 2} ${-p.h / 2})`}>{fenetre(p.w, p.h)}</g>
+                <g transform={`translate(${-dw / 2} ${-dh / 2})`}>{fenetre(dw, dh)}</g>
               </g>
               {etats[i] === "retiree" && barre(p.x + p.w / 2, p.y + p.h / 2, Math.min(p.w, p.h) * 0.45 + 4)}
               <Badge n={p.numero} x={p.x + p.w + 2} y={p.y + 5} teinte={teinte(etats[i])} />

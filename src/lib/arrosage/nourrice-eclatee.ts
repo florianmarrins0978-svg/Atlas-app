@@ -23,6 +23,15 @@ import type { Retouches } from "./retouches";
  * fractions ont été relevées sur SES photos ; une photo qui change les
  * invalide, et `scripts/mesurer-photos-nourrice.mjs` redonne au moins la boîte.
  *
+ * **Ses photos vues du dessus, du 21 novembre 2026** (`appli/arrosage-nourrice-vue-du-dessus.html`,
+ * ARCHITECTURE.md §475) : gardées dans le sens où il les a prises, puisque les
+ * listes de pièces les montrent aussi. Le coude FF se tourne d'un quart
+ * (`quart`), le té se retourne (`miroir`), et les pièces de colonne couchées
+ * sur la photo (électrovanne FF, vanne, union) tournent de l'angle de leurs
+ * deux bouts. Les pièces du haut sont à la taille de leur écrou 1" (28 px de
+ * dessin) ; chaque bout a été remesuré sur le rendu à 3x, à moins d'1 px de
+ * l'axe de sa colonne.
+ *
  * **Pourquoi une fonction pure et non un canvas.** La planche détourait et
  * dessinait dans le navigateur ; l'écran de l'application rend un SVG que les
  * contrôles peuvent lire et capturer sans serveur. Les boîtes détourées sont
@@ -40,31 +49,37 @@ type FormeHaut = {
   horizontal?: number;
   sorties?: number[];
   tube?: number;
-  /** Dessinée à l'envers (le té MMF) ou en miroir (le coude FF, photographié dans l'autre sens). */
+  /** Dessinée à l'envers, en miroir (le té, photographié mâle à gauche), ou d'un quart de tour
+   *  horaire (le coude FF, photographié ses écrous à droite et en bas). */
   demi?: boolean;
   miroir?: boolean;
+  quart?: boolean;
 };
 export const HAUT: Record<string, FormeHaut> = {
-  "coude-mf": { h: 46, vertical: 0.259, horizontal: 0.226 },
-  "coude-ff": { h: 52, vertical: 0.732, horizontal: 0.295, miroir: true },
-  "te-mmf": { h: 44, vertical: 0.52, horizontal: 0.225, demi: true },
-  "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.338 },
-  "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.336 },
-  "clarinette-4v": { w: 296, sorties: [0.16, 0.4, 0.64, 0.88], tube: 0.345 },
+  "coude-mf": { h: 47, vertical: 0.2557, horizontal: 0.2389 },
+  "coude-ff": { h: 51.5, vertical: 0.7276, horizontal: 0.2613, quart: true },
+  "te-mmf": { h: 53.5, vertical: 0.5137, horizontal: 0.247, miroir: true },
+  "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
+  "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
+  "clarinette-4v": { w: 271, sorties: [0.1679, 0.4038, 0.6373, 0.8721], tube: 0.3125 },
 };
 
 /** Une pièce de colonne : ses deux bouts de vissage (a en haut, b en bas), et sa longueur de dessin. */
-type FormeColonne = { a: [number, number]; b: [number, number]; L: number; src?: string };
+/** `dessus` : ce que la photo monte au-dessus de son bout `a` (la bobine et les fils de
+ *  l'électrovanne FF vue du dessus) ; l'écart d'avant s'agrandit d'autant, sans quoi elle
+ *  couvre la pièce posée au-dessus. */
+type FormeColonne = { a: [number, number]; b: [number, number]; L: number; src?: string; dessus?: number };
 export const COLONNE: Record<string, FormeColonne> = {
-  mamelon: { a: [0.491, 0.02], b: [0.504, 0.98], L: 28 },
-  "mamelon-demi": { a: [0.504, 0.98], b: [0.491, 0.02], L: 28, src: "mamelon" },
+  mamelon: { a: [0.495, 0], b: [0.4883, 1], L: 28 },
+  "mamelon-demi": { a: [0.4883, 1], b: [0.495, 0], L: 28, src: "mamelon" },
   // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
-  "vanne-purge": { a: [0.606, 0.714], b: [0.033, 0.857], L: 40 },
-  union: { a: [0.092, 0.717], b: [0.935, 0.253], L: 46 },
+  "vanne-purge": { a: [0.5093, 0.6645], b: [0, 0.6821], L: 40 },
+  union: { a: [0, 0.4929], b: [1, 0.4999], L: 46 },
+  // Le raccord, le PEHD, le mamelon 1" et le régulateur gardent leur photo d'avant.
   "raccord-male25": { a: [0.092, 0.66], b: [0.931, 0.326], L: 40 },
   pehd: { a: [0, 0.509], b: [1, 0.509], L: 44 },
-  "electrovanne-100dv": { a: [0.037, 0.776], b: [0.982, 0.912], L: 50 },
-  "electrovanne-100dv-ff": { a: [0.26, 0.733], b: [0.983, 0.564], L: 50 },
+  "electrovanne-100dv": { a: [0.4255, 0.2149], b: [0.4801, 0.9983], L: 50 },
+  "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 50, dessus: 18 },
   "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 26 },
   "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 44 },
 };
@@ -84,6 +99,7 @@ export type PoseHaut = {
   h: number;
   demi: boolean;
   miroir: boolean;
+  quart: boolean;
 };
 export type PoseColonne = {
   haut: false;
@@ -164,9 +180,11 @@ function tailleHaut(ref: string): { w: number; h: number } {
   const f = HAUT[ref];
   const b = boite(ref);
   if (!b) return { w: f.w ?? 40, h: f.h ?? 40 };
-  if (f.w) return { w: f.w, h: (f.w * b.h) / b.w };
+  // Tournée d'un quart, la photo dessinée a la largeur de sa hauteur.
+  const bw = f.quart ? b.h : b.w, bh = f.quart ? b.w : b.h;
+  if (f.w) return { w: f.w, h: (f.w * bh) / bw };
   const h = f.h ?? 40;
-  return { w: (h * b.w) / b.h, h };
+  return { w: (h * bw) / bh, h };
 }
 
 type Fiche = { nom: string; pieces: { ref: string; q: number }[] };
@@ -189,13 +207,14 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
   const haut = (ref: string, x: number, y: number): PoseHaut => {
     const t = tailleHaut(ref);
     const f = HAUT[ref];
-    const pose: PoseHaut = { haut: true, ref, numero: numero(ref), x, y, w: t.w, h: t.h, demi: Boolean(f.demi), miroir: Boolean(f.miroir) };
+    const pose: PoseHaut = { haut: true, ref, numero: numero(ref), x, y, w: t.w, h: t.h, demi: Boolean(f.demi), miroir: Boolean(f.miroir), quart: Boolean(f.quart) };
     poses.push(pose);
     pris(ref);
     return pose;
   };
-  const colonne = (cle: string, x: number, y: number): number => {
+  const colonne = (cle: string, x: number, y0: number): number => {
     const f = COLONNE[cle];
+    const y = y0 + (f.dessus ? Math.max(0, f.dessus + 3 - ECART) : 0);
     const ref = f.src ?? cle;
     const b = boite(ref);
     // Sans photo mesurée, la pièce occupe sa longueur sans se dessiner : le

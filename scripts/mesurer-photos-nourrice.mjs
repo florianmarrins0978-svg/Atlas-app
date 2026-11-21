@@ -11,6 +11,7 @@
 //
 //   node scripts/mesurer-photos-nourrice.mjs
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 // Node 24 lit le TypeScript sans outil : la table des photos se lit à la source.
 import { PHOTOS } from "../src/lib/arrosage/photos.ts";
@@ -19,7 +20,8 @@ const REFS = ["coude-mf", "coude-ff", "te-mmf", "clarinette-2v", "clarinette-3v"
   "mamelon", "vanne-purge", "union", "raccord-male25", "pehd", "electrovanne-100dv",
   "electrovanne-100dv-ff", "mamelon-droit-1", "regulateur-ff34"];
 
-const navigateur = await chromium.launch();
+// Le navigateur du poste, quelle que soit sa version (ARCHITECTURE.md §554).
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const page = await navigateur.newPage();
 await page.goto("about:blank");
 const mesures = {};

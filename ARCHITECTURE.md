@@ -37935,3 +37935,53 @@ y sont établies, parce qu'elles ne dépendent pas de ses réponses :
 Le modèle de la table est `diagnostics` (le résultat figé, `moteur`, `modele`,
 `version_base`). `EnregistrerLaDemande.tsx`, cité par le brief, range un
 message chez un fournisseur et ne fige rien : ce n'en est pas un.
+
+## §600 : La nourrice de l'outil dessine SES photos vues du dessus, gardées dans leur sens et tournées par le dessin
+
+**Ses treize photos du 21 novembre 2026**, puis son union FF le même soir
+(`appli/arrosage-nourrice-vue-du-dessus.html`). Ce sont les photos de face que
+§475 attendait : celles de trois quarts restaient de biais quel que soit
+l'angle. Elles entrent dans `PHOTOS` (`src/lib/arrosage/photos.ts`) pour les
+onze pièces de la nourrice et leurs références Aqua Plus, parce que la règle
+de cette table le dit déjà : *une photo qu'il envoie passe devant une photo
+trouvée*. Les listes de pièces les montrent donc aussi.
+
+**Gardées dans le sens où il les a prises, et c'est le dessin qui les pose.**
+Une photo tournée d'avance pour le dessin serait de travers dans une liste ;
+deux fichiers pour la même photo finiraient par diverger. Les pièces de colonne
+tournent déjà de l'angle de leurs deux bouts (`COLONNE`, a et b) : l'électrovanne
+FF, la vanne et l'union, couchées sur la photo, tournent d'un quart sans rien
+de neuf. Le té se retourne (`miroir`, comme avant) : photographié mâle à
+gauche, il se pose femelle à gauche, et son « DURA » se lit à l'envers. Le
+coude FF tourne d'un quart (`quart`, neuf) : en miroir, il aurait aussi son
+« DURA » à l'envers. `tailleHaut` prend alors la boîte couchée, et le SVG
+(`NourriceEclatee.tsx`) pose la photo dans cette boîte avant de la tourner.
+
+**Les noms portent un suffixe, pas un dossier** (`coude-mf-dessus.png`) : dans
+`PHOTOS`, une valeur qui contient « / » désigne un autre dossier de `public/`
+(`photoDe`), et le test des pièces lit la même règle.
+
+**Le fond et l'ombre retirés sur ses photos**, sans rien déformer : le PVC est
+bleuté, l'ombre sur la table est neutre ; sous l'union, posée sur ses deux
+écrous, le corps ne touche pas la table et l'ombre s'y glisse, coupée par
+symétrie autour de l'axe des écrous (le bord du dessus, net sur le blanc, donne
+la silhouette).
+
+**Les tailles du haut suivent l'écrou 1"** (28 px de dessin pour les coudes, le
+té et les clarinettes) ; les colonnes gardent leurs longueurs du 18 octobre.
+**L'électrovanne FF vue du dessus a sa bobine et ses fils au-dessus de son bout**
+(`dessus: 18`) : l'écart d'avant s'agrandit d'autant, sans quoi elle couvre le
+mamelon 1" posé au-dessus.
+
+**Mesuré, puis remesuré sur le rendu à 3x** (la règle de §475) : 530 mesures
+sur la planche et 1017 sur le rendu du vrai composant de l'écran, de 1 à 6
+voies avec et sans goutte-à-goutte, toutes à moins d'1 px de leur axe. Le
+contrôle a rougi d'abord : près de 2 px au haut de l'électrovanne MM (l'arc de
+son filetage, lu sur une photo qui penche de 1,7°, n'a pas son sommet au
+milieu), 1,3 px au tube de la clarinette 3 voies ; une seconde passe a corrigé
+les deux fractions.
+
+**Deux pièces gardent leur photo d'avant** : le raccord Plasson (sa photo est
+le 32 x 1", la fiche dit 25 x 1") et le régulateur (le sien porte DN 15, du
+1/2", la fiche dit FF 3/4"). Ce n'est pas au dessin de trancher (`TODO.md`).
+

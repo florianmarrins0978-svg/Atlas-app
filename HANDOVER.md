@@ -1,5 +1,18 @@
 # Reprendre le travail
 
+## LA NOURRICE AVEC SES PHOTOS VUES DU DESSUS (21 novembre 2026) : CODÉE SUR `claude/upbeat-pascal-mzremi`, ATTEND SON « OUI » POUR `verifier:avant-fusion`
+
+La planche `appli/arrosage-nourrice-vue-du-dessus.html` est sur `main` ; le
+port dans l'outil (`ARCHITECTURE.md` §600 : `photos.ts`, `photos-nourrice.ts`
+régénéré, `nourrice-eclatee.ts`, `NourriceEclatee.tsx`, les photos
+`*-dessus.png` dans `appli/` et `public/`) est sur la branche, de niveau 2, et
+**n'a pas joué `npm run verifier:avant-fusion`** : il demande son accord
+(CLAUDE.md §5). Joué ici sans serveur : types, lint, `test-arrosage-postes`
+(29/29), les gardes de texte, et le rendu du vrai composant mesuré à 3x (1017
+mesures sous 1 px). **Pas vu sur l'écran de l'appli** (`npm run voir` demande
+un serveur) : à regarder sur `/paysage/arrosage` avec un plan. **Reste à lui** :
+le raccord Plasson et le régulateur (`TODO.md`).
+
 ## LE DÉBUT DE LA VISITE GUIDÉE : DEUX PROPOSITIONS (21 novembre 2026), PAS ENCORE CHOISIES
 
 Deux sessions ont reçu la même demande et y ont répondu : `appli/visite-guidee-le-debut.html` et `appli/visite-guidee-le-debut-2.html`. **Tant qu'il n'a pas choisi, on ne porte rien sur la visite entière et l'on ne retouche pas la planche de l'autre.** Pour la seconde, **avant d'y toucher** : le guide se retouche dans `appli/scripts/visite-le-debut-2/` (ses sources, l'assembleur, le parcours au doigt dans dix cas, et `appli/scripts/visite-le-debut-2/LISEZ-MOI.md`), jamais dans la planche, qui se recompose ; une étape porte `cible` (ce qu'on touche, l'anneau), `regard` (ce qu'on lit, surligné), `avec` (ce qui doit tenir à l'écran) et `memePage` (un onglet ne remonte pas la page) ; les écrans figés ont `pointer-events: none`, donc tout appui arrive sur la page et se lit par ses coordonnées, au doigt (`pointerdown` puis `pointerup`), jamais au clic, que Safari n'envoie pas hors d'un bouton ; `zone()` décide par la géométrie où la bulle gêne, pas par la largeur de l'écran. Safari d'iPhone n'a pas pu être joué ici (Chromium seul). **Avant d'ouvrir un lot né d'un message qu'il a pu envoyer à plusieurs sessions, refaire `git fetch origin main` en cours de route** : la première proposition est arrivée sur `main` vingt-cinq minutes après le début de la seconde. `TODO.md`.
