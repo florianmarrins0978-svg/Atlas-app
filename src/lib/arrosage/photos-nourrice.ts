@@ -23,6 +23,6 @@ export const PHOTOS_NOURRICE: Record<string, PhotoMesuree> = {
   "pehd": { largeur: 500, hauteur: 500, x0: 0, y0: 200, x1: 399, y1: 305 },
   "electrovanne-100dv": { largeur: 343, hauteur: 578, x0: 6, y0: 6, x1: 337, y1: 571 },
   "electrovanne-100dv-ff": { largeur: 640, hauteur: 389, x0: 4, y0: 4, x1: 635, y1: 385 },
-  "mamelon-droit-1": { largeur: 1500, hauteur: 1500, x0: 220, y0: 168, x1: 1239, y1: 1313 },
+  "mamelon-droit-1": { largeur: 640, hauteur: 633, x0: 6, y0: 6, x1: 631, y1: 627 },
   "regulateur-ff34": { largeur: 1000, hauteur: 1000, x0: 308, y0: 116, x1: 689, y1: 917 },
 };

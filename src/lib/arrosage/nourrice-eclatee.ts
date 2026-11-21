@@ -89,7 +89,9 @@ export const COLONNE: Record<string, FormeColonne> = {
   // l'arc de son filetage (un fil longe son bord droit) ; ses fils montent de 6 px au-dessus.
   "electrovanne-100dv": { a: [0.4556, 0.0779], b: [0.4737, 1], L: 74.3, dessus: 6.2 },
   "electrovanne-100dv-ff": { a: [0.2679, 0.6664], b: [1, 0.577], L: 71, dessus: 25.6 },
-  "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 33 },
+  // Sa photo de mamelon, celle des autres colonnes (« à plat, comme les autres unions »), le côté 1"
+  // en haut dans l'écrou du coude ou du té ; la photo trouvée en ligne était de biais.
+  "mamelon-droit-1": { a: [0.4883, 1], b: [0.495, 0], L: 32.5 },
   "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 51.6 },
 };
 
@@ -124,8 +126,13 @@ export type PoseColonne = {
   /** Le bout `a` dans la photo détourée, en pixels. */
   ax: number;
   ay: number;
-  /** Jusqu'où la pièce dessinée va à droite de son axe : sa pastille se pose au-delà. */
+  /** Jusqu'où la pièce dessinée va à droite et à gauche de son axe, et de haut en bas. */
   droite: number;
+  gauche: number;
+  y0: number;
+  y1: number;
+  /** Où se pose sa pastille : à droite de la pièce, jamais sur la pièce de la colonne voisine. */
+  pastille: number;
 };
 export type Pose = PoseHaut | PoseColonne;
 
@@ -230,19 +237,22 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
     const b = boite(ref);
     // Sans photo mesurée, la pièce occupe sa longueur sans se dessiner : le
     // numéro reste, la place aussi, et l'écran montre un cadre vide.
-    let angle = 0, echelle = 1, ax = 0, ay = 0, droite = 0;
+    let angle = 0, echelle = 1, ax = 0, ay = 0, droite = 0, gauche = 0, haut = 0, bas = f.L;
     if (b) {
       ax = f.a[0] * b.w; ay = f.a[1] * b.h;
       const bx = f.b[0] * b.w, by = f.b[1] * b.h;
       echelle = f.L / Math.hypot(bx - ax, by - ay);
       const t = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
       angle = (t * 180) / Math.PI;
-      // Les coins de la photo, tournés autour du bout a : le plus à droite borne la pièce.
+      // Les coins de la photo, tournés autour du bout a : ce que la pièce occupe autour de son axe.
       for (const [cx, cy] of [[0, 0], [b.w, 0], [0, b.h], [b.w, b.h]]) {
-        droite = Math.max(droite, echelle * ((cx - ax) * Math.cos(t) - (cy - ay) * Math.sin(t)));
+        const px = echelle * ((cx - ax) * Math.cos(t) - (cy - ay) * Math.sin(t));
+        const py = echelle * ((cx - ax) * Math.sin(t) + (cy - ay) * Math.cos(t));
+        droite = Math.max(droite, px); gauche = Math.min(gauche, px);
+        haut = Math.min(haut, py); bas = Math.max(bas, py);
       }
     }
-    poses.push({ haut: false, ref, numero: numero(ref), x, y, L: f.L, angle, echelle, ax, ay, droite });
+    poses.push({ haut: false, ref, numero: numero(ref), x, y, L: f.L, angle, echelle, ax, ay, droite, gauche, y0: y + haut, y1: y + bas, pastille: x + Math.max(24, droite + 9) });
     pris(ref);
     return y + f.L;
   };
@@ -311,6 +321,19 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
     fin = Math.max(fin, yv);
   });
   fin = Math.max(fin, finArrivee + 40);
+
+  // LES PASTILLES DES COLONNES : à droite de leur pièce, mais jamais sur la pièce de la colonne
+  // voisine. À 6 voies de goutte-à-goutte, les électrovannes FF se touchent presque, et la
+  // pastille de l'une tombait sur l'autre (sa planche du 21 novembre 2026).
+  for (const p of poses) {
+    if (p.haut) continue;
+    const yp = p.y + p.L / 2;
+    for (const q of poses) {
+      if (q.haut || q.x <= p.x + 1 || yp < q.y0 - 8 || yp > q.y1 + 8) continue;
+      p.pastille = Math.min(p.pastille, q.x + q.gauche - 8);
+    }
+    p.pastille = Math.max(p.pastille, p.x + 10);
+  }
 
   const largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
   // Sous la dernière voie, la place du numéro et du mot « goutte-à-goutte »

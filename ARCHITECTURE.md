@@ -38030,7 +38030,13 @@ ambigu, mesurer laquelle ne colle pas à sa voisine avant d'en toucher une.
 photo-là à la place des électrovannes mal »*) : prise plus droit au-dessus,
 elle ne montre presque plus l'intérieur du filetage du bas. Bouts mesurés
 comme la première (le haut au sommet de l'arc du filetage), taille au même 1"
-(L 74,3), fils au-dessus réduits à 6 px.
+(L 74,3), fils au-dessus réduits à 6 px. **Le mamelon 1" prend sa photo de
+mamelon** (*« mets-les à plat comme les autres unions »*) : un réduit 1" x 3/4",
+de même forme, le côté 1" en haut ; la photo trouvée en ligne était de biais,
+et la légende garde le nom de la fiche. **Les pastilles des colonnes se posent
+après toutes les pièces** (`pastille`, dans `composerNourrice`) : à droite de
+leur pièce, mais jamais sur celle de la colonne voisine ; à 6 voies de
+goutte-à-goutte, les électrovannes FF se touchent presque.
 
 **Le régulateur garde sa photo d'avant** : le sien porte DN 15, du 1/2", la
 fiche dit FF 3/4". Ce n'est pas au dessin de trancher (`TODO.md`).
