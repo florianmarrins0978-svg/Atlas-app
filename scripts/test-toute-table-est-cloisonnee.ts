@@ -90,6 +90,9 @@ const FILES_DE_PURGE_SANS_RLS: Record<string, string> = {
   photos_diagnostic_a_purger:
     "même motif que audios_a_purger, pour les photos de diagnostic végétal. Ne porte qu'une clé " +
     "de stockage et une date.",
+  dossiers_arrosage_a_purger:
+    "même motif que audios_a_purger, pour les dossiers d'arrosage oubliés, effacés cinq ans après " +
+    "(migration 0193). Ne porte que des identifiants et une date, ni nom ni plan.",
 };
 
 type Etat = {

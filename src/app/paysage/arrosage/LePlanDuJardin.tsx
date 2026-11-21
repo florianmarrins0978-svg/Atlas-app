@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
-import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, metresDeTubeDuReseau, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zonesGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { montageDuPlan } from "@/lib/arrosage/le-plan";
+import { calculer, composer, robinetDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
+import { cotesEcrites, lignesDuReseau, zonesDuReseau } from "@/lib/arrosage/lignes-du-reseau";
+import { composerLesPostes, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zonesGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
@@ -22,7 +24,7 @@ import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
 import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, toutEnGoutteAGoutte, type Depart, type Montage } from "@/lib/arrosage/robinet";
 import { ceQueLeTuyauChange, poserLeTuyau, type OuLeTuyau, type Releve } from "@/lib/arrosage/diametre-choisi";
 import ChoixDuTuyau from "./ChoixDuTuyau";
-import { AjouterUneZone, ModifierLaZone, cotesEcrites } from "./ZonesDuPlan";
+import { AjouterUneZone, ModifierLaZone } from "./ZonesDuPlan";
 import { nomDeLaZone } from "@/lib/arrosage/zones-du-plan";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
 import NourriceEclatee from "./NourriceEclatee";
@@ -66,6 +68,10 @@ export default function LePlanDuJardin({
   sesPrix = SANS_PRIX,
   surMessageGarde,
   actionVisible = false,
+  fige,
+  apresLesReserves,
+  bas,
+  retouchesDeDepart,
 }: {
   etat: Pick<Extract<EtatPlan, { etat: "lu" }>, "reserves" | "sansDessin">;
   /**
@@ -91,8 +97,22 @@ export default function LePlanDuJardin({
    * qui tient le bas, et deux barres se recouvriraient.
    */
   actionVisible?: boolean;
+  /**
+   * **UN PLAN ENREGISTRÉ, REVU** (`ARCHITECTURE.md` §599) : ce que le serveur a
+   * calculé ce jour-là, et ses retouches. Rien ne se recalcule, rien ne se
+   * change : sa règle du 21 novembre 2026, *« revoir un plan ne le recalcule
+   * jamais »*. Le sommaire reste, tout le reste est inerte.
+   */
+  fige?: { resultat: PlanFige; retouches: Retouches };
+  /** Sous les réserves : « Enregistrer dans un dossier » sur un plan vivant, « Reprendre dans l'outil » sur un plan revu. */
+  apresLesReserves?: (courant: { saisie: SaisieDuPlan; plan: PlanFige }) => ReactNode;
+  /** Sur un plan revu, le geste du bas : « Télécharger le PDF ». */
+  bas?: ReactNode;
+  /** Un plan enregistré repris dans l'outil : ses retouches repartent avec lui. */
+  retouchesDeDepart?: Retouches;
 }) {
-  const [retouches, setRetouches] = useState<Retouches>(RETOUCHES_VIERGES);
+  const lectureSeule = fige !== undefined;
+  const [retouches, setRetouches] = useState<Retouches>(fige?.retouches ?? retouchesDeDepart ?? RETOUCHES_VIERGES);
   const [menu, setMenu] = useState<Menu | null>(null);
   const [feuille, setFeuille] = useState<{ titre: "Changer la pièce" | "Ajouter une pièce"; categorie: string; onChoix: (p: PieceChoisie) => void } | null>(null);
   const [fournisseur, setFournisseur] = useState(false);
@@ -104,7 +124,13 @@ export default function LePlanDuJardin({
   const [zoneOuverte, setZoneOuverte] = useState<number | null>(null);
   const [tuyauChange, setTuyauChange] = useState<{ ou: OuLeTuyau; diametre: 25 | 32; avant: Releve } | null>(null);
 
-  const { plan, dessin } = useMemo(() => calculerEtDessiner(parametres, etat.sansDessin), [parametres, etat.sansDessin]);
+  // **Les mêmes fonctions que le plan enregistré** (`plan-enregistre.ts`), en
+  // deux temps : le calcul hydraulique ne se refait pas à chaque pièce retouchée.
+  const calcule = useMemo(
+    () => (fige ? { plan: fige.resultat.plan, dessin: fige.resultat.dessin } : calculer({ parametres, sansDessin: etat.sansDessin })),
+    [fige, parametres, etat.sansDessin]
+  );
+  const { plan, dessin } = calcule;
   const compteur = parametres.compteur === "oui";
   const amenee = parametres.amenee > 0 ? parametres.amenee : null;
   // Sur un robinet : le montage qu'il a choisi, la double sortie, le départ. Au compteur : rien de tout cela.
@@ -112,11 +138,13 @@ export default function LePlanDuJardin({
   const nez = montage === "nez";
   const double = parametres.robinet?.double ?? false;
   const departChoisi = parametres.robinet?.depart ?? null;
-  const robinet = useMemo<Robinet | null>(() => (compteur ? null : { montage, double, depart: departChoisi }), [compteur, montage, double, departChoisi]);
+  const robinet = useMemo<Robinet | null>(() => robinetDuPlan(parametres), [parametres]);
   const depart: Depart | null = robinet ? departRetenu(plan, departChoisi) : null;
-  const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches }), [plan, dessin, compteur, amenee, robinet, retouches]);
-  const nourrice = groupeNourrice(plan, postes, retouches);
-  const groupes = groupesDeLaListe(plan, postes, retouches, compteur, robinet);
+  const compose = useMemo(
+    () => (fige ? fige.resultat : composer(calcule, { parametres, retouches, reservesDuCroquis: etat.reserves })),
+    [fige, calcule, parametres, retouches, etat.reserves]
+  );
+  const { postes, nourrice, groupes, reserves } = compose;
   // Le prix de chaque pièce de la liste : chez le fournisseur de la pastille, par sa référence.
   const chezEux = prixDesFournisseurs(
     sommeDesGroupes(groupes).map((l) => ({ ref: l.ref, nom: l.nom, q: l.q, u: l.u, reference: referenceFournisseur(l.ref, plan.materiel) })),
@@ -128,8 +156,6 @@ export default function LePlanDuJardin({
   const destinataire = chez ? sesPrix.fournisseurs.find((f) => f.id === chez.id) : undefined;
   // Les voies vivantes : un réseau supprimé enlève la sienne (19 octobre 2026).
   const nbGoutte = nourrice.voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
-  // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
-  const reserves = [...plan.reserves, ...etat.reserves];
 
   const r = (f: (r: Retouches) => Retouches) => setRetouches((prev) => f(prev));
   // **LE Ø25 OU LE Ø32, « la C »** (20 octobre 2026) : le calcul refait le plan
@@ -306,9 +332,17 @@ export default function LePlanDuJardin({
           nourrice se touchent par leur numéro, pas sur le dessin. Sans nourrice,
           pas de numéro à toucher : la phrase ne le dit pas. */}
       <Sommaire nez={nez} />
-      <p className="mx-[22px] mt-4 text-[15px] font-semibold leading-[1.45]" style={{ color: colors.alert }}>
-        Touchez une pièce pour la changer ou la supprimer.{nez ? "" : " Pour la nourrice, touchez un numéro."}
-      </p>
+      {/* **Revu, le plan ne se touche plus** : le sommaire reste, ce qui le
+          change est inerte (ni geste, ni clavier), et ce qui modifie est retiré.
+          **Le geste d'après les réserves reste HORS de l'inerte** : un ancêtre
+          `inert` éteint tout ce qu'il contient, sans exception possible, et
+          « Reprendre dans l'outil » ne répondait plus (`test-dossiers-arrosage-e2e.ts`). */}
+      <div inert={lectureSeule}>
+      {!lectureSeule && (
+        <p className="mx-[22px] mt-4 text-[15px] font-semibold leading-[1.45]" style={{ color: colors.alert }}>
+          Touchez une pièce pour la changer ou la supprimer.{nez ? "" : " Pour la nourrice, touchez un numéro."}
+        </p>
+      )}
 
       {/* ─── Le piquage, d'abord : son ordre du 18 octobre ───────────────── */}
       <section id="partie-piquage" className="mx-[22px] scroll-mt-[72px]" data-atlas="piquage">
@@ -360,7 +394,7 @@ export default function LePlanDuJardin({
             ))}
           </div>
         )}
-        <BoutonAjouter libelle="Ajouter une pièce" onClick={() => choisir("Ajouter une pièce", "reseau", (x) => r((s) => ajouter(s, "amenee", x, Date.now())))} />
+        {!lectureSeule && <BoutonAjouter libelle="Ajouter une pièce" onClick={() => choisir("Ajouter une pièce", "reseau", (x) => r((s) => ajouter(s, "amenee", x, Date.now())))} />}
         {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026** : l'outil dit à partir de
             combien de mètres le Ø25 ne tient plus, pas seulement le verdict. Une ligne. */}
         {plan.tuyau.debit > 0 && (plan.tuyau.insuffisantMemeEn32 || plan.tuyau.seuil25 > 0) && (
@@ -397,7 +431,6 @@ export default function LePlanDuJardin({
           {dessin ? `, ${virgule(dessin.metresTranchee)} m de tranchée` : ""}
         </h2>
         {plan.secteurs.map((s, i) => {
-          const rd = dessin?.reseaux.find((x) => x.numero === i) ?? null;
           const pointilles = dessin ? liaisonsDuReseau(dessin, plan, i) : [];
           return (
             <div key={`${s.nom}-${i}`} className="mt-[14px] rounded-[6px] px-4 pb-[10px] pt-[14px]" style={{ backgroundColor: colors.card }} data-atlas="carte-reseau">
@@ -414,13 +447,15 @@ export default function LePlanDuJardin({
               )}
               {/* **« Modifier » à droite du nom de chaque zone** — « la A ». Une zone sur
                   deux réseaux s'ouvre sous le premier : deux boîtes pour une zone se contrediraient. */}
-              {parametres.zones.filter((z) => (plan.reseauxDeZone[String(z.id)] ?? []).includes(i)).map((z) => (
+              {zonesDuReseau(parametres, plan, i).map((z) => (
                 <div key={z.id} data-atlas="zone-du-reseau">
                   <p className="mt-1 flex items-center gap-3 text-[14px]">
                     <span className="min-w-0 flex-1" style={{ color: colors.inkSoft }}>{nomDeLaZone(z)}, {cotesEcrites(z)}</span>
-                    <button type="button" onClick={() => setZoneOuverte(zoneOuverte === z.id ? null : z.id)} className="min-h-[40px] bg-transparent text-[14.5px] underline" style={{ color: colors.orTexte }} data-atlas="modifier-zone">
-                      Modifier
-                    </button>
+                    {!lectureSeule && (
+                      <button type="button" onClick={() => setZoneOuverte(zoneOuverte === z.id ? null : z.id)} className="min-h-[40px] bg-transparent text-[14.5px] underline" style={{ color: colors.orTexte }} data-atlas="modifier-zone">
+                        Modifier
+                      </button>
+                    )}
                   </p>
                   {zoneOuverte === z.id && (plan.reseauxDeZone[String(z.id)] ?? [])[0] === i && (
                     <ModifierLaZone key={`${z.id}-${z.L}-${z.l}-${z.ml}`} zone={z} parametres={parametres} onParametres={setParametres} onFermer={() => setZoneOuverte(null)} />
@@ -437,44 +472,19 @@ export default function LePlanDuJardin({
                 </p>
               )}
               <ul className="mt-2 list-none p-0 text-[14.5px]">
-                {rd?.materiels.map((m) => (
-                  <li key={m.libelle} className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
-                    <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{m.nombre}x</span>
-                    <span>{m.libelle}, {m.bridee ? "bridée à" : "portée"} {virgule(m.portee)} m</span>
+                {/* Les mots du PDF d'un plan enregistré : une seule fonction les écrit (`lignes-du-reseau.ts`). */}
+                {lignesDuReseau(compose, retouches, i).map((l) => (
+                  <li key={l.texte} className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+                    {l.quantite ? <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{l.quantite}</span> : <span className="w-[58px] flex-none" />}
+                    <span>{l.texte}</span>
                   </li>
                 ))}
-                {s.famille === "Goutte-à-goutte" && (
-                  <li className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
-                    <span className="w-[58px] flex-none" />
-                    <span>
-                      Goutte-à-goutte Toro, {postes.reseaux[i]?.tube ? `${postes.reseaux[i].tube}, ` : ""}
-                      {retouches.sortie === "boucle" ? "deux lignes en circuit fermé" : "une seule ligne"}
-                      {`, ${metresDeTubeDuReseau(plan, i)} m de tube`}
-                    </span>
-                  </li>
-                )}
-                {/* Zéro mètre tracé n'est pas une longueur : le tuyau reste à mesurer, il ne vaut pas rien. */}
-                {rd && (
-                  <li className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
-                    {rd.metresTuyau > 0 ? (
-                      <>
-                        <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{virgule(rd.metresTuyau, 0)} m</span>
-                        <span>de PEHD Ø{plan.diametres[i] ?? 25}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-[58px] flex-none" />
-                        <span>PEHD Ø{plan.diametres[i] ?? 25}, à mesurer</span>
-                      </>
-                    )}
-                  </li>
-                )}
               </ul>
             </div>
           );
         })}
         {/* Une zone que l'IA n'a pas lue s'ajoute ici, puis s'ouvre pour être glissée à sa place. */}
-        <AjouterUneZone parametres={parametres} onAjoutee={(p, id) => { setParametres(p); setZoneOuverte(id); }} />
+        {!lectureSeule && <AjouterUneZone parametres={parametres} onAjoutee={(p, id) => { setParametres(p); setZoneOuverte(id); }} />}
         <div className="mt-3">
           <LegendeDesSymboles robinet={nez} />
         </div>
@@ -490,16 +500,19 @@ export default function LePlanDuJardin({
             retouches={retouches}
             onPiece={menuDeLaPiece}
             onChaine={menuDeLaChaine}
-            onAjouter={(ou) => choisir("Ajouter une pièce", "reseau", (p) => r((s) => ajouter(s, ou, p, Date.now())))}
+            onAjouter={lectureSeule ? undefined : (ou) => choisir("Ajouter une pièce", "reseau", (p) => r((s) => ajouter(s, ou, p, Date.now())))}
             onSortie={(v) => { r((s) => ({ ...s, sortie: v })); setParametres({ ...parametres, zones: parametres.zones.map((z) => (z.type === "massif" || z.type === "potager" || z.type === "haie" ? { ...z, sortieGoutte: v } : z)) }); }}
             onCouronne={(v) => { r((s) => ({ ...s, couronne: v })); setParametres({ ...parametres, couronne: v }); }}
           />
         ))}
       </section>
 
+      </div>
+
       {/* ─── La liste, et le message au fournisseur ───────────────────────── */}
       <section id="partie-liste" className="mx-[22px] scroll-mt-[72px]" data-atlas="liste">
         <Rubrique>La liste</Rubrique>
+        <div inert={lectureSeule}>
         {chez && chezEux.length > 0 && (
           <Chips valeur={chez.id} choix={chezEux.map((f) => [f.id, f.nom])} onChoix={setVue} libelle="Prix de" />
         )}
@@ -519,7 +532,7 @@ export default function LePlanDuJardin({
           onRemettre={(titre, ref) => r((s) => ligneRemettre(s, `${titre}|${ref}`))}
           onAjouter={(titre) => choisir("Ajouter une pièce", titre === nourrice.nom ? "nourrice" : "reseau", (p) => r((s) => ajouter(s, `liste:${titre}`, p, Date.now())))}
         />
-        <button
+        {!lectureSeule && <button
           type="button"
           onClick={() => setModifier(!modifier)}
           data-atlas="modifier-liste"
@@ -527,8 +540,9 @@ export default function LePlanDuJardin({
           style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}
         >
           {modifier ? "Terminer" : "Modifier ma liste"}
-        </button>
-        {!actionVisible && <div className="mt-[10px]">{boutonEnvoyer}</div>}
+        </button>}
+        {!actionVisible && !lectureSeule && <div className="mt-[10px]">{boutonEnvoyer}</div>}
+        </div>
         {/* **CE QUI N'EST PAS CALCULÉ SE DIT SOUS LE PLAN, LÀ OÙ IL LE LIT** (`CLAUDE.md` §4 ter). */}
         {reserves.length > 0 && (
           <ul className="mt-3 list-none p-0" data-atlas="reserves">
@@ -540,15 +554,19 @@ export default function LePlanDuJardin({
             ))}
           </ul>
         )}
+        {apresLesReserves?.({
+          saisie: { parametres, retouches, reservesDuCroquis: etat.reserves, sansDessin: etat.sansDessin, lecture: null },
+          plan: compose,
+        })}
       </section>
 
-      <section>
+      <section inert={lectureSeule}>
         <Rubrique marge>Les mots du plan</Rubrique>
         <MotsDuPlan texte={texteDesMots} />
       </section>
 
       {/* **ENVOYER, SOUS LE POUCE** : la liste se relit en remontant, l'envoi reste en bas. */}
-      {actionVisible && <ActionDuBas>{boutonEnvoyer}</ActionDuBas>}
+      {lectureSeule ? bas && <ActionDuBas>{bas}</ActionDuBas> : actionVisible && <ActionDuBas>{boutonEnvoyer}</ActionDuBas>}
 
       {menu &&<MenuPiece key={menu.titre + menu.nombre} menu={menu} onFermer={() => setMenu(null)} />}
       {feuille && <ChoisirUnePiece titre={feuille.titre} categorie={feuille.categorie} onChoix={feuille.onChoix} onFermer={() => setFeuille(null)} />}

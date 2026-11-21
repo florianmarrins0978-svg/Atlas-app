@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
 import { purgerPreuvesPerimees } from "@/server/preuve-recente";
 import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
+import { purgerLesDossiersOublies } from "@/server/repositories/dossiers-arrosage";
 import { noterPurgeReussie } from "@/server/journal-purge";
 import { effacerLeResteDesComptesFermes, prevenirAvantLEffacement } from "@/server/repositories/fermeture-compte";
 import { getEnv } from "@/server/env";
@@ -56,6 +57,10 @@ export async function POST(request: Request) {
       // ensemble, il part avant que rien ne s'efface.
       const comptesPrevenus = await prevenirAvantLEffacement();
       const { comptesEffaces, clientsEffaces } = await effacerLeResteDesComptesFermes();
+      // **Les dossiers d'arrosage oubliés depuis cinq ans** (migration 0193) :
+      // leur photo et leur PDF sont partis le jour de l'oubli, il ne reste que
+      // le calcul, qui s'efface à son tour.
+      const { dossiersEffaces } = await purgerLesDossiersOublies();
       const nombrePurges = await purgerFichiersEnAttente();
       /**
        * **Les preuves de ré-authentification périmées, ici et nulle part
@@ -92,7 +97,7 @@ export async function POST(request: Request) {
         preuvesPurgees,
       });
 
-      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees, comptesEffaces, clientsEffaces, comptesPrevenus });
+      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees, comptesEffaces, clientsEffaces, comptesPrevenus, dossiersEffaces });
       return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees, comptesEffaces, comptesPrevenus });
     } catch (err) {
       logger.error("Échec de la purge planifiée des fichiers", { erreur: err });

@@ -93,6 +93,9 @@ import {
   attestationsComptable,
   retoursComptable,
   consommationIa,
+  dossiersArrosage,
+  dossiersArrosageAPurger,
+  plansArrosage,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -263,6 +266,9 @@ export async function exporterEntreprise(
       saLiaisonUrssaf,
       sesInscriptionsUrssaf,
       sesDemandesUrssaf,
+      sesDossiersArrosage,
+      sesPlansArrosage,
+      sesDossiersAPurger,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -531,6 +537,13 @@ export async function exporterEntreprise(
       tx.select(urssafSansCodes).from(liaisonsUrssaf).where(eq(liaisonsUrssaf.entrepriseId, e)),
       tx.select().from(inscriptionsUrssaf).where(eq(inscriptionsUrssaf.entrepriseId, e)),
       tx.select().from(demandesUrssaf).where(eq(demandesUrssaf.entrepriseId, e)),
+      // Ses dossiers d'arrosage et leurs plans enregistrés (migration 0193) :
+      // ce que Cause lui a rendu, figé. Un oublié n'a plus ni nom ni fichier.
+      tx.select().from(dossiersArrosage).where(eq(dossiersArrosage.entrepriseId, e)),
+      tx.select().from(plansArrosage).where(eq(plansArrosage.entrepriseId, e)),
+      // Comme `photos_diagnostic_a_purger` : la file dit quand un dossier
+      // oublié s'effacera.
+      tx.select().from(dossiersArrosageAPurger).where(eq(dossiersArrosageAPurger.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -661,6 +674,9 @@ export async function exporterEntreprise(
       liaisons_urssaf: saLiaisonUrssaf,
       inscriptions_urssaf: sesInscriptionsUrssaf,
       demandes_urssaf: sesDemandesUrssaf,
+      dossiers_arrosage: sesDossiersArrosage,
+      plans_arrosage: sesPlansArrosage,
+      dossiers_arrosage_a_purger: sesDossiersAPurger,
     };
 
     const compte: Record<string, number> = {};
@@ -727,6 +743,13 @@ export async function exporterEntreprise(
      */
     for (const a of lesAchatsTva) ajouter(a.photoCle, "ticket-tva", null, a.fournisseur, jourDe(a.dateAchat));
     for (const ent of entreprise) ajouter(ent.logoStorageKey, "logo");
+    // Ses plans d'arrosage : le PDF archivé et la photo du croquis, au nom du dossier.
+    const nomDuDossier = new Map(sesDossiersArrosage.map((d) => [d.id, d.nom ?? ""]));
+    for (const p of sesPlansArrosage) {
+      const nom = `${nomDuDossier.get(p.dossierId) ?? ""} version ${p.version}`;
+      ajouter(p.pdfCle, "plan-arrosage", null, nom, jourDe(p.createdAt));
+      ajouter(p.photoCle, "croquis-arrosage", null, nom, jourDe(p.createdAt));
+    }
     // Les papiers des véhicules, rangés sous « Véhicules » au nom du camion.
     for (const v of sesVehicules) {
       ajouter(v.carteGriseCle, "vehicule", null, `${v.nom} carte grise`, jourDe(v.carteGriseLe));

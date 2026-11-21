@@ -3,6 +3,9 @@ import { getConfigIA } from "@/server/ai/config";
 import { etatVision } from "@/lib/etat-ia";
 import ArrosageClient from "./ArrosageClient";
 import { garderLaPage } from "@/server/garde-page";
+import { getCurrentCtx } from "@/server/session-ctx";
+import { lirePlan } from "@/server/repositories/dossiers-arrosage";
+import { calculer } from "@/lib/arrosage/plan-enregistre";
 
 /**
  * « Plan d'arrosage » — l'outil, DANS l'application.
@@ -19,8 +22,27 @@ import { garderLaPage } from "@/server/garde-page";
 export const metadata = { title: "Plan d'arrosage, Cause" };
 export const dynamic = "force-dynamic";
 
-export default async function ArrosagePage() {
+export default async function ArrosagePage({ searchParams }: { searchParams: Promise<{ reprendre?: string }> }) {
   await garderLaPage();
+  // « Reprendre dans l'outil » (`/paysage/dossiers-arrosage/…`) : le plan
+  // enregistré repart de SES paramètres et de SES retouches, et se RECALCULE
+  // avec le calcul d'aujourd'hui. Revoir ne recalcule jamais ; reprendre, si.
+  const { reprendre } = await searchParams;
+  const [dossierId, planId] = (reprendre ?? "").split("/");
+  const enregistre = dossierId && planId ? await lirePlan(await getCurrentCtx(), dossierId, planId) : null;
+  const repris = enregistre
+    ? {
+        etat: {
+          etat: "lu" as const,
+          zones: enregistre.saisie.parametres.zones.map((z) => ({ type: z.type, nom: z.nom ?? null, L: z.L ?? null, l: z.l ?? null, ml: z.ml ?? null })),
+          reserves: enregistre.saisie.reservesDuCroquis,
+          sansDessin: enregistre.saisie.sansDessin,
+          parametres: enregistre.saisie.parametres,
+          ...calculer(enregistre.saisie),
+        },
+        retouches: enregistre.saisie.retouches,
+      }
+    : undefined;
   const ia = getConfigIA();
   // **La bonne question n'est pas « une clé existe-t-elle », mais « celui qui
   // va LIRE l'image a-t-il la sienne ».** L'ancienne version répondait vrai dès
@@ -42,6 +64,7 @@ export default async function ArrosagePage() {
       <ArrosageClient
         iaPrete={vision.prete}
         motifIA={vision.prete ? null : vision.raison}
+        repris={repris}
       />
     </div>
   );

@@ -278,6 +278,8 @@ sécurité la moins coûteuse et la plus efficace.
 | Lien public d'une facture | 60 jours | ✅ **appliquée** | Idem |
 | Lien d'un compte rendu d'entretien | **aucune** | ❌ **rien** | Les deux autres expirent, celui-ci non. Écart connu, inscrit dans `TODO.md` |
 | **Fiche de sécurité** (décret 2021-1833) | **au moins deux ans après la signature** — imposée | ✅ **appliquée** | Aucune purge ne touche `fiches_securite` ; ses photos sont retenues par `supprimerPhoto` (migration 0099). Une fiche disparaît avec son chantier, donc avec l'entreprise |
+| **Dossiers d'arrosage** (nom, lien au client, photo du croquis, lecture de l'IA, PDF) | **jusqu'à la suppression du dossier**, ou l'effacement du client | ✅ **appliquée** | Supprimer un dossier, effacer le client ou fermer le compte efface tout ce qui désigne le client, tout de suite (`oublierDesDossiersDans`, 21 novembre 2026). Les fichiers passent par `fichiers_a_purger` |
+| **Calcul d'un plan d'arrosage oublié** (paramètres, plan, liste, réserves) | **5 ans** après l'oubli | ⏳ **en attente** | Sans rien qui désigne le client : la trace de ce que Cause a rendu, en cas de litige sur un réseau. Mise en file effective (`dossiers_arrosage_a_purger`), vidage par le cron de purge (`purgerLesDossiersOublies`). **La clause des conditions générales reste à écrire, par lui et son juriste** |
 | Transcriptions | illimitée | ❌ **rien** | Aucune constante, aucun code. Intention seule |
 | Chantiers, devis, clients | illimitée | ❌ **rien** | Durée de la relation + prescription commerciale — à définir |
 | Historique des prix | illimitée | ❌ **rien** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |

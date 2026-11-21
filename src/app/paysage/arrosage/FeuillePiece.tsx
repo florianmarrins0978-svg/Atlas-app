@@ -348,7 +348,7 @@ function MailAuFournisseur({
  * ses gestes, comme sur la planche soignée du 26 octobre 2026 : la dernière
  * chose qu'on lit est qu'on peut ne rien changer.
  */
-function Feuille({ titre, repere, onFermer, garder = false, children }: { titre: string; repere: string; onFermer: () => void; garder?: boolean; children: React.ReactNode }) {
+export function Feuille({ titre, repere, onFermer, garder = false, children }: { titre: string; repere: string; onFermer: () => void; garder?: boolean; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,.35)" }} onClick={onFermer} data-atlas={repere}>
       <div
