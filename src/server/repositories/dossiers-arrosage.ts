@@ -216,7 +216,10 @@ export type ResultatEnregistrement =
  * contrainte `plans_arrosage_version_uk` le garantit en base quoi qu'il arrive.
  *
  * Le même plan que la dernière version (même empreinte) ne fait pas de
- * version : ses fichiers, rangés pour rien, partent à la purge.
+ * version : ses fichiers, rangés pour rien, partent à la purge. **Un refus
+ * aussi** : l'action range la photo et le PDF avant que ce dépôt tranche, et
+ * un croquis laissé sans rien qui y renvoie resterait chez Cause pour
+ * toujours (`test-dossiers-arrosage-db.ts`).
  */
 export async function enregistrerPlan(
   ctx: Ctx,
@@ -224,13 +227,20 @@ export async function enregistrerPlan(
   plan: NouveauPlan
 ): Promise<ResultatEnregistrement> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const fichiersALaPurge = async () => {
+      for (const cle of [plan.photoCle, plan.pdfCle]) if (cle) await tx.insert(fichiersAPurger).values({ storageKey: cle });
+    };
+    const refuser = async (raison: string): Promise<Refus> => {
+      await fichiersALaPurge();
+      return { ok: false as const, raison };
+    };
     let dossierId: string;
     if ("nouveau" in ou) {
       const lu = nomDuDossier(ou.nouveau.nom);
-      if (!lu.ok) return lu;
-      if (await nomDejaPris(tx, lu.nom, null)) return { ok: false as const, raison: "Un dossier porte déjà ce nom." };
+      if (!lu.ok) return refuser(lu.raison);
+      if (await nomDejaPris(tx, lu.nom, null)) return refuser("Un dossier porte déjà ce nom.");
       const client = await clientValide(tx, ou.nouveau.clientId);
-      if (!client.ok) return client;
+      if (!client.ok) return refuser(client.raison);
       const [d] = await tx
         .insert(dossiersArrosage)
         .values({ entrepriseId: ctx.entrepriseId, nom: lu.nom, clientId: ou.nouveau.clientId })
@@ -243,7 +253,7 @@ export async function enregistrerPlan(
         .where(and(eq(dossiersArrosage.id, ou.dossierId), isNull(dossiersArrosage.oublieLe)))
         .for("update")
         .limit(1);
-      if (!d) return { ok: false as const, raison: "Ce dossier n’existe plus." };
+      if (!d) return refuser("Ce dossier n’existe plus.");
       dossierId = d.id;
     }
 
@@ -253,7 +263,7 @@ export async function enregistrerPlan(
       .where(eq(plansArrosage.dossierId, dossierId))
       .orderBy(desc(plansArrosage.version));
     if (avant[0]?.empreinte === plan.empreinte) {
-      for (const cle of [plan.photoCle, plan.pdfCle]) if (cle) await tx.insert(fichiersAPurger).values({ storageKey: cle });
+      await fichiersALaPurge();
       return { ok: true as const, deja: true as const, dossierId };
     }
     const version = versionSuivante(avant.map((a) => a.version));

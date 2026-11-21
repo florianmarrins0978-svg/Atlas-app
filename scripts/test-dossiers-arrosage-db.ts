@@ -154,6 +154,18 @@ async function main() {
     assert.deepEqual(ouvert?.versions.map((v) => v.version), [2, 1]);
   });
 
+  // Les fichiers sont rangés AVANT que le dépôt tranche (l'action compose le
+  // PDF puis appelle `enregistrerPlan`) : un refus qui les laisserait dans le
+  // stockage y garderait le croquis du client, sans rien qui y renvoie.
+  await test("un enregistrement refusé envoie ses fichiers à la purge", async () => {
+    const pris = await enregistrerPlan(A, { nouveau: { nom: "plan d’arrosage de madame intel", clientId: null } }, unPlan(SAISIE, { photo: "croquis/refus-nom.jpg", pdf: "plans/refus-nom.pdf" }));
+    assert.deepEqual(pris, { ok: false, raison: "Un dossier porte déjà ce nom." });
+    const parti = await enregistrerPlan(B, { dossierId: dossierA }, unPlan(SAISIE, { photo: "croquis/refus-dossier.jpg", pdf: "plans/refus-dossier.pdf" }));
+    assert.deepEqual(parti, { ok: false, raison: "Ce dossier n’existe plus." });
+    const { rows } = await pool.query(`SELECT storage_key FROM fichiers_a_purger WHERE storage_key LIKE '%refus-%' ORDER BY storage_key`);
+    assert.deepEqual(rows.map((r) => r.storage_key), ["croquis/refus-dossier.jpg", "croquis/refus-nom.jpg", "plans/refus-dossier.pdf", "plans/refus-nom.pdf"]);
+  });
+
   await test("un plan relu est celui qui a été rendu, sans recalcul", async () => {
     const p = await lirePlan(A, dossierA, planA);
     assert.ok(p);

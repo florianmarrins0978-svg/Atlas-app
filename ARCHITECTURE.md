@@ -37949,6 +37949,13 @@ La première version rendait inerte tout le contenu du plan revu, emplacement
 s'ouvrait pas. Seuls les blocs qui modifient sont désormais inertes, et
 `test-dossiers-arrosage-e2e.ts` touche le lien.
 
+**Un refus ne laisse aucun fichier derrière lui.** L'action range la photo et
+le PDF avant que le dépôt tranche (nom déjà pris, dossier ou client disparu) ;
+chaque refus de `enregistrerPlan` les rend donc à `fichiers_a_purger`, comme le
+même plan enregistré deux fois. Le PDF se compose avant de ranger quoi que ce
+soit : une panne de composition ne laisse rien. Trouvé à la relecture, tenu par
+`test-dossiers-arrosage-db.ts`.
+
 **Supprimer un dossier le retire du journal de navigation**, lui et ses plans,
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.

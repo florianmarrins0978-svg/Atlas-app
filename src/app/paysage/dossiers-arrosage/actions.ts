@@ -15,7 +15,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getConfigIA } from "@/server/ai/config";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { preparerPhotoEntrante } from "@/server/photo-entrante";
+import { preparerPhotoEntrante, type PhotoEntrante } from "@/server/photo-entrante";
 import { enregistrerObjet } from "@/server/storage";
 import { versionExecutee } from "@/server/version-executee";
 import { getEntreprise } from "@/server/repositories/entreprises";
@@ -117,18 +117,22 @@ export async function enregistrerLePlanAction(formulaire: FormData): Promise<Eta
   }
 
   // La photo du croquis (sa réponse 3) : nettoyée par la porte commune, GPS retiré.
-  let photoCle: string | null = null;
   const photo = formulaire.get("croquis");
+  let croquis: PhotoEntrante | null = null;
   if (photo instanceof File && photo.size > 0) {
     const prete = await preparerPhotoEntrante(photo, "croquis d'arrosage");
     if (!prete.ok) return { etat: "refus", raison: prete.raison };
-    photoCle = (await enregistrerObjet(`arrosage/${ctx.entrepriseId}/croquis`, prete.photo.octets, prete.photo.extension, prete.photo.mimeType)).storageKey;
+    croquis = prete.photo;
   }
 
   // Le PDF, archivé maintenant et jamais reconstruit (comme celui d'une facture).
+  // Composé AVANT de ranger quoi que ce soit : une panne ici ne laisse aucun
+  // fichier sans rien qui y renvoie. Après, un refus du dépôt les rend à la
+  // purge (`enregistrerPlan`).
   const entreprise = await getEntreprise(ctx);
   const maintenant = new Date();
   const pdf = await composerLePdfDuPlan(donneesDuPdf({ entreprise: entreprise?.nom ?? "", dossier: nomDuDossierChoisi, enregistreLe: maintenant, saisie, fige }));
+  const photoCle = croquis ? (await enregistrerObjet(`arrosage/${ctx.entrepriseId}/croquis`, croquis.octets, croquis.extension, croquis.mimeType)).storageKey : null;
   const pdfCle = (await enregistrerObjet(`arrosage/${ctx.entrepriseId}/plans`, Buffer.from(pdf), ".pdf", "application/pdf")).storageKey;
 
   const r = await enregistrerPlan(ctx, ou, {

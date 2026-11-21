@@ -52,7 +52,7 @@ même soir, qui vaut oui à mes cinq recommandations.*
    `plans_enregistres`, et il n'y a pas de colonne `moteur` : le modèle
    enregistré dit déjà qui a lu la photo.
 
-### Deux défauts trouvés avant toi
+### Les défauts trouvés avant toi
 
 Par la suite navigateur qui fait ton geste, du dessin au dossier supprimé :
 
@@ -62,6 +62,12 @@ Par la suite navigateur qui fait ton geste, du dessin au dossier supprimé :
 2. **Après une suppression, la flèche de « Mes dossiers » ramenait au dossier
    supprimé.** Il sort maintenant de l'historique, comme une fiche client
    effacée.
+
+Un trouvé en relisant le code : **un enregistrement refusé (un nom déjà pris,
+par exemple) laissait la photo du croquis et le PDF dans le stockage**, sans
+rien qui y renvoie : la photo de ton client serait restée chez Cause pour
+toujours. Ils partent maintenant à la purge, comme ceux d'un plan enregistré
+deux fois.
 
 Et deux vus en regardant les écrans : la feuille « Supprimer ce dossier ? »
 promettait d'effacer une photo qu'un plan dessiné n'a pas ; « 3 bar » se
