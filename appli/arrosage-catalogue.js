@@ -755,7 +755,8 @@ var CATALOGUE = {
     // sortie part en 32. Absent du relevé Aqua Plus : sans référence, à sa
     // règle (« n'importe quel fournisseur sait de quoi on parle »).
     'te-25-32-25':         { nom:'Té 90° réduit 25×32×25', marque:'Plasson' },
-    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
+    // Pas un Dura (sa réponse du 22 novembre 2026, « oui retire Dura ») : Aqua Plus le vend sans marque (UPE1116).
+    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', unite:'ml' },
     // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
     // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
     // ceux d'Aqua Plus 2026, p. 58 ; sans référence, à sa demande (« ils sauront
@@ -1447,17 +1448,20 @@ var CATALOGUE = {
     // et la pièce en dessous c'est un 25 x 1" »*. L'union MF et le raccord femelle
     // 25 x 3/4" de la veille sont remplacés partout où la fiche les comptait.
     'union':         { nom:'Manchon union 1" FF', marque:'Dura', aquaplus:'ODU329010' },
-    'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura', aquaplus:'BVA932' },
+    // Sans marque : ce n'est pas une Dura (sa correction du 22 novembre 2026), et Aqua Plus la vend sans en nommer une.
+    'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', aquaplus:'BVA932' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird', aquaplus:'REV100DVM9V' },
     'raccord-male25':{ nom:'Raccord mâle 25 x 1"', marque:'Plasson', aquaplus:'OPL70202526' },
     // **Un tuyau en Ø32 se visse par le même raccord en 32** (sa réponse du
     // 20 octobre 2026, « oui ») : sur la sortie 1" de la vanne d'un réseau en
     // Ø32, et à l'entrée quand l'amenée est en Ø32. Aqua Plus 2026, p. 29.
     'raccord-male32':{ nom:'Raccord mâle 32 x 1"', marque:'Plasson', aquaplus:'OPL70203226' },
-    'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura', aquaplus:'RG17100' },
-    'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura', aquaplus:'RG17106' },
-    'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura', aquaplus:'RG17106' },
-    'regard-jumbo6': { nom:'Regard jumbo 6 voies', marque:'Dura', aquaplus:'RG17106' },
+    // Les regards ne sont pas des Dura (sa correction du 22 novembre 2026) : Aqua Plus
+    // les range dans sa série VB, sans les dire Dura. Aucune autre marque n'est écrite à leur place.
+    'regard-rect12': { nom:'Regard rectangle 12"', aquaplus:'RG17100' },
+    'regard-rg17106':{ nom:'Regard jumbo RG17106', aquaplus:'RG17106' },
+    'regard-jumbo5': { nom:'Regard jumbo 5 voies', aquaplus:'RG17106' },
+    'regard-jumbo6': { nom:'Regard jumbo 6 voies', aquaplus:'RG17106' },
     // Le nom d'Aqua Plus, sa demande du 18 octobre 2026 (il l'appelait « té 1" MMF ») : c'est sous ce
     // nom que le fournisseur le cherche. La clé reste `te-mmf`, elle ne s'affiche nulle part.
     'te-mmf':        { nom:'Té 1" MFF', marque:'Dura', aquaplus:'ODU301010' },
@@ -1478,7 +1482,8 @@ var CATALOGUE = {
        Ces pièces ne remplacent PAS une fiche entière : elles s'appliquent
        PAR VOIE, à celles qui alimentent une zone goutte-à-goutte. Voir
        `CATALOGUE.ficheNourrice`, plus bas, qui fait ce mélange. */
-    'regulateur-ff34':      { nom:'Régulateur de pression FF 3/4"', marque:'Dura' },
+    // Pas un Dura non plus (sa correction du 22 novembre 2026) : Aqua Plus le vend sans marque (BRP870500).
+    'regulateur-ff34':      { nom:'Régulateur de pression FF 3/4"' },
     'electrovanne-100dv-ff':{ nom:'Électrovanne 100 DV 1" FF 9V', marque:'Rain Bird', aquaplus:'REV100DV9V' },
     'mamelon-droit-1':      { nom:'Mamelon fileté MM 1"', marque:'Dura', aquaplus:'ODU8303' }
   },

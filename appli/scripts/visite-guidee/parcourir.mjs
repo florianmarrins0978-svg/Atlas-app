@@ -154,6 +154,28 @@ async function parcourirLaVisite(largeur, hauteur) {
   await Promise.all([q.waitForURL((u) => !String(u).includes("visite-guidee"), { timeout: 8000 }).catch(() => {}), q.click(".g-droite").catch(() => {})]);
   dire(cas, !q.url().includes("visite-guidee"), "« Quitter la visite » ne sort pas de la visite");
   await sortie.ctx.close();
+  // Un champ d'un écran figé ne prend jamais la main : touché, il ferait zoomer
+  // l'iPhone (un texte de moins de 16 points), et la page se baladait ensuite de
+  // droite à gauche (sa remarque du 22 novembre, sur les Réglages de la visite).
+  const champs = await page({ viewport: { width: largeur, height: hauteur } });
+  const c = champs.p;
+  const toucherUnChamp = async (ou) => {
+    const pt = await c.evaluate(() => { const e = [...document.querySelectorAll(".visite-ecran:not([hidden]) :is(input:not([type=hidden]), textarea, select)")].find((x) => { const b = x.getBoundingClientRect(); return b.width > 20 && b.top > 0 && b.bottom < innerHeight - 140; }); if (!e) return null; const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    if (!pt) { dire(cas, false, `${ou} : aucun champ à toucher`); return; }
+    await c.evaluate(() => { window.__pris = ""; document.addEventListener("focusin", (e) => { if (e.target.closest?.(".visite-ecran") && e.target.matches("input, textarea, select, [contenteditable]")) window.__pris ||= e.target.getAttribute("aria-label") || e.target.name || e.target.tagName; }, { once: false }); });
+    await c.mouse.click(pt.x, pt.y); await c.waitForTimeout(150);
+    const pris = await c.evaluate(() => window.__pris);
+    dire(cas, !pris, `${ou} : le champ « ${pris} » prend la main quand on le touche`);
+  };
+  await c.evaluate(() => { const r = visite.etapes.findIndex((e) => e.etat === "08-avant-de-chiffrer"); while (visite.etape() < r) document.querySelector(".g-droite").click(); });
+  await c.waitForTimeout(400);
+  await toucherUnChamp("« Avant de chiffrer »");
+  await c.evaluate(() => { while (!visite.libre()) document.querySelector(".g-droite").click(); });
+  await c.waitForTimeout(300);
+  await c.evaluate(() => document.querySelector('.visite-ecran:not([hidden]) a[href="/reglages/identite"]').click());
+  await c.waitForTimeout(400);
+  await toucherUnChamp("Réglages, identité");
+  await champs.ctx.close();
 }
 
 // Les boutons à essayer, enchaînés sans Retour, puis Suivant.

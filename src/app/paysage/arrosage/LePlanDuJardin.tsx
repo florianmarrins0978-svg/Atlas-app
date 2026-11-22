@@ -7,7 +7,7 @@ import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { montageDuPlan } from "@/lib/arrosage/le-plan";
 import { calculer, composer, robinetDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
 import { cotesEcrites, lignesDuReseau, zonesDuReseau } from "@/lib/arrosage/lignes-du-reseau";
-import { composerLesPostes, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zonesGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { composerLesPostes, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, phraseDeLaNourrice, referenceFournisseur, sommeDesGroupes, titreDuDepart, voiesEnGoutte, zonesGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
@@ -155,7 +155,7 @@ export default function LePlanDuJardin({
   const prix = chez ? lesPrixDe(chez) : {};
   const destinataire = chez ? sesPrix.fournisseurs.find((f) => f.id === chez.id) : undefined;
   // Les voies vivantes : un réseau supprimé enlève la sienne (19 octobre 2026).
-  const nbGoutte = nourrice.voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+  const nbGoutte = voiesEnGoutte(plan, nourrice.voies);
 
   const r = (f: (r: Retouches) => Retouches) => setRetouches((prev) => f(prev));
   // **LE Ø25 OU LE Ø32, « la C »** (20 octobre 2026) : le calcul refait le plan
@@ -417,7 +417,7 @@ export default function LePlanDuJardin({
           <Rubrique>La nourrice</Rubrique>
           <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{nourrice.nom}</h2>
           <p className="mt-[6px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-            Une voie par réseau, numérotées de gauche à droite après l’arrivée.{nbGoutte ? " Le goutte-à-goutte est à droite." : ""}
+            {phraseDeLaNourrice(nbGoutte)}
           </p>
           <Plage>
             {basculeSonde}

@@ -165,6 +165,19 @@ console.log("\n=== Ce que la discussion peut changer ===\n");
     cotesDuPlanTiennentDebout(plan([{ id: 1, type: "haie", ml: 40 }])).ok,
     "une haie ordinaire passe aussi"
   );
+  // Ce que l'IA avait lu part dans la saisie d'un dossier : relu comme le reste.
+  dire(
+    cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 16, l: 13, luSurLaPhoto: { L: 16, l: 12, deduites: ["l"] } }])).ok,
+    "une cote lue ordinaire passe"
+  );
+  dire(
+    !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 16, l: 13, luSurLaPhoto: { L: Infinity, l: 12, deduites: [] } }])).ok,
+    "une cote lue infinie est refusée"
+  );
+  dire(
+    !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 16, l: 13, luSurLaPhoto: "12 m" }])).ok,
+    "une cote lue illisible est refusée"
+  );
 
   dire(
     !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 100000, l: 100000 }])).ok,

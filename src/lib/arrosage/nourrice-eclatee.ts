@@ -176,6 +176,9 @@ const CAT = CATALOGUE as unknown as { ficheNourrice(n: number, goutte: number): 
  * Composer la nourrice de `voies` voies, dont `nbGoutte` alimentent du
  * goutte-à-goutte. `null` quand le catalogue n'a pas de fiche pour ce nombre.
  */
+/** Six décimales : ce qui part dans le DOM ne dépend plus du moteur qui l'a calculé. */
+const arrondi = (x: number) => Math.round(x * 1e6) / 1e6;
+
 export function composerNourrice(voies: number, nbGoutte: number): NourriceComposee | null {
   const fiche = CAT.ficheNourrice(voies, nbGoutte);
   if (!fiche) return null;
@@ -204,8 +207,14 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
     if (b) {
       ax = f.a[0] * b.w; ay = f.a[1] * b.h;
       const bx = f.b[0] * b.w, by = f.b[1] * b.h;
-      echelle = f.L / Math.hypot(bx - ax, by - ay);
-      angle = ((Math.PI / 2 - Math.atan2(by - ay, bx - ax)) * 180) / Math.PI;
+      // Arrondis ICI, là où ils naissent : `Math.atan2` et `Math.hypot` ne
+      // rendent pas le même dernier chiffre dans Node et dans Chrome, et le plan
+      // revu, rendu au serveur, rougissait à l'hydratation sur cette rotation.
+      // Un millionième de degré ne se voit pas ; une transformation qui diffère
+      // d'un moteur à l'autre, React la refuse.
+      ax = arrondi(ax); ay = arrondi(ay);
+      echelle = arrondi(f.L / Math.hypot(bx - ax, by - ay));
+      angle = arrondi(((Math.PI / 2 - Math.atan2(by - ay, bx - ax)) * 180) / Math.PI);
     }
     poses.push({ haut: false, ref, numero: numero(ref), x, y, L: f.L, angle, echelle, ax, ay });
     pris(ref);

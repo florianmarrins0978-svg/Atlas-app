@@ -15,9 +15,14 @@ import PlanDessine, { LegendeDesSymboles } from "../arrosage/PlanDessine";
 import { montageDuPlan } from "@/lib/arrosage/le-plan";
 import { cotesEcrites, lignesDuReseau, zonesDuReseau } from "@/lib/arrosage/lignes-du-reseau";
 import { resumeDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
-import { liaisonsDuReseau, quantiteDeLigne, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
+import { liaisonsDuReseau, phraseDeLaNourrice, quantiteDeLigne, voiesEnGoutte, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
+import { photoDeLaNourrice } from "@/lib/arrosage/nourrice-en-photo";
+import { photoDe } from "@/lib/arrosage/photos";
+import { composerNourrice } from "@/lib/arrosage/nourrice-eclatee";
+import type { Retouches } from "@/lib/arrosage/retouches";
+import type { Groupe } from "@/lib/arrosage/postes";
 import { nomDeLaZone } from "@/lib/arrosage/zones-du-plan";
-import type { DonneesPdfDuPlan, SegmentDeTexte } from "@/server/pdf/plan-arrosage-pdf";
+import type { DonneesPdfDuPlan, LigneNumerotee, SegmentDeTexte } from "@/server/pdf/plan-arrosage-pdf";
 import type { NoeudSvg } from "@/server/pdf/svg-vers-pdf";
 
 /** Les éléments que rend un composant sans état, à plat : les fonctions appelées, les fragments ouverts. */
@@ -61,6 +66,55 @@ function legende(robinet: boolean): DonneesPdfDuPlan["legende"] {
     }));
 }
 
+/**
+ * La page de la nourrice — sa demande du 22 novembre 2026 : *« il manque la
+ * nourrice »*. Son éclaté vu du dessus (la photo de la 3D, `nourrice-en-photo.ts`)
+ * et ses pièces, celles que la liste compte. Au nez de robinet il n'y a pas de
+ * nourrice ; supprimée en entier, elle n'a plus rien à montrer.
+ *
+ * **Numérotées comme à l'écran** (sa demande du même soir : savoir tout de suite
+ * à quoi correspond chaque ligne) : dans l'ordre de `composerNourrice`, que la
+ * légende de l'écran suit. Le bout de tube sous chaque voie n'est pas numéroté :
+ * c'est le départ du réseau, compté avec lui, et son diamètre est celui du
+ * réseau. Ce que la photo ne montre pas (regard, programmateur, pile…) vient
+ * après, sans numéro, comme le bac « Avec la nourrice » de l'écran.
+ */
+function laNourrice(fige: PlanFige, r: Retouches, nez: boolean): DonneesPdfDuPlan["nourrice"] {
+  const n = fige.nourrice;
+  if (nez || n.voies.length === 0 || Object.keys(n.lignes).length === 0) return null;
+  const goutte = voiesEnGoutte(fige.plan, n.voies);
+  const ordre = (composerNourrice(n.voies.length, goutte)?.ordre ?? []).filter((ref) => ref in n.nombre);
+  // La pièce qu'il a mise à la place compte sous SA référence ; une pièce supprimée reste, barrée.
+  const montree = (ref: string) => r.remplacees[`nr:${ref}`]?.ref ?? ref;
+  const numerotees = ordre.map((ref, i) => {
+    const ligne = n.lignes[montree(ref)];
+    const barree = n.barrees[montree(ref)];
+    return { numero: i + 1, ref, quantite: ligne ? quantiteDeLigne(ligne) : null, nom: (ligne ?? barree)?.nom ?? ref, retiree: !ligne };
+  });
+  const vues = new Set(ordre.map(montree));
+  return {
+    titre: n.nom,
+    phrase: phraseDeLaNourrice(goutte),
+    photo: photoDeLaNourrice(n.voies.length, goutte),
+    places: `${n.voies.length}-${goutte}`,
+    numerotees,
+    avec: Object.entries(n.lignes)
+      .filter(([ref]) => !vues.has(ref))
+      .map(([, l]) => ({ quantite: quantiteDeLigne(l), nom: l.nom })),
+  };
+}
+
+/**
+ * Les pièces d'un réseau, numérotées : celles de SON groupe dans la liste, dans
+ * le même ordre, chacune avec sa photo. Le PDF pose le numéro sur chaque photo
+ * de la page.
+ */
+function laListeDuReseau(groupes: Groupe[], i: number): { liste: LigneNumerotee[]; numeros: Record<string, number> } {
+  const g = groupes.find((x) => x.bloc === String(i));
+  const liste = Object.entries(g?.lignes ?? {}).map(([ref, l], k) => ({ numero: k + 1, ref, quantite: quantiteDeLigne(l), nom: l.nom, photo: photoDe(ref) }));
+  return { liste, numeros: Object.fromEntries(liste.map((l) => [l.ref, l.numero])) };
+}
+
 export function donneesDuPdf(d: { entreprise: string; dossier: string; enregistreLe: Date; saisie: SaisieDuPlan; fige: PlanFige }): DonneesPdfDuPlan {
   const { plan, dessin, postes, groupes } = d.fige;
   const nez = montageDuPlan(d.saisie.parametres) === "nez";
@@ -70,6 +124,7 @@ export function donneesDuPdf(d: { entreprise: string; dossier: string; enregistr
     date: d.enregistreLe.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" }),
     resume: `${resumeDuPlan(d.fige)}.`,
     legende: legende(nez),
+    nourrice: laNourrice(d.fige, d.saisie.retouches, nez),
     reseaux: postes.reseaux.map((r) => ({
       titre: `Réseau ${r.i + 1}`,
       couleur: r.couleur,
@@ -83,6 +138,7 @@ export function donneesDuPdf(d: { entreprise: string; dossier: string; enregistr
       rail: r.rail,
       ajoutees: r.ajoutees,
       chaine: r.chaine,
+      ...laListeDuReseau(groupes, r.i),
     })),
     groupes: groupes.map((g) => ({ titre: g.titre, lignes: Object.values(g.lignes).map((e) => ({ quantite: quantiteDeLigne(e), nom: e.nom })) })),
   };

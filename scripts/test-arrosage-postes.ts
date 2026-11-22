@@ -151,6 +151,25 @@ cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutt
   exige(liste.nombre["mamelon"] === 4, `${liste.nombre["mamelon"]} mamelons réduits, la fiche en compte 4`);
 });
 
+cas("la nourrice éclatée s'écrit pareil au serveur et au navigateur : angle et échelle arrondis (22 novembre 2026)", () => {
+  // `Math.atan2` et `Math.hypot` ne rendent pas le même dernier chiffre dans
+  // Node et dans Chrome : le plan revu, rendu au serveur, rougissait à
+  // l'hydratation sur la rotation d'une pièce (14e décimale). Un nombre qui
+  // part dans le DOM ne garde donc que ce qu'un œil peut voir.
+  const decimales = (x: number) => (String(x).split(".")[1] ?? "").length;
+  for (const [voies, goutte] of [[1, 0], [3, 1], [4, 1], [6, 2]] as const) {
+    const n = composerNourrice(voies, goutte);
+    if (!n) continue;
+    const colonnes = n.poses.filter((p) => !p.haut);
+    exige(colonnes.some((p) => p.angle !== 0), `${voies} voies : aucune pièce inclinée, le contrôle ne mesure rien`);
+    for (const p of colonnes) {
+      for (const [nom, v] of [["angle", p.angle], ["échelle", p.echelle], ["ax", p.ax], ["ay", p.ay]] as const) {
+        exige(decimales(v) <= 6, `${voies} voies, ${p.ref} : ${nom} ${v} garde ${decimales(v)} décimales`);
+      }
+    }
+  }
+});
+
 cas("sur le dessin de la nourrice, deux unions en moins se grisent, une changée se dore, dans l'ordre du dessin", () => {
   const n = composerNourrice(4, 1)!;
   const unions = n.poses.map((p, i) => [p.ref, i] as const).filter(([ref]) => ref === "union").map(([, i]) => i);

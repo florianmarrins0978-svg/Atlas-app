@@ -6,7 +6,7 @@ Proposé : poser une vraie question avant le plan quand le piquage est sur un ro
 
 ## LES NUMÉROS DE LA NOURRICE EN 3D : CODÉS LE 22 NOVEMBRE 2026, CE QUI RESTE
 
-Sa planche `appli/arrosage-nourrice-3d-numeros.html`, son choix (la A, à l'éclaté), « Voir » et les ombres : codés (`ARCHITECTURE.md` §603). **Ce qui reste** : la batterie de son niveau, à son « oui ». **Le bas blanc de la 3D sous la barre collante : un défaut du Chromium d'ici, pas de l'appli** (enquêté le 22 novembre 2026, à sa demande de le corriger). Quand un élément posé par-dessus recouvre le haut d'une toile WebGL, ce Chromium sans carte graphique (SwiftShader) ne peint plus le bas de la toile, sur la même hauteur. Reproduit avec une page de six lignes sans rien de l'appli (une barre collante, une toile WebGL), à l'écran (Xvfb) comme en capture, barre collante ou fixe, opaque ou non ; une toile 2D n'a rien. Rien n'y change côté page (coins, coupe, `will-change`, `isolation`, `contain`), sauf `desynchronized: true` sur le contexte WebGL, qui change la façon dont le navigateur présente la toile : **non appliqué**, ce serait un pansement pour un navigateur de test. Sur iPhone (WebKit), ce défaut de Chromium ne peut pas se produire. **S'il le voit sur un vrai appareil** (Chrome sur Android ou sur son PC), on revient ici : `desynchronized` est la piste.
+Sa planche `appli/arrosage-nourrice-3d-numeros.html`, son choix (la A, à l'éclaté), « Voir » et les ombres : codés (`ARCHITECTURE.md` §607). **Ce qui reste** : la batterie de son niveau, à son « oui ». **Le bas blanc de la 3D sous la barre collante : un défaut du Chromium d'ici, pas de l'appli** (enquêté le 22 novembre 2026, à sa demande de le corriger). Quand un élément posé par-dessus recouvre le haut d'une toile WebGL, ce Chromium sans carte graphique (SwiftShader) ne peint plus le bas de la toile, sur la même hauteur. Reproduit avec une page de six lignes sans rien de l'appli (une barre collante, une toile WebGL), à l'écran (Xvfb) comme en capture, barre collante ou fixe, opaque ou non ; une toile 2D n'a rien. Rien n'y change côté page (coins, coupe, `will-change`, `isolation`, `contain`), sauf `desynchronized: true` sur le contexte WebGL, qui change la façon dont le navigateur présente la toile : **non appliqué**, ce serait un pansement pour un navigateur de test. Sur iPhone (WebKit), ce défaut de Chromium ne peut pas se produire. **S'il le voit sur un vrai appareil** (Chrome sur Android ou sur son PC), on revient ici : `desynchronized` est la piste.
 
 **Un trou du calcul du niveau, vu en posant cette planche** : `npm run niveau` classe `appli/nourrice-3d/` au niveau 1 (« rien qui s'exécute »), or l'écran du plan l'importe depuis le 22 novembre (`ARCHITECTURE.md` §601). Une retouche de la 3D peut donc casser l'appli sans qu'aucun contrôle ne soit exigé. À corriger dans `scripts/garde-fusion-main.mjs` (outillage, niveau 2) : un fichier de `appli/` que `src/` importe prend le niveau de ce qui l'importe. En attendant, une retouche de `appli/nourrice-3d/` se joue avec `npx tsc --noEmit` et la construction.
 
@@ -87,28 +87,28 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
 **Ce qui reste, et à qui :**
 
+- **LIVRÉ SUR `main` LE 22 NOVEMBRE 2026** (batterie entière au vert sur
+  l'état livré : 617 suites base sur 617, 218 navigateur sur 218, connexion
+  derrière un proxy) : le plan en couleur agrandi dans le PDF, le mot
+  « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §603),
+  l'angle de la nourrice éclatée arrondi, « lu 2 m, corrigé par vous »
+  (§604), la page de la nourrice avec l'éclaté 3D (§605), les numéros et les
+  photos des pièces sur chaque page (§606), la vanne de purge, le régulateur,
+  les regards et le PEBD Ø16 sans la marque Dura ;
+- **« lu 2 m, corrigé par vous » n'a pas été regardé à l'écran** : il faut un
+  serveur. À regarder sur un plan fait depuis une photo, dont une cote a été
+  corrigée ;
+- **quand la session de la 3D change une pièce** (`appli/nourrice-3d/`),
+  rejouer `npx tsx scripts/rendre-nourrice-eclatee.mts` et commiter les
+  photos et `places.json` : le contrôle le réclame ;
+- **`scripts/verifier-maquette-arrosage-plan.mjs` est rouge sur `main`**
+  (« Cannot read properties of null (reading 'getAttribute') ») : vu le
+  22 novembre, déjà rouge avant le lot de cette session, dont les fichiers de
+  maquette sont ceux de `main` à la vanne près. Pas cherché plus loin ;
 - **la clause des conditions générales** (le calcul d'un dossier supprimé gardé
   5 ans, sans rien qui désigne le client) : **à lui et à son juriste**. Les
   conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la
   durée ;
-- **le mot « nourrice » est barré par ce qui part de la nourrice**, sur le
-  plan en couleur d'un réseau (`PlanDessine.tsx`), à l'écran comme dans le
-  PDF, qui reprend ce dessin : la tranchée grise, le tuyau du réseau, les
-  pointillés du goutte-à-goutte. Sur le réseau 2 du jardin d'essai, le
-  losange du té égal est à moitié sous le rectangle de la nourrice, et le
-  rond vert couvre la fin du mot. Regardé le 21 novembre au soir sur les
-  quatre réseaux ; d'abord décrit, à tort, comme « le mot mord sur le
-  losange ». L'appli, sur son oui ;
-- **le plan revu rougit à l'hydratation, en développement** : l'angle de
-  rotation d'une pièce de la nourrice éclatée (`NourriceEclatee.tsx`) ne
-  tombe pas pareil au serveur et dans le navigateur à la 14ᵉ décimale. Rien ne
-  se voit ; React garde la valeur du serveur. Apparu avec le plan revu, le
-  premier à rendre la nourrice au serveur. La racine : arrondir l'angle
-  avant de l'écrire. Niveau 2, sur son oui ;
-- **« Voir la saisie » ne dit pas ce qu'il a corrigé** de la lecture de l'IA
-  (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée dans
-  la saisie, la comparaison zone par zone n'est pas écrite. Les cotes montrées
-  sont celles qui ont servi au calcul ;
 - **le PDF n'a pas été lu sur son iPhone** : les pages se mesurent avec les
   polices embarquées (Inter, la serif d'Atlas), donc la même chose partout,
   mais personne ne l'a ouvert là.

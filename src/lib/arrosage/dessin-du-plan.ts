@@ -16,6 +16,7 @@
  * dessine, le serveur pour relire ce qui arrive. Une seule règle des deux côtés
  * (`CLAUDE.md` §3).
  */
+import { lireLesCotesLues, type CotesLues } from "./lu-sur-la-photo";
 import type { CroquisLu, ZoneLue } from "@/server/ai/services/lire-croquis";
 import {
   cadreDe,
@@ -74,6 +75,8 @@ export type ZoneDessinee = Forme & {
   ecartBord?: number;
   /** Les lignes posées dans la longueur ou dans la largeur. Absent : sur le grand côté. */
   sensLignes?: SensDesLignes;
+  /** Ce que l'IA avait lu de cette zone sur la photo (`lu-sur-la-photo.ts`). Absent : dessinée ou ajoutée à la main. */
+  luSurLaPhoto?: CotesLues;
 };
 
 export type SensDesLignes = "longueur" | "largeur";
@@ -432,6 +435,9 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
     const courbes = lireTable(z.courbes, COTES, courbure);
     if (courbes === "faux") return { ok: false, raison: `La forme de « ${appel} » n’est pas lisible. Reprenez-la.` };
     if (courbes) zone.courbes = courbes;
+    const lues = lireLesCotesLues(z.luSurLaPhoto, COTE_MAX_M);
+    if (lues === "faux") return { ok: false, raison: `Ce que la photo disait de « ${appel} » n’est pas lisible. Reprenez le dessin.` };
+    if (lues) zone.luSurLaPhoto = lues;
     zones.push(zone);
   }
 
@@ -578,6 +584,9 @@ export function croquisDuDessin(d: DessinDuPlan, pointDEau: "compteur" | "robine
       // coupé en morceaux, chacun refait ses lignes sur sa propre largeur. Une
       // seule ligne choisie, ou un massif entier, part avec son nombre.
       if (haie && lignes) lue.lignes = lignes.lignes;
+      // Ce que l'IA avait lu suit la zone ENTIÈRE : un morceau coupé autour
+      // d'un massif n'a été lu nulle part (`lu-sur-la-photo.ts`).
+      if (!coupee && z.luSurLaPhoto) lue.luSurLaPhoto = z.luSurLaPhoto;
       if (z.type === "massif" && lignes) {
         lue.sensLignes = lignes.sens;
         lue.ecartBord = lignes.bord;

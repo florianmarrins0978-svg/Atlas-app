@@ -180,13 +180,10 @@ export type Dessin = {
   metresTranchee: number;
   nourrice: Point;
   /**
-   * Où écrire le mot « nourrice » — DANS le terrain, jamais dehors.
-   *
-   * **Vu à la capture, pas au test** (`CLAUDE.md` §5). Le regard se pose
-   * presque toujours en bord de pelouse ; son libellé écrit vers l'extérieur
-   * tombait donc exactement sur la cote du côté — « 12 m » et « nourrice »
-   * l'un sur l'autre. Les cotes vivent dehors, ce mot vit dedans : c'est ce qui
-   * garantit qu'ils ne se rencontrent pas, quel que soit l'endroit choisi.
+   * Où écrire le mot « nourrice » : au plus près du regard, là où RIEN n'est
+   * dessiné (`placeDuMotNourrice`). Une ancre `start` ou `end` ne se lit plus
+   * que dans un plan enregistré avant le 22 novembre 2026, qui ne se recalcule
+   * jamais.
    */
   etiquetteNourrice: Point & { ancre: "start" | "middle" | "end" };
   /** Le trait pointillé quand le regard est hors de la pelouse, ou sur un autre morceau. */
@@ -200,6 +197,24 @@ export type ResultatDessin =
 
 /** Une marge autour du terrain : les cotes et la nourrice vivent dehors. */
 const MARGE = 3.2;
+
+/**
+ * Ce que le plan trace, en mètres : `PlanDessine.tsx` le dessine avec ces
+ * mesures, et le mot « nourrice » et les losanges s'en écartent avec les mêmes.
+ * Deux copies auraient fini par diverger, et le mot serait retombé sur un trait.
+ */
+export const EPAISSEURS = {
+  contour: 0.26,
+  ligne: 0.26,
+  /** L'antenne Ø16 : plus fine que la ligne Ø25, comme sur le chantier. */
+  antenne: 0.13,
+  tranchee: 0.95,
+  liaison: 0.2,
+};
+/** Le rectangle du regard, autour du point qu'IL a posé ; au robinet, la croix tient dedans. */
+export const REGARD = { demiLargeur: 0.75, demiHauteur: 1.4, trait: 0.22 };
+/** Le demi-côté du losange d'un té égal (avant sa rotation d'un huitième de tour) et son trait. */
+export const LOSANGE = { demi: 0.38, trait: 0.26 };
 
 /**
  * La place qu'occupe le texte d'une cote, en mètres : il est écrit à 0,95 m de
@@ -527,10 +542,14 @@ export function dessinerPlan(
   // **Le cadre contient aussi les cotes écrites dehors.** Calculé sur le seul
   // terrain, il coupait le texte d'un côté posé au bord : « 2,4 r » au lieu de
   // « 2,4 m », sa question du 18 octobre 2026. Les cotes se calculent donc
-  // AVANT le cadre, et leur texte y entre.
+  // AVANT le cadre, et leur texte y entre. Le mot « nourrice » aussi, qui se
+  // pose là où rien n'est dessiné, parfois hors du terrain ; et les losanges
+  // sortis du regard s'écartent des cotes avant qu'il se pose.
   const cotes = cotesLisibles(contours);
+  degagerLesLosanges(reseaux, nourrice, cotes);
+  const etiquetteNourrice = placeDuMotNourrice(nourrice, { contours, trous, tranchee, liaisons, reseaux, cotes });
   const c = cadre([...contours.flat(), nourrice]);
-  const t = cadre([...contours.flat(), nourrice, ...cotes.flatMap(boiteDuTexte)]);
+  const t = cadre([...contours.flat(), nourrice, ...cotes.flatMap(boiteDuTexte), ...boiteDuTexte({ ...etiquetteNourrice, texte: MOT_NOURRICE })]);
   const gauche = Math.min(c.x - MARGE, t.x - 0.4);
   const haut = Math.min(c.y - MARGE, t.y - 0.4);
   const droite = Math.max(c.x + c.L + MARGE, t.x + t.L + 0.4);
@@ -548,7 +567,7 @@ export function dessinerPlan(
       tranchee,
       metresTranchee: Math.round(metres * 10) / 10,
       nourrice,
-      etiquetteNourrice: versLInterieur(nourrice, contours),
+      etiquetteNourrice,
       liaisons,
       reseaux,
     },
@@ -725,28 +744,142 @@ function distanceAuContour(p: Point, contour: Point[]): number {
   return mini;
 }
 
+// ── Ce qui se pose AUTOUR du regard : le mot « nourrice » et les losanges ─────
+//
+// Sa lecture du PDF, le 21 novembre 2026 : le mot était barré par la tranchée,
+// le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le
+// losange du té égal était à moitié sous le regard. Le mot se posait vers le
+// centre du terrain sans regarder ce qui y était dessiné ; le losange, sur la
+// ligne même qui sort du regard. Les deux se posent maintenant là où rien
+// n'est dessiné, au plus près.
+
+const MOT_NOURRICE = "nourrice";
+/** L'air laissé entre ce qui se pose et ce qui est déjà dessiné, en mètres. */
+const JEU = 0.15;
+/** Le rond d'une turbine (0,5 m et son trait) ou le carré d'une tuyère (0,88 m de côté), dans un cercle. */
+const EMPRISE_TETE = 0.72;
+const EMPRISE_LOSANGE = LOSANGE.demi * Math.SQRT2 + LOSANGE.trait / 2;
+
+type Boite = { x0: number; y0: number; x1: number; y1: number };
+
+function boiteDeLaCote(c: Cote): Boite {
+  const [a, b] = boiteDuTexte(c);
+  return { x0: a.x, y0: a.y, x1: b.x, y1: b.y };
+}
+
+function boiteDuRegard(n: Point, marge = 0): Boite {
+  const dx = REGARD.demiLargeur + REGARD.trait / 2 + marge;
+  const dy = REGARD.demiHauteur + REGARD.trait / 2 + marge;
+  return { x0: n.x - dx, y0: n.y - dy, x1: n.x + dx, y1: n.y + dy };
+}
+const elargir = (b: Boite, m: number): Boite => ({ x0: b.x0 - m, y0: b.y0 - m, x1: b.x1 + m, y1: b.y1 + m });
+const ecartPointBoite = (p: Point, b: Boite) => Math.hypot(Math.max(b.x0 - p.x, 0, p.x - b.x1), Math.max(b.y0 - p.y, 0, p.y - b.y1));
+const ecartBoites = (a: Boite, b: Boite) => Math.hypot(Math.max(a.x0 - b.x1, 0, b.x0 - a.x1), Math.max(a.y0 - b.y1, 0, b.y0 - a.y1));
+
+/** Le segment traverse-t-il la boîte ? Liang et Barsky : on rogne le segment aux quatre bords. */
+function coupe(s: Segment, b: Boite): boolean {
+  const dx = s.a.x - s.de.x, dy = s.a.y - s.de.y;
+  let t0 = 0, t1 = 1;
+  for (const [p, q] of [[-dx, s.de.x - b.x0], [dx, b.x1 - s.de.x], [-dy, s.de.y - b.y0], [dy, b.y1 - s.de.y]]) {
+    if (p === 0) {
+      if (q < 0) return false;
+      continue;
+    }
+    const r = q / p;
+    if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
+    else { if (r < t0) return false; if (r < t1) t1 = r; }
+  }
+  return true;
+}
+
 /**
- * Un point décalé de la nourrice vers le cœur du terrain.
- *
- * Le centre de gravité des sommets suffit — on ne cherche pas le barycentre
- * exact d'un polygone, seulement une direction qui pointe vers la pelouse
- * plutôt que vers le vide.
+ * Les losanges qui tomberaient sous le regard en sortent, au plus près —
+ * sa règle du 11 septembre 2026 : *« même si c'est au même endroit, tu ne dois
+ * pas superposer les ronds, carrés ou losanges : mets-les côte à côte »*. La
+ * ligne se sépare souvent juste à la sortie du regard, voire au point même où
+ * il l'a posé : son losange était caché, en tout ou en moitié. Le point vrai ne
+ * change pas, seul le dessin s'écarte, sans tomber sur une tête ni sur un
+ * autre losange.
  */
-function versLInterieur(p: Point, contours: Point[][]): Point & { ancre: "start" | "middle" | "end" } {
-  const sommets = contours.flat();
-  const centre = { x: p.x, y: p.y + 2.4, ancre: "middle" as const };
-  if (sommets.length === 0) return centre;
-  const cx = sommets.reduce((t, q) => t + q.x, 0) / sommets.length;
-  const cy = sommets.reduce((t, q) => t + q.y, 0) / sommets.length;
-  const d = Math.hypot(cx - p.x, cy - p.y);
-  if (d < 0.001) return centre;
-  const ux = (cx - p.x) / d;
-  const uy = (cy - p.y) / d;
-  // **Le mot part du point, il ne l'enjambe pas.** Centré, il chevauchait le
-  // regard lui-même — le dessin du regard fait 1,5 m de large, le mot en fait
-  // quatre. Ancré du côté où il s'éloigne, il ne peut plus le recouvrir.
-  const ancre = ux > 0.3 ? ("start" as const) : ux < -0.3 ? ("end" as const) : ("middle" as const);
-  return { x: p.x + ux * 1.5, y: p.y + uy * 1.5 + (Math.abs(uy) > 0.7 ? uy * 0.9 : 0.35), ancre };
+function degagerLesLosanges(reseaux: ReseauDessine[], nourrice: Point, cotes: Cote[]): void {
+  const regard = boiteDuRegard(nourrice, EMPRISE_LOSANGE + JEU);
+  const tetes = reseaux.flatMap((r) => r.tetes.map((t) => ({ x: t.x + t.decalage.x, y: t.y + t.decalage.y })));
+  const textes = cotes.map(boiteDeLaCote);
+  const poses = reseaux.flatMap((r) => r.jonctions.filter((p) => ecartPointBoite(p, regard) > 0));
+  for (const r of reseaux) {
+    r.jonctions = r.jonctions.map((p) => {
+      if (ecartPointBoite(p, regard) > 0) return p;
+      const libre = autour(p, 4, 0.1).find(
+        (q) =>
+          ecartPointBoite(q, regard) > 0 &&
+          textes.every((b) => ecartPointBoite(q, b) >= EMPRISE_LOSANGE + JEU) &&
+          tetes.every((t) => distance(q, t) >= EMPRISE_TETE + EMPRISE_LOSANGE) &&
+          poses.every((o) => distance(q, o) >= 2 * EMPRISE_LOSANGE + JEU)
+      );
+      const q = libre ?? p;
+      poses.push(q);
+      return q;
+    });
+  }
+}
+
+/** Les points d'une grille de `pas` autour de `p`, du plus proche au plus loin, dans un ordre fixe. */
+function autour(p: Point, rayon: number, pas: number): Point[] {
+  const n = Math.round(rayon / pas);
+  const points: (Point & { d: number })[] = [];
+  for (let i = -n; i <= n; i++) {
+    for (let j = -n; j <= n; j++) points.push({ x: p.x + i * pas, y: p.y + j * pas, d: Math.round(Math.hypot(i, j) * 1e6) });
+  }
+  return points.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+}
+
+/**
+ * Où écrire le mot « nourrice » : la place libre la plus proche du regard.
+ *
+ * Libre veut dire qu'aucun trait ne le barre (tranchée, tuyaux, antennes,
+ * pointillés, bords des zones, chacun avec son épaisseur), qu'il ne couvre ni
+ * une tête, ni un losange, ni le regard, ni une cote. À distance égale, dessous
+ * d'abord, puis le plus droit possible sous le regard : c'est là que l'œil le
+ * cherche. Le regard se pose souvent dans un passage de deux mètres entre deux
+ * pelouses, plus étroit que le mot : la place est alors à côté, jamais dessus.
+ *
+ * Sans place libre à six mètres, le moins encombré l'emporte : on le dit ici
+ * plutôt que de le croire impossible.
+ */
+function placeDuMotNourrice(
+  nourrice: Point,
+  d: { contours: Point[][]; trous: Point[][]; tranchee: Segment[]; liaisons: Segment[]; reseaux: ReseauDessine[]; cotes: Cote[] }
+): Point & { ancre: "middle" } {
+  const aretes = (c: Point[]) => c.map((p, i) => ({ de: p, a: c[(i + 1) % c.length] }));
+  const traits = [
+    ...d.tranchee.map((s) => ({ s, demi: EPAISSEURS.tranchee / 2 })),
+    ...d.liaisons.map((s) => ({ s, demi: EPAISSEURS.liaison / 2 })),
+    ...[...d.contours, ...d.trous].flatMap(aretes).map((s) => ({ s, demi: EPAISSEURS.contour / 2 })),
+    ...d.reseaux.flatMap((r) => [
+      ...r.traits.map((s) => ({ s, demi: EPAISSEURS.ligne / 2 })),
+      ...r.antennes.map((s) => ({ s, demi: EPAISSEURS.antenne / 2 })),
+    ]),
+  ];
+  const ronds = d.reseaux.flatMap((r) => [
+    ...r.tetes.map((t) => ({ p: { x: t.x + t.decalage.x, y: t.y + t.decalage.y }, r: EMPRISE_TETE })),
+    ...r.jonctions.map((p) => ({ p, r: EMPRISE_LOSANGE })),
+  ]);
+  const regard = boiteDuRegard(nourrice);
+  const boites: Boite[] = [regard, ...d.cotes.map(boiteDeLaCote)];
+  const genes = (b: Boite) =>
+    traits.filter((t) => coupe(t.s, elargir(b, t.demi + JEU))).length +
+    ronds.filter((o) => ecartPointBoite(o.p, b) < o.r + JEU).length +
+    boites.filter((x) => ecartBoites(x, b) < JEU).length;
+
+  const largeur = MOT_NOURRICE.length * HAUTEUR_COTE * 0.6;
+  const candidats = autour(nourrice, 6, 0.25).map((p) => {
+    const b = { x0: p.x - largeur / 2, y0: p.y - HAUTEUR_COTE, x1: p.x + largeur / 2, y1: p.y };
+    return { p, b, loin: Math.round(ecartBoites(b, regard) * 1e6), dessus: p.y > nourrice.y ? 0 : 1, travers: Math.round(Math.abs(p.x - nourrice.x) * 1e6) };
+  });
+  candidats.sort((a, b) => a.loin - b.loin || a.dessus - b.dessus || a.travers - b.travers);
+  const libre = candidats.find((c) => genes(c.b) === 0);
+  const retenu = libre ?? candidats.map((c) => ({ c, n: genes(c.b) })).filter((x) => ecartBoites(x.c.b, regard) >= JEU).sort((a, b) => a.n - b.n)[0]?.c ?? candidats[0];
+  return { x: retenu.p.x, y: retenu.p.y, ancre: "middle" };
 }
 
 /** Le point du bord le plus proche d'un regard posé hors de la pelouse. */
