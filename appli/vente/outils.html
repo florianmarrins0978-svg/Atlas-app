@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#f5f1e6">
 <title>Les outils de paysage, Cause</title>
 <meta name="description" content="Planche : les outils de paysage de Cause, le plan d'arrosage, le diagnostic végétal et les fiches de chantier.">
+<!-- La carte des imports passe AVANT tout chargement de module : la nourrice en 3D en dépend. -->
+<script type="importmap">{ "imports": { "three": "../vendor/three/three.module.min.js" } }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
@@ -117,21 +119,21 @@
   pression se compte au dernier arroseur ; la liste part au fournisseur.
 
   D'OÙ VIENT CHAQUE IMAGE (images/outils-*), et rien n'y est redessiné :
-    · outils-plan-reseau et outils-nourrice : le VRAI écran du plan, découpé
+    · outils-plan-reseau : le VRAI écran du plan, découpé
       dans la démonstration (voir « LA SUITE » plus bas), sur le même
       jardin qu'elle, en Ø25 : les deux réseaux de la pelouse l'un sous
       l'autre, le 1 en bleu et le 2 en vert, chacun ses 4 turbines face à
       celles de l'autre, qui se recouvrent (sa demande du 20 novembre au
-      soir, devant la carte du seul réseau 1) ; et la nourrice éclatée, en
-      trois voies. Elles sortent de film-outils.cjs --images, qui rend aussi
+      soir, devant la carte du seul réseau 1). Elle sort de film-outils.cjs --images, qui rend aussi
       la place de « 20 m » sur la carte (CIBLE_COTE). Dans le chapitre, la
       capture des deux réseaux est montrée en deux cartes : la même image
       deux fois, sa moitié du haut puis celle du bas (chaque carte de l'appli
       y fait 1170 px de haut, 45 px les séparent). Si la capture change de
-      hauteur, ces deux chiffres se remesurent (.reseau, CIBLE_COTE). La
-      nourrice est montrée sans la marge ni le filet de sa carte dans
-      l'appli, qui faisaient une carte dans une carte (.nourrice-fig : 948 px
-      sur 1320, à 45 px du bord gauche et 51 px du haut) ;
+      hauteur, ces deux chiffres se remesurent (.reseau, CIBLE_COTE) ;
+    · la nourrice n'est plus une image : depuis le 22 novembre 2026 (sa
+      demande, « il faudrait mettre celle-là maintenant »), c'est la 3D de
+      l'appli, en trois voies dont une en goutte-à-goutte
+      (appli/nourrice-3d/vue.js) ;
     · nov-film-outils-* : les films de la démonstration (même endroit) ;
     · outils-piece-supprimee : deux têtes du plan du réseau 1, dans la même
       démonstration, la turbine supprimée et sa voisine gardée. Prise par
@@ -566,8 +568,25 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
    l'intérieur (948 px sur 1320, à 45 px du bord gauche et 51 px du haut d'une
    capture large de 1038) ; le cadre est celui de la page. Si la capture
    change de taille, ces quatre chiffres se remesurent. */
-.nourrice-fig{aspect-ratio:948/1320;background:#fff}
-.nourrice-fig img{max-width:none;width:calc(100% * 1038 / 948);margin:calc(-100% * 51 / 948) 0 0 calc(-100% * 45 / 948)}
+/* La nourrice en 3D (appli/nourrice-3d/vue.js), la même que dans l'appli : un toucher l'éclate, un
+   glissé la tourne, deux doigts la rapprochent ou la déplacent. Le fond est celui que la scène peint,
+   pour que rien ne clignote quand l'image arrive. */
+.nourrice-fig{position:relative;aspect-ratio:4/5;background:#dcd9d2}
+.nourrice-fig canvas{display:block;width:100%;height:100%;touch-action:none;outline:0;-webkit-tap-highlight-color:transparent;cursor:grab}
+.nourrice-fig canvas:active{cursor:grabbing}
+.nourrice-fig canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--or,#b98b47)}
+.nourrice-fig .attente-3d{position:absolute;inset:0;margin:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-size:15px;line-height:1.4;background:#dcd9d2;transition:opacity .35s ease-out}
+.nourrice-fig .attente-3d.part{opacity:0;pointer-events:none}
+/* LE GESTE JOUÉ TOUT SEUL : sa demande du 22 novembre, « comme si on cliquait sur la nourrice et qu'il y
+   ait l'éclaté qui arrive ». Un rond se pose où un doigt toucherait, s'enfonce, et s'efface en onde ;
+   la nourrice s'éclate au même instant. Il ne sert qu'à montrer : rien ne le touche. */
+.nourrice-fig .doigt-3d{position:absolute;left:50%;top:44%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 1.5px rgba(255,255,255,.9),0 6px 18px -6px rgba(28,28,26,.45);opacity:0;pointer-events:none}
+.nourrice-fig .doigt-3d::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.85);opacity:0}
+.nourrice-fig .doigt-3d.appuie{animation:doigt-pose 1s cubic-bezier(.25,1,.5,1) forwards}
+.nourrice-fig .doigt-3d.appuie::after{animation:doigt-onde .9s cubic-bezier(.25,1,.5,1) .38s forwards}
+@keyframes doigt-pose{0%{opacity:0;transform:scale(1.35)}30%{opacity:1;transform:scale(1)}42%{transform:scale(.86)}58%{transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+@keyframes doigt-onde{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.4)}}
+.nourrice-fig figcaption{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13.5px;color:rgba(28,28,26,.62);pointer-events:none}
 .plan .nourrice-fig{order:-1;width:min(100%,460px);justify-self:center;margin-bottom:30px}
 /* Le film d'un écran : sa première image dessous avant qu'il parte, sa
    dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
@@ -816,7 +835,7 @@ html.anime .geant.vu span{transform:none}
       <li class="plan avec-figure">
         <div class="plan-texte"><h3>Une pièce de la nourrice.</h3><p>La changer, ou la supprimer.</p></div>
         <div class="plan-vue">
-          <figure class="gros nourrice-fig" data-vu="0.2"><img src="images/outils-nourrice.jpg" alt="La nourrice de trois voies, dessinée pièce par pièce : collecteur, électrovannes 9 V, raccords et vanne, une voie pour chaque réseau de la pelouse et une pour le goutte-à-goutte, chaque pièce numérotée" width="1038" height="1416" decoding="async"></figure>
+          <figure class="gros nourrice-fig" data-nourrice-3d><canvas tabindex="0" role="img" aria-label="La nourrice de trois voies en 3D, dont une en goutte-à-goutte : coudes, clarinette, électrovannes 9 V, vanne de purge, régulateur, raccords et tuyaux. Un toucher l’éclate, un second la remonte."></canvas><p class="attente-3d" role="status">Chargement</p><span class="doigt-3d" aria-hidden="true"></span><figcaption>Touchez la nourrice pour l’éclater.</figcaption></figure>
           <div class="scene scene-plan"><div class="socle" data-t><div class="tourne"><div class="appareil"><div class="ecran film" data-film="outils-nourrice"><img class="film-pose" src="images/nov-film-outils-nourrice-fin.jpg" alt="La légende de la nourrice dans Cause : la pièce 9 changée pour une électrovanne Toro EZ FLO+ 1 pouce MM, solénoïde 9 V à impulsion" width="1170" height="1992" decoding="async"></div></div></div></div></div>
         </div>
       </li>
@@ -1007,6 +1026,58 @@ html.anime .geant.vu span{transform:none}
   <div class="geant" data-vu="0.35" aria-hidden="true"><span>Cause</span></div>
 </footer>
 
+<script>
+// LA NOURRICE EN 3D : three et le catalogue ne se chargent qu'à l'approche de sa figure, la page reste
+// légère pour qui ne descend pas jusque-là. Écrit à l'ancienne, exprès : un vieux téléphone doit savoir
+// dire qu'il ne peut pas, au lieu de laisser « Chargement ».
+(function(){
+  var fig = document.querySelector("[data-nourrice-3d]"); if (!fig) return;
+  var toile = fig.querySelector("canvas"), attente = fig.querySelector(".attente-3d"), lancee = false;
+  function refuser(phrase){ attente.className = "attente-3d"; attente.textContent = phrase; toile.style.visibility = "hidden"; fig.querySelector("figcaption").hidden = true; }
+  function lancer(){
+    if (lancee) return; lancee = true;
+    if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports("importmap"))) { refuser("Ce navigateur est trop ancien pour afficher la 3D."); return; }
+    var cat = document.createElement("script"); cat.src = "../arrosage-catalogue.js";
+    cat.onerror = function(){ refuser("La 3D n’a pas pu se charger. Rechargez la page."); };
+    cat.onload = function(){
+      import("../nourrice-3d/vue.js").then(function(m){
+        var v = m.ouvrirNourrice(toile, { ficheNourrice: window.CATALOGUE.ficheNourrice, hdri: "../vendor/hdri/studio.exr" });
+        v.montrer(3, 1);
+        var vue = false;
+        v.scene.surImage(function(){ if (vue) return; vue = true; attente.classList.add("part"); demontrer(v); });
+        window.__nourrice3d = v;
+      }).catch(function(e){ refuser(/WebGL/.test(String(e && e.message)) ? "Cet appareil ne sait pas afficher la 3D." : "La 3D n’a pas pu se charger. Rechargez la page."); });
+    };
+    document.head.appendChild(cat);
+  }
+  // LA DÉMONSTRATION : tant que personne n'y touche, et seulement quand elle se voit, le doigt se pose, la
+  // nourrice s'éclate, reste ouverte le temps de la lire, puis se remonte. Le premier geste du visiteur
+  // l'arrête pour de bon : la 3D est alors à lui. Qui a demandé moins de mouvement ne la voit pas jouer.
+  function demontrer(v){
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var doigt = fig.querySelector(".doigt-3d"), visible = false, arretee = false, minuteur = 0, pas = 0;
+    var SUITE = [[900, function(){ appuyer(); }], [380, function(){ v.eclater(true); }], [3200, function(){ appuyer(); }], [380, function(){ v.eclater(false); }], [2400, null]];
+    function appuyer(){ doigt.classList.remove("appuie"); void doigt.offsetWidth; doigt.classList.add("appuie"); }
+    function suivant(){
+      if (arretee || !visible) return;
+      var e = SUITE[pas]; pas = (pas + 1) % SUITE.length;
+      minuteur = setTimeout(function(){ if (arretee || !visible) return; if (e[1]) e[1](); suivant(); }, e[0]);
+    }
+    function arreter(){ arretee = true; clearTimeout(minuteur); doigt.classList.remove("appuie"); }
+    ["pointerdown", "keydown", "wheel"].forEach(function(t){ toile.addEventListener(t, arreter, { once: true, passive: true }); });
+    // Hors de la vue, elle s'arrête où elle en est ; revenue, elle reprend au début, nourrice remontée.
+    new IntersectionObserver(function(e){
+      var avant = visible; visible = e[0].isIntersecting;
+      if (visible && !avant && !arretee) { clearTimeout(minuteur); pas = 0; v.eclater(false); suivant(); }
+      if (!visible) clearTimeout(minuteur);
+    }, { threshold: 0.5 }).observe(fig);
+  }
+  if ("IntersectionObserver" in window) {
+    var guet = new IntersectionObserver(function(e){ if (e[0].isIntersecting) { guet.disconnect(); lancer(); } }, { rootMargin: "800px 0px" });
+    guet.observe(fig);
+  } else lancer();
+})();
+</script>
 <script>
 (function(){
   "use strict";
