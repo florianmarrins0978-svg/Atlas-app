@@ -1398,6 +1398,9 @@
   .min-h-\[60px\] {
     min-height: 60px;
   }
+  .min-h-\[60svh\] {
+    min-height: 60svh;
+  }
   .min-h-\[62px\] {
     min-height: 62px;
   }
@@ -2975,6 +2978,9 @@
   }
   .pb-\[110px\] {
     padding-bottom: 110px;
+  }
+  .pb-\[120px\] {
+    padding-bottom: 120px;
   }
   .pb-\[170px\] {
     padding-bottom: 170px;
