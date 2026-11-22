@@ -14,7 +14,11 @@
  *      milieu de la page rien ne se chevauche, même sur une page serrée ;
  *   7. LA NOURRICE A SA PAGE, juste après la page de garde (sa demande du
  *      22 novembre 2026 : « il manque la nourrice ») : son nom, la photo de
- *      son éclaté vu du dessus, ses pièces. Au nez de robinet, il n'y en a pas.
+ *      son éclaté vu du dessus, ses pièces. Au nez de robinet, il n'y en a pas ;
+ *   8. CHAQUE PAGE DIT À QUOI CORRESPOND CHAQUE LIGNE (sa demande du même
+ *      soir) : la nourrice et chaque réseau portent la liste de leurs pièces,
+ *      numérotée, et toute pièce montrée sur la page porte le numéro de sa ligne ;
+ *      toute ligne numérotée a sa pièce montrée.
  *
  * `--images <dossier>` écrit aussi chaque page en PNG, pour la regarder.
  */
@@ -29,7 +33,8 @@ import { figerLePlan, type SaisieDuPlan } from "../src/lib/arrosage/plan-enregis
 import { RETOUCHES_VIERGES } from "../src/lib/arrosage/retouches";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 import { composerLePdfDuPlan, disposerLeMilieu } from "../src/server/pdf/plan-arrosage-pdf";
-import { photoDeLaNourrice } from "../src/lib/arrosage/nourrice-en-photo";
+import { FICHIER_DES_PLACES, photoDeLaNourrice } from "../src/lib/arrosage/nourrice-en-photo";
+import { composerNourrice } from "../src/lib/arrosage/nourrice-eclatee";
 import { voiesEnGoutte } from "../src/lib/arrosage/postes";
 import { empreinteDeLaNourrice3D, FICHIER_D_EMPREINTE } from "./_nourrice-3d";
 import { tracerSvg, type NoeudSvg } from "../src/server/pdf/svg-vers-pdf";
@@ -128,7 +133,8 @@ async function main() {
   await cas("aucun caractère sans glyphe dans les polices du PDF", () => {
     const textes = [
       donnees.entreprise, donnees.dossier, donnees.date, donnees.resume, "Plan d’arrosage", "LIRE LES PLANS", "LES PIÈCES", "UNE TÊTE, DE BAS EN HAUT", "LA LISTE DES PIÈCES, SUITE", "LA NOURRICE",
-      ...(donnees.nourrice ? [donnees.nourrice.titre, donnees.nourrice.phrase, ...donnees.nourrice.lignes.flatMap((l) => [l.quantite, l.nom])] : []),
+      "SES PIÈCES", "AVEC LA NOURRICE",
+      ...(donnees.nourrice ? [donnees.nourrice.titre, donnees.nourrice.phrase, ...[...donnees.nourrice.numerotees, ...donnees.nourrice.avec].flatMap((l) => [l.quantite ?? "", l.nom])] : []),
       ...donnees.legende.flatMap((l) => l.texte.map((s) => s.texte)),
       ...donnees.reseaux.flatMap((r) => [r.titre, ...r.zones, ...r.lignes.flatMap((l) => [l.quantite ?? "", l.texte]), r.tuyau.texte, ...(r.chaine ?? []).map((m) => m.libelle), ...r.rail.map((p) => p.detail || p.nom)]),
       ...donnees.groupes.flatMap((g) => [g.titre, ...g.lignes.flatMap((l) => [l.quantite, l.nom])]),
@@ -227,6 +233,44 @@ async function main() {
     }
     const gardee = JSON.parse(readFileSync(FICHIER_D_EMPREINTE, "utf8")).empreinte;
     assert.equal(gardee, await empreinteDeLaNourrice3D(), "les pièces de la 3D ont changé depuis les photos : rejouer npx tsx scripts/rendre-nourrice-eclatee.mts");
+  });
+
+  await cas("la nourrice : chaque pièce de la photo a son numéro, dans l'ordre de la légende de l'écran", () => {
+    const n = donnees.nourrice;
+    assert.ok(n, "pas de nourrice : le contrôle ne mesure rien");
+    const toutes = JSON.parse(readFileSync(path.join("public", FICHIER_DES_PLACES), "utf8")) as Record<string, { ref: string }[]>;
+    const places = toutes[n.places];
+    assert.ok(places?.length > 10, `pas de places relevées pour ${n.places}`);
+    const numerotees = new Set(n.numerotees.map((l) => l.ref));
+    for (const q of places) if (q.ref !== "pehd") assert.ok(numerotees.has(q.ref), `la photo montre ${q.ref} sans numéro`);
+    for (const l of n.numerotees) assert.ok(places.some((q) => q.ref === l.ref), `le numéro ${l.numero} (${l.nom}) n'est sur aucune pièce de la photo`);
+    const ordre = composerNourrice(fige.nourrice.voies.length, voiesEnGoutte(fige.plan, fige.nourrice.voies))?.ordre.filter((r) => r !== "pehd") ?? [];
+    assert.deepEqual(n.numerotees.map((l) => l.ref), ordre, "les numéros ne suivent pas l'ordre de la légende de l'écran");
+    assert.ok(n.avec.some((l) => /Regard/i.test(l.nom)), "le regard n'est pas avec la nourrice");
+    // Toutes les nourrices possibles ont leurs places, et rien que des pièces de leur fiche.
+    for (let v = 1; v <= 6; v++) {
+      for (let g = 0; g <= v; g++) {
+        const ici = toutes[`${v}-${g}`];
+        assert.ok(ici?.length, `pas de places pour ${v} voies dont ${g} en goutte-à-goutte`);
+        const sa = new Set(composerNourrice(v, g)?.ordre ?? []);
+        for (const q of ici) assert.ok(sa.has(q.ref), `${v}-${g} : ${q.ref} n'est pas dans la nourrice`);
+      }
+    }
+  });
+
+  await cas("chaque réseau : sa liste numérotée est son groupe de la liste, et chaque photo porte son numéro", () => {
+    for (const r of donnees.reseaux) {
+      const groupe = fige.groupes.find((g) => g.titre.startsWith(`${r.titre},`));
+      assert.ok(groupe && r.liste.length > 0, `${r.titre} : pas de liste`);
+      assert.deepEqual(r.liste.map((l) => l.nom), Object.values(groupe.lignes).map((l) => l.nom), `${r.titre} : la liste n'est pas son groupe`);
+      // Ce que la page montre : le tuyau, les vignettes du dessin ou du rail, la chaîne d'une tête.
+      const montrees = new Set<string>([r.tuyau.poste.ref]);
+      for (const pose of r.pieces?.poses ?? []) for (const x of [pose.egal, ...pose.pieces]) if (x) montrees.add(x.changee?.ref ?? x.ref);
+      for (const x of [...r.rail, ...r.ajoutees]) montrees.add(x.changee?.ref ?? x.ref);
+      for (const m of r.chaine ?? []) for (const ref of m.refs) montrees.add(ref);
+      for (const ref of montrees) if (r.liste.some((l) => l.ref === ref)) assert.ok(r.numeros[ref], `${r.titre} : ${ref} montrée sans numéro`);
+      for (const l of r.liste) assert.ok(montrees.has(l.ref), `${r.titre} : le numéro ${l.numero} (${l.nom}) n'est sur aucune photo de la page`);
+    }
   });
 
   const i = process.argv.indexOf("--images");

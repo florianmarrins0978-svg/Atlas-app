@@ -38157,3 +38157,43 @@ change pas ce qu'on monte. `test-pdf-du-plan-arrosage.ts` compare, et son rouge
 dit la commande à jouer. Le même contrôle exige une photo pour chacune des 27
 nourrices.
 
+## §604 : Chaque page du PDF numérote ses pièces, sur la photo et dans la liste
+
+**Sa demande du 22 novembre 2026 :** *« c'est un peu compliqué de savoir quelle
+pièce il faut pour quel réseau [...] quand je suis sur la nourrice, la liste des
+pièces en dessous, tout de suite je sais à quoi ça correspond ; pareil pour le
+réseau 1, 2, 3 et 4 »*. La liste de fin était déjà rangée par réseau, mais loin
+des pages, et rien ne disait quelle photo était quelle ligne.
+
+**Le principe, celui d'une nomenclature** : chaque page porte la liste de SES
+pièces, numérotée, et le même numéro sur chaque photo de la page. La pastille
+est celle de la légende de l'écran (l'encre, le chiffre en blanc).
+
+| | la liste | les numéros posés |
+|---|---|---|
+| la nourrice | dans l'ordre de `composerNourrice` (celui de la légende de l'écran), puis « Avec la nourrice » sans numéro | sur la photo 3D, à côté de chaque pièce, à la place que le script relève (`places.json`) |
+| un réseau | son groupe de la liste de fin (`bloc`), dans le même ordre | le tuyau, chaque vignette (dessin ou rail), chaque maillon de la chaîne (`Maillon.refs`) |
+
+**Une pièce changée compte sous la référence qu'il a choisie** : la vignette et
+le maillon prennent le numéro de la ligne de la remplaçante. Une pièce de la
+nourrice supprimée garde son numéro, barrée : elle est encore sur la photo.
+
+**Le bout de tube sous chaque voie n'est pas numéroté**, alors que l'écran le
+numérote : le catalogue ne le connaît pas, l'écran l'appelle « PEHD Ø25 » de
+lui-même, ce qui est faux sur un réseau en Ø32, et il se compte avec son réseau.
+
+**Où se pose un numéro sur la photo** (`numeroterLaPhoto`) : à droite de la
+pièce, sinon à gauche, au-dessus, au-dessous ; seulement s'il est au moins deux
+fois plus près de sa pièce que de toute autre. Sinon il se pose dans le coin haut
+de la pièce, sur elle : vu sur la première page, un « 8 » entre deux électrovannes
+serrées se lisait pour l'une comme pour l'autre.
+
+**La liste d'un réseau suit son dessin** : sa place est réservée au-dessus de la
+chaîne, et elle se pose juste sous le dessin des pièces. Collée en bas, celle
+d'un goutte-à-goutte restait loin de son rail.
+
+**Le contrôle** (`test-pdf-du-plan-arrosage.ts`) exige les deux sens : toute
+pièce montrée a son numéro, tout numéro a sa pièce montrée sur la page. Il lit
+ce que la page montre dans les données qui la dessinent, pas dans le PDF : un
+numéro dessiné ne se distingue pas d'un chiffre d'un nom de pièce.
+

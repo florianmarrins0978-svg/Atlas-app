@@ -168,12 +168,28 @@ de la nourrice 3D **vu du dessus**, en grand, puis ses pièces.
 Si la session 3D change une pièce, un contrôle rougit et dit la commande qui
 refait les photos.
 
+### Le 22 novembre, au soir : chaque pièce a son numéro
+
+Ta demande : *« quand je suis sur la nourrice, la liste des pièces en dessous,
+tout de suite je sais à quoi ça correspond ; pareil pour les réseaux »*.
+
+| | |
+|---|---|
+| sur chaque page | la liste de SES pièces, numérotée, et le même numéro sur chaque photo de la page |
+| la nourrice | les numéros de l'écran, posés sur la photo 3D à côté de chaque pièce ; regard, programmateur, pile et connexions à part, sous « Avec la nourrice » |
+| un réseau | ses pièces, dans l'ordre de la liste de fin ; le numéro est sur le tuyau, sur chaque vignette et sur chaque pièce de « Une tête, de bas en haut » |
+| ce que ça coûte | le plan en couleur des réseaux 1 et 2 du jardin d'essai rétrécit un peu (411 à 332 points, 360 à 286) pour faire place à la liste |
+
+**Trouvé en regardant** : un « 8 » posé entre deux électrovannes serrées se
+lisait pour les deux ; il se pose maintenant sur la sienne. La liste du
+goutte-à-goutte tombait en bas de page, loin de son rail ; elle le suit.
+
 ### Ce qui reste, et qui le tranche
 
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| la batterie, puis `main`, pour les cinq changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous », page de la nourrice) | toi : ton oui |
+| la batterie, puis `main`, pour les six changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous », page de la nourrice, numéros) | toi : ton oui |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---
