@@ -71,6 +71,10 @@ const PHOTOS: [string, string][] = [
   // Les photos de référence d'une fiche, servies par une route de l'appli :
   // ici, l'identifiant de l'image EST son chemin (bouchons/diagnostic.ts).
   ["`/api/phyto/image/${image.id}`", "image.id"],
+  // L'éclairage de la nourrice en 3D (Nourrice3D.tsx) : la page est un script
+  // classique, `import.meta` n'y existe pas. Le fichier est celui que la
+  // planche publie déjà (appli/vendor/hdri/).
+  ['new URL("../../../../appli/vendor/hdri/studio.exr", import.meta.url).href', '"../../vendor/hdri/studio.exr"'],
 ];
 
 
