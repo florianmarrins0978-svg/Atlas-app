@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le robinet en 3D</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 22 novembre 2026, ses neuf photos à
+  l'appui (docs/robinet-3d-photos/) : « fais-moi qu'une seule des 9 combinaisons possibles pour
+  l'instant pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans
+  l'appli en 3D ; on touche et on a l'éclaté, sans ombre ; pour le PE diam. 25 reprends celui de la
+  maquette 3D ».
+
+  LES NEUF : trois programmateurs en nez de robinet (Solem BL-NR, Rain Bird, Buddy) et trois départs
+  (Ø16 rigide, Ø16 souple, PEHD Ø25 ou Ø32, le même tuyau à l'oeil). CELLE-CI : son robinet, la double
+  sortie BRO3493 (l'arrosage sur la sortie gauche, son choix du 18 octobre), le Solem BL-NR SP1151, le
+  raccord femelle 25 x 3/4" OPL70302520 et le PEHD Ø25 de la nourrice. Au nez de robinet il n'y a pas
+  de nourrice (sa règle du 18 octobre 2026) : c'est une pile.
+
+  CE QUI EST REPRIS DE LA NOURRICE, sans une ligne changée : les formes (filetages en hélice, six
+  pans, arrondis), les matières, le PEHD. CE QUI EST NEUF : robinet-3d/, ses pièces relevées sur ses
+  photos, leur composition, et une scène où la pile est debout et sans ombres (robinet-3d/scene.js dit
+  pourquoi elle n'est pas celle de la nourrice).
+
+  SI LE TÉLÉPHONE NE SAIT PAS : une phrase à la place de la vue, jamais un cadre vide.
+-->
+<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
+<link rel="modulepreload" href="vendor/three/three.module.min.js">
+<link rel="modulepreload" href="robinet-3d/vue.js">
+<link rel="modulepreload" href="robinet-3d/scene.js">
+<link rel="modulepreload" href="nourrice-3d/formes.js">
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint);-webkit-text-size-adjust:100%}
+  ::selection{background:var(--atlas-ink);color:var(--atlas-card)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif;text-wrap:balance}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:16px 16px 70px;min-height:100vh}
+  h2{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  /* La vue : la couleur de fond est celle que rend la scène, pour que rien ne clignote à l'arrivée de l'image. */
+  .vue{position:relative;margin-top:12px;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--atlas-line);background:#d6d5d2;aspect-ratio:4/5;max-height:76vh;width:100%}
+  .vue canvas{display:block;width:100%;height:100%;touch-action:none;outline:0;-webkit-tap-highlight-color:transparent;cursor:grab}
+  .vue canvas:active{cursor:grabbing}
+  .vue canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--atlas-or)}
+  .vue::after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px var(--atlas-line);pointer-events:none}
+  .attente{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-size:14px;color:var(--atlas-inkSoft);background:#d6d5d2;transition:opacity .35s ease-out}
+  .attente[hidden]{display:none}
+  .attente.part{opacity:0;pointer-events:none}
+  .attente.refus{font-size:15px;line-height:1.4;color:var(--atlas-ink)}
+  .voies{display:flex;gap:6px;margin-top:10px}
+  .voies button{flex:1;min-width:0;min-height:44px;padding:0 4px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font:inherit;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .18s ease-out,color .18s ease-out,border-color .18s ease-out,transform .12s ease-out}
+  .voies button:active{transform:scale(.97)}
+  .voies button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .voies button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  .voies.montage{margin-top:12px}
+  @media (prefers-reduced-motion:reduce){.voies button,.attente{transition:none}}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Le robinet en 3D</h1>
+  <p>Touchez la pile pour l’éclater, tournez avec le doigt. Rien n’est codé.</p>
+</div>
+<main class="ecran">
+  <h2>Au nez de robinet</h2>
+  <p class="sous">Double sortie, programmateur Solem BL-NR, départ en PEHD Ø25.</p>
+  <div class="vue">
+    <canvas id="scene" tabindex="0" role="img" aria-label="La pile du robinet en 3D. Un toucher l’éclate, un second la remonte."></canvas>
+    <div class="attente" id="attente" role="status">Chargement</div>
+  </div>
+  <div class="voies montage" role="group" aria-label="Montage">
+    <button type="button" data-montage="montee" aria-pressed="true">Montée</button><button type="button" data-montage="eclatee" aria-pressed="false">Éclatée</button>
+  </div>
+  <div class="voies" role="group" aria-label="Point de vue">
+    <button type="button" data-vue="face" aria-pressed="true">De face</button><button type="button" data-vue="biais" aria-pressed="false">De biais</button>
+  </div>
+</main>
+<script>
+// CE QUI SE DIT QUAND LA 3D NE PEUT PAS S'AFFICHER (repris de arrosage-nourrice-3d.html). Écrit à
+// l'ancienne, exprès : il doit tourner sur le téléphone qui ne sait pas lire le reste.
+var ROBINET_3D = { prete: false, refus: "" };
+function refuser(phrase) {
+  if (ROBINET_3D.prete || ROBINET_3D.refus) return;
+  ROBINET_3D.refus = phrase;
+  var a = document.getElementById("attente"); a.hidden = false; a.className = "attente refus"; a.textContent = phrase;
+  document.getElementById("scene").style.visibility = "hidden";
+}
+var REFUS = {
+  ancien: "Ce navigateur est trop ancien pour afficher la 3D. Mettez votre téléphone à jour (Safari 16.4 ou plus récent).",
+  webgl: "Cet appareil ne sait pas afficher la 3D : WebGL est absent ou coupé.",
+  charge: "La 3D n’a pas pu se charger. Rechargez la page."
+};
+if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports("importmap"))) refuser(REFUS.ancien);
+window.addEventListener("error", function () { refuser(REFUS.charge); }, true);
+window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge); });
+</script>
+<script type="module">
+import { ouvrirRobinet } from "./robinet-3d/vue.js";
+
+var $ = function (id) { return document.getElementById(id); }, toile = $("scene");
+var etat = { eclatee: false, vue: "face" }, V = null;
+
+function boutons() {
+  document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
+  document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === etat.vue)); });
+}
+
+document.addEventListener("click", function (e) {
+  if (!V) return;
+  var b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
+  else if (b.dataset.vue) V.regarder(b.dataset.vue);
+});
+
+try {
+  V = ouvrirRobinet(toile, { hdri: "vendor/hdri/studio.exr" });
+  V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
+  boutons();
+  ROBINET_3D.prete = true; toile.style.visibility = "";
+  var attente = $("attente"), premiere = false;
+  attente.className = "attente"; attente.textContent = "Chargement";
+  V.scene.surImage(function () { if (premiere) return; premiere = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
+  // Pour les contrôles : l'état, la scène, la composition et ses erreurs.
+  window.__robinet3d = { etat: etat, scene: V.scene, erreurs: V.erreurs, compo: V.compo };
+} catch (erreur) {
+  refuser(/WebGL/.test(String(erreur && erreur.message)) ? REFUS.webgl : REFUS.charge);
+  throw erreur;
+}
+</script>
+</body>
+</html>
