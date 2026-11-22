@@ -37968,6 +37968,72 @@ PDF se confronte à ces quatre-là avant la batterie.
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.
 
+## §600 : La nourrice en 3D est faite de pièces qui déclarent leurs bouts, et rien d'autre ne les pose
+
+*22 novembre 2026. Une maquette (`appli/arrosage-nourrice-3d.html`), rien dans `src/`.*
+
+**Pourquoi des modules, alors que les planches tiennent d'ordinaire en un fichier.** La première page 3D
+du matin tenait en 364 lignes parce que ses pièces étaient des galets. Des pièces relevées sur ses photos
+font un millier de lignes à elles seules : `appli/nourrice-3d/` les range par métier.
+
+| Fichier | Ce qu'il sait, et lui seul |
+|---|---|
+| `composition.js` | qui se visse dans quoi, montée et éclatée. Ne connaît pas three |
+| `formes.js` | le profil tourné aux arêtes vives, le filetage en hélice, le taraudage, le six pans, l'écrou union, la vis, le `Lot` qui fusionne par matière, et `centreDuBout` qui mesure |
+| `matieres.js` | les matières physiques, et la part de l'ambiance que chacune renvoie |
+| `scene.js` | la lumière, les ombres, l'occlusion ambiante, les instances, le cadrage, les mouvements, le toucher |
+| `pieces/*.js` | une famille par fichier, chaque cote avec sa photo en commentaire |
+
+**Le contrat d'une pièce : ses bouts de vissage.** Une pièce de colonne se modélise sur l'axe Z, du bout
+du haut (z = 0) au bout du bas (z = L), et déclare pour chacun son genre, son filetage et sa prise. Une
+pièce de la rangée se modélise sur l'axe X et déclare sa gauche, sa droite et ses branches.
+`composer()` enchaîne ces bouts : l'axe est juste par construction, et un mâle face à un mâle est une
+erreur que la composition rend. C'est ce qui a permis de confier chaque famille à un agent différent
+sans qu'aucune pièce ne soit posée à l'oeil.
+
+**La mesure se fait dans la géométrie, pas dans les cotes annoncées.** `scene.mesurer()` relit, dans les
+sommets qu'on dessine et dans la matrice de chaque instance, le centre de chaque face de bout, et le
+compare à l'axe. Une moyenne des sommets s'est trompée deux fois sur des pièces parfaitement centrées
+(0,28 mm, puis 0,2 mm quand deux formes posaient chacune un cercle au même rayon avec des nombres de
+segments différents) : une face de bout est faite de cercles, `centreDuBout` cherche donc leur centre
+commun par moindres carrés, que la répartition des sommets ne peut pas tirer. **Une pièce neuve doit
+poser des sommets sur le plan de chaque bout**, en cercles centrés sur l'axe, sans quoi la mesure le dit
+« manquant ».
+
+**Un profil se parcourt la matière à gauche.** `tourne()` calcule ses normales du sens du trait. Un profil
+écrit à l'envers donne des faces retournées, donc invisibles, et le compte des faces inversées du banc ne
+le voit pas (faces et normales sont fausses ensemble) : seul le rendu le montre. Payé sur la pointe des
+mamelons.
+
+**Les rangs d'un filetage suivent l'hélice.** Sur une grille droite, le sommet du filet tombe entre deux
+rangs et dessine un escalier. Ici un rang garde la même place dans le profil tout autour : quatre rangs
+par filet suffisent.
+
+**Deux finesses de pièces, choisies sur le compte des triangles.** La plus grande nourrice (6 voies dont
+6 en goutte-à-goutte) pesait 870 000 triangles. `F.finesse(k)` règle le nombre de segments des formes
+rondes ; la page construit le jeu fin, et un jeu plus léger (0,6) seulement si la composition passe
+400 000 triangles : chaque pièce y est deux fois plus petite à l'écran. Les bouts sont les mêmes aux
+deux finesses.
+
+**Rien ne se redessine tant que rien ne bouge**, et les ombres ne se refont que si les pièces ont bougé.
+Un régulateur baisse la qualité le temps d'un mouvement si l'appareil peine (moins de pixels, une ombre
+sur deux, puis l'occlusion coupée) ; l'image posée revient toujours à la qualité entière. **Non éprouvé
+sur un iPhone** : ce poste rend en logiciel, une demi-seconde par image.
+
+**La carte des imports se pose avant tout préchargement de module.** Posée après un
+`<link rel="modulepreload">`, le navigateur l'ignore, le module ne démarre pas, et rien ne le dit. La
+page a désormais un écouteur d'erreur global qui remplace « Chargement » par une phrase.
+
+**Ce qui vient d'ailleurs est dans `appli/vendor/`, avec sa provenance.** Les modules de three 0.160
+(MIT) sont copiés tels quels du paquet npm ; l'HDRI de studio (CC0, Poly Haven) vient du paquet
+`@pmndrs/assets`, parce que le réseau du poste refuse polyhaven.com. Aucun modèle de fabricant : Rain
+Bird ne publie que des dessins 2D pour la série DV, et ses conditions comme celles de Plasson
+interdisent de republier (`docs/nourrice-3d-realiste.md`).
+
+**Le contrôle de la page vit hors du dépôt.** Le lot est de niveau 1 (rien qui s'exécute) ; un script
+sous `scripts/` l'aurait fait passer au niveau 2 sans rien protéger de plus. Ce qu'il vérifie est écrit
+dans le document de retour.
+
 **La page d'un réseau dans le PDF (22 novembre 2026).** Sa demande :
 *« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur
 celle où il n'y a pas vraiment la place »*. Le plan en couleur ne loge plus à
@@ -37985,7 +38051,7 @@ bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose 
 relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
 ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
 
-## §600 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
+## §601 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
 
 **Sa lecture du PDF, le 21 novembre 2026, et son « oui » du 22.** Le mot
 « nourrice » se posait vers le centre de gravité du terrain, à 1,5 m du regard
@@ -38029,7 +38095,7 @@ dernier chiffre dans Node et dans Chrome, et React refuse une transformation qui
 diffère entre le serveur et le navigateur. Six décimales ; mesuré dans les deux
 moteurs, 5 rotations sur 140 différaient avant, aucune après.
 
-## §601 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
+## §602 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
 
 **Sa planche du 21 novembre 2026, validée par son « tout coder », et son « tu
 me codes aussi » du 22.** « Voir la saisie » d'un plan enregistré dit ce qu'il

@@ -1,5 +1,43 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LA NOURRICE EN 3D RÉALISTE (22 novembre 2026)
+
+`appli/arrosage-nourrice-3d.html`, rien dans `src/`. Le retour : `docs/nourrice-3d-realiste.md`.
+
+**Ce qui attend SA réponse :**
+
+| | |
+|---|---|
+| l'essai sur son iPhone | tourner et éclater la 6 voies dont 6 en goutte-à-goutte : la fluidité n'a pas pu être éprouvée ici (rendu logiciel) |
+| le sens du régulateur | posé le corps cannelé côté rangée, d'après la flèche moulée sur sa photo |
+| la bobine des électrovannes | côté rangée, comme sur la planche vue du dessus |
+| le gris du PVC | le gris clair de ses images ; « gris de vos photos » n'est pas proposé en 3D |
+
+**Ce qui reste à faire si la planche lui convient, et qui n'est pas fait :**
+
+- le raccord Plasson 25 x 1" est la photo du 32 x 1" ramenée par 25/32 : une photo à plat du 25 la remplacerait ;
+- la longueur du régulateur (131 mm) et la cote sur plats de la vanne (32 mm) ne viennent d'aucune de ses photos : à relire sur une fiche ou au pied à coulisse ;
+- le dessous des électrovannes et l'intérieur de la bague Plasson sont estimés ;
+- le contrôle de la page (63 points) vit hors du dépôt : le jour où la nourrice 3D entre dans `src/`, il devient une suite.
+## ⚠️ UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE (vu le 22 novembre 2026, pas corrigé)
+
+Sur la facture, « Règlement reçu » : chaque champ (date, moyen, montant,
+libellé) s'enregistre seul, mais `corriger` (`src/app/chantiers/[id]/facture/ReglementsRecus.tsx`)
+renvoie **la ligne entière telle que l'écran l'a reçue du serveur**. Un second
+champ changé avant que le premier soit revenu renvoie donc l'ancienne valeur du
+premier, qui est écrasée, **sans rien dire**. Reproduit ici : moyen « Virement »,
+date du 21, montant 300 € enchaînés sans pause, puis la page relue : « Chèque »,
+la date du jour, 300 €. Les mêmes gestes à deux secondes d'intervalle : tout est
+gardé.
+
+À la main, sur un bon réseau, l'aller et retour est plus court que le geste
+suivant : le risque vit surtout **sur un chantier mal couvert**, où un moyen de
+paiement ou une date peut revenir en arrière sans qu'il le voie. Pas vérifié
+sur son téléphone. Racine à corriger : n'envoyer que le champ changé (ou
+enchaîner les enregistrements), avec un test rouge d'abord. Argent : niveau 3,
+donc une batterie, sur son « oui ». La visite (`figer-neufs.mjs`) le contourne
+en laissant chaque champ s'enregistrer avant le suivant.
+
 ## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
 
 À chaque poussée sur `main`, GitHub répond : *« found 5 vulnerabilities on the
@@ -30,7 +68,7 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
 - **trois corrections du 22 novembre, codées et commitées sur la branche de
   session, PAS sur `main`** : le plan en couleur agrandi dans le PDF, le mot
-  « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §600),
+  « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §601),
   l'angle de la nourrice éclatée arrondi. Le lot est de niveau 3 (l'outil ne
   voit pas que `test-dossiers-arrosage-e2e.ts` ouvre `/paysage/dossiers-arrosage`,
   il y arrive par un clic), donc la batterie entière, **sur son oui**. Il a
@@ -40,7 +78,7 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
   conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la
   durée ;
 - **« lu 2 m, corrigé par vous » dans « Voir la saisie » : CODÉ LE
-  22 NOVEMBRE** (`ARCHITECTURE.md` §601), commité sur la branche de session,
+  22 NOVEMBRE** (`ARCHITECTURE.md` §602), commité sur la branche de session,
   avec les trois corrections du même jour, et comme elles PAS sur `main`.
   **Pas regardé à l'écran** : il faut un serveur. À regarder sur un plan fait
   depuis une photo, dont une cote a été corrigée ;

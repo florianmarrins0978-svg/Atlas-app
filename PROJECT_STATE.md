@@ -1,12 +1,16 @@
 # État du projet
 
+## LA NOURRICE EN 3D, RÉALISTE, AVEC L'ÉCLATÉ AU TOUCHER : UNE PLANCHE (22 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 22. `appli/arrosage-nourrice-3d.html` : chaque pièce relevée sur ses photos, matières physiques, HDRI, ombres et occlusion ambiante ; un toucher éclate, un second remonte. De 1 à 6 voies, 0 à n en goutte-à-goutte. Les pièces dans `appli/nourrice-3d/` (`ARCHITECTURE.md` §600). 63 contrôles verts hors dépôt ; **non éprouvée sur un iPhone**. Retour : `docs/nourrice-3d-realiste.md`.
+
 ## LE DÉBUT DE LA VISITE GUIDÉE : DEUX PROPOSITIONS SUR SES QUATRE PREMIÈRES ÉTAPES (21 novembre 2026), PAS ENCORE CHOISIES
 
 Sa demande du 21, reçue par deux sessions. `appli/visite-guidee-le-debut.html` (le geste en titre, bulle courte) et `appli/visite-guidee-le-debut-2.html` (l'appli à ses couleurs, la page qui arrive en haut puis glisse, la main, le surligneur). Mêmes écrans, rien dans `src/`, la visite d'aujourd'hui intacte. Safari d'iPhone non vérifié ici pour la seconde. `TODO.md` dit ce qui les sépare et ce qu'il doit trancher.
 
 ## LES DOSSIERS DU PLAN D'ARROSAGE : CODÉS (21 novembre 2026)
 
-Sa planche du 21 et son « tout coder ». Sous les réserves du plan, « Enregistrer dans un dossier » ; « Mes dossiers » sous l'outil, et sous sa fermeture quand l'option n'est pas prise. Chaque enregistrement est figé (une version de plus, jamais écrasée, le même plan deux fois n'en fait pas), revu sans recalcul, repris dans l'outil avec le calcul du jour, téléchargé en PDF archivé (un réseau par page, sans réserves ni prix d'achat ; le 22, le plan en couleur y passe sur la largeur de la page, le mot « nourrice » et les losanges se dégagent du regard (§600) et l'angle de la nourrice éclatée s'arrondit, « Voir la saisie » dit ce qu'il a corrigé de la lecture de l'IA (§601) ; commités sur la branche de session, pas encore sur `main` : ils attendent la batterie, niveau 3, sur son oui). Supprimer efface tout ce qui désigne le client et garde le calcul 5 ans. `ARCHITECTURE.md` §599. Reste : la clause des conditions générales (lui et son juriste), `TODO.md`.
+Sa planche du 21 et son « tout coder ». Sous les réserves du plan, « Enregistrer dans un dossier » ; « Mes dossiers » sous l'outil, et sous sa fermeture quand l'option n'est pas prise. Chaque enregistrement est figé (une version de plus, jamais écrasée, le même plan deux fois n'en fait pas), revu sans recalcul, repris dans l'outil avec le calcul du jour, téléchargé en PDF archivé (un réseau par page, sans réserves ni prix d'achat ; le 22, le plan en couleur y passe sur la largeur de la page, le mot « nourrice » et les losanges se dégagent du regard (§601) et l'angle de la nourrice éclatée s'arrondit, « Voir la saisie » dit ce qu'il a corrigé de la lecture de l'IA (§602) ; commités sur la branche de session, pas encore sur `main` : ils attendent la batterie, niveau 3, sur son oui). Supprimer efface tout ce qui désigne le client et garde le calcul 5 ans. `ARCHITECTURE.md` §599. Reste : la clause des conditions générales (lui et son juriste), `TODO.md`.
 
 ## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), VUE PAR LUI, RETOUCHÉE DEUX FOIS LE JOUR MÊME
 

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La nourrice en 3D, réaliste, avec l'éclaté au toucher</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-nourrice-en-3d-réaliste-avec-léclaté-au-toucher">La nourrice en 3D, réaliste, avec l'éclaté au toucher</h1>
+<p><em>22 novembre 2026. Ta demande, arrivée dans un texte venu de ChatGPT et lue avant d'agir : « la nourrice d'arrosage en 3D, vraiment réaliste, avec un éclaté au toucher ».</em></p>
+<p><strong>La planche :</strong> <code>appli/arrosage-nourrice-3d.html</code> &lt;https://florianmarrins0978-svg.github.io/Atlas-app/arrosage-nourrice-3d.html&gt;</p>
+<p>Rien dans <code>src/</code>. C'est le niveau 1 : aucune batterie.</p>
+<h2 id="le-verdict-point-par-point">Le verdict, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que tu demandais</th>
+<th>Verdict</th>
+<th>Où le lire</th>
+</tr></thead><tbody>
+<tr>
+<td>Des pièces fidèles à tes photos</td>
+<td><strong>fait</strong>, avec des écarts dits plus bas</td>
+<td><code>appli/nourrice-3d/pieces/</code></td>
+</tr>
+<tr>
+<td>Aucun logo ni texte inventé</td>
+<td><strong>fait</strong> : ni « DURA », ni « VIRAX », ni flèches ON OFF ; les étiquettes jaunes sont des pastilles unies</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Vrais filetages en hélice, chanfreins, arrondis, cannelures, vis</td>
+<td><strong>fait</strong></td>
+<td><code>appli/nourrice-3d/formes.js</code></td>
+</tr>
+<tr>
+<td>Matières physiques : PVC satiné, noir mat, laiton, inox</td>
+<td><strong>fait</strong></td>
+<td><code>appli/nourrice-3d/matieres.js</code></td>
+</tr>
+<tr>
+<td>HDRI libre posée dans <code>appli/vendor/</code></td>
+<td><strong>fait, autrement</strong> : Poly Haven est refusé par le réseau de ce poste, elle vient de npm</td>
+<td><code>appli/vendor/hdri/LISEZMOI.md</code></td>
+</tr>
+<tr>
+<td>ACES, ombres douces, ombre de contact, occlusion ambiante, anticrénelage</td>
+<td><strong>fait</strong></td>
+<td><code>appli/nourrice-3d/scene.js</code></td>
+</tr>
+<tr>
+<td>Densité de pixels plafonnée à 2, pièces en instances</td>
+<td><strong>fait</strong></td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Fluide sur iPhone</td>
+<td><strong>pas vérifiable ici</strong></td>
+<td>voir « Ce qui n'est pas vérifié »</td>
+</tr>
+<tr>
+<td>L'éclaté au toucher, 2 cm, 0,6 s, chacun sur son axe</td>
+<td><strong>fait, mesuré</strong></td>
+<td>voir « Les contrôles »</td>
+</tr>
+<tr>
+<td>Les boutons Montée et Éclatée suivent l'état</td>
+<td><strong>fait</strong></td>
+<td>la page</td>
+</tr>
+<tr>
+<td>Une phrase si le téléphone ne sait pas afficher la 3D</td>
+<td><strong>fait</strong> : trois phrases, selon la cause</td>
+<td>la page</td>
+</tr>
+<tr>
+<td>Un modèle 3D du fabricant si sa licence le permet</td>
+<td><strong>non</strong> : aucune licence ne le permet</td>
+<td>voir plus bas</td>
+</tr>
+<tr>
+<td>Le lien dans <code>appli/essais.html</code></td>
+<td><strong>fait</strong> (le lien existait, son texte est à jour)</td>
+<td><code>appli/essais.html</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="les-pièces-une-par-une">Les pièces, une par une</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Les noms sont ceux du catalogue. Le sommet du filetage 1" (33,25 mm) sert d'étalon quand la photo en montre un.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Pièce</th>
+<th>Ta photo</th>
+<th>Ce qui est mesuré</th>
+<th>Ce qui est estimé</th>
+</tr></thead><tbody>
+<tr>
+<td>Coude 90° taraudé/fileté MF 1"</td>
+<td><code>coude-mf-dessus-naturel.png</code></td>
+<td>le corps de 29,4 mm, son cintre, le col, sept filets, le nez de 3,9 mm</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>Coude 1" FF</td>
+<td><code>coude-ff-dessus-naturel.png</code></td>
+<td>le corps de 30,4 mm, ses deux moyeux évasés</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>Té 1" MFF</td>
+<td><code>te-mmf-dessus-naturel.png</code></td>
+<td>le corps, la branche, le bossage en losange (sans le nom)</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>L'écrou union, partout</td>
+<td>cinq photos</td>
+<td>40 mm de diamètre, 30 de long, huit nervures de 4,6 mm</td>
+<td>le dedans (aucune photo)</td>
+</tr>
+<tr>
+<td>Collecteur M x F x 2, 3, 4 sorties 1"</td>
+<td><code>clarinette-2v</code>, <code>3v</code>, <code>4v-dessus-naturel.png</code></td>
+<td>le tube de 31,2 mm, la première sortie à 70 mm de la bouche, la dernière à 51 mm de la pointe</td>
+<td>l'entraxe retenu (100 mm), la profondeur d'une sortie</td>
+</tr>
+<tr>
+<td>Manchon union 1" FF</td>
+<td><code>union-ff-dessus-naturel.png</code></td>
+<td>94,7 mm, le corps de 25,8, la bague de 27,9</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>Mamelon réduit fileté MM 1"-3/4"</td>
+<td><code>mamelon-dessus-naturel.png</code></td>
+<td>45,2 mm, le six pans de 39,6 sur plats, la collerette</td>
+<td>le pas du 3/4" (la norme, 14 filets au pouce)</td>
+</tr>
+<tr>
+<td>Mamelon fileté MM 1"</td>
+<td><code>mamelon-droit-1.jpg</code> (de trois quarts)</td>
+<td>aucune cote : il reprend le côté 1" du réduit</td>
+<td>tout</td>
+</tr>
+<tr>
+<td>Électrovanne 100 DV 1" MM 9V</td>
+<td><code>electrovanne-100dv-dessus.png</code>, <code>electrovanne-100dv.jpg</code></td>
+<td>les hauteurs et diamètres sur la photo de trois quarts, la place des vis, de la purge et de la bobine</td>
+<td>le dessous, le côté caché de la bobine</td>
+</tr>
+<tr>
+<td>Électrovanne 100 DV 1" FF 9V</td>
+<td><code>electrovanne-100dv-ff-dessus.png</code></td>
+<td>ses vis, son bouton de purge, sa bobine carrée</td>
+<td>le dessous, la profondeur des bouches</td>
+</tr>
+<tr>
+<td>Vanne avec vis de purge 3/4"</td>
+<td><code>vanne-purge-dessus.png</code> (un profil)</td>
+<td>72,5 mm de long, le fût, la tige, la manette et sa pente, la purge et sa clé</td>
+<td>l'échelle (32 mm sur plats), les largeurs de la manette</td>
+</tr>
+<tr>
+<td>Régulateur de pression FF 3/4"</td>
+<td><code>regulateur-ff34.jpg</code></td>
+<td>la couronne, le fût, le corps cannelé, douze nervures</td>
+<td>la longueur (131 mm, citée de mémoire d'une fiche)</td>
+</tr>
+<tr>
+<td>Raccord mâle 25 x 1"</td>
+<td><code>raccord-male32-dessus.png</code></td>
+<td>le filetage, les ailettes, la bague cannelée</td>
+<td>tout le côté tuyau : c'est le 32 x 1" ramené par 25/32</td>
+</tr>
+<tr>
+<td>PEHD Ø25</td>
+<td><code>pehd.jpg</code></td>
+<td>25 mm, 19 de passage, quatre bandes bleues de 2,8 mm</td>
+<td>sa longueur (150 mm, un choix)</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>L'HDRI vient de npm, pas de Poly Haven.</strong> Le réseau de ce poste refuse polyhaven.com. Le paquet <code>@pmndrs/assets</code> (CC0) porte une sélection des HDRI de Poly Haven, ramenées à 512 x 256 : j'ai pris son studio photo, 111 ko, sans retouche. Si elle ne se charge pas, la scène garde un éclairage de secours et la nourrice reste visible.</li>
+<li><strong>Aucun modèle de fabricant.</strong> Cherché, sans pouvoir ouvrir leurs sites (refusés eux aussi) : les conclusions viennent de résultats de recherche, la confiance est moyenne.</li>
+</ol>
+<p>| Fabricant | Ce qu'il publie | Utilisable ici | |---|---|---| | Rain Bird | pour la série DV, des dessins 2D seulement (DWG, DXF) ; ses modèles 3D concernent d'autres vannes | non : pas de modèle, et ses conditions interdisent de reproduire, modifier et afficher | | Dura | des catalogues et des fiches PDF | sans objet | | Plasson | des fichiers BIM, et un fichier « 07020 CAD » de format inconnu | non : une copie pour usage personnel, sans modification ni mise en ligne |</p>
+<p>Les pièces sont donc modélisées. La voie restante serait un accord écrit du fabricant.</p>
+<ol>
+<li><strong>Pas de « réglage de débit » sur l'électrovanne.</strong> Ta photo montre une 100 DV simple : c'est la 100 DVF qui en porte un. J'ai modélisé ce que ta photo montre (la vis de purge), pas la liste.</li>
+<li><strong>La vanne est en laiton nickelé</strong>, comme sur ta photo : un corps satiné argenté. Le laiton jaune se voit au presse-étoupe et dans les bouches.</li>
+<li><strong>Le régulateur est celui de la fiche</strong> (<code>regulateur-ff34.jpg</code>, le noir). <code>regulateur-dn15-dessus.png</code> est un autre régulateur, nickelé, que la planche vue du dessus écarte aussi. Il est posé le corps cannelé côté rangée : la flèche moulée sur ta photo pointe vers le fût.</li>
+<li><strong>Un seul écrou union, de 40 mm, partout.</strong> Tes photos le donnent de 37 à 44 mm selon l'angle de prise. C'est ta demande du 21 sur la planche à plat : toutes les pièces à la même dimension.</li>
+<li><strong>100 mm entre deux sorties, pour les trois collecteurs.</strong> Mesuré 101,3 sur le 2 sorties, 98,3 sur le 4, 93,3 sur le 3 (sa photo est quatre fois moins fine). Ce sont trois longueurs d'un même moule : un seul entraxe. Le 3 sorties fait donc 321 mm, là où sa photo en donne 295.</li>
+<li><strong>La vue passe en premier sur la page</strong>, les boutons dessous : le geste se fait sur la vue, elle ne doit pas commencer sous le pli de l'écran.</li>
+<li><strong>Deux finesses de pièces.</strong> La plus grande nourrice pesait 870 000 triangles. Jusqu'à 400 000 la page prend les pièces fines ; au-delà (quatre voies et plus, à peu près) un jeu plus léger, chaque pièce étant alors deux fois plus petite à l'écran.</li>
+<li><strong>Le code est rangé dans <code>appli/nourrice-3d/</code></strong>, pas dans la page : les pièces font un millier de lignes à elles seules (<code>ARCHITECTURE.md</code> §600).</li>
+</ol>
+<h2 id="ce-qui-nest-pas-fait-et-ce-qui-nest-pas-vérifié">Ce qui n'est pas fait, et ce qui n'est pas vérifié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La fluidité sur iPhone n'est pas vérifiable ici.</strong> Ce poste n'a pas de carte graphique : une image y prend une demi-seconde. Ce qui est en place : la densité plafonnée à 2, les pièces pareilles dessinées en une fois, rien qui se redessine au repos, les ombres refaites seulement quand les pièces bougent, et un régulateur qui baisse la qualité le temps d'un mouvement si l'appareil peine.</li>
+</ul>
+<p>| Nourrice | Triangles | |---|---| | 1 voie | 167 000 | | 3 voies | 332 000 | | 3 voies dont 1 en goutte-à-goutte | 369 000 | | 6 voies (pièces légères) | 410 000 | | 6 voies dont 6 en goutte-à-goutte (pièces légères) | 553 000 |</p>
+<p><strong>À jouer sur ton iPhone :</strong> ouvre la 6 voies dont 6, tourne-la, éclate-la. Si elle saccade, dis-le : il reste de la marge sur les électrovannes (35 000 triangles chacune).</p>
+<ul>
+<li><strong>Le raccord Plasson est le 32 x 1" réduit.</strong> Aucune de tes photos ne montre le 25 x 1" à plat.</li>
+<li><strong>Trois cotes ne viennent d'aucune de tes photos</strong> : les 32 mm sur plats de la vanne (son échelle entière), les 131 mm du régulateur, la profondeur des bouches taraudées.</li>
+<li><strong>Le dessous des électrovannes et l'intérieur de la bague Plasson sont inventés</strong> pour qu'on voie un fond plausible en tournant : aucune photo ne les montre.</li>
+<li><strong>Le nickel et les noirs ont un reflet poussé.</strong> Le studio de l'HDRI est sombre autour de ses deux sources : réglé pour un PVC gris, il laissait la vanne presque noire. Les métaux et les noirs prennent donc plus de l'ambiance que le gris. C'est un réglage à l'oeil.</li>
+<li><strong>Le contrôle de la page n'est pas dans le dépôt.</strong> Un script sous <code>scripts/</code> aurait fait passer le lot du niveau 1 au niveau 2. Ce qu'il vérifie est écrit ci-dessous.</li>
+<li><strong>Un contraste sous le seuil</strong> : les deux petits titres dorés (« Combien de voies ») font 2,8 pour 1 sur le fond crème. C'est le doré des surtitres de l'appli, celui que tu as choisi : laissé.</li>
+</ul>
+<h2 id="ce-que-jai-dit-ou-fait-de-faux-en-route">Ce que j'ai dit ou fait de faux en route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La page restait sur « Chargement » sans rien dire.</strong> J'avais posé la carte des imports après un préchargement de module : le navigateur l'ignore, et le module ne démarre pas. Corrigé, et la page dit maintenant tout échec de chargement au lieu d'attendre.</li>
+<li><strong>Ma mesure des axes s'est trompée deux fois</strong>, sur des pièces parfaitement centrées : de 0,28 mm d'abord, puis de 0,2 mm sur le régulateur en pièces légères. Les deux fois elle moyennait des sommets mal répartis. Elle cherche maintenant le centre commun des cercles de chaque face de bout, que la place des sommets ne peut plus tirer.</li>
+<li><strong>J'avais dessiné l'écrou à 48 mm.</strong> Mesuré sur tes photos : 40.</li>
+<li><strong>J'ai demandé de déplacer la bobine de l'électrovanne.</strong> L'agent a montré que ta photo de dessus est prise de biais, d'une vingtaine de degrés : la bobine est bien placée, il ne l'a pas bougée, et il avait raison.</li>
+<li><strong>La pointe des mamelons était trouée</strong> : un profil écrit à l'envers, que le compte des faces inversées ne voit pas. Vu au rendu, corrigé.</li>
+<li><strong>Un premier atelier d'agents a été coupé net par la limite d'usage du compte</strong>, avant de rendre son rapport. Son travail était sur le disque ; je l'ai repris, et le second atelier a été resserré.</li>
+</ul>
+<h2 id="les-contrôles">Les contrôles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Joués dans Chromium sans écran, à 390 points de large, au doigt. <strong>63 contrôles, tous verts.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui est vérifié</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>1 voie, 3 voies dont 1, 6 voies dont 6 : rendues et regardées, montées et éclatées</td>
+<td>fait</td>
+</tr>
+<tr>
+<td>Chaque bout à moins de 0,5 mm de son axe, montée, éclatée et en trois instants du mouvement</td>
+<td>pire écart : 0,00003 mm, sur 121 bouts, aux deux finesses</td>
+</tr>
+<tr>
+<td>Les 27 compositions (1 à 6 voies, 0 à n en goutte-à-goutte)</td>
+<td>axes, vissages, largeur : verts</td>
+</tr>
+<tr>
+<td>2 cm entre deux pièces, éclatées</td>
+<td>20,00 mm sur tous les écarts</td>
+</tr>
+<tr>
+<td>Montée, chaque filetage est entré dans la pièce d'en face</td>
+<td>recouvrement de 13 à 34 mm</td>
+</tr>
+<tr>
+<td>Un toucher sur la nourrice l'éclate, un second la remonte</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>Un toucher à côté, un glissé, un appui de plus de 300 ms, un glissé de 8 px</td>
+<td>n'éclatent rien</td>
+</tr>
+<tr>
+<td>Tourner à la main éteint le bouton du point de vue ; un toucher ne l'éteint pas</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>Chaque bouton (montage, point de vue, voies, goutte-à-goutte), et Entrée au clavier</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>La durée de l'éclaté</td>
+<td>0,6 s réglée, confirmée par l'horloge à une image près</td>
+</tr>
+<tr>
+<td>Console</td>
+<td>vide</td>
+</tr>
+<tr>
+<td>Défilement horizontal à 390 points, et téléphone couché</td>
+<td>aucun</td>
+</tr>
+<tr>
+<td>Sans WebGL, sans import maps, un fichier manquant</td>
+<td>la bonne phrase à chaque fois</td>
+</tr>
+<tr>
+<td>Sans l'HDRI</td>
+<td>la nourrice s'affiche avec l'éclairage de secours</td>
+</tr>
+<tr>
+<td>Mouvements réduits demandés au système</td>
+<td>l'éclaté arrive sans trajet</td>
+</tr>
+<tr>
+<td>Le contexte graphique perdu puis rendu</td>
+<td>l'image revient à l'identique</td>
+</tr>
+</tbody></table></div>
+<p>Du dépôt : <code>test-aucun-tiret.ts</code> et <code>test-aucune-fleche.ts</code> verts, <code>npm run niveau</code> dit 1, <code>verifier:memoire</code> vert.</p>
+<h2 id="ce-qui-reste-ouvert-et-qui-tranche">Ce qui reste ouvert, et qui tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La planche te convient-elle, et tourne-t-elle bien sur ton iPhone ?</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>Le régulateur dans ce sens, la bobine côté rangée ?</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>Une photo à plat du raccord 25 x 1", pour ne plus réduire le 32</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>La longueur du régulateur et la cote sur plats de la vanne, au pied à coulisse</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>Porter cette nourrice dans l'outil d'arrosage de l'appli</td>
+<td>toi, après la planche</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

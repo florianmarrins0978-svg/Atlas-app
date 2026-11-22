@@ -78,7 +78,7 @@
 </tr>
 <tr>
 <td>Le devis</td>
-<td>le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, <strong>les boutons à essayer librement</strong> (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, le retour au devis, Choisir la date</td>
+<td>le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, <strong>les boutons à essayer librement</strong> (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, <strong>une nouvelle page avant le tilleul et un espace avant le ramassage</strong> (22 novembre), le retour au devis, Choisir la date</td>
 </tr>
 <tr>
 <td>La date</td>
@@ -94,7 +94,7 @@
 </tr>
 <tr>
 <td>La facture</td>
-<td>Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, <strong>ses boutons à essayer</strong> (Voir le PDF, Travaux en plus, Facture acquittée ; l'envoi par SMS reste hors d'atteinte), l'envoi, ce que reçoit le client</td>
+<td>Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, <strong>ses boutons à essayer</strong> (Voir le PDF, Travaux en plus, Facture acquittée ; dans Travaux en plus, depuis le 22 : Ajouter un travail, Main d'œuvre, Ajouter une TVA, Règlement reçu ; l'envoi par SMS reste hors d'atteinte), l'envoi, ce que reçoit le client</td>
 </tr>
 <tr>
 <td>Le paiement</td>
@@ -145,6 +145,7 @@
 <ul>
 <li>Téléphones de la <strong>tranche de fiction de l'ARCEP</strong> (06 39 98…, 02 61 91…), qui n'est attribuée à personne.</li>
 <li>E-mails sur <strong>example.com</strong>, un domaine réservé qui ne mène nulle part.</li>
+<li>Plaques des véhicules en <strong>DE-…-MO</strong> (DE-123-MO, DE-456-MO, DE-789-MO) : la lettre O n'est jamais attribuée sur une plaque française (le système d'immatriculation écarte I, O et U, trop proches de 1, 0 et V). Aucun véhicule réel ne peut porter ces plaques. Les modèles (Renault Master, Peugeot Boxer, Renault Kangoo) ne désignent personne, et les dates de contrôle sont inventées.</li>
 <li>Station du Rond-Point, Pépinière des Saules, Banque Démo, signature : inventées.</li>
 </ul>
 <h2 id="ce-que-la-planche-retouche-et-pourquoi">Ce que la planche retouche, et pourquoi</h2>
@@ -169,6 +170,11 @@
 <td>Les champs vides</td>
 <td>l'exemple « 06 12 34 56 78 » devient « 06 39 98 00 00 »</td>
 <td>ce numéro peut appartenir à quelqu'un</td>
+</tr>
+<tr>
+<td>Le micro de la fiche client, pendant l'écoute</td>
+<td>rouge, et « J'écoute. Touchez pour arrêter. » dessous, tels que les pose <code>DicterCoordonnees.tsx</code></td>
+<td>la visite ne fige pas l'écoute : elle la rejoue sur l'écran figé de la fiche vide (22 novembre)</td>
 </tr>
 </tbody></table></div>
 <h2 id="ta-demande-du-20-novembre-au-soir--entrer-dans-la-fiche-dun-client">Ta demande du 20 novembre au soir : entrer dans la fiche d'un client</h2>
@@ -224,7 +230,7 @@
 <h2 id="ce-qui-reste-ouvert-et-cest-à-toi-de-trancher">Ce qui reste ouvert, et c'est à toi de trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>La longueur</strong> : 83 étapes, une dizaine de minutes. On peut en retirer.</li>
+<li><strong>La longueur</strong> : 89 étapes, une dizaine de minutes. On peut en retirer.</li>
 <li><strong>Les retours d'intervention sur la fiche du client</strong> : aujourd'hui ils sont dans Terminés seulement.</li>
 <li><strong>Le bouton sur le site</strong> : où le poser sur <code>appli/vente/</code>.</li>
 <li><strong>Dans l'appli elle-même</strong>, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de <code>src/</code>, il attend ton « oui ».</li>
@@ -232,7 +238,7 @@
 <h2 id="pour-la-refaire-quand-un-écran-change">Pour la refaire quand un écran change</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>scripts/planche-figee/visite-guidee/tout.sh</code> rejoue tout le parcours dans l'appli bâtie, puis assemble et vérifie la planche. Il demande une base de démonstration neuve, donc ton accord.</p>
-<p><strong>Corrigé le 21 novembre : ce dossier n'est pas dans le dépôt.</strong> Ni <code>tout.sh</code>, ni <code>histoire.mjs</code>, ni <code>parcourir-visite.mjs</code> n'ont été commités ; ils sont restés dans la session qui a fait la planche. Seuls <code>figer.mjs</code>, <code>composer.mjs</code> et <code>parcourir.mjs</code> existent sous <code>scripts/planche-figee/</code>. Refaire la visite demande donc de réécrire son parcours. <strong>Depuis le 21 au soir, les vingt écrans ajoutés</strong> (fiche de sécurité jusqu'au PDF, véhicules, portes des Réglages) se refont, eux, par <code>appli/scripts/visite-guidee/</code> (son <code>LISEZ-MOI.md</code>).</p>
+<p><strong>Corrigé le 21 novembre : ce dossier n'est pas dans le dépôt.</strong> Ni <code>tout.sh</code>, ni <code>histoire.mjs</code>, ni <code>parcourir-visite.mjs</code> n'ont été commités ; ils sont restés dans la session qui a fait la planche. Seuls <code>figer.mjs</code>, <code>composer.mjs</code> et <code>parcourir.mjs</code> existent sous <code>scripts/planche-figee/</code>. Refaire la visite demande donc de réécrire son parcours. <strong>Depuis le 21 au soir, les écrans ajoutés</strong> (fiche de sécurité jusqu'au PDF, véhicules, portes des Réglages, et depuis le 22 l'aperçu et ses coupures, les travaux en plus de la facture) se refont, eux, par <code>appli/scripts/visite-guidee/</code> (son <code>LISEZ-MOI.md</code>).</p>
 <p><strong>Vérifié ici :</strong> le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.</p>
 </main>
 </body>
