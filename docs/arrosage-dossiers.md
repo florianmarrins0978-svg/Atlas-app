@@ -106,7 +106,8 @@ La suite des dossiers, qui fait ton geste du dessin au dossier supprimé :
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| le mot « nourrice » qui mord sur le losange du té égal, sur le plan en couleur (écran et PDF) | toi : c'est l'appli, sur ton oui |
+| le mot « nourrice » barré par la tranchée, le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le losange du té égal à moitié caché sous elle, sur le plan en couleur (écran et PDF). J'avais écrit « mord sur le losange » : c'est plus large | toi : c'est l'appli, sur ton oui |
+| le plan revu signale une erreur en développement : un angle de la nourrice éclatée diffère à la 14ᵉ décimale entre le serveur et le téléphone. Rien ne se voit | moi, sur ton oui |
 | « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite | à faire, si tu le veux |
 | le PDF ouvert sur ton iPhone | toi |
 

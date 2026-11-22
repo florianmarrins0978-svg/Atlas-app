@@ -77,17 +77,39 @@
   même forme ; la légende garde le nom de la fiche.
 
   TOUTES LES PIÈCES À PLAT, sa règle du même soir : couchées, vues de profil,
-  leur axe dans le plan de la photo, sans qu'on voie la face d'un bout. Les
-  photos qui ne le sont pas (prises d'un peu au-dessus : on voit l'intérieur
-  d'un bout) le disent dans la légende, « à reprendre à plat » ; aucune ne se
-  redresse à l'ordinateur, une image ne se déforme pas.
+  leur axe dans le plan de la photo, sans qu'on voie la face d'un bout. Une
+  image ne se déforme pas : ni penchée, ni étirée.
+
+  LES CLARINETTES À PLAT (sa demande du même soir, « mets la clarinette 2, 3
+  et 4 voies à plat », et « il y a des bouts qui manquent, et à d'autres
+  endroits il y en a en trop »). Leurs photos étaient prises d'un peu
+  au-dessus : seul le bout de chaque sortie s'y voyait de face (l'anneau et le
+  trou). Cette face est RETIRÉE, droite, là où finit le flanc de l'écrou ; rien
+  n'est déplacé ni étiré, et le tube, l'écrou union et le filetage étaient
+  déjà de profil. Le détourage est refait sur ses photos d'origine : le PVC est
+  bleuté, l'ombre neutre ; le bas du tube, du col et de l'écrou union est le
+  reflet de leur haut autour de l'axe du tube (ce sont des pièces qui tournent
+  autour de lui), parce que leur bas tombe sur l'ombre de contact, où la teinte
+  hésite d'un bloc de compression à l'autre. C'est là que le détourage d'avant
+  faisait ses crans et ses copeaux. Le tube y gagne son vrai dessous : le
+  détourage d'avant en avait rogné une bande. Même échelle qu'avant (w).
 
   LE MAMELON 1" (la pièce entre le coude ou le té et l'électrovanne FF d'une
   voie de goutte-à-goutte) : la photo trouvée en ligne était de biais. Sa
   demande : « mets-les à plat comme les autres unions ». Il prend sa photo de
   mamelon, celle des autres colonnes (un réduit 1" x 3/4", la même forme), le
   côté 1" en haut ; la légende garde le nom de la fiche. Sa photo de mamelon
-  quitte aussi la liste « à reprendre à plat » : il la tient pour à plat.
+  est tenue pour à plat.
+
+  LE GRIS DE VOS PHOTOS, au choix (sa remarque du même soir : « pourquoi tu
+  n'utilises pas la photo que je t'ai envoyée ? On a l'impression que celle que
+  tu utilises est beaucoup plus claire, comme sous le soleil »). C'est bien sa
+  photo : le gris clair qui suit l'éclaircissait de 30 à 80 sur 255. « Gris de
+  vos photos » ramène toutes les pièces en PVC gris au même gris, la médiane de
+  ses photos (100), avec le même écart. Un seul gris toujours, mais le sien.
+  Chaque pièce a sa variante « -naturel » : même détourage, même boîte au pixel
+  près, donc mêmes fractions. « Gris clair » reste le choix par défaut tant
+  qu'il n'a pas tranché.
 
   UN SEUL GRIS, CLAIR, pour toutes les pièces en PVC gris (sa demande du même
   soir : « soit toutes grises claires, soit toutes grises foncées ; gris clair,
@@ -148,12 +170,15 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>La nourrice vue du dessus</h1>
-  <p>Avec vos photos du 21 novembre, à plat, en gris clair. Rien n’est codé.</p>
+  <p>Avec vos photos du 21 novembre, à plat. Rien n’est codé.</p>
   <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="nuit">Nuit</option></select>
 </div>
 <main class="ecran">
   <div class="voies" role="group" aria-label="Photos">
     <button type="button" data-jeu="tes" aria-pressed="true">Vos photos</button><button type="button" data-jeu="avant" aria-pressed="false">Avant</button>
+  </div>
+  <div class="voies" id="gris" role="group" aria-label="Gris">
+    <button type="button" data-gris="clair" aria-pressed="true">Gris clair</button><button type="button" data-gris="photos" aria-pressed="false">Gris de vos photos</button>
   </div>
   <div class="voies" role="group" aria-label="Numéros et noms">
     <button type="button" data-nu="0" aria-pressed="true">Avec les numéros</button><button type="button" data-nu="1" aria-pressed="false">Sans numéro ni nom</button>
@@ -224,8 +249,6 @@
   // gardent celle d'avant, et la légende le dit (« photo d'avant »).
   var TES = {
     aRefaire: ["regulateur-ff34"],
-    // Prises d'un peu au-dessus : l'intérieur d'un bout se voit. Elles attendent une photo à plat.
-    pasAPlat: ["clarinette-2v", "clarinette-3v", "clarinette-4v"],
     photos: {
       "coude-mf": "coude-mf-dessus.png", "coude-ff": "coude-ff-dessus.png", "te-mmf": "te-mmf-dessus.png",
       "clarinette-2v": "clarinette-2v-dessus.png", "clarinette-3v": "clarinette-3v-dessus.png", "clarinette-4v": "clarinette-4v-dessus.png",
@@ -242,9 +265,9 @@
       "coude-mf":      { h: 47, vertical: 0.2557, horizontal: 0.2389 },
       "coude-ff":      { h: 46, vertical: 0.7276, horizontal: 0.2613, quart: true },
       "te-mmf":        { h: 47, vertical: 0.5137, horizontal: 0.247, miroir: true },
-      "clarinette-2v": { w: 145, sorties: [0.3154, 0.7679], tube: 0.3294 },
-      "clarinette-3v": { w: 231, sorties: [0.2198, 0.5354, 0.8482], tube: 0.2809 },
-      "clarinette-4v": { w: 271, sorties: [0.1679, 0.4038, 0.6373, 0.8721], tube: 0.3125 }
+      "clarinette-2v": { w: 145, sorties: [0.3147, 0.7697], tube: 0.4018 },
+      "clarinette-3v": { w: 231, sorties: [0.2214, 0.5378, 0.8526], tube: 0.3736 },
+      "clarinette-4v": { w: 271, sorties: [0.1668, 0.4038, 0.6395, 0.874], tube: 0.3618 }
     },
     colonne: {
       "mamelon":            { a: [0.495, 0], b: [0.4883, 1], L: 32.5 },
@@ -289,7 +312,16 @@
     return k;
   }
   var images = {};
-  function image(ref) { return images[J.photos[ref]]; }
+  // LE GRIS DE SES PHOTOS : chaque pièce en PVC gris a sa variante « -naturel », même détourage,
+  // même boîte au pixel près (donc mêmes fractions), le gris ramené à la médiane de ses photos.
+  var NATUREL = ["coude-mf-dessus.png", "coude-ff-dessus.png", "te-mmf-dessus.png", "clarinette-2v-dessus.png",
+    "clarinette-3v-dessus.png", "clarinette-4v-dessus.png", "union-ff-dessus.png", "mamelon-dessus.png"];
+  var gris = "clair";
+  function fichier(ref) {
+    var f = J.photos[ref];
+    return jeu === "tes" && gris === "photos" && NATUREL.indexOf(f) >= 0 ? f.replace("-dessus.png", "-dessus-naturel.png") : f;
+  }
+  function image(ref) { return images[fichier(ref)]; }
   function taille(ref) {
     var f = J.haut[ref], im = image(ref);
     if (!im) return { w: f.w || 40, h: f.h || 40 };
@@ -428,7 +460,7 @@
       etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
     }
     // Pour le contrôle au rendu : où chaque pièce est posée, en pixels du canvas.
-    window.__nourrice = { r: r, k: k, dx: dx, poses: poses, axes: axes, xL: xL, axe: axe, jeu: jeu };
+    window.__nourrice = { r: r, k: k, dx: dx, poses: poses, axes: axes, xL: xL, axe: axe, jeu: jeu, gris: gris };
 
     $("titre").textContent = fiche.nom;
     $("sous-titre").textContent = n + " voie" + (n > 1 ? "s" : "") + ", l’arrivée à gauche, puis les voies de gauche à droite.";
@@ -436,14 +468,16 @@
       "pehd": "PEHD Ø25", "raccord-male25": nom("raccord-male25") };
     $("legende").innerHTML = ordre.map(function (ref, i) {
       var avant = jeu === "tes" && TES.aRefaire.indexOf(ref) >= 0;
-      var penche = jeu === "tes" && TES.pasAPlat.indexOf(ref) >= 0;
-      return "<li><b>" + (i + 1) + "</b><span>" + texte(NOMS[ref] || nom(ref)) + (avant ? '<span class="avant">photo d’avant</span>' : "") + (penche ? '<span class="avant">à reprendre à plat</span>' : "") + "</span></li>";
+      return "<li><b>" + (i + 1) + "</b><span>" + texte(NOMS[ref] || nom(ref)) + (avant ? '<span class="avant">photo d’avant</span>' : "") + "</span></li>";
     }).join("");
     $("hors").hidden = jeu !== "tes";
     $("legende").hidden = nu;
     document.querySelectorAll("[data-nu]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.nu === "1") === nu)); });
     document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === n)); });
     document.querySelectorAll("[data-jeu]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.jeu === jeu)); });
+    // « Avant » montre les photos d'avant : le gris ne s'y choisit pas, le choix se retire.
+    $("gris").hidden = jeu !== "tes";
+    document.querySelectorAll("[data-gris]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.gris === gris)); });
     var gg = "";
     for (var j = 0; j <= n; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === nbGoutte) + '">' + (j ? j : "Aucune") + "</button>";
     $("goutte").innerHTML = gg;
@@ -457,7 +491,8 @@
 
   var voies = 3, nbGoutte = 0, nu = false;
   document.addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]"), bn = e.target.closest("button[data-nu]");
+    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"), bj = e.target.closest("button[data-jeu]"), bn = e.target.closest("button[data-nu]"), bgr = e.target.closest("button[data-gris]");
+    if (bgr) { gris = bgr.dataset.gris; dessiner(voies, nbGoutte); }
     if (bn) { nu = bn.dataset.nu === "1"; dessiner(voies, nbGoutte); }
     if (b) { voies = Number(b.dataset.voies); nbGoutte = Math.min(nbGoutte, voies); dessiner(voies, nbGoutte); }
     if (bg) { nbGoutte = Number(bg.dataset.goutte); dessiner(voies, nbGoutte); }
@@ -465,6 +500,7 @@
   });
   var chemins = [];
   [TES, AVANT].forEach(function (j) { Object.keys(j.photos).forEach(function (r) { if (chemins.indexOf(j.photos[r]) < 0) chemins.push(j.photos[r]); }); });
+  NATUREL.forEach(function (f) { chemins.push(f.replace("-dessus.png", "-dessus-naturel.png")); });
   Promise.all(chemins.map(function (ch) { return charger(ch).then(function (im) { images[ch] = im; }); }))
     .then(function () { dessiner(voies, nbGoutte); });
 })();
