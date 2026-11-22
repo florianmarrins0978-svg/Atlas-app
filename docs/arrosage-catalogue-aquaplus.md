@@ -55,6 +55,12 @@ pansements, le code mort. Tous verts.
 | Régulateur FF 3/4" | marque Dura | BRP870500, laiton, 1 à 3 m³/h | 54 |
 | Électrovanne DV | débit de 0,05 à 9,08 m³/h, de 1 à 10 bar | **0,75** à 9,1 m³/h, de 1,0 à 10,4 bar | 19 |
 
+**Corrigé le 22 novembre 2026, sur sa parole** : le regard rectangle 12", les
+regards jumbo et le régulateur FF 3/4" ne sont pas des Dura (*« il faut le
+corriger pour tout »*), pas plus que la vanne avec vis de purge. La marque est
+retirée du catalogue et des planches, sans en écrire une autre. Les pièces à
+référence « ODU » (Dura chez Aqua Plus) la gardent.
+
 **La 6,0 Portée+ change le calcul.** Avec 1,36 m³/h, elle consomme presque la
 moitié de plus que ce que l'outil compte. Un plan qui la pose aujourd'hui met
 trop de têtes sur une vanne.

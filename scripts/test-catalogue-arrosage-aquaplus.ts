@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from "node:fs";
 import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
 
 // Le catalogue d'arrosage, confronté à Aqua Plus 2026 entrée par entrée.
@@ -168,6 +169,32 @@ for (const [ref, nom] of [
 ]) {
   const p = ajoutables.find((x) => x.ref === ref);
   dire(p?.nom === nom, `${ref} : « ${p?.nom} », le PDF dit « ${nom} »`);
+}
+
+// **Ce qui n'est pas un Dura** (sa correction du 22 novembre 2026 : *« la vanne
+// 3/4, c'est pas la marque Dura ; pareil pour le régulateur de pression et le
+// regard jumbo, il faut le corriger pour tout »*). Le catalogue leur prêtait la
+// marque des raccords de la nourrice ; Aqua Plus les vend sans la nommer. Ni le
+// catalogue (ses deux copies) ni une planche figée ne doivent la leur rendre.
+{
+  const C = CATALOGUE as unknown as { piece(ref: string): { marque?: string } | null };
+  const pasDura = ["vanne-purge", "regulateur-ff34", "regard-rect12", "regard-rg17106", "regard-jumbo5", "regard-jumbo6"];
+  for (const ref of pasDura) {
+    const p = C.piece(ref);
+    if (!p) { console.log(`  ✗ ${ref} n'est plus au catalogue : le contrôle ne mesure rien`); echecs++; continue; }
+    if (p.marque === "Dura") { console.log(`  ✗ ${ref} est encore marqué Dura`); echecs++; }
+  }
+  const copie = readFileSync("appli/arrosage-catalogue.js", "utf8");
+  for (const ref of pasDura) {
+    const ligne = copie.split("\n").find((l) => l.includes(`'${ref}':`));
+    if (!ligne || /marque:'Dura'/.test(ligne)) { console.log(`  ✗ la copie des planches marque encore ${ref} Dura`); echecs++; }
+  }
+  const planches = ["appli", "appli/soignee"].flatMap((d) => readdirSync(d).filter((f) => f.endsWith(".html")).map((f) => `${d}/${f}`));
+  for (const f of planches) {
+    const t = readFileSync(f, "utf8");
+    for (const nom of ["Dura Vanne", "Dura Régulateur", "Dura Regard"]) if (t.includes(nom)) { console.log(`  ✗ ${f} écrit encore « ${nom} »`); echecs++; }
+  }
+  if (planches.length < 20) { console.log("  ✗ les planches ne se lisent pas : le contrôle ne mesure rien"); echecs++; }
 }
 
 if (echecs > 0) {
