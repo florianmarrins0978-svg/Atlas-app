@@ -211,7 +211,8 @@ async function enchainerLesEssais(largeur, hauteur) {
       const g = document.querySelector(".g").getBoundingClientRect();
       const r = x.voir.map((sel) => document.querySelector(".visite-ecran:not([hidden]) " + sel)?.getBoundingClientRect());
       const vu = (b) => b && b.top >= 0 && b.bottom <= g.top;
-      const tiennent = r[0] && r.at(-1) && r.at(-1).bottom - r[0].top <= g.top - 12;
+      // Le guide garde 10 points autour de ce qu'il montre, et 6 contre le bord et contre lui (`caler`).
+      const tiennent = r[0] && r.at(-1) && r.at(-1).bottom - r[0].top + 20 <= g.top - 12;
       return x.voir.filter((sel, k) => (k === 0 || tiennent) && !vu(r[k])).join(" ");
     });
     dire(cas, !r, `${await essai()} : ${r} n'est pas à l'écran en arrivant`);
