@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-22
+
+- **La visite guidée montre la fiche client remplie par le micro d'en haut à droite** (`appli/visite-guidee.html`, sa demande du 22). Deux étapes avant que la fiche s'écrive seule : toucher le micro, puis l'écoute (micro rouge, « J'écoute. Touchez pour arrêter. », la phrase dictée dans la bulle). L'écoute est rejouée sur l'écran figé de la fiche vide, aux couleurs et à la phrase de `DicterCoordonnees.tsx`, et défaite en quittant l'étape : le même écran sert aussi à « Touchez Entreprise. ». Pendant que les champs s'écrivent, la ligne repliée dit « La fiche se remplit. » au lieu du geste d'après. 85 étapes.
+
 ## 2026-11-21
 
 - **Le gris de ses photos, au choix, sur la nourrice vue du dessus** (`appli/arrosage-nourrice-vue-du-dessus.html` sur `main`, `ARCHITECTURE.md` §600). Sa remarque : « pourquoi tu n'utilises pas la photo que je t'ai envoyée ? On a l'impression qu'elle est beaucoup plus claire, comme sous le soleil ». C'est bien sa photo : le gris clair qu'il avait demandé le même soir l'éclaircissait de 30 à 80 sur 255. « Gris de vos photos » met toutes les pièces en PVC gris au même gris, la médiane de ses photos (100). Mêmes boîtes au pixel près, donc mêmes fractions ; 3x sous 1 px dans les deux gris. L'outil garde le gris clair jusqu'à son choix.
