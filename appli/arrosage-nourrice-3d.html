@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La nourrice en 3D</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 22 novembre 2026,
+  après avoir fait passer une de ses images dans une appli qui fabrique de la
+  3D par IA : « les électrovannes ne sont pas alignées avec le reste des
+  pièces », puis « est-ce que ce qu'elle fait, tu serais capable de me le
+  faire, toi ? J'aimerais avoir la nourrice en 3D réaliste ».
+
+  POURQUOI CE N'EST PAS UNE IA QUI DEVINE. L'appli qu'il a essayée invente la
+  profondeur à partir d'une seule image : elle a tourné l'électrovanne (ses
+  fils partent à gauche, ils sont à droite sur le dessin) et l'a crue décalée,
+  parce que le corps d'une 100 DV est décentré par nature (la bobine est d'un
+  côté). Ici, chaque pièce est MODÉLISÉE, en millimètres, aux proportions de
+  ses photos (le filetage 1" à 33,3 mm de diamètre sert d'étalon), et posée
+  par ses bouts de vissage : l'axe est juste par construction, il ne se
+  devine pas. Ce qui n'est pas une photo ne se fait pas passer pour une :
+  pas de logo, pas de texte sur les pièces.
+
+  LA COMPOSITION est celle de la fiche (CAT.ficheNourrice), dans l'ordre de la
+  planche vue du dessus (appli/arrosage-nourrice-vue-du-dessus.html) : le haut
+  de gauche à droite (coude MF, clarinette, té, coude FF), l'arrivée sous le
+  coude MF, les voies de goutte-à-goutte à droite.
+
+  MONTÉE : chaque filetage mâle entre dans la pièce femelle d'en face, comme
+  dans le regard. ÉCLATÉE : les pièces s'écartent sur leur axe, filetages
+  visibles, comme sur la planche vue du dessus.
+
+  Les pièces sont couchées dans le regard, bobines vers le haut : la vue
+  « Dessus » est celle de la planche à plat.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:14px 16px 70px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .voies{display:flex;gap:6px;margin-top:10px}
+  .voies button{flex:1;min-height:44px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .voies button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .voies button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  h2{margin:16px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .vue{position:relative;margin-top:14px;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--atlas-line);background:#e9e7e1}
+  .vue canvas{display:block;width:100%;height:440px;touch-action:none}
+  .attente{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--atlas-muted)}
+  .attente[hidden]{display:none}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>La nourrice en 3D</h1>
+  <p>Chaque pièce posée sur son axe. Tournez avec le doigt. Rien n’est codé.</p>
+</div>
+<main class="ecran">
+  <div class="voies" role="group" aria-label="Montage">
+    <button type="button" data-montage="montee" aria-pressed="true">Montée</button><button type="button" data-montage="eclatee" aria-pressed="false">Éclatée</button>
+  </div>
+  <div class="voies" role="group" aria-label="Point de vue">
+    <button type="button" data-vue="biais" aria-pressed="true">De biais</button><button type="button" data-vue="dessus" aria-pressed="false">Dessus</button><button type="button" data-vue="face" aria-pressed="false">De face</button>
+  </div>
+  <span class="caps" style="margin-top:16px">Combien de voies</span>
+  <div class="voies" role="group" aria-label="Nombre de voies">
+    <button type="button" data-voies="1">1</button><button type="button" data-voies="2">2</button>
+    <button type="button" data-voies="3">3</button><button type="button" data-voies="4">4</button>
+    <button type="button" data-voies="5">5</button><button type="button" data-voies="6">6</button>
+  </div>
+  <span class="caps" style="margin-top:14px">Dont en goutte-à-goutte</span>
+  <div class="voies" id="goutte" role="group" aria-label="Voies de goutte-à-goutte"></div>
+  <h2 id="titre"></h2>
+  <p class="sous" id="sous-titre"></p>
+  <div class="vue"><canvas id="scene" aria-label="La nourrice en 3D"></canvas><div class="attente" id="attente">Chargement</div></div>
+</main>
+<script src="arrosage-schema-calcul.js"></script>
+<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "./vendor/three/OrbitControls.js";
+import { RoomEnvironment } from "./vendor/three/RoomEnvironment.js";
+
+var CAT = window.CALCUL.CATALOGUE;
+var $ = function (id) { return document.getElementById(id); };
+
+// LES MATIÈRES. Le gris clair est celui qu'il a gardé pour ses images (« en photo gris clair »).
+var M = {
+  pvc: new THREE.MeshPhysicalMaterial({ color: 0x9a9ea5, roughness: 0.42, clearcoat: 0.25, clearcoatRoughness: 0.45 }),
+  noir: new THREE.MeshStandardMaterial({ color: 0x1c1d1f, roughness: 0.55 }),
+  noirMat: new THREE.MeshStandardMaterial({ color: 0x141516, roughness: 0.8 }),
+  laiton: new THREE.MeshStandardMaterial({ color: 0xc9a65e, metalness: 1, roughness: 0.3 }),
+  rouge: new THREE.MeshStandardMaterial({ color: 0xc0171d, roughness: 0.4 }),
+  blanc: new THREE.MeshStandardMaterial({ color: 0xedece7, roughness: 0.5 }),
+  inox: new THREE.MeshStandardMaterial({ color: 0xc9ccd1, metalness: 1, roughness: 0.25 }),
+  bleu: new THREE.MeshStandardMaterial({ color: 0x1f5fbf, roughness: 0.5 }),
+  jaune: new THREE.MeshStandardMaterial({ color: 0xe1b21c, roughness: 0.5 }),
+  filRouge: new THREE.MeshStandardMaterial({ color: 0xd11a1f, roughness: 0.45 }),
+  filNoir: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.45 })
+};
+
+// LES FORMES DE BASE, toutes sur l'axe Z local : une pièce s'oriente ensuite en entier.
+function maille(g, mat) { var m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; return m; }
+function revol(profil, mat, seg) {
+  var g = new THREE.LatheGeometry(profil.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), seg || 48);
+  g.rotateX(Math.PI / 2); return maille(g, mat);
+}
+function cyl(r, z0, z1, mat, seg) { return revol([[0, z0], [r, z0], [r, z1], [0, z1]], mat, seg); }
+function tronc(r0, r1, z0, z1, mat) { return revol([[0, z0], [r0, z0], [r1, z1], [0, z1]], mat); }
+// Un filetage : des dents en dents de scie au pas du gaz (11 filets au pouce : 2,31 mm).
+function filet(r, z0, z1, mat) {
+  var pas = 2.31, p = [[0, z0], [r - 1, z0]], z = z0;
+  while (z + pas <= z1) { p.push([r, z + pas / 2]); p.push([r - 1, z + pas]); z += pas; }
+  p.push([r - 1, z1]); p.push([0, z1]);
+  return revol(p, mat);
+}
+function hexa(r, z0, z1, mat) {
+  var g = new THREE.CylinderGeometry(r, r, z1 - z0, 6); g.rotateX(Math.PI / 2); g.translate(0, 0, (z0 + z1) / 2);
+  return maille(g, mat);
+}
+// Un écrou cannelé : le corps, un chanfrein, et ses nervures en long.
+function ecrou(r, z0, z1, mat, n) {
+  var gr = new THREE.Group(), c = 2;
+  gr.add(revol([[0, z0], [r - c, z0], [r, z0 + c], [r, z1 - c], [r - c, z1], [0, z1]], mat));
+  for (var i = 0; i < (n || 6); i++) {
+    var a = (i / (n || 6)) * Math.PI * 2, g = new THREE.BoxGeometry(4.5, 3, (z1 - z0) * 0.62);
+    g.translate(0, r + 1, z0 + (z1 - z0) * 0.42); g.rotateZ(a);
+    gr.add(maille(g, mat));
+  }
+  return gr;
+}
+function boite(lx, ly, lz, x, y, z, mat) { var g = new THREE.BoxGeometry(lx, ly, lz); g.translate(x, y, z); return maille(g, mat); }
+function tuyau(points, r, mat) {
+  var c = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
+  return maille(new THREE.TubeGeometry(c, 64, r, 10, false), mat);
+}
+
+// LES PIÈCES DE COLONNE, de z = 0 (le bout du haut) à z = L. `haut` et `bas` : la longueur du filetage
+// mâle à chaque bout (0 : le bout est femelle, il reçoit). Montées, les filetages entrent dans la
+// pièce d'en face ; éclatées, ils se voient.
+var COLONNE = {
+  "union": { L: 100, haut: 0, bas: 0, faire: function () {
+    var g = new THREE.Group();
+    g.add(ecrou(25, 0, 30, M.pvc)); g.add(cyl(19.5, 30, 70, M.pvc)); g.add(cyl(21.5, 46, 54, M.pvc)); g.add(ecrou(25, 70, 100, M.pvc));
+    return g; } },
+  "mamelon": { L: 46, haut: 16, bas: 18, faire: function () {   // 3/4" en haut, 1" en bas
+    var g = new THREE.Group();
+    g.add(filet(13.2, 0, 16, M.pvc)); g.add(hexa(21, 16, 28, M.pvc)); g.add(filet(16.6, 28, 46, M.pvc));
+    return g; } },
+  "mamelon-demi": { L: 46, haut: 18, bas: 16, faire: function () {   // 1" en haut, 3/4" en bas
+    var g = new THREE.Group();
+    g.add(filet(16.6, 0, 18, M.pvc)); g.add(hexa(21, 18, 30, M.pvc)); g.add(filet(13.2, 30, 46, M.pvc));
+    return g; } },
+  "mamelon-droit-1": { L: 48, haut: 18, bas: 18, faire: function () {
+    var g = new THREE.Group();
+    g.add(filet(16.6, 0, 18, M.pvc)); g.add(hexa(22, 18, 30, M.pvc)); g.add(filet(16.6, 30, 48, M.pvc));
+    return g; } },
+  "vanne-purge": { L: 72, haut: 0, bas: 0, faire: function () {
+    var g = new THREE.Group();
+    g.add(hexa(18, 0, 16, M.laiton)); g.add(cyl(15, 16, 56, M.laiton)); g.add(hexa(18, 56, 72, M.laiton));
+    var b = new THREE.SphereGeometry(21, 40, 24); b.translate(0, 0, 36); g.add(maille(b, M.laiton));
+    var t = new THREE.CylinderGeometry(4.5, 4.5, 20, 20); t.translate(0, 28, 36); g.add(maille(t, M.laiton));
+    // La manette rouge, couchée vers l'arrivée (comme sur sa photo).
+    var m = new THREE.Group(); m.add(boite(66, 4, 12, -28, 0, 0, M.rouge)); m.position.set(0, 38, 36); m.rotation.y = 0.5; g.add(m);
+    return g; } },
+  "electrovanne-100dv": { L: 125, haut: 18, bas: 18, faire: function () { return electrovanne(true); } },
+  "electrovanne-100dv-ff": { L: 125, haut: 0, bas: 0, faire: function () { return electrovanne(false); } },
+  "regulateur-ff34": { L: 95, haut: 0, bas: 0, faire: function () {
+    var g = new THREE.Group();
+    g.add(hexa(19, 0, 14, M.noir)); g.add(cyl(23, 14, 81, M.noir)); g.add(cyl(23.3, 38, 58, M.jaune)); g.add(hexa(19, 81, 95, M.noir));
+    return g; } },
+  "raccord-male25": { L: 112, haut: 18, bas: 0, faire: function () {
+    var g = new THREE.Group();
+    g.add(filet(16.6, 0, 18, M.noir)); g.add(hexa(23, 18, 34, M.noir)); g.add(ecrou(28, 34, 70, M.noir, 8));
+    g.add(ecrou(27, 70, 106, M.blanc, 10)); g.add(cyl(20, 106, 112, M.blanc));
+    return g; } },
+  "pehd": { L: 120, haut: 30, bas: 0, faire: function () {
+    var g = new THREE.Group();
+    g.add(cyl(12.5, 0, 120, M.noirMat, 36));
+    for (var i = 0; i < 3; i++) { var s = boite(1.6, 0.6, 120, 0, 12.6, 60, M.bleu); s.rotation.z = (i / 3) * Math.PI * 2; g.add(s); }
+    return g; } }
+};
+
+// L'ÉLECTROVANNE 100 DV : le passage de l'eau sur l'axe, le corps et son couvercle au-dessus, la bobine
+// d'un côté (c'est elle qui décentre la pièce), ses deux fils qui remontent en boucle.
+function electrovanne(male) {
+  var g = new THREE.Group(), zc = 62.5;
+  if (male) { g.add(filet(16.6, 0, 18, M.noir)); g.add(filet(16.6, 107, 125, M.noir)); }
+  else { g.add(hexa(22, 0, 18, M.noir)); g.add(hexa(22, 107, 125, M.noir)); }
+  g.add(cyl(17, 18, 107, M.noir));
+  var bol = new THREE.CylinderGeometry(36, 32, 30, 48); bol.translate(0, -6, zc); g.add(maille(bol, M.noir));
+  var couv = new THREE.CylinderGeometry(39, 39, 12, 48); couv.translate(0, 15, zc); g.add(maille(couv, M.noir));
+  for (var i = 0; i < 6; i++) {
+    var a = (i / 6) * Math.PI * 2 + 0.3, v = new THREE.CylinderGeometry(3.4, 3.4, 2.4, 16);
+    v.translate(Math.cos(a) * 33, 22, zc + Math.sin(a) * 33); g.add(maille(v, M.inox));
+  }
+  var bouton = new THREE.CylinderGeometry(6, 6, 9, 20); bouton.translate(-8, 25, zc - 4); g.add(maille(bouton, M.noir));
+  g.add(boite(16, 3, 3, -8, 30, zc - 4, M.noir)); g.add(boite(3, 3, 16, -8, 30, zc - 4, M.noir));
+  var bob = new THREE.CylinderGeometry(15, 15, 34, 36); bob.translate(30, 26, zc - 8); g.add(maille(bob, M.noir));
+  var cap = new THREE.CylinderGeometry(11, 11, 3, 36); cap.translate(30, 44.5, zc - 8); g.add(maille(cap, M.rouge));
+  g.add(tuyau([[26, 45, zc - 14], [24, 80, zc - 26], [36, 96, zc - 42], [46, 74, zc - 30], [36, 45, zc - 14]], 1.6, M.filRouge));
+  g.add(tuyau([[28, 45, zc - 10], [28, 76, zc - 20], [42, 90, zc - 34], [50, 70, zc - 24], [38, 45, zc - 10]], 1.6, M.filNoir));
+  return g;
+}
+
+// LE HAUT, couché sur l'axe X. Chaque pièce dit où sont ses bouts : `gauche` (la face femelle qui reçoit),
+// `droite` (l'épaulement de son filetage mâle, qui entre dans la suivante), `pointe` (le bout de ce filetage)
+// et ses `branches` : l'axe d'une voie (x) et la face femelle où la colonne se visse (z).
+var RB = 26;   // le rayon de cintrage des coudes
+function coude(arc) { var t = new THREE.TorusGeometry(RB, 19.5, 24, 40, Math.PI / 2); t.rotateX(Math.PI / 2); arc(t); return maille(t, M.pvc); }
+function couche(piece) { var g = new THREE.Group(); piece.rotation.y = Math.PI / 2; g.add(piece); return g; }   // axe Z local vers +X
+
+function coudeMF() {
+  var g = new THREE.Group();
+  g.add(coude(function (t) { t.rotateY(Math.PI); t.translate(RB, 0, RB); }));
+  g.add(cyl(19.5, RB, RB + 6, M.pvc)); g.add(ecrou(25, RB + 6, RB + 36, M.pvc));
+  var bras = new THREE.Group(); bras.add(cyl(19.5, RB, RB + 8, M.pvc)); bras.add(filet(16.6, RB + 8, RB + 26, M.pvc));
+  g.add(couche(bras));
+  return { objet: g, gauche: 0, droite: RB + 8, pointe: RB + 26, branches: [{ x: 0, z: RB + 36 }] };
+}
+function coudeFF() {
+  var g = new THREE.Group();
+  g.add(coude(function (t) { t.rotateY(Math.PI / 2); t.translate(-RB, 0, RB); }));
+  g.add(cyl(19.5, RB, RB + 6, M.pvc)); g.add(ecrou(25, RB + 6, RB + 36, M.pvc));
+  var bras = new THREE.Group(); bras.add(cyl(19.5, -RB - 6, -RB, M.pvc)); bras.add(ecrou(25, -RB - 36, -RB - 6, M.pvc));
+  g.add(couche(bras));
+  return { objet: g, gauche: -RB - 36, branches: [{ x: 0, z: RB + 36 }] };
+}
+function te() {
+  var g = new THREE.Group(), corps = new THREE.Group();
+  corps.add(ecrou(25, -60, -30, M.pvc)); corps.add(cyl(19.5, -30, 38, M.pvc)); corps.add(filet(16.6, 38, 56, M.pvc));
+  g.add(couche(corps));
+  g.add(cyl(19.5, 0, 30, M.pvc)); g.add(ecrou(25, 30, 60, M.pvc));
+  return { objet: g, gauche: -60, droite: 38, pointe: 56, branches: [{ x: 0, z: 60 }] };
+}
+// Les clarinettes : la longueur et la place des sorties sont celles de ses photos (planche vue du dessus,
+// à l'étalon du filetage 1"). Le bout de chaque sortie est femelle, et vu de profil.
+var CLARINETTES = { "clarinette-2v": { W: 272, sorties: [0.3147, 0.7697] },
+  "clarinette-3v": { W: 434, sorties: [0.2214, 0.5378, 0.8526] },
+  "clarinette-4v": { W: 509, sorties: [0.1668, 0.4038, 0.6395, 0.874] } };
+function clarinette(ref) {
+  var c = CLARINETTES[ref], W = c.W, g = new THREE.Group(), tube = new THREE.Group();
+  tube.add(ecrou(26, 0, 32, M.pvc)); tube.add(cyl(17, 32, 50, M.pvc)); tube.add(cyl(19.5, 50, W - 22, M.pvc));
+  tube.add(cyl(18, W - 22, W - 18, M.pvc)); tube.add(filet(16.6, W - 18, W, M.pvc));
+  g.add(couche(tube));
+  var branches = c.sorties.map(function (s) {
+    var x = s * W, sortie = new THREE.Group();
+    sortie.add(tronc(14, 19, 0, 30, M.pvc)); sortie.add(ecrou(25, 30, 60, M.pvc));
+    sortie.position.x = x; g.add(sortie);
+    return { x: x, z: 60 };
+  });
+  return { objet: g, gauche: 0, droite: W - 18, pointe: W, branches: branches };
+}
+
+// LA COMPOSITION, celle de la fiche et dans l'ordre de la planche vue du dessus.
+var racine = new THREE.Group(), montage = "montee", voies = 3, nbGoutte = 0, vue = "biais";
+function poser(n, g) {
+  while (racine.children.length) racine.remove(racine.children[0]);
+  var fiche = CAT.ficheNourrice(n, g), reste = {};
+  fiche.pieces.forEach(function (p) { reste[p.ref] = (reste[p.ref] || 0) + p.q; });
+  var ecart = montage === "eclatee" ? 26 : 0;
+  var clar = ["clarinette-2v", "clarinette-3v", "clarinette-4v"].filter(function (r) { return reste[r]; })[0];
+  var haut = [coudeMF()];
+  if (clar) haut.push(clarinette(clar));
+  if (reste["te-mmf"]) haut.push(te());
+  haut.push(coudeFF());
+  // Chaque pièce du haut se pose par sa face gauche sur l'épaulement de la précédente : le filetage
+  // de celle-ci entre dedans (montée), ou s'en écarte (éclatée).
+  var x = 0, colonnes = [];
+  haut.forEach(function (p, i) {
+    var ox = i === 0 ? 0 : x - p.gauche + (ecart ? ecart + (haut[i - 1].pointe - haut[i - 1].droite) : 0);
+    p.objet.position.x = ox; racine.add(p.objet);
+    p.branches.forEach(function (b) { colonnes.push({ x: ox + b.x, z: b.z }); });
+    x = ox + (p.droite || 0);
+  });
+  var arrivee = colonnes.shift();
+  function colonne(cles, c) {
+    var face = c.z;
+    cles.forEach(function (cle) {
+      var f = COLONNE[cle], z0 = ecart ? face + ecart : face - f.haut;
+      var o = f.faire(); o.position.set(c.x, 0, z0); racine.add(o);
+      face = ecart ? z0 + f.L : z0 + f.L - f.bas;
+    });
+  }
+  colonne(["mamelon-demi", "vanne-purge", "mamelon", "union", "raccord-male25", "pehd"], arrivee);
+  colonnes.forEach(function (c, i) {
+    var goutte = i >= colonnes.length - g;
+    colonne(goutte ? ["mamelon-droit-1", "electrovanne-100dv-ff", "mamelon-demi", "regulateur-ff34", "mamelon", "union", "raccord-male25", "pehd"]
+      : ["electrovanne-100dv", "union", "raccord-male25", "pehd"], c);
+  });
+  $("titre").textContent = fiche.nom;
+  $("sous-titre").textContent = n + " voie" + (n > 1 ? "s" : "") + (g ? ", dont " + g + " en goutte-à-goutte" : "") + ".";
+  window.__nourrice3d = { n: n, g: g, montage: montage, axes: colonnes.map(function (c) { return c.x; }), arrivee: arrivee.x, pieces: racine.children.length };
+}
+
+// LA SCÈNE : la lumière d'une pièce (reflets doux), une lampe qui porte les ombres, un sol clair.
+var toile = $("scene"), rendu = new THREE.WebGLRenderer({ canvas: toile, antialias: true, preserveDrawingBuffer: true });
+rendu.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+rendu.toneMapping = THREE.ACESFilmicToneMapping; rendu.toneMappingExposure = 1.05;
+rendu.shadowMap.enabled = true; rendu.shadowMap.type = THREE.PCFSoftShadowMap;
+var scene = new THREE.Scene(); scene.background = new THREE.Color(0xe9e7e1);
+var pmrem = new THREE.PMREMGenerator(rendu); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+var lampe = new THREE.DirectionalLight(0xffffff, 1.6); lampe.castShadow = true; lampe.shadow.mapSize.set(2048, 2048); lampe.shadow.bias = -0.0004;
+scene.add(lampe); scene.add(lampe.target);
+var sol = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.ShadowMaterial({ opacity: 0.16 }));
+sol.rotation.x = -Math.PI / 2; sol.position.y = -42; sol.receiveShadow = true; scene.add(sol);
+scene.add(racine);
+var camera = new THREE.PerspectiveCamera(32, 1, 5, 20000);
+var commandes = new OrbitControls(camera, toile); commandes.enableDamping = true; commandes.dampingFactor = 0.12;
+commandes.maxPolarAngle = Math.PI / 2 - 0.02;
+
+function cadrer() {
+  var b = new THREE.Box3().setFromObject(racine), c = b.getCenter(new THREE.Vector3()), t = b.getSize(new THREE.Vector3());
+  // Toute la nourrice dans le cadre, quel que soit l'angle, et le plus grand possible : les huit coins
+  // de sa boîte, projetés, doivent tenir dans l'image ; la distance se corrige quatre fois (la
+  // perspective rapproche ce qui est devant).
+  var dir = vue === "dessus" ? new THREE.Vector3(0, 1, 0.0001) : vue === "face" ? new THREE.Vector3(0, 0.32, 1) : new THREE.Vector3(-0.28, 1, 0.78);
+  dir.normalize(); camera.up.set(0, 1, 0);
+  var coins = [];
+  [b.min.x, b.max.x].forEach(function (x) { [b.min.y, b.max.y].forEach(function (y) { [b.min.z, b.max.z].forEach(function (z) { coins.push(new THREE.Vector3(x, y, z)); }); }); });
+  var d = t.length() * 1.5;
+  for (var k = 0; k < 4; k++) {
+    camera.position.copy(c).addScaledVector(dir, d); camera.lookAt(c); camera.updateMatrixWorld();
+    var m = 0; coins.forEach(function (p) { var q = p.clone().project(camera); m = Math.max(m, Math.abs(q.x), Math.abs(q.y)); });
+    d *= m / 0.9;
+  }
+  camera.position.copy(c).addScaledVector(dir, d); camera.lookAt(c);
+  commandes.target.copy(c); commandes.update();
+  var s = lampe.shadow.camera, e = Math.max(t.x, t.z) * 0.75 + 80;
+  lampe.position.set(c.x - e * 0.6, c.y + e * 1.6, c.z - e * 0.4); lampe.target.position.copy(c);
+  s.left = -e; s.right = e; s.top = e; s.bottom = -e; s.near = 1; s.far = e * 5; s.updateProjectionMatrix();
+}
+function taille() {
+  var w = toile.clientWidth, h = toile.clientHeight;
+  rendu.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+function tout() {
+  poser(voies, nbGoutte); cadrer();
+  document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === voies)); });
+  document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.montage === montage)); });
+  document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === vue)); });
+  var gg = "";
+  for (var j = 0; j <= voies; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === nbGoutte) + '">' + (j ? j : "Aucune") + "</button>";
+  $("goutte").innerHTML = gg;
+}
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]"),
+    bm = e.target.closest("button[data-montage]"), bv = e.target.closest("button[data-vue]");
+  if (b) { voies = Number(b.dataset.voies); nbGoutte = Math.min(nbGoutte, voies); tout(); }
+  if (bg) { nbGoutte = Number(bg.dataset.goutte); tout(); }
+  if (bm) { montage = bm.dataset.montage; tout(); }
+  if (bv) { vue = bv.dataset.vue; tout(); }
+});
+// Tourner à la main défait le point de vue choisi : le bouton ne reste pas allumé à tort.
+commandes.addEventListener("start", function () { vue = ""; document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); }); });
+window.addEventListener("resize", taille);
+taille(); tout(); $("attente").hidden = true;
+(function boucle() { commandes.update(); rendu.render(scene, camera); requestAnimationFrame(boucle); })();
+</script>
+</body>
+</html>
