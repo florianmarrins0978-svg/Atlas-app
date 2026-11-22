@@ -87,37 +87,28 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
 **Ce qui reste, et à qui :**
 
-- **les numéros sur chaque page du PDF** (sa demande du 22 : savoir tout de
-  suite à quoi correspond chaque ligne, `ARCHITECTURE.md` §606), avec la photo
-  de chaque pièce dans la liste d'un réseau, et la vanne de purge, le
-  régulateur, les regards et le PEBD Ø16 sans la marque Dura qu'ils n'ont pas : codés,
-  commités sur la branche de session, PAS sur `main`, avec ce qui suit ;
+- **LIVRÉ SUR `main` LE 22 NOVEMBRE 2026** (batterie entière au vert sur
+  l'état livré : 617 suites base sur 617, 218 navigateur sur 218, connexion
+  derrière un proxy) : le plan en couleur agrandi dans le PDF, le mot
+  « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §603),
+  l'angle de la nourrice éclatée arrondi, « lu 2 m, corrigé par vous »
+  (§604), la page de la nourrice avec l'éclaté 3D (§605), les numéros et les
+  photos des pièces sur chaque page (§606), la vanne de purge, le régulateur,
+  les regards et le PEBD Ø16 sans la marque Dura ;
+- **« lu 2 m, corrigé par vous » n'a pas été regardé à l'écran** : il faut un
+  serveur. À regarder sur un plan fait depuis une photo, dont une cote a été
+  corrigée ;
+- **quand la session de la 3D change une pièce** (`appli/nourrice-3d/`),
+  rejouer `npx tsx scripts/rendre-nourrice-eclatee.mts` et commiter les
+  photos et `places.json` : le contrôle le réclame ;
 - **`scripts/verifier-maquette-arrosage-plan.mjs` est rouge sur `main`**
   (« Cannot read properties of null (reading 'getAttribute') ») : vu le
   22 novembre, déjà rouge avant le lot de cette session, dont les fichiers de
   maquette sont ceux de `main` à la vanne près. Pas cherché plus loin ;
-- **la page de la nourrice du PDF** (sa remarque du 22 : *« il manque la
-  nourrice »*), avec l'éclaté 3D vu du dessus (`ARCHITECTURE.md` §605) :
-  codée, commitée sur la branche de session, PAS sur `main`, avec les
-  corrections ci-dessous. **Quand la session de la 3D change une pièce**
-  (`appli/nourrice-3d/`), rejouer `npx tsx scripts/rendre-nourrice-eclatee.mts`
-  et commiter les photos : le contrôle le réclame ;
-- **trois corrections du 22 novembre, codées et commitées sur la branche de
-  session, PAS sur `main`** : le plan en couleur agrandi dans le PDF, le mot
-  « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §603),
-  l'angle de la nourrice éclatée arrondi. Le lot est de niveau 3 (l'outil ne
-  voit pas que `test-dossiers-arrosage-e2e.ts` ouvre `/paysage/dossiers-arrosage`,
-  il y arrive par un clic), donc la batterie entière, **sur son oui**. Il a
-  dit le 22 : « tu lances pas de batterie » ;
 - **la clause des conditions générales** (le calcul d'un dossier supprimé gardé
   5 ans, sans rien qui désigne le client) : **à lui et à son juriste**. Les
   conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la
   durée ;
-- **« lu 2 m, corrigé par vous » dans « Voir la saisie » : CODÉ LE
-  22 NOVEMBRE** (`ARCHITECTURE.md` §604), commité sur la branche de session,
-  avec les trois corrections du même jour, et comme elles PAS sur `main`.
-  **Pas regardé à l'écran** : il faut un serveur. À regarder sur un plan fait
-  depuis une photo, dont une cote a été corrigée ;
 - **le PDF n'a pas été lu sur son iPhone** : les pages se mesurent avec les
   polices embarquées (Inter, la serif d'Atlas), donc la même chose partout,
   mais personne ne l'a ouvert là.

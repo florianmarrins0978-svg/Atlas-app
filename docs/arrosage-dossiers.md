@@ -149,8 +149,6 @@ photo, à la suite de la zone, dans l'or du texte : « Massif, 20 m sur 2,4 m
 serveur, et tu as dit pas de batterie. Un plan enregistré avant n'a pas de
 quoi le dire.
 
-Pas encore chez toi : les trois corrections du 22 attendent la batterie, sur
-ton oui.
 
 ### Le 22 novembre, encore : la page de la nourrice
 
@@ -192,12 +190,28 @@ goutte-à-goutte tombait en bas de page, loin de son rail ; elle le suit.
 | « mettre les pièces, les numéroter pour qu'on les voie » | sur chaque page de réseau, chaque ligne de « Ses pièces » montre sa pièce : le numéro, la photo, la quantité, le nom |
 | ce que ça coûte | le plan en couleur des réseaux 1 et 2 rétrécit encore (332 à 287 points, 286 à 245) ; les réseaux 3 et 4 gardent presque toute la largeur |
 
+### Le 22 novembre, dans ton appli
+
+Ton « oui, lance la batterie ». Tout ce qui précède est sur `main`, donc dans
+ton appli au prochain allumage de ton espace. La batterie entière, jouée sur
+l'état exact livré (avec le travail des autres sessions poussé dans la
+journée) :
+
+| | |
+|---|---|
+| suites de la base | 617 sur 617 |
+| suites navigateur | 218 sur 218 |
+| connexion derrière un proxy | réussie |
+
+Une planche de maquette (`verifier-maquette-arrosage-plan.mjs`) était déjà
+rouge sur `main` avant ce lot ; elle n'est pas dans la batterie, et elle est
+notée pour la session qui y touchera.
+
 ### Ce qui reste, et qui le tranche
 
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| la batterie, puis `main`, pour les six changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous », page de la nourrice, numéros) | toi : ton oui |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---
