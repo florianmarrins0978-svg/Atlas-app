@@ -170,7 +170,7 @@ export function creerScene(toile, o) {
     lampe.position.set(c.x - e * 0.55, etat.bas + e * 1.9, c.z + e * 0.5); lampe.target.position.set(c.x, etat.bas, c.z);
     contre.position.set(c.x + e, etat.bas + e, c.z - e); contre.target.position.copy(lampe.target.position);
     var sc = lampe.shadow.camera; sc.left = -e; sc.right = e; sc.top = e; sc.bottom = -e; sc.near = e * 0.2; sc.far = e * 4; sc.updateProjectionMatrix();
-    lampe.shadow.radius = 3; rendu.shadowMap.needsUpdate = true;
+    etat.ombrePerimee = true;
     var lx = s.x + 160, lz = s.z + 160;
     planContact.position.x = c.x; planContact.position.z = c.z; planContact.scale.set(lx, -lz, 1);
     dessous.position.set(c.x, etat.bas, c.z); dessous.left = -lx / 2; dessous.right = lx / 2; dessous.top = lz / 2; dessous.bottom = -lz / 2; dessous.updateProjectionMatrix();
@@ -326,7 +326,13 @@ export function creerScene(toile, o) {
     suite = enMouvement;
     appliquerQualite(enMouvement ? qualite.niveau : 0);
     aDessiner = false;
-    if (etat.contactPerime) ombreDeContact();
+    // Les ombres ne se refont que si les pièces ont bougé. Sur un appareil qui peine, pendant un
+    // mouvement, une image sur deux seulement : ce sont deux passes de géométrie de moins, et une ombre
+    // floue en retard d'une image ne se voit pas. L'image posée les rattrape toujours.
+    var sauter = enMouvement && qualite.enCours >= 1 && images % 2 === 1;
+    if (etat.ombrePerimee && !sauter) { rendu.shadowMap.needsUpdate = true; etat.ombrePerimee = false; }
+    if (etat.contactPerime && !sauter) ombreDeContact();
+    if (etat.ombrePerimee || etat.contactPerime) aDessiner = true;
     composition.render(); images++;
     ecoutes.image.forEach(function (f) { f(); });
   }

@@ -65,7 +65,7 @@ export function creerMatieres() {
     filNoir: plastique(0x121212, 0.45, 0.15),
     cuivre: metal(0xc87a50, 0.4),
     // Le PEHD : un noir mat, ses bandes bleues.
-    pehd: plastique(0x242527, 0.5, 0.6, moyen),
+    pehd: plastique(0x242527, 0.62, 0.6, moyen),
     bleu: plastique(0x1565c0, 0.5, 0.4),
     // Le fond d'une empreinte, d'un trou : un noir qui ne renvoie rien.
     creux: new THREE.MeshPhysicalMaterial({ color: 0x08080a, roughness: 0.95, metalness: 0 })
