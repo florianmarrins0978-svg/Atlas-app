@@ -152,12 +152,28 @@ quoi le dire.
 Pas encore chez toi : les trois corrections du 22 attendent la batterie, sur
 ton oui.
 
+### Le 22 novembre, encore : la page de la nourrice
+
+Ta remarque : *« il manque la nourrice »*. Le PDF a maintenant sa page, juste
+après la page de garde : son nom, la phrase qui dit l'ordre des voies, l'éclaté
+de la nourrice 3D **vu du dessus**, en grand, puis ses pièces.
+
+| | |
+|---|---|
+| la photo | celle de la 3D de l'autre session, prise d'avance pour chacune des 27 nourrices possibles (1 à 6 voies, de 0 à toutes en goutte-à-goutte) |
+| du dessus | chaque pièce y est séparée, dans l'ordre du montage ; de biais, les colonnes se cachent |
+| au nez de robinet | pas de nourrice, pas de page |
+| ce que la photo ne montre pas | une pièce de la nourrice que tu as changée ou supprimée à la main : la liste dessous, si |
+
+Si la session 3D change une pièce, un contrôle rougit et dit la commande qui
+refait les photos.
+
 ### Ce qui reste, et qui le tranche
 
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| la batterie, puis `main`, pour les quatre changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous ») | toi : ton oui |
+| la batterie, puis `main`, pour les cinq changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous », page de la nourrice) | toi : ton oui |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---

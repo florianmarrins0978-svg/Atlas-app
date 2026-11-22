@@ -15,7 +15,8 @@ import PlanDessine, { LegendeDesSymboles } from "../arrosage/PlanDessine";
 import { montageDuPlan } from "@/lib/arrosage/le-plan";
 import { cotesEcrites, lignesDuReseau, zonesDuReseau } from "@/lib/arrosage/lignes-du-reseau";
 import { resumeDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
-import { liaisonsDuReseau, quantiteDeLigne, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
+import { liaisonsDuReseau, phraseDeLaNourrice, quantiteDeLigne, voiesEnGoutte, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
+import { photoDeLaNourrice } from "@/lib/arrosage/nourrice-en-photo";
 import { nomDeLaZone } from "@/lib/arrosage/zones-du-plan";
 import type { DonneesPdfDuPlan, SegmentDeTexte } from "@/server/pdf/plan-arrosage-pdf";
 import type { NoeudSvg } from "@/server/pdf/svg-vers-pdf";
@@ -61,6 +62,25 @@ function legende(robinet: boolean): DonneesPdfDuPlan["legende"] {
     }));
 }
 
+/**
+ * La page de la nourrice — sa demande du 22 novembre 2026 : *« il manque la
+ * nourrice »*. Son éclaté vu du dessus (la photo de la 3D, `nourrice-en-photo.ts`)
+ * et ses pièces, celles que la liste compte. Au nez de robinet il n'y a pas de
+ * nourrice ; supprimée en entier, elle n'a plus rien à montrer.
+ */
+function laNourrice(fige: PlanFige, nez: boolean): DonneesPdfDuPlan["nourrice"] {
+  const n = fige.nourrice;
+  const lignes = Object.values(n.lignes);
+  if (nez || n.voies.length === 0 || lignes.length === 0) return null;
+  const goutte = voiesEnGoutte(fige.plan, n.voies);
+  return {
+    titre: n.nom,
+    phrase: phraseDeLaNourrice(goutte),
+    photo: photoDeLaNourrice(n.voies.length, goutte),
+    lignes: lignes.map((l) => ({ quantite: quantiteDeLigne(l), nom: l.nom })),
+  };
+}
+
 export function donneesDuPdf(d: { entreprise: string; dossier: string; enregistreLe: Date; saisie: SaisieDuPlan; fige: PlanFige }): DonneesPdfDuPlan {
   const { plan, dessin, postes, groupes } = d.fige;
   const nez = montageDuPlan(d.saisie.parametres) === "nez";
@@ -70,6 +90,7 @@ export function donneesDuPdf(d: { entreprise: string; dossier: string; enregistr
     date: d.enregistreLe.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" }),
     resume: `${resumeDuPlan(d.fige)}.`,
     legende: legende(nez),
+    nourrice: laNourrice(d.fige, nez),
     reseaux: postes.reseaux.map((r) => ({
       titre: `Réseau ${r.i + 1}`,
       couleur: r.couleur,

@@ -38126,3 +38126,34 @@ entière, et la note se lit sans rouvrir la lecture.
 Le calcul ne lit pas ce champ, et l'empreinte du plan non plus. Un plan
 enregistré avant le 22 novembre n'en a pas : il ne dit rien, faute de savoir.
 
+## §603 : La page de la nourrice du PDF montre l'éclaté 3D, photographié d'avance
+
+**Sa remarque du 22 novembre 2026 :** *« ton plan d'arrosage ne comprend pas la
+nourrice [...] prends la vue éclatée [...] tu utiliseras ça pour faire le plan de
+la nourrice »*. Le PDF n'avait pas de page pour elle.
+
+**Pourquoi une photo et pas la 3D.** Le PDF se compose sur le serveur
+(`plan-arrosage-pdf.ts`, pdf-lib), sans navigateur ni WebGL. La nourrice 3D
+(`appli/nourrice-3d/`, §600) ne peut donc s'y dessiner. Elle se photographie
+d'avance, une fois par nourrice possible : de 1 à 6 voies, de 0 à toutes en
+goutte-à-goutte, 27 photos (`scripts/rendre-nourrice-eclatee.mts`, qui ouvre la
+planche dans Chromium, l'éclate, la regarde du dessus et recadre sur les pièces).
+Elles vivent sous `public/arrosage-photos/nourrice-3d/`, où le PDF lit déjà les
+photos des pièces, et leur chemin ne s'écrit qu'une fois
+(`src/lib/arrosage/nourrice-en-photo.ts`).
+
+| | |
+|---|---|
+| la vue | **du dessus** : chaque pièce séparée, dans l'ordre du montage. De biais, les colonnes se cachent l'une l'autre |
+| la page | page 2, après la page de garde : tout part de la nourrice. Son nom, la phrase de l'écran sur l'ordre des voies (`phraseDeLaNourrice`), la photo, ses pièces |
+| la mise en page | photo et liste côte à côte, ou la liste sous la photo sur deux colonnes, selon ce qui donne la plus grande photo : une nourrice d'une voie est haute et étroite, une de six presque carrée |
+| sans page | au nez de robinet (pas de nourrice), et une nourrice supprimée en entier |
+| les pièces | celles que la liste compte (`groupeNourrice`), retouches comprises. **La photo, elle, ne les suit pas** : une pièce changée ou supprimée à la main y reste |
+
+**Les photos ne doivent pas vieillir en silence.** `empreinte.json` garde
+l'empreinte des fichiers qui DESSINENT les pièces (composition, formes,
+`pieces/`), pas celle des matières ni de la lumière : un reflet retouché ne
+change pas ce qu'on monte. `test-pdf-du-plan-arrosage.ts` compare, et son rouge
+dit la commande à jouer. Le même contrôle exige une photo pour chacune des 27
+nourrices.
+

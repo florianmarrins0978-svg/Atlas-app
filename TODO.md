@@ -66,6 +66,12 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
 **Ce qui reste, et à qui :**
 
+- **la page de la nourrice du PDF** (sa remarque du 22 : *« il manque la
+  nourrice »*), avec l'éclaté 3D vu du dessus (`ARCHITECTURE.md` §603) :
+  codée, commitée sur la branche de session, PAS sur `main`, avec les
+  corrections ci-dessous. **Quand la session de la 3D change une pièce**
+  (`appli/nourrice-3d/`), rejouer `npx tsx scripts/rendre-nourrice-eclatee.mts`
+  et commiter les photos : le contrôle le réclame ;
 - **trois corrections du 22 novembre, codées et commitées sur la branche de
   session, PAS sur `main`** : le plan en couleur agrandi dans le PDF, le mot
   « nourrice » et les losanges dégagés du regard (`ARCHITECTURE.md` §601),

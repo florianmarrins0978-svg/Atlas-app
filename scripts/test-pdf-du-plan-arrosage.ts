@@ -11,13 +11,16 @@
  *   5. aucun caractère sans glyphe dans les polices embarquées : il
  *      s'imprimerait en case vide (le « ≤ » de la fiche de sécurité, 2026) ;
  *   6. le plan en couleur est GRAND (sa demande du 22 novembre 2026), et au
- *      milieu de la page rien ne se chevauche, même sur une page serrée.
+ *      milieu de la page rien ne se chevauche, même sur une page serrée ;
+ *   7. LA NOURRICE A SA PAGE, juste après la page de garde (sa demande du
+ *      22 novembre 2026 : « il manque la nourrice ») : son nom, la photo de
+ *      son éclaté vu du dessus, ses pièces. Au nez de robinet, il n'y en a pas.
  *
  * `--images <dossier>` écrit aussi chaque page en PNG, pour la regarder.
  */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument } from "pdf-lib";
@@ -26,6 +29,9 @@ import { figerLePlan, type SaisieDuPlan } from "../src/lib/arrosage/plan-enregis
 import { RETOUCHES_VIERGES } from "../src/lib/arrosage/retouches";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 import { composerLePdfDuPlan, disposerLeMilieu } from "../src/server/pdf/plan-arrosage-pdf";
+import { photoDeLaNourrice } from "../src/lib/arrosage/nourrice-en-photo";
+import { voiesEnGoutte } from "../src/lib/arrosage/postes";
+import { empreinteDeLaNourrice3D, FICHIER_D_EMPREINTE } from "./_nourrice-3d";
 import { tracerSvg, type NoeudSvg } from "../src/server/pdf/svg-vers-pdf";
 import { pourLePapier } from "../src/lib/texte-pdf";
 
@@ -81,8 +87,10 @@ async function main() {
     // Les surtitres sont espacés : un lecteur de PDF y voit des espaces entre les lettres.
     const serre = (t: string) => t.replace(/\s/g, "");
     assert.ok(serre(pages[0]).includes("LIRELESPLANS"), "pas de légende en page 1");
-    fige.postes.reseaux.forEach((r, k) => assert.match(pages[1 + k], new RegExp(`Réseau ${r.i + 1}`), `page ${k + 2} : pas le réseau ${r.i + 1}`));
-    assert.ok(serre(pages[1 + fige.postes.reseaux.length]).includes("LALISTEDESPIÈCES"), "la liste ne suit pas les réseaux");
+    // Page 2 : la nourrice ; tout part d'elle (sa règle du 21 août).
+    assert.ok(serre(pages[1]).includes("LANOURRICE"), "la page 2 n'est pas celle de la nourrice");
+    fige.postes.reseaux.forEach((r, k) => assert.match(pages[2 + k], new RegExp(`Réseau ${r.i + 1}`), `page ${k + 3} : pas le réseau ${r.i + 1}`));
+    assert.ok(serre(pages[2 + fige.postes.reseaux.length]).includes("LALISTEDESPIÈCES"), "la liste ne suit pas les réseaux");
   });
 
   await cas("aucune réserve, ni la phrase « Nous ne garantissons pas… », ni pied de page", () => {
@@ -119,7 +127,8 @@ async function main() {
 
   await cas("aucun caractère sans glyphe dans les polices du PDF", () => {
     const textes = [
-      donnees.entreprise, donnees.dossier, donnees.date, donnees.resume, "Plan d’arrosage", "LIRE LES PLANS", "LES PIÈCES", "UNE TÊTE, DE BAS EN HAUT", "LA LISTE DES PIÈCES, SUITE",
+      donnees.entreprise, donnees.dossier, donnees.date, donnees.resume, "Plan d’arrosage", "LIRE LES PLANS", "LES PIÈCES", "UNE TÊTE, DE BAS EN HAUT", "LA LISTE DES PIÈCES, SUITE", "LA NOURRICE",
+      ...(donnees.nourrice ? [donnees.nourrice.titre, donnees.nourrice.phrase, ...donnees.nourrice.lignes.flatMap((l) => [l.quantite, l.nom])] : []),
       ...donnees.legende.flatMap((l) => l.texte.map((s) => s.texte)),
       ...donnees.reseaux.flatMap((r) => [r.titre, ...r.zones, ...r.lignes.flatMap((l) => [l.quantite ?? "", l.texte]), r.tuyau.texte, ...(r.chaine ?? []).map((m) => m.libelle), ...r.rail.map((p) => p.detail || p.nom)]),
       ...donnees.groupes.flatMap((g) => [g.titre, ...g.lignes.flatMap((l) => [l.quantite, l.nom])]),
@@ -185,6 +194,39 @@ async function main() {
     }
     // Le couloir et le goutte-à-goutte laissent la place : le plan la prend.
     assert.ok(pleineLargeur >= 2, `${pleineLargeur} page(s) seulement où le plan prend toute la largeur`);
+  });
+
+  await cas("la nourrice a sa page : son nom, l'éclaté vu du dessus, chacune de ses pièces", async () => {
+    const lignes = Object.values(fige.nourrice.lignes);
+    assert.ok(lignes.length > 5, "le jardin d'essai n'a pas de nourrice : le contrôle ne mesure rien");
+    assert.ok(pages[1].includes(pourLePapier(fige.nourrice.nom).texte), `la page ne dit pas « ${fige.nourrice.nom} »`);
+    for (const l of lignes) {
+      const nom = pourLePapier(l.nom).texte.split(" ").slice(0, 3).join(" ");
+      assert.ok(pages[1].includes(nom), `pièce absente de la page de la nourrice : ${l.nom}`);
+    }
+    // La photo est posée sur la page, et c'est celle de CETTE nourrice.
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(octets), useSystemFonts: false }).promise;
+    const ops = await (await doc.getPage(2)).getOperatorList();
+    assert.ok(ops.fnArray.includes(pdfjs.OPS.paintImageXObject), "aucune image sur la page de la nourrice");
+    assert.ok(donnees.nourrice?.photo === photoDeLaNourrice(fige.nourrice.voies.length, voiesEnGoutte(fige.plan, fige.nourrice.voies)), "la photo n'est pas celle de ses voies");
+  });
+
+  await cas("au nez de robinet, pas de nourrice, donc pas de page", async () => {
+    const nez: SaisieDuPlan = { ...saisie, parametres: { ...JARDIN, compteur: "non", robinet: { montage: "nez", double: false, depart: null } } as ParametresPlan };
+    const fNez = figerLePlan(nez);
+    const dNez = donneesDuPdf({ entreprise: "Atelier Démo", dossier: "Au robinet", enregistreLe: new Date("2026-11-21T08:41:00Z"), saisie: nez, fige: fNez });
+    assert.equal(dNez.nourrice, null);
+    const p = await texteDuPdf(await composerLePdfDuPlan(dNez));
+    assert.ok(!p.some((t) => t.replace(/\s/g, "").includes("LANOURRICE")), "une page de nourrice au nez de robinet");
+  });
+
+  await cas("une photo de l'éclaté pour chaque nourrice possible, à jour des pièces de la 3D", async () => {
+    for (let voies = 1; voies <= 6; voies++) {
+      for (let goutte = 0; goutte <= voies; goutte++) assert.ok(existsSync(path.join("public", photoDeLaNourrice(voies, goutte))), `pas de photo pour ${voies} voies dont ${goutte} en goutte-à-goutte`);
+    }
+    const gardee = JSON.parse(readFileSync(FICHIER_D_EMPREINTE, "utf8")).empreinte;
+    assert.equal(gardee, await empreinteDeLaNourrice3D(), "les pièces de la 3D ont changé depuis les photos : rejouer npx tsx scripts/rendre-nourrice-eclatee.mts");
   });
 
   const i = process.argv.indexOf("--images");

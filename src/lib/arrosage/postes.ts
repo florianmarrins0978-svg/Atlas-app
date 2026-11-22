@@ -430,10 +430,20 @@ export function voiesVivantes(plan: Pick<LePlan, "secteurs">, r: Retouches): num
   return plan.secteurs.map((_, i) => i).filter((i) => !r.blocsRetires[String(i)]);
 }
 
+/** Combien de ces voies de la nourrice partent en goutte-à-goutte : elles se posent à droite. */
+export function voiesEnGoutte(plan: Pick<LePlan, "secteurs">, voies: number[]): number {
+  return voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+}
+
+/** Comment lire la nourrice, à l'écran comme sur le papier. */
+export function phraseDeLaNourrice(nbGoutte: number): string {
+  return `Une voie par réseau, numérotées de gauche à droite après l’arrivée.${nbGoutte ? " Le goutte-à-goutte est à droite." : ""}`;
+}
+
 /** La nourrice se compte sur SA fiche, comme le dessin du regard. */
 export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { nom: string; lignes: Record<string, Ligne>; barrees: Record<string, Ligne>; nombre: Record<string, number>; voies: number[] } {
   const voies = voiesVivantes(plan, r);
-  const nbGoutte = voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+  const nbGoutte = voiesEnGoutte(plan, voies);
   // La fiche des voies vivantes : un réseau de moins, c'est le collecteur de la gamme du dessous et une électrovanne de moins.
   const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};

@@ -10,10 +10,12 @@
  *   · *« supprime les petites phrases en gris »* : aucun pied de page.
  *
  * Et le lendemain : *« agrandis le plan d'arrosage où il n'y a pas la photo des
- * pièces »*, voir `disposerLeMilieu`.
+ * pièces »*, voir `disposerLeMilieu` ; et *« il manque la nourrice »*, voir
+ * `pageDeLaNourrice`.
  *
- * Page 1 : l'entreprise, le dossier, la date, le résumé, la légende. Puis un
- * réseau par page : son nom, son matériel et son tuyau en haut ; le réseau en
+ * Page 1 : l'entreprise, le dossier, la date, le résumé, la légende. Page 2 :
+ * la nourrice, d'où tout part, son éclaté vu du dessus et ses pièces (pas de
+ * page au nez de robinet, qui n'en a pas). Puis un réseau par page : son nom, son matériel et son tuyau en haut ; le réseau en
  * couleur sur la largeur de la page, puis le dessin de ses pièces, partageant
  * ce qu'il reste ; une tête de bas en haut en bas. Puis la liste des pièces.
  *
@@ -55,6 +57,8 @@ export type DonneesPdfDuPlan = {
   date: string;
   resume: string;
   legende: { symbole: NoeudSvg; texte: SegmentDeTexte[] }[];
+  /** La page de la nourrice, ou `null` au nez de robinet. `photo` : son éclaté vu du dessus, sous `public/`. */
+  nourrice: { titre: string; phrase: string; photo: string; lignes: { quantite: string; nom: string }[] } | null;
   reseaux: ReseauDuPdf[];
   groupes: { titre: string; lignes: { quantite: string; nom: string }[] }[];
 };
@@ -185,6 +189,74 @@ async function pageDeGarde(doc: PDFDocument, d: DonneesPdfDuPlan, p: Polices) {
       x += police.widthOfTextAtSize(t, 9.5);
     }
     y -= 18;
+  }
+}
+
+/** Une liste de pièces : la quantité en or, puis ce qu'elle désigne, coupé à la largeur. */
+const QUANTITE = 34;
+const INTERLIGNE = 12.5;
+function hauteurDeLaListe(lignes: { nom: string }[], largeur: number, p: Polices): number {
+  return lignes.reduce((h, l) => h + couper(l.nom, p.texte, 9.5, largeur - QUANTITE).length * INTERLIGNE + 2, 0);
+}
+function ecrireLaListe(page: PDFPage, lignes: { quantite: string; nom: string }[], x: number, y: number, largeur: number, p: Polices): void {
+  for (const l of lignes) {
+    page.drawText(papier(l.quantite), { x, y, size: 9.5, font: p.gras, color: OR_TEXTE });
+    for (const morceau of couper(l.nom, p.texte, 9.5, largeur - QUANTITE)) {
+      page.drawText(morceau, { x: x + QUANTITE, y, size: 9.5, font: p.texte, color: ENCRE });
+      y -= INTERLIGNE;
+    }
+    y -= 2;
+  }
+}
+
+/**
+ * LA PAGE DE LA NOURRICE — sa demande du 22 novembre 2026 : *« ton plan
+ * d'arrosage ne comprend pas la nourrice [...] prends la vue éclatée »*.
+ *
+ * L'éclaté est celui de la nourrice en 3D (`appli/nourrice-3d/`), photographié
+ * du dessus pour chaque nourrice possible (`scripts/rendre-nourrice-eclatee.mts`) :
+ * le serveur n'a pas de quoi dessiner de la 3D. Du dessus, chaque pièce est
+ * séparée des autres, dans l'ordre du montage. Puis ses pièces, celles que la
+ * liste compte, retouches comprises.
+ *
+ * La photo et la liste se posent côte à côte, ou la liste sous la photo, selon
+ * ce qui donne la PLUS GRANDE photo : une nourrice d'une voie est haute et
+ * étroite, une de six est presque carrée.
+ */
+async function pageDeLaNourrice(doc: PDFDocument, n: NonNullable<DonneesPdfDuPlan["nourrice"]>, p: Polices, photos: Photos) {
+  const page = doc.addPage([A4.largeur, A4.hauteur]);
+  let y = rubrique(page, "La nourrice", MARGE, A4.hauteur - MARGE - 8, p);
+  page.drawText(papier(n.titre), { x: MARGE, y: y - 12, size: 20, font: p.titres, color: ENCRE });
+  y -= 30;
+  for (const l of couper(n.phrase, p.texte, 10, UTILE)) {
+    page.drawText(l, { x: MARGE, y, size: 10, font: p.texte, color: ETIQUETTE });
+    y -= 13;
+  }
+  y -= 10;
+
+  const image = await photos.lire(n.photo);
+  if (!image) throw new Error(`La photo de la nourrice n'est pas sous public/arrosage-photos : ${n.photo}`);
+  const haut = y, dispo = y - BAS, ECART = 18, COLONNE = 190;
+  const echelle = (w: number, h: number) => Math.min(w / image.width, h / image.height);
+  // Côte à côte : la liste dans sa colonne, la photo dans le reste.
+  const cote = echelle(UTILE - COLONNE - ECART, dispo);
+  // L'une sous l'autre : la liste sur deux colonnes, sous la photo.
+  const moitie = Math.ceil(n.lignes.length / 2);
+  const colonnes = [n.lignes.slice(0, moitie), n.lignes.slice(moitie)];
+  const large = (UTILE - ECART) / 2;
+  const hauteurDessous = Math.max(...colonnes.map((c) => hauteurDeLaListe(c, large, p))) + RUBRIQUE + ECART;
+  const dessous = echelle(UTILE, dispo - hauteurDessous);
+
+  if (cote >= dessous) {
+    const w = image.width * cote, h = image.height * cote;
+    page.drawImage(image, { x: MARGE, y: haut - h, width: w, height: h });
+    const x = MARGE + UTILE - COLONNE;
+    ecrireLaListe(page, n.lignes, x, rubrique(page, "Ses pièces", x, haut - 8, p), COLONNE, p);
+  } else {
+    const w = image.width * dessous, h = image.height * dessous;
+    page.drawImage(image, { x: MARGE + (UTILE - w) / 2, y: haut - h, width: w, height: h });
+    const yListe = rubrique(page, "Ses pièces", MARGE, haut - h - ECART, p);
+    colonnes.forEach((c, k) => ecrireLaListe(page, c, MARGE + k * (large + ECART), yListe, large, p));
   }
 }
 
@@ -508,6 +580,7 @@ export async function composerLePdfDuPlan(d: DonneesPdfDuPlan): Promise<Uint8Arr
   const p = await polices(doc);
   const photos = new Photos(doc);
   await pageDeGarde(doc, d, p);
+  if (d.nourrice) await pageDeLaNourrice(doc, d.nourrice, p, photos);
   for (const r of d.reseaux) await pageDuReseau(doc, r, p, photos);
   pagesDeLaListe(doc, d, p);
   return doc.save();
