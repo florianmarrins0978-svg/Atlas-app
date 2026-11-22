@@ -101,6 +101,28 @@ Deux batteries entières, le 21 novembre au soir.
 La suite des dossiers, qui fait ton geste du dessin au dossier supprimé :
 8 cas sur 8.
 
+### Le 22 novembre : le plan en couleur agrandi dans le PDF
+
+Ta demande : *« agrandis le plan d'arrosage où il n'y a pas la photo des
+pièces, et même sur celle où il n'y a pas vraiment la place »*.
+
+| La page | Avant | Maintenant |
+|---|---|---|
+| réseau 1, pelouse carrée | 200 points de large | 411 ; le dessin des pièces passe de 441 à 317, ses photos de 34 à 32 points |
+| réseau 2, deux pelouses | 200 | 360 ; les pièces de 380 à 277, leurs photos de 34 à 28 points |
+| réseau 3, le couloir | 200 | toute la largeur, 511 ; les pièces aussi (470 avant) |
+| réseau 4, le goutte-à-goutte | 200 | toute la largeur, 511 |
+
+Le plan est sous l'en-tête, sur la largeur de la page. Quand la page manque de
+place, le dessin des pièces rétrécit un peu plus que lui, pour que les photos
+restent lisibles. Le vide gardé autour du dessin des pièces et trois lignes
+vides sous la tête du bas ont été rendus au plan.
+
+Ce qui n'est pas changé : le mot « nourrice » barré (ci-dessous), qui se voit
+davantage maintenant que le plan est grand.
+
+Pas encore chez toi : le lot attend la batterie, sur ton oui.
+
 ### Ce qui reste, et qui le tranche
 
 | | qui |

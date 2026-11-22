@@ -28,6 +28,11 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 
 **Ce qui reste, et à qui :**
 
+- **le plan en couleur agrandi dans le PDF** (sa demande du 22 novembre) :
+  codé, commité sur la branche de session, le PDF du jardin d'essai lui est
+  envoyé. **Pas sur `main`** : le lot est de niveau 3 (l'outil ne voit pas que
+  `test-dossiers-arrosage-e2e.ts` ouvre `/paysage/dossiers-arrosage`, il y
+  arrive par un clic), donc la batterie entière, **sur son oui** ;
 - **la clause des conditions générales** (le calcul d'un dossier supprimé gardé
   5 ans, sans rien qui désigne le client) : **à lui et à son juriste**. Les
   conditions publiées ne se modifient pas sans lui ; `docs/RGPD.md` porte la

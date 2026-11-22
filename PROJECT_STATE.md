@@ -6,7 +6,7 @@ Sa demande du 21, reçue par deux sessions. `appli/visite-guidee-le-debut.html` 
 
 ## LES DOSSIERS DU PLAN D'ARROSAGE : CODÉS (21 novembre 2026)
 
-Sa planche du 21 et son « tout coder ». Sous les réserves du plan, « Enregistrer dans un dossier » ; « Mes dossiers » sous l'outil, et sous sa fermeture quand l'option n'est pas prise. Chaque enregistrement est figé (une version de plus, jamais écrasée, le même plan deux fois n'en fait pas), revu sans recalcul, repris dans l'outil avec le calcul du jour, téléchargé en PDF archivé (un réseau par page, sans réserves ni prix d'achat). Supprimer efface tout ce qui désigne le client et garde le calcul 5 ans. `ARCHITECTURE.md` §599. Reste : la clause des conditions générales (lui et son juriste), `TODO.md`.
+Sa planche du 21 et son « tout coder ». Sous les réserves du plan, « Enregistrer dans un dossier » ; « Mes dossiers » sous l'outil, et sous sa fermeture quand l'option n'est pas prise. Chaque enregistrement est figé (une version de plus, jamais écrasée, le même plan deux fois n'en fait pas), revu sans recalcul, repris dans l'outil avec le calcul du jour, téléchargé en PDF archivé (un réseau par page, sans réserves ni prix d'achat ; le 22, le plan en couleur y passe sur la largeur de la page, commité sur la branche de session, pas encore sur `main` : il attend son regard et la batterie, niveau 3). Supprimer efface tout ce qui désigne le client et garde le calcul 5 ans. `ARCHITECTURE.md` §599. Reste : la clause des conditions générales (lui et son juriste), `TODO.md`.
 
 ## LA PAGE DES OUTILS DU SITE DE VENTE, REPRISE DANS L'ESPRIT DU SITE : UNE PLANCHE (21 novembre 2026), VUE PAR LUI, RETOUCHÉE DEUX FOIS LE JOUR MÊME
 

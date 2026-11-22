@@ -9,7 +9,9 @@
  *   4. le dessin de l'écran passe ENTIER : aucun élément de `PlanDessine`
  *      laissé de côté par le traceur, sans quoi un trait manquerait en silence ;
  *   5. aucun caractère sans glyphe dans les polices embarquées : il
- *      s'imprimerait en case vide (le « ≤ » de la fiche de sécurité, 2026).
+ *      s'imprimerait en case vide (le « ≤ » de la fiche de sécurité, 2026) ;
+ *   6. le plan en couleur est GRAND (sa demande du 22 novembre 2026), et au
+ *      milieu de la page rien ne se chevauche, même sur une page serrée.
  *
  * `--images <dossier>` écrit aussi chaque page en PNG, pour la regarder.
  */
@@ -23,7 +25,7 @@ import { donneesDuPdf } from "../src/app/paysage/dossiers-arrosage/donnees-du-pd
 import { figerLePlan, type SaisieDuPlan } from "../src/lib/arrosage/plan-enregistre";
 import { RETOUCHES_VIERGES } from "../src/lib/arrosage/retouches";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
-import { composerLePdfDuPlan } from "../src/server/pdf/plan-arrosage-pdf";
+import { composerLePdfDuPlan, disposerLeMilieu } from "../src/server/pdf/plan-arrosage-pdf";
 import { tracerSvg, type NoeudSvg } from "../src/server/pdf/svg-vers-pdf";
 import { pourLePapier } from "../src/lib/texte-pdf";
 
@@ -128,6 +130,61 @@ async function main() {
       for (const t of textes) for (const c of pourLePapier(t).texte) if (c.trim() && !police.hasGlyphForCodePoint(c.codePointAt(0) as number)) manque.add(c);
       assert.deepEqual([...manque], [], `${f} n'a pas : ${[...manque].join(" ")}`);
     }
+  });
+
+  await cas("le plan en couleur est grand, et rien ne se chevauche au milieu de la page", () => {
+    // Sa demande du 22 novembre 2026 : « agrandis le plan d'arrosage où il n'y a
+    // pas la photo des pièces, et même sur celle où il n'y a pas vraiment la
+    // place ». Avant, il logeait dans 200 points de large, en haut à droite.
+    const AVANT = 200, UTILE = 595.28 - 2 * 42, GAUCHE = 42, DROITE = 42 + UTILE;
+    // Le milieu d'une page de réseau de ce jardin : sous l'en-tête, au-dessus
+    // d'une tête à deux lignes de libellés. Puis une page bien plus serrée.
+    const HAUT = 680, BAS_REEL = 137, BAS_SERRE = 330;
+    const proportion = (n: NoeudSvg) => {
+      const [, , w, h] = String(n.props.viewBox).split(/[\s,]+/).map(Number);
+      return h / w;
+    };
+    let pleineLargeur = 0;
+    for (const r of donnees.reseaux) {
+      assert.ok(r.plan, `${r.titre} : pas de dessin, le contrôle ne mesure rien`);
+      for (const bas of [BAS_REEL, BAS_SERRE]) {
+        const m = disposerLeMilieu({ proportionDuPlan: proportion(r.plan as NoeudSvg), pieces: r.pieces, rail: r.rail.length + r.ajoutees.length, haut: HAUT, bas });
+        const ici = `${r.titre}, bas à ${bas}`;
+        assert.ok(m.plan && m.plan.largeur > 0 && m.plan.hauteur > 0, `${ici} : plan sans taille`);
+        assert.ok(m.plan.haut <= HAUT && m.plan.gauche >= GAUCHE - 0.5 && m.plan.gauche + m.plan.largeur <= DROITE + 0.5, `${ici} : le plan sort de la page`);
+        assert.ok(m.plan.haut - m.plan.hauteur - m.rubrique >= 10, `${ici} : « Les pièces » touche le plan`);
+        // Chaque vignette se replace ICI, comme la page la pose : relire `occupe`
+        // ferait vérifier la fonction par elle-même, et une vignette oubliée
+        // dans son compte passerait au vert.
+        const boites: { x0: number; x1: number; y0: number; y1: number }[] = [];
+        if (r.pieces && m.pieces) {
+          const { gauche: ox, haut: oy, largeur: w, hauteur: h, taille: t } = m.pieces;
+          for (const pose of r.pieces.poses) {
+            const cx = ox + (pose.gauche / 100) * w, cy = oy - (pose.haut / 100) * h;
+            if (pose.egal) boites.push({ x0: cx - t / 2, x1: cx + t / 2, y0: cy - t / 2, y1: cy + t / 2 });
+            if (pose.pieces.length) {
+              const rangee = pose.pieces.length * t + (pose.pieces.length - 1) * 2;
+              const yh = cy + t / 2 - (pose.egal ? t * 1.12 : 0);
+              boites.push({ x0: cx - rangee / 2, x1: cx + rangee / 2, y0: yh - t, y1: yh });
+            }
+          }
+        } else if (m.rail) {
+          boites.push({ x0: m.rail.gauche, x1: m.rail.gauche + m.rail.largeur, y0: m.rail.haut - m.rail.hauteur, y1: m.rail.haut });
+        }
+        assert.ok(boites.length, `${ici} : ni pièces ni rail, le contrôle ne mesure rien`);
+        for (const b of boites) {
+          assert.ok(m.rubrique - b.y1 >= 8, `${ici} : une vignette touche le surtitre « Les pièces »`);
+          assert.ok(b.y0 >= bas - 0.5, `${ici} : une vignette descend sur la tête du bas`);
+          assert.ok(b.x0 >= GAUCHE - 0.5 && b.x1 <= DROITE + 0.5, `${ici} : une vignette sort de la page`);
+        }
+        if (bas === BAS_REEL) {
+          assert.ok(m.plan.largeur >= 1.5 * AVANT, `${ici} : plan de ${Math.round(m.plan.largeur)} points, pas agrandi`);
+          if (m.plan.largeur >= UTILE - 0.5) pleineLargeur++;
+        }
+      }
+    }
+    // Le couloir et le goutte-à-goutte laissent la place : le plan la prend.
+    assert.ok(pleineLargeur >= 2, `${pleineLargeur} page(s) seulement où le plan prend toute la largeur`);
   });
 
   const i = process.argv.indexOf("--images");

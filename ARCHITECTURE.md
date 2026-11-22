@@ -37967,3 +37967,20 @@ PDF se confronte à ces quatre-là avant la batterie.
 **Supprimer un dossier le retire du journal de navigation**, lui et ses plans,
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.
+
+**La page d'un réseau dans le PDF (22 novembre 2026).** Sa demande :
+*« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur
+celle où il n'y a pas vraiment la place »*. Le plan en couleur ne loge plus à
+côté du texte (200 points) : il prend la largeur de la page sous l'en-tête, et
+`disposerLeMilieu` (pure) partage avec le dessin des pièces ce qui reste entre
+l'en-tête et la tête du bas. Quand les deux tiennent, le plan est en pleine
+largeur ; sinon ils rétrécissent ensemble, le plan 1,3 fois moins vite
+(`PRIORITE_DU_PLAN`) : à parts égales il ne gagnait que deux tiers sur une
+pelouse carrée, et il a aussi demandé à voir les photos des pièces. **Le dessin
+des pièces se mesure sur ce qu'il montre** (`encombrementDesPieces`) : ses zones
+coupées au cadre, ses tuyaux, et ses vignettes, qui débordent du dessin quand
+une tête est sur un coin. Mesuré sur son cadre, il gardait 1,60 m de vide autour
+des têtes, et ignorait les vignettes qui touchaient alors le plan ou la tête du
+bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose :
+relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
+ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
