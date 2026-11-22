@@ -1142,7 +1142,37 @@ seulement de la première. **À faire, à part, sur son « oui »** (outillage,
 niveau 2) : que le flux attende de voir son artefact avant de déployer, ou
 redéploie une fois de lui-même.
 
-## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
+## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2.html` (sa décision du 22 novembre 2026) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
+
+**Sa décision du 22 novembre 2026.** À ma question « quelle page devient le
+site ? » : *« Bah c'est la dernière page qu'on a faite en date là. Bah c'est
+celle que tu as. »* Il venait de la regarder sur son iPhone : *« Oui, l'adresse
+marche sur mon iPhone. Ça va jusqu'à Le Maire, le retour. Tout est bon. »* Le
+même jour, dans une autre session, il l'appelle lui-même « le site Cause 2 »
+(la visite guidée à y poser, `appli/vente/cause-2-visite.html`).
+
+| | |
+|---|---|
+| la référence du site | `appli/vente/cause-2.html`, et elle seule : une retouche du site se fait là |
+| `cause.html`, `chapitres-6.html` | s'arrêtent là, plus rien ne s'y reporte (ni l'ordre des métiers, ni les films). **Conséquence tirée par moi**, il n'a parlé que de la page qui reste. `cause.html` reste en ligne telle quelle : c'est la maquette faite pour la demande de l'Afnic, et son en-tête (« chapitres-6 reste la référence ») n'est plus vrai |
+| les pages que le site ouvre | `outils.html` et `mentions-legales-cause.html` y ramènent. « Retour au site », dans les mentions, menait encore à `cause.html` : corrigé le 22, et `appli/tests/e2e.js` (« le site retenu ») refuse tout lien du site vers une version passée |
+| son iPhone | vu par lui le 22 novembre, la fiche jusqu'au retour : « Tout est bon. » C'était le contrôle Safari qui manquait. Il n'a pas dit quelles autres scènes il a regardées |
+| « Lucas », la légende seule sous la fiche, la carte et l'écran d'appel dessinés, le paraphe et la fin du film | à l'écran quand il a dit « Tout est bon », pas commentés un par un. **Lu par moi : ils restent**, et on ne les lui redemande pas |
+
+**CE QUI SÉPARE ENCORE CETTE PAGE D'UN SITE QUI VEND** (relevé le 22 novembre
+dans la page elle-même ; rien de tout cela n'est commencé) :
+
+| Ce qui manque | Où cela se voit | Qui peut le faire |
+|---|---|---|
+| le nom de domaine : l'Afnic examine toujours cause.fr, **sans réponse au 22 novembre** (*« ça me saoule »*) | l'adresse est celle des planches, et `contact@cause.fr` n'existe pas | lui, auprès de son bureau d'enregistrement. Aucun délai publié trouvé pour cet examen. Un second nom, pris ailleurs en attendant, débloquerait aussi l'envoi des devis par e-mail (`docs/A-FAIRE.md` §16) : proposé le 22, à lui de dire |
+| où mène « Essayer 15 jours gratuits » | tous les boutons d'essai pointent sur `#essayer`, la section elle-même : aucune inscription n'est ouverte à un inconnu | sa décision, puis du code |
+| le formulaire de contact | il répond « Maquette : ce formulaire n'envoie encore rien. » | moi, une fois le domaine et l'adresse d'envoi là |
+| son téléphone, son adresse | « à compléter » dans Contact | lui |
+| les mentions légales (`mentions-legales-cause.html`) | huit « à compléter » : siège, SIREN, TVA, directeur de la publication, téléphone, hébergeur, responsable du traitement, exercice des droits | lui, quand sa micro-entreprise a son SIREN |
+| la description de la page | elle dit encore « Planche : le site de vente de Cause, en mouvement. », et c'est ce que montre l'aperçu d'un lien partagé | moi, le jour où elle part sur le domaine |
+| l'accueil du dossier | l'adresse qui finit par `/vente/` sert toujours la planche du 27 septembre, au nom d'Atlas ; la visite guidée y renvoie quand on l'ouvre sans venir du site (`quitter`, `appli/visite-guidee.html`) | moi, au moment de poser le site sur son domaine. **La session de la visite guidée travaille dans ces fichiers** (`claude/loving-rubin-606gqy`, le 22 au soir) : rien n'y a été touché d'ici |
+
+**Ce qui suit raconte la planche, du 17 au 19 novembre.**
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
 une maquette de la version améliorée, j'aimerais avoir des animations plus
@@ -1237,18 +1267,15 @@ cinématique de la fiche n'a ni recul ni zoom. Trouvé en cherchant, et corrigé
 
 **Les deux autres pages** (`cause.html`, `chapitres-6.html`) gardent le film
 d'ouverture d'origine, l'ancienne fin de film, la capture fixe de la fiche, le
-film des travaux (avec son recul) et l'image du retour : à reporter le jour où
-il dit laquelle reste.
+film des travaux (avec son recul) et l'image du retour. **Rien à y reporter :**
+il a dit le 22 novembre laquelle reste, et ce n'est aucune des deux (voir en
+tête).
 
-**Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
-qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
-d'appel dessinés lui conviennent. Si le paraphe et la fin du film (la signature
-qui se pose sur le devis) lui vont, et s'il veut le mot « signe » dans la
-phrase du chapitre Envoyez. Si la phrase sous la fiche (« Le jour J, tout tient
-sur la fiche. ») suffit maintenant que les deux phrases de « Et aussi » sont
-parties. Si « Lucas » lui va comme prénom de celui qui envoie le retour. Et si
-l'ordre des métiers doit être reporté dans `cause.html` et `chapitres-6.html`,
-qui gardent l'ancien.
+**Ce qu'il a encore à dire** (le reste est tranché par son « Tout est bon » du
+22 novembre, voir en tête) : s'il fait corriger dans l'appli les trois points
+du tableau ci-dessus (le filet du PDF signé, le bouton sur deux lignes, le
+bouton qui se rallume), demandé deux fois, sans réponse ; et s'il veut le mot
+« signe » dans la phrase du chapitre Envoyez.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
@@ -1256,10 +1283,12 @@ quand on choisit les salariés d'une demi-journée ? Si oui : une planche
 d'abord (`CLAUDE.md` §3 bis), sur le vrai écran du planning, et rien dans
 `src/` avant son choix.
 
-**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :** Safari. Ce
-poste n'a que Chromium. La planche est écrite pour lui (masques préfixés,
-cadres arrondis isolés autour des films, aucune nouveauté sans repli), mais
-personne ne l'a regardée sur un iPhone. Les points à surveiller en premier :
+**Safari : vu par lui, sur son iPhone, le 22 novembre** (*« Tout est bon »*, la
+fiche jusqu'au retour). Ce poste n'a toujours que Chromium : **une retouche du
+mouvement se regarde de nouveau chez lui**, elle ne se déclare pas vérifiée
+d'ici. La page est écrite pour Safari (masques préfixés, cadres arrondis isolés
+autour des films, aucune nouveauté sans repli). Les points à surveiller en
+premier, à chaque retouche :
 les téléphones qui tournent en 3D avec un film dedans, la feuille qui s'écrit
 (un masque qui glisse), les bandes nuit qui s'élargissent (un rognage), le
 grand chiffre de la TVA (des rouleaux rognés en haut et en bas), la feuille
@@ -1270,11 +1299,11 @@ des pellicules, deux fois. Neuf corrections au premier tour, huit tenues au
 second. La neuvième (la feuille d'Envoyez dépassait de sa scène) a été refaite
 après le second verdict et n'a pas été relue : à lui montrer en premier.
 
-**S'il la retient, une question à lui poser avant de toucher quoi que ce
-soit :** `cause.html` dit que `chapitres-6.html` reste la référence (« une
-retouche s'y fait d'abord, puis se recopie ici »). Avec `cause-2.html`, cela
-ferait trois pages à tenir pour un seul site. Laquelle devient la référence,
-et lesquelles s'arrêtent là ?
+**La question de la référence est tranchée (22 novembre) :** c'est
+`cause-2.html`, voir en tête. `cause.html` dit encore que `chapitres-6.html`
+reste la référence (« une retouche s'y fait d'abord, puis se recopie ici ») :
+c'est faux depuis ce jour, et on ne le corrige pas dans `cause.html`, qu'il a
+demandé de ne pas toucher.
 
 **Pour qui reprendra la planche :** la relecture du mouvement et ses
 pellicules sont dans `.impeccable/review/motion/` (dossier ignoré de git, à
