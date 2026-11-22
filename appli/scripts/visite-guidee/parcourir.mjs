@@ -136,6 +136,12 @@ async function parcourirLaVisite(largeur, hauteur) {
     await q.evaluate((r) => { while (visite.etape() < r) document.querySelector(".g-droite").click(); }, rang);
     await q.waitForTimeout(400);
     const avant = await q.evaluate(() => document.querySelector(".g h2").textContent);
+    // Les deux premières étapes l'écrivent en toutes lettres, les suivantes montrent la croix
+    // (sa demande du 22 novembre : « au tout début, sur une page ou deux, et après la croix »).
+    // Le bouton qui se VOIT : replié, celui de la ligne d'en tête est caché, et un élément
+    // caché rend tout son texte, mots masqués compris.
+    const mots = await q.evaluate(() => [...document.querySelectorAll(".g-quitter")].find((x) => x.getBoundingClientRect().width > 0).innerText.trim());
+    dire(cas, rang < 2 ? mots.startsWith("Quitter") : mots === "", `étape ${rang + 1}, le bouton pour quitter dit « ${mots} »`);
     // La croix qui se voit : celle de la bulle dépliée, ou celle de la bulle repliée.
     const croix = await q.evaluate(() => { const b = [...document.querySelectorAll(".g-quitter")].find((x) => x.getBoundingClientRect().width > 0); if (b) b.click(); return !!b; });
     dire(cas, croix, `étape ${rang + 1}, rien ne permet de quitter la visite`);
