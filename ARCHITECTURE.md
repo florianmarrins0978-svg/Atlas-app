@@ -38192,6 +38192,13 @@ serrées se lisait pour l'une comme pour l'autre.
 chaîne, et elle se pose juste sous le dessin des pièces. Collée en bas, celle
 d'un goutte-à-goutte restait loin de son rail.
 
+**Sur une page de réseau, chaque ligne montre aussi sa pièce** (sa demande du
+même soir : *« il faudrait mettre les pièces, les numéroter pour qu'on les voie
+tout de suite »*) : le numéro, la photo (`photoDe`, celle de la liste de
+l'écran), la quantité, le nom. La photo d'une ligne se déclare par `photo`
+présent, même nul : la case reste, et la liste ne bouge pas d'une ligne à
+l'autre. La nourrice n'en porte pas : sa grande photo les montre déjà.
+
 **Le contrôle** (`test-pdf-du-plan-arrosage.ts`) exige les deux sens : toute
 pièce montrée a son numéro, tout numéro a sa pièce montrée sur la page. Il lit
 ce que la page montre dans les données qui la dessinent, pas dans le PDF : un

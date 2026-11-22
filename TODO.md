@@ -67,8 +67,14 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 **Ce qui reste, et à qui :**
 
 - **les numéros sur chaque page du PDF** (sa demande du 22 : savoir tout de
-  suite à quoi correspond chaque ligne, `ARCHITECTURE.md` §604) : codés,
-  commités sur la branche de session, PAS sur `main`, avec ce qui suit ;
+  suite à quoi correspond chaque ligne, `ARCHITECTURE.md` §604), avec la photo
+  de chaque pièce dans la liste d'un réseau, et la vanne de purge sans la
+  marque Dura qu'elle n'a pas : codés, commités sur la branche de session, PAS
+  sur `main`, avec ce qui suit ;
+- **`scripts/verifier-maquette-arrosage-plan.mjs` est rouge sur `main`**
+  (« Cannot read properties of null (reading 'getAttribute') ») : vu le
+  22 novembre, déjà rouge avant le lot de cette session, dont les fichiers de
+  maquette sont ceux de `main` à la vanne près. Pas cherché plus loin ;
 - **la page de la nourrice du PDF** (sa remarque du 22 : *« il manque la
   nourrice »*), avec l'éclaté 3D vu du dessus (`ARCHITECTURE.md` §603) :
   codée, commitée sur la branche de session, PAS sur `main`, avec les

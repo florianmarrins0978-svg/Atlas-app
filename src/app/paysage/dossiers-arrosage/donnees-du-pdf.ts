@@ -17,6 +17,7 @@ import { cotesEcrites, lignesDuReseau, zonesDuReseau } from "@/lib/arrosage/lign
 import { resumeDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/plan-enregistre";
 import { liaisonsDuReseau, phraseDeLaNourrice, quantiteDeLigne, voiesEnGoutte, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
 import { photoDeLaNourrice } from "@/lib/arrosage/nourrice-en-photo";
+import { photoDe } from "@/lib/arrosage/photos";
 import { composerNourrice } from "@/lib/arrosage/nourrice-eclatee";
 import type { Retouches } from "@/lib/arrosage/retouches";
 import type { Groupe } from "@/lib/arrosage/postes";
@@ -105,11 +106,12 @@ function laNourrice(fige: PlanFige, r: Retouches, nez: boolean): DonneesPdfDuPla
 
 /**
  * Les pièces d'un réseau, numérotées : celles de SON groupe dans la liste, dans
- * le même ordre. Le PDF pose le numéro sur chaque photo de la page.
+ * le même ordre, chacune avec sa photo. Le PDF pose le numéro sur chaque photo
+ * de la page.
  */
 function laListeDuReseau(groupes: Groupe[], i: number): { liste: LigneNumerotee[]; numeros: Record<string, number> } {
   const g = groupes.find((x) => x.bloc === String(i));
-  const liste = Object.entries(g?.lignes ?? {}).map(([ref, l], k) => ({ numero: k + 1, ref, quantite: quantiteDeLigne(l), nom: l.nom }));
+  const liste = Object.entries(g?.lignes ?? {}).map(([ref, l], k) => ({ numero: k + 1, ref, quantite: quantiteDeLigne(l), nom: l.nom, photo: photoDe(ref) }));
   return { liste, numeros: Object.fromEntries(liste.map((l) => [l.ref, l.numero])) };
 }
 

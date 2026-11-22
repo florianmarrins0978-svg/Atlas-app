@@ -1447,7 +1447,8 @@ export const CATALOGUE = {
     // et la pièce en dessous c'est un 25 x 1" »*. L'union MF et le raccord femelle
     // 25 x 3/4" de la veille sont remplacés partout où la fiche les comptait.
     'union':         { nom:'Manchon union 1" FF', marque:'Dura', aquaplus:'ODU329010' },
-    'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura', aquaplus:'BVA932' },
+    // Sans marque : ce n'est pas une Dura (sa correction du 22 novembre 2026), et Aqua Plus la vend sans en nommer une.
+    'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', aquaplus:'BVA932' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird', aquaplus:'REV100DVM9V' },
     'raccord-male25':{ nom:'Raccord mâle 25 x 1"', marque:'Plasson', aquaplus:'OPL70202526' },
     // **Un tuyau en Ø32 se visse par le même raccord en 32** (sa réponse du

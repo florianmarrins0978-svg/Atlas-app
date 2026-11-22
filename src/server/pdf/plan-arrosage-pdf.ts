@@ -37,7 +37,7 @@ import { FICHIER_DES_PLACES, type PlaceSurLaPhoto } from "@/lib/arrosage/nourric
 export type SegmentDeTexte = { gras: boolean; texte: string };
 
 /** Une ligne de pièces numérotée : son numéro est posé sur chaque photo de la même page. */
-export type LigneNumerotee = { numero: number; ref: string; quantite: string | null; nom: string; retiree?: boolean };
+export type LigneNumerotee = { numero: number; ref: string; quantite: string | null; nom: string; retiree?: boolean; photo?: string | null };
 
 export type ReseauDuPdf = {
   titre: string;
@@ -222,28 +222,46 @@ function pastillesDuCoin(page: PDFPage, numeros: number[], xDroite: number, yHau
   numeros.forEach((n, k) => pastille(page, n, xDroite - rayon * 0.55 - (numeros.length - 1 - k) * (2 * rayon + 1), yHaut - rayon * 0.55, rayon, p));
 }
 
-/** Une ligne de liste : son numéro s'il en a un, sa quantité en or, ce qu'elle désigne. */
-type LigneListe = { numero?: number; quantite: string | null; nom: string; retiree?: boolean };
+/**
+ * Une ligne de liste : son numéro s'il en a un, sa photo si elle en porte une
+ * (`photo` présent, même nul : la case reste), sa quantité en or, ce qu'elle
+ * désigne. Sur une page de réseau, chaque ligne montre sa pièce : sa demande du
+ * 22 novembre 2026, *« il faudrait mettre les pièces, les numéroter pour qu'on
+ * les voie tout de suite »*.
+ */
+type LigneListe = { numero?: number; quantite: string | null; nom: string; retiree?: boolean; photo?: string | null };
 const RETRAIT = 15;
+const PHOTO_DE_LIGNE = 22;
 const QUANTITE = 34;
 const INTERLIGNE = 12.5;
 const ECART_COLONNES = 18;
 
+const retraitDe = (l: LigneListe) => (l.photo !== undefined ? RETRAIT + PHOTO_DE_LIGNE + 7 : RETRAIT);
+const hauteurDeLaLigne = (l: LigneListe, largeur: number, p: Polices) => {
+  const texte = couper(l.nom, p.texte, 9.5, largeur - retraitDe(l) - QUANTITE).length * INTERLIGNE + 2;
+  return l.photo !== undefined ? Math.max(texte, PHOTO_DE_LIGNE + 5) : texte;
+};
 function hauteurDeLaListe(lignes: LigneListe[], largeur: number, p: Polices): number {
-  return lignes.reduce((h, l) => h + couper(l.nom, p.texte, 9.5, largeur - RETRAIT - QUANTITE).length * INTERLIGNE + 2, 0);
+  return lignes.reduce((h, l) => h + hauteurDeLaLigne(l, largeur, p), 0);
 }
-function ecrireLaListe(page: PDFPage, lignes: LigneListe[], x: number, y: number, largeur: number, p: Polices): void {
+async function ecrireLaListe(page: PDFPage, photos: Photos, lignes: LigneListe[], x: number, y: number, largeur: number, p: Polices): Promise<void> {
   for (const l of lignes) {
-    if (l.numero !== undefined) pastille(page, l.numero, x + 5, y + 3.2, 5, p);
-    if (l.quantite) page.drawText(papier(l.quantite), { x: x + RETRAIT, y, size: 9.5, font: p.gras, color: OR_TEXTE });
-    for (const morceau of couper(l.nom, p.texte, 9.5, largeur - RETRAIT - QUANTITE)) {
-      const xn = x + RETRAIT + QUANTITE;
+    const suivante = y - hauteurDeLaLigne(l, largeur, p);
+    const avecPhoto = l.photo !== undefined;
+    // Le numéro, et la photo, centrés sur la première ligne de texte.
+    const milieu = y + 3.2;
+    if (l.numero !== undefined) pastille(page, l.numero, x + 5, milieu, 5, p);
+    if (avecPhoto) await vignette(page, photos, { photo: l.photo ?? null, pied: null, retiree: l.retiree }, x + RETRAIT - 2, milieu + PHOTO_DE_LIGNE / 2, PHOTO_DE_LIGNE, null);
+    const xq = x + retraitDe(l);
+    if (l.quantite) page.drawText(papier(l.quantite), { x: xq, y, size: 9.5, font: p.gras, color: OR_TEXTE });
+    for (const morceau of couper(l.nom, p.texte, 9.5, largeur - retraitDe(l) - QUANTITE)) {
+      const xn = xq + QUANTITE;
       page.drawText(morceau, { x: xn, y, size: 9.5, font: p.texte, color: l.retiree ? ETIQUETTE : ENCRE });
       // Une pièce qu'il a supprimée reste, barrée, comme à l'écran : son numéro est encore sur la photo.
       if (l.retiree) page.drawLine({ start: { x: xn, y: y + 3.2 }, end: { x: xn + p.texte.widthOfTextAtSize(morceau, 9.5), y: y + 3.2 }, thickness: 0.7, color: ETIQUETTE });
       y -= INTERLIGNE;
     }
-    y -= 2;
+    y = suivante;
   }
 }
 
@@ -255,14 +273,14 @@ const enColonnes = (lignes: LigneListe[], n: number) => {
 };
 function hauteurDesSections(sections: Section[], largeur: number, colonnes: number, p: Polices): number {
   const large = (largeur - (colonnes - 1) * ECART_COLONNES) / colonnes;
-  return sections.reduce((h, s) => h + RUBRIQUE + Math.max(...enColonnes(s.lignes, colonnes).map((c) => hauteurDeLaListe(c, large, p))) + 8, 0);
+  return sections.reduce((h, s) => h + RUBRIQUE + (s.lignes.some((l) => l.photo !== undefined) ? 6 : 0) + Math.max(...enColonnes(s.lignes, colonnes).map((c) => hauteurDeLaListe(c, large, p))) + 8, 0);
 }
-function ecrireLesSections(page: PDFPage, sections: Section[], x: number, y: number, largeur: number, colonnes: number, p: Polices): void {
+async function ecrireLesSections(page: PDFPage, photos: Photos, sections: Section[], x: number, y: number, largeur: number, colonnes: number, p: Polices): Promise<void> {
   const large = (largeur - (colonnes - 1) * ECART_COLONNES) / colonnes;
   for (const s of sections) {
-    const yListe = rubrique(page, s.titre, x, y, p);
+    const yListe = rubrique(page, s.titre, x, y, p) - (s.lignes.some((l) => l.photo !== undefined) ? 6 : 0);
     const parts = enColonnes(s.lignes, colonnes);
-    parts.forEach((c, k) => ecrireLaListe(page, c, x + k * (large + ECART_COLONNES), yListe, large, p));
+    for (const [k, c] of parts.entries()) await ecrireLaListe(page, photos, c, x + k * (large + ECART_COLONNES), yListe, large, p);
     y = yListe - Math.max(...parts.map((c) => hauteurDeLaListe(c, large, p))) - 8;
   }
 }
@@ -352,8 +370,8 @@ async function pageDeLaNourrice(doc: PDFDocument, n: NonNullable<DonneesPdfDuPla
   const x = cote >= dessous ? MARGE : MARGE + (UTILE - w) / 2;
   page.drawImage(image, { x, y: haut - h, width: w, height: h });
   numeroterLaPhoto(page, await placesDeLaNourrice(n.places), new Map(n.numerotees.map((l) => [l.ref, l.numero])), { x, haut, largeur: w, hauteur: h }, p);
-  if (cote >= dessous) ecrireLesSections(page, sections, MARGE + UTILE - COLONNE, haut - 8, COLONNE, 1, p);
-  else ecrireLesSections(page, sections, MARGE, haut - h - ECART_COLONNES, UTILE, 2, p);
+  if (cote >= dessous) await ecrireLesSections(page, photos, sections, MARGE + UTILE - COLONNE, haut - 8, COLONNE, 1, p);
+  else await ecrireLesSections(page, photos, sections, MARGE, haut - h - ECART_COLONNES, UTILE, 2, p);
 }
 
 /** Les vignettes du dessin des pièces gardent la proportion de l'écran : 32 points pour un dessin de 322. */
@@ -649,7 +667,7 @@ async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos
   }
   if (sections.length) {
     const finDuDessin = milieu.pieces ? milieu.pieces.occupe.haut - milieu.pieces.occupe.hauteur : milieu.rail ? milieu.rail.haut - milieu.rail.hauteur : milieu.rubrique - RUBRIQUE;
-    ecrireLesSections(page, sections, MARGE, Math.max(hautDeLaReserve - 16, finDuDessin - 18), UTILE, 2, p);
+    await ecrireLesSections(page, photos, sections, MARGE, Math.max(hautDeLaReserve - 16, finDuDessin - 18), UTILE, 2, p);
   }
 }
 
