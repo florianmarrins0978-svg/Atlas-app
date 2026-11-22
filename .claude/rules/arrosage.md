@@ -389,8 +389,18 @@ QUINCONCE** (même soir, sa réponse : *« Mes 7 en quinconce »*). Une tuyère 
 se bride pas : sur son couloir de 10 × 2, aucune pose Rain Bird ne tient aussi
 « jamais moins que la portée », et la seule pose Rain Bird possible doublait
 ses tuyères (14 au lieu de 7 ; 8 × 4 : 8 au lieu de 4 ; 10 × 3 : 10 au lieu de
-5). Sa règle du 18 août (7 tuyères sur 10 × 2) tient. **Pas encore codé au
-22 novembre 2026.**
+5). Sa règle du 18 août (7 tuyères sur 10 × 2) tient. **Codé le 22 novembre
+2026** (`poseRainBird`, `ARCHITECTURE.md` §603) ; deux règles datées dans
+`scripts/test-regles-du-patron.ts` le tiennent.
+
+**IL N'Y A PAS DE NOMBRE MAXIMUM DE TURBINES PAR RÉSEAU** (même soir). Devant
+neuf 3504 buse 0,75 sur un seul réseau (*« ça me paraît énorme »*), il a demandé
+s'il existait une règle. Rain Bird répond par le débit, pas par un nombre :
+*« si votre maison fournit 10 GPM, vous pouvez mettre 3 arroseurs par zone »*
+pour des têtes de 3,11 GPM (« How many sprinklers can be used per zone or
+valve? », rainbird.com). Le nombre de têtes d'un réseau est le débit disponible
+divisé par le débit d'une tête à sa pression, et c'est ce que fait déjà le
+découpage. Neuf buses 0,75 (0,16 m³/h) boivent autant que quatre buses 1,5.
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
