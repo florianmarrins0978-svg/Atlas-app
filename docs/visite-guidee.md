@@ -54,6 +54,7 @@ Tout le reste est l'écran tel que l'appli le peint.
 | Cause IA | « Oui » en vert, au lieu de « Pas encore » | sur ton espace les clés sont posées. Ici, non |
 | Le ticket lu | retrait de « La lecture automatique n'est pas disponible ici » | même raison : chez toi, l'IA lit le ticket |
 | Les champs vides | l'exemple « 06 12 34 56 78 » devient « 06 39 98 00 00 » | ce numéro peut appartenir à quelqu'un |
+| Le micro de la fiche client, pendant l'écoute | rouge, et « J'écoute. Touchez pour arrêter. » dessous, tels que les pose `DicterCoordonnees.tsx` | la visite ne fige pas l'écoute : elle la rejoue sur l'écran figé de la fiche vide (22 novembre) |
 
 ## Ta demande du 20 novembre au soir : entrer dans la fiche d'un client
 
@@ -96,7 +97,7 @@ sous l'onglet de la fiche client est replacé par la règle de l'appli.
 
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 83 étapes, une dizaine de minutes. On peut en retirer.
+1. **La longueur** : 85 étapes, une dizaine de minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».

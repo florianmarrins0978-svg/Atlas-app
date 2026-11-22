@@ -145,6 +145,22 @@ l'étape suivante si l'on passait vite.
 
 **Ce que la visite compte maintenant :** 83 étapes, dans 14 chapitres.
 
+## Ta demande du 22 : la fiche client remplie par la note vocale d'en haut à droite
+
+Deux étapes de plus, juste avant que la fiche se remplisse :
+
+| Étape | Ce qu'on voit |
+|---|---|
+| Touchez le micro, en haut à droite. | la fiche client vide ; « Pas envie d'écrire ? Dites le nom, le téléphone, l'adresse. » |
+| Touchez le micro pour arrêter. | le micro rouge, « J'écoute. Touchez pour arrêter. » dessous, et dans la bulle : « Monsieur Lefèvre, 06 39 98 12 34, lefevre@example.com, 7 chemin du Verger à Nantes. » |
+| (l'étape d'après) | les champs se remplissent, la ligne dit « La fiche se remplit. », puis la bulle passe au grand micro du chantier |
+
+L'écoute n'a pas été figée depuis l'appli : la visite la rejoue sur l'écran figé
+de la fiche, avec exactement les couleurs et la phrase que pose le code. Ce
+micro remplit les champs vides, il n'écrase rien et ne valide rien.
+
+La visite compte 85 étapes.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |

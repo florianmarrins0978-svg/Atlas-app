@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-22
+
+- **La visite guidée montre la fiche client remplie par le micro d'en haut à droite** (`appli/visite-guidee.html`, sa demande du 22). Deux étapes avant que la fiche s'écrive seule : toucher le micro, puis l'écoute (micro rouge, « J'écoute. Touchez pour arrêter. », la phrase dictée dans la bulle). L'écoute est rejouée sur l'écran figé de la fiche vide, aux couleurs et à la phrase de `DicterCoordonnees.tsx`, et défaite en quittant l'étape : le même écran sert aussi à « Touchez Entreprise. ». Pendant que les champs s'écrivent, la ligne repliée dit « La fiche se remplit. » au lieu du geste d'après. 85 étapes.
+
 ## 2026-11-21
 
 - **La visite guidée : la fiche de sécurité jusqu'au PDF du client, les véhicules et leurs rappels, toutes les portes des Réglages** (`appli/visite-guidee.html`, sa demande du 21 au soir, et son « oui » pour lancer l'appli ici sur une base de démonstration neuve). Vingt écrans neufs, figés depuis l'appli bâtie, tout inventé (équipe, M. Lefèvre et sa fiche, trois véhicules « DE-…-MO ») : le croquis qui se dessine repère par repère avec l'outil de chacun allumé, la fiche signée avec « Envoyer au client », son PDF ; la liste des véhicules, la fiche du camion, le rappel sur l'accueil ; 38 portes des Réglages ouvertes, la flèche ramenant à l'écran d'avant. La visite compte 83 étapes. **Ce qui la refait est enfin dans le dépôt, pour ces écrans-là** : `appli/scripts/visite-guidee/donnees.ts`, `figer-neufs.mjs`, `composer-neufs.mjs`. **Payé en route** : un écran sur plusieurs lignes (« Mon message au client ») laissait, recomposé ligne à ligne, ses restes hors de toute enveloppe ; une barre « Réglages » flottait par-dessus toute la visite et cachait la cible de l'étape 33. Chaque écran tient désormais sur une ligne, et `parcourir.mjs` refuse le moindre morceau échappé (vu rouge : 24 morceaux, puis vert). Le contrôle `portes` aussi a été vu rouge (5 portes fermées) avant de passer.
