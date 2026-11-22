@@ -242,6 +242,13 @@ défile avec lui. Seul l'anneau d'un bouton posé dans une feuille fixe (le
 calendrier de la date) reste sur la couche fixe, avec sa feuille : là, les deux
 bougent ensemble.
 
+**Ce qui s'est révélé faux de mon côté :** ma première version de cette
+correction cassait une étape, sur ordinateur. Posé dans la page, l'anneau de
+l'étape d'avant, éteint mais encore placé plus bas, rallongeait la page ; la
+visite calait alors « J'ai bien reçu » chez le client sur une page plus longue
+qu'elle n'est, et le bouton finissait sous le guide. Le contrôle complet l'a vu,
+deux fois de suite ; c'est corrigé (l'anneau ne peut plus rallonger la page).
+
 **Pas vérifiable ici :** ce poste n'a que Chromium, où l'anneau tombait déjà
 juste à chaque étape (mesuré). Le contrôle de la visite exige maintenant que
 l'anneau soit dans le même plan que son bouton : rouge sur la visite d'avant

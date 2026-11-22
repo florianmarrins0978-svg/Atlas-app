@@ -75,6 +75,11 @@ node appli/scripts/visite-guidee/parcourir.mjs                       # puis on v
 - `figer.mjs` ne garde pas le choix d'une liste déroulante qui n'a pas été
   relue depuis le serveur : chaque essai se fige après avoir relu sa page.
 
+**Et dans le guide lui-même** : l'anneau posé dans la page (`.v-plan`) ne doit
+jamais la rallonger. Un anneau éteint reste placé où il était ; sans borne, il
+agrandissait l'écran suivant, et la visite calait sa cible sur une page qui
+n'existait plus. Le plan prend la hauteur de l'écran montré (`borner`).
+
 **Ce qui manque toujours : le script qui FIGE les 95 écrans d'origine** de la
 visite (`scripts/planche-figee/visite-guidee/`, jamais enregistré, voir
 `docs/visite-guidee.md`).
