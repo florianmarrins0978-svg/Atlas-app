@@ -35,6 +35,7 @@ import {
   retirerReglementRecu,
   basculerAcquittee,
   type ReglementEnregistre,
+  type CorrectionReglement,
   type SaisieReglement,
   noterPaiement,
 } from "@/server/repositories/paiements-facture";
@@ -549,10 +550,10 @@ export async function poserReglementRecuAction(factureId: string, saisie: Saisie
   return enReglements("Acompte reçu", () => poserReglementRecu(ctx, factureId, saisie));
 }
 
-export async function majReglementRecuAction(reglementId: string, saisie: SaisieReglement): Promise<ResultatReglements> {
+export async function majReglementRecuAction(reglementId: string, correction: CorrectionReglement): Promise<ResultatReglements> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "corriger un acompte reçu");
-  return enReglements("Acompte corrigé", () => majReglementRecu(ctx, reglementId, saisie));
+  return enReglements("Acompte corrigé", () => majReglementRecu(ctx, reglementId, correction));
 }
 
 export async function retirerReglementRecuAction(reglementId: string): Promise<ResultatReglements> {

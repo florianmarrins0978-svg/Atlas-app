@@ -225,6 +225,39 @@ async function main() {
       await page.screenshot({ path: `${CAPTURES}/papier-facture-ecran.png`, fullPage: true });
     });
 
+    await cas("le moyen, la date et le montant changés d'affilée sont tous gardés", async () => {
+      // Vu le 22 novembre 2026 : changés sans attendre, seul le dernier restait
+      // (« Virement » revenait à « Chèque »). Chaque champ renvoyait la ligne
+      // telle que l'écran l'avait reçue, et le second écrasait le premier. Sur un
+      // chantier mal couvert, ce temps-là est celui de sa main.
+      const lire = async () =>
+        (
+          await pool.query(
+            `SELECT p.moyen, p.date_paiement::text AS date, p.montant::text AS montant FROM paiements_facture p
+             JOIN factures f ON f.id = p.facture_id WHERE f.chantier_id = $1 ORDER BY p.date_paiement, p.created_at`,
+            [chantierId]
+          )
+        ).rows[0] as { moyen: string; date: string; montant: string };
+      const avant = await lire();
+      await page.locator('[data-atlas="moyen-reglement"]').first().selectOption("carte");
+      await page.locator('[data-atlas="date-reglement"]').first().fill("2026-09-05");
+      await page.locator('[data-atlas="montant-reglement"]').first().fill("500");
+      await page.keyboard.press("Tab");
+      // Le dernier enregistrement arrivé, la ligne se relit en base.
+      const fin = Date.now() + 10_000;
+      while ((await lire()).montant !== "500.00" && Date.now() < fin) await page.waitForTimeout(200);
+      await page.waitForLoadState("networkidle");
+      assert.deepEqual(await lire(), { moyen: "carte", date: "2026-09-05", montant: "500.00" }, "un champ changé d'affilée a été perdu");
+      // La ligne d'avant revient, un champ à la fois : les cas suivants la lisent.
+      await page.locator('[data-atlas="montant-reglement"]').first().fill(avant.montant.replace(".", ","));
+      await page.keyboard.press("Tab");
+      await page.locator('[data-atlas="moyen-reglement"]').first().selectOption(avant.moyen);
+      await page.locator('[data-atlas="date-reglement"]').first().fill(avant.date);
+      const fin2 = Date.now() + 10_000;
+      while (JSON.stringify(await lire()) !== JSON.stringify(avant) && Date.now() < fin2) await page.waitForTimeout(200);
+      assert.deepEqual(await lire(), avant, "la ligne d'avant n'est pas revenue");
+    });
+
     await cas("« Facture acquittée » met le net à zéro, et l'éteindre le rend", async () => {
       await page.click('[data-atlas="facture-acquittee"]');
       await page.waitForTimeout(800);

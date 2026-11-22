@@ -38065,3 +38065,30 @@ tampons et le contexte ; `vue.detruire()` y ajoute les écouteurs, les géométr
 **Ce que la 3D ne montre pas, et le dessin montrait** : une pièce supprimée grisée et barrée, une pièce
 changée en doré (sa demande du 19 octobre 2026). La légende numérotée le dit toujours, en rouge barré et en
 doré. Poser ces signes dans la 3D demande une matière par pose : `TODO.md`.
+
+## §602 : Une correction ne porte que ce qu'il change, et se pose sur la ligne en base
+
+**Vu le 22 novembre 2026, sur « Règlement reçu ».** Le moyen, la date et le
+montant changés d'affilée, seul le dernier restait : « Virement » revenait à
+« Chèque », la date au jour même, sans un mot. Chaque champ renvoyait la ligne
+ENTIÈRE telle que l'écran l'avait reçue ; le second enregistrement, parti avant
+le retour du premier, la réécrivait avec l'ancienne valeur. À la main, sur un
+bon réseau, l'aller et retour est plus court que le geste suivant ; sur un
+chantier mal couvert, non.
+
+**La règle.** Un écran qui enregistre champ par champ n'envoie que le champ
+changé (`CorrectionReglement`, partielle). Le dépôt la pose sur la ligne lue EN
+BASE, dans la transaction, verrouillée (`for("update")`) : deux corrections
+parties ensemble passent l'une après l'autre, et la seconde lit ce que la
+première a écrit. Ce qui dépend d'un autre champ se déduit là aussi (le numéro
+ne vit qu'avec un chèque).
+
+**Ce qui a été écarté.** Garder la ligne à jour côté écran avant d'envoyer :
+deux enregistrements en vol restent deux photos de l'écran, et l'ordre de leurs
+retours n'est pas garanti. Seule la base sait ce qui est écrit.
+
+**Ce qui le tient.** `scripts/test-papier-facture-db.ts` (deux corrections
+parties ensemble, sous `atlas_app`) et `scripts/test-papier-facture-e2e.ts`
+(les trois champs changés sans attendre, au navigateur). Les autres écrans qui
+enregistrent champ par champ n'ont pas été revus : à faire quand l'un d'eux
+montrera le même symptôme.
