@@ -314,8 +314,10 @@ export function creerScene(toile, o) {
   });
   commandes.addEventListener("end", function () { prise = null; });
 
+  var arretee = false, prochaine = 0;
   function boucle(maintenant) {
-    requestAnimationFrame(boucle);
+    if (arretee) return;
+    prochaine = requestAnimationFrame(boucle);
     var enMouvement = false;
     if (mouvement) {
       var u = Math.max(0, Math.min(1, (maintenant - mouvement.debut) / mouvement.duree)), m = mouvement;
@@ -423,11 +425,23 @@ export function creerScene(toile, o) {
     return { pire: pire, ou: ou, bouts: lignes.length, manquants: manquants, lignes: lignes };
   }
 
-  new ResizeObserver(taille).observe(toile);
-  taille(); requestAnimationFrame(boucle);
+  var guetteur = new ResizeObserver(taille); guetteur.observe(toile);
+  taille(); prochaine = requestAnimationFrame(boucle);
+
+  // DÉFAIRE LA SCÈNE. Une page qui ne vit qu'une fois n'en a pas besoin ; un écran de l'appli, si : quitté
+  // puis rouvert, il laisserait tourner la boucle et garderait un contexte WebGL par visite, et le
+  // téléphone en refuse au-delà d'une quinzaine.
+  function detruire() {
+    if (arretee) return;
+    arretee = true; cancelAnimationFrame(prochaine); guetteur.disconnect(); commandes.dispose();
+    etat.lots.forEach(function (l) { racine.remove(l.maille); l.maille.dispose(); }); etat.lots = [];
+    if (scene.environment) scene.environment.dispose();
+    pmrem.dispose(); composition.dispose(); ao.dispose(); cible.dispose(); cibleContact.dispose(); cibleFlou.dispose();
+    rendu.dispose(); rendu.forceContextLoss();
+  }
 
   return {
-    pret: pret, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, mesurer: mesurer, demander: demander,
+    pret: pret, detruire: detruire, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, mesurer: mesurer, demander: demander,
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
