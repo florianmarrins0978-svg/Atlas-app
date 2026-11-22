@@ -80,6 +80,7 @@ var C = {
   alesage: 12.6,        // l'ellipse de l'alésage, photo de trois quarts : 220 px de grand axe
   rCouvercle: 27.8,     // le bord gauche du couvercle, photo de trois quarts : 236 px du centre
   rCorps: 27.2,
+  yBande: 15, rBol: 24.6, // sous le plan de joint, une bande droite de 13 mm (60 px sur la photo de trois quarts, entre deux colonnes), puis la cuvette en retrait
   rJante: 23.4,         // la jante gravée fait 4 mm de large (photo de dessus)
   yJoint: 29,           // le filet clair du plan de joint sur la colonne de devant
   yPont: 48.6,          // le dessus du couvercle
@@ -118,8 +119,9 @@ function boutFemelle(F, lot, L, bas, o) {
 function corps(F, lot, c, o) {
   var yJ0 = C.yJoint - 0.7, yJ1 = C.yJoint + 0.7, aTour = o.tour * DEG;
   // Le bol descend presque au niveau du pied : sur la photo de trois quarts, son arrondi passe sous
-  // le col d'entrée à 18 mm sous l'axe.
-  lot.ajouter("noir", F.tourne([[0, C.yBol], [21.5, C.yBol, { a: 9 }], [C.rCorps, -3, { a: 5 }], [C.rCorps, yJ0 + 0.2]], { segments: 64 }), debout(0, c));
+  // le col d'entrée à 18 mm sous l'axe. Sous la bande droite il rentre et s'arrondit : entre deux
+  // colonnes la paroi fuit dans l'ombre, c'est ce qui détache les colonnes du corps.
+  lot.ajouter("noir", F.tourne([[0, C.yBol], [15, C.yBol, { a: 9 }], [C.rBol, 1, { a: 14 }], [C.rBol, C.yBande - 1.6, { a: 1 }], [C.rCorps, C.yBande, { a: 0.8 }], [C.rCorps, yJ0 + 0.2]], { segments: 64 }), debout(0, c));
   lot.ajouter("noir", F.tourne([[C.rCouvercle, yJ1 - 0.2], [C.rCouvercle, C.yPont, { c: 1.1 }], [C.rJante, C.yPont, { a: 0.5 }], [C.rJante, C.yFond, { a: 0.7 }], [0, C.yFond]], { segments: 64 }), debout(0, c));
 
   var lobes = o.vis.map(function (a) { return { angle: ((a % 360) + 360) % 360 * DEG, d: C.dVis, r: C.rOreille + 1.4, oreille: true }; });
@@ -195,8 +197,10 @@ function fils(F, lot, x, y, z, o) {
       return [x + u * c + w * s, y + p[1], z - u * s + w * c];
     }), 1.3, { pas: 56, segments: 8 }));
   }
-  boucle("filRouge", [-10.5, 0.5], [[0, -1.5, 0], [-0.5, 12, -2], [-4.5, 30, -9], [-5, 46, -18], [2, 57, -25], [11, 50, -21], [13.5, 33, -12], [9.5, 13, -4.5], [7, -1.5, -3.5]]);
-  boucle("filNoir", [-8.2, 3.2], [[0, -1.5, 0], [-0.3, 12, -2], [-2.5, 28, -8], [-2, 40, -15], [2.5, 47, -19.5], [7.5, 41, -16], [8.5, 28, -9.5], [5.5, 12, -4.5], [3.2, -1.5, -4]]);
+  // La boucle monte à 66 mm du dessus de la bobine (320 px sur la photo de trois quarts), le fil noir
+  // juste à l'intérieur du rouge.
+  boucle("filRouge", [-10.5, 0.5], [[0, -1.5, 0], [-0.5, 14, -2], [-4.5, 34, -8], [-6, 52, -16], [1.5, 66, -24], [10.5, 58, -21], [13.5, 38, -12], [10, 15, -5], [7, -1.5, -3.5]]);
+  boucle("filNoir", [-8.2, 3.2], [[0, -1.5, 0], [-0.3, 14, -2], [-3, 33, -8], [-3.6, 49, -15.5], [1.5, 60, -22], [8, 53, -19], [10, 35, -11], [6.5, 14, -5], [3.2, -1.5, -4]]);
 }
 
 // LA VIS DE PURGE : son embase ronde, la tige cannelée qu'on tourne entre deux doigts, et la tête

@@ -8,9 +8,10 @@ import coudesEtTe from "./dura-coudes-te.js";
 import collecteursEtUnion from "./dura-collecteurs-union.js";
 import electrovannes from "./electrovannes.js";
 import vanneEtRegulateur from "./vanne-regulateur.js";
-import mamelonsRaccordEtTuyau from "./mamelons-raccord-pehd.js";
+import mamelonsEtTuyau from "./mamelons-pehd.js";
+import raccordPlasson from "./plasson-raccord.js";
 
-var FAMILLES = [coudesEtTe, collecteursEtUnion, electrovannes, vanneEtRegulateur, mamelonsRaccordEtTuyau];
+var FAMILLES = [coudesEtTe, collecteursEtUnion, electrovannes, vanneEtRegulateur, mamelonsEtTuyau, raccordPlasson];
 
 // Rend { clé : { couches, haut, bas } ou { couches, gauche, droite, branches } } pour toutes les pièces.
 export function creerPieces() {

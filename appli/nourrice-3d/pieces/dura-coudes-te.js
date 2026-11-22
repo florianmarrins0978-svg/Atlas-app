@@ -19,6 +19,8 @@ var COL = 14;        // le rayon du col qui passe dans l'écrou : 27,4 à 28,2 m
 var ALESAGE = 11.3;  // le passage de l'eau : 22,4 mm relevés au bout du raccord union mâle (dura-union-1-mf.jpg)
 var FILETS = 7;      // comptés sur les photos du té et du coude MF
 var NEZ = 3.9;       // le bout lisse devant le filetage : 3,9 mm sur le coude MF comme sur le té
+// Ce que les collecteurs et le manchon union reprennent tel quel : ce sont les mêmes moules.
+export var DURA = { ECROU: ECROU, PRISE: PRISE, COL: COL, ALESAGE: ALESAGE, FILETS: FILETS, NEZ: NEZ };
 
 // LE BOUT À ÉCROU d'une pièce Dura, sur l'axe Z local : l'écrou union, le joint torique noir qu'on voit
 // entre son collet et le corps, et ce qu'on voit au fond de sa bouche une fois éclatée (le joint plat,
@@ -29,7 +31,7 @@ export function boutAEcrou(F, lot, collet, vers, decalage) {
   var joint = collet + ECROU - PRISE - 0.5, fondDuTrou = collet - 6;
   lot.ajouter("pvc", F.placer(F.ecrouUnion({ longueur: ECROU, prise: PRISE, decalage: decalage || 0 }), { z: collet }), vers);
   // Le joint torique : à demi logé dans le siège conique du collet, il déborde juste assez pour se voir.
-  lot.ajouter("joint", F.placer(new F.THREE.TorusGeometry(COL + 1.45, 1.25, 8, 40), { z: collet - 0.35 }), vers);
+  lot.ajouter("joint", F.placer(new F.THREE.TorusGeometry(COL + 1.45, 1.25, 6, 32), { z: collet - 0.35 }), vers);
   // Le joint plat, posé sur la collerette du corps (cachée derrière lui), et l'alésage qui s'enfonce.
   lot.ajouter("joint", F.tourne([[15.45, joint - 0.6], [15.45, joint, { a: 0.35 }], [ALESAGE, joint, { a: 0.3 }], [ALESAGE, joint - 2.5]], { segments: 36 }), vers);
   lot.ajouter("pvc", F.tourne([[ALESAGE, joint - 2.5], [ALESAGE, fondDuTrou]], { segments: 32 }), vers);
@@ -40,7 +42,8 @@ export function boutAEcrou(F, lot, collet, vers, decalage) {
 // LE BOUT FILETÉ 1" d'une pièce, sur l'axe Z local, à partir de `debut` (où le corps arrive au rayon du
 // fond du filet) : le filetage, le nez lisse, la face du bout (deux cercles posés sur son plan, que la
 // scène mesure) et l'alésage qu'on voit dedans. Rend la cote de la pointe.
-function boutFilete(F, lot, debut, rNez, vers) {
+// Exporté : les collecteurs finissent par le même bout.
+export function boutFilete(F, lot, debut, rNez, vers) {
   var fin = debut + FILETS * F.GAZ["1"].pas, pointe = fin + NEZ, fond = F.rayonDuFond({ gaz: "1" });
   // Un filet moulé naît et meurt en moins d'un demi-tour : c'est ce qui laisse voir les sept filets.
   lot.ajouter("pvc", F.filetage({ gaz: "1", z0: debut, z1: fin, pointe: "z1", entree: 0.45, sortie: 0.4 }), vers);

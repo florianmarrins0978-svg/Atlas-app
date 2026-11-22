@@ -62,10 +62,10 @@ export function adoucir(profil) {
 // UNE FORME TOURNÉE autour de l'axe Z. Le profil se parcourt la matière à gauche, dans le plan où r est
 // à droite et z en haut : l'extérieur d'un tube se monte (z croissant), son alésage se redescend. Une
 // arête dont l'angle dépasse `pli` degrés reste vive ; les autres se lissent.
-// Options : segments (64), pli (28), arc ([début, fin] en radians, pour un secteur).
+// Options : segments (48), pli (28), arc ([début, fin] en radians, pour un secteur).
 export function tourne(profil, o) {
   o = o || {};
-  var seg = o.segments || 64, seuil = Math.cos((o.pli || 28) * Math.PI / 180);
+  var seg = o.segments || 48, seuil = Math.cos((o.pli || 28) * Math.PI / 180);
   var a0 = o.arc ? o.arc[0] : 0, a1 = o.arc ? o.arc[1] : TAU;
   var pts = adoucir(profil), sommets = [], liens = [], dernier = -1, avant = null, long = 0, rmax = 0;
   for (var i = 0; i < pts.length; i++) rmax = Math.max(rmax, pts[i][0]);
@@ -122,9 +122,10 @@ export function cylindre(r, z0, z1, o) {
 
 // LA SURFACE D'UNE HÉLICE. `rayon(theta, z)` donne le rayon en chaque point ; les rangs suivent
 // l'hélice (un rang garde la même place dans le profil du filet tout autour), si bien que le sommet du
-// filet tombe toujours sur un rang : pas d'escalier, pas de moiré, et six rangs par filet suffisent.
+// filet tombe toujours sur un rang : pas d'escalier, pas de moiré, et quatre rangs par filet suffisent
+// (le fond, un flanc, le sommet, l'autre flanc).
 function helice(o, rayon, dedans) {
-  var seg = o.segments || 44, parPas = o.parPas || 6, z0 = o.z0, L = o.z1 - o.z0, pas = o.pasFilet;
+  var seg = o.segments || 36, parPas = o.parPas || 4, z0 = o.z0, L = o.z1 - o.z0, pas = o.pasFilet;
   var rangs = Math.ceil(L / pas * parPas) + parPas, r0 = -parPas;
   var nb = (rangs - r0 + 1), pos = new Float32Array(nb * (seg + 1) * 3), nor = new Float32Array(nb * (seg + 1) * 3), uv = new Float32Array(nb * (seg + 1) * 2);
   var nu = tours(o.rayonMoyen), e = pas / 40;
@@ -181,7 +182,7 @@ export function taraudage(o) {
 // en arcs. `surPlats` est la cote sur plats ; `alesage` le perce.
 export function hexagone(o) {
   var a = o.surPlats / 2, z0 = o.z0, z1 = o.z1, coin = a / Math.cos(Math.PI / 6), pente = Math.tan((o.angle || 30) * Math.PI / 180);
-  var r0 = a * (o.depart != null ? o.depart : 0.97), hc = Math.min((coin - r0) * pente, (z1 - z0) * 0.45), parFace = 10, n = parFace * 6;
+  var r0 = a * (o.depart != null ? o.depart : 0.97), hc = Math.min((coin - r0) * pente, (z1 - z0) * 0.45), parFace = 6, n = parFace * 6;
   var niveaux = [0, hc * 0.15, hc * 0.4, hc * 0.7, hc, (z1 - z0) - hc, (z1 - z0) - hc * 0.7, (z1 - z0) - hc * 0.4, (z1 - z0) - hc * 0.15, z1 - z0];
   function rayon(th, d) {
     var m = th % (Math.PI / 3); if (m < 0) m += Math.PI / 3;
@@ -196,9 +197,18 @@ export function hexagone(o) {
   }
   var flancs = new THREE.BufferGeometry(); flancs.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); flancs.setIndex(index);
   var g = toCreasedNormals(flancs, 0.5); uvCube(g);
+  // Les deux faces : du trou (ou du centre) jusqu'au bord, qui suit les plats là où le chanfrein ne les
+  // entame pas. Un disque au rayon du chanfrein déborderait des plats d'un six pans à peine cassé.
   var al = o.alesage || 0, faces = [aIndexer(g)];
-  faces.push(tourne(al > 0 ? [[al, z0], [r0, z0]] : [[0, z0], [r0, z0]], { segments: n }));
-  faces.push(tourne(al > 0 ? [[r0, z1], [al, z1]] : [[r0, z1], [0, z1]], { segments: n }));
+  [[z0, -1], [z1, 1]].forEach(function (f) {
+    var p = [], nrm = [], uvs = [], idx = [];
+    for (var j = 0; j <= n; j++) {
+      var th = TAU * j / n, c = Math.cos(th), s = Math.sin(th), r = rayon(th, 0);
+      p.push(al * c, al * s, f[0], r * c, r * s, f[0]); nrm.push(0, 0, f[1], 0, 0, f[1]); uvs.push(al * c / CARREAU, al * s / CARREAU, r * c / CARREAU, r * s / CARREAU);
+      if (j < n) { var A = 2 * j, B = A + 1, C = A + 2, D = A + 3; if (f[1] > 0) idx.push(A, B, D, A, D, C); else idx.push(A, D, B, A, C, D); }
+    }
+    faces.push(geometrie(new Float32Array(p), new Float32Array(nrm), new Float32Array(uvs), idx));
+  });
   if (al > 0) faces.push(tourne([[al, z1], [al, z0]], { segments: 32 }));
   return mergeGeometries(faces);
 }
@@ -231,8 +241,9 @@ export function coude(o) {
 // 1,5 % pour le filetage, plus près de l'objectif. Les autres photos donnent de 37 à 43,6 mm : la cote
 // est tenue à 2 mm près, pas mieux. La longueur vaut 0,75 fois ce diamètre (té, coude FF, manchon).
 // Le canon fait 0,875 fois la jupe (son coude FF photographié de trois quarts). Les huit nervures
-// (comptées sur quatre photos) font 5,2 mm de large, partent du bord du collet et finissent sur la
-// jupe, qu'elles dépassent de 0,7 mm (1,035 fois la jupe sur le raccord union mâle).
+// (comptées sur quatre photos) font 4,6 mm de large (0,115 fois la jupe, moyenne de cinq photos),
+// partent du bord du collet et finissent sur la jupe, qu'elles dépassent de 0,7 mm (1,035 fois la
+// jupe sur le raccord union mâle).
 //
 // LE DEDANS n'est sur aucune photo : il est déduit. Le taraudage tient dans la jupe, seule assez
 // épaisse pour le porter (six filets) ; derrière lui un dégagement lisse laisse passer le mâle jusqu'à
@@ -240,13 +251,13 @@ export function coude(o) {
 // loge la collerette du corps).
 //
 // Options : longueur (30) ; rCanon (17,5) ; rJupe (20) ; jupe (longueur de la jupe, 15,7) ; nervures
-// (8), largeur (5,2) et saillie d'une nervure hors du canon (3,2) ; decalage (angle de la première
+// (8), largeur (4,6) et saillie d'une nervure hors du canon (3,2) ; decalage (angle de la première
 // nervure) ; rCollet (le trou du collet, où passe le col du corps : 14,7) ; gaz ; prise (la profondeur
 // où le mâle bute : 19). Rend la géométrie, déjà fusionnée.
 export function ecrouUnion(o) {
   o = o || {};
   var L = o.longueur || 30, rc = o.rCanon || 17.5, rj = o.rJupe || 20, jupe = o.jupe != null ? o.jupe : 15.7, n = o.nervures || 8;
-  var larg = o.largeur || 5.2, saillie = o.saillie != null ? o.saillie : rj - rc + 0.7, rCollet = o.rCollet || 14.7, g = o.gaz || "1";
+  var larg = o.largeur || 4.6, saillie = o.saillie != null ? o.saillie : rj - rc + 0.7, rCollet = o.rCollet || 14.7, g = o.gaz || "1";
   var fond = rayonDuFond({ gaz: g }) + 0.15, grand = GAZ[g].d / 2 + 0.15, prise = Math.min(o.prise || 19, L - 8), zj = L - jupe, morceaux = [];
   // Le dehors, du trou du collet à la bouche : le siège conique où se loge le joint torique, le bord
   // arrondi du canon (un arc écrit point par point : entre deux points si proches, un arrondi demandé
@@ -254,22 +265,24 @@ export function ecrouUnion(o) {
   // de la bouche, sa face (deux cercles posés sur le plan z = L, que la scène mesure) et le chanfrein
   // d'entrée du taraudage.
   var bord = 1, siege = rc - bord - rCollet, dehors = [[rCollet, siege]];
-  for (var k = 0; k <= 5; k++) dehors.push([rc - bord + bord * Math.sin(Math.PI / 2 * k / 5), bord - bord * Math.cos(Math.PI / 2 * k / 5)]);
-  dehors.push([rc, zj - 3.2, { a: 0.9 }], [rj, zj, { a: 0.8 }], [rj, L - 3.1, { a: 0.3 }], [rj + 0.3, L - 2.7, { a: 0.3 }],
-    [rj + 0.3, L, { a: 1.4 }], [grand + 0.65, L], [fond, L - 1.2]);
-  morceaux.push(tourne(dehors, { segments: 64 }));
+  for (var k = 0; k <= 3; k++) dehors.push([rc - bord + bord * Math.sin(Math.PI / 2 * k / 3), bord - bord * Math.cos(Math.PI / 2 * k / 3)]);
+  dehors.push([rc, zj - 3.2, { a: 0.9, fin: 0.5 }], [rj, zj, { a: 0.8, fin: 0.5 }], [rj, L - 2.9, { a: 0.25, fin: 0.8 }], [rj + 0.2, L - 2.6, { a: 0.25, fin: 0.8 }],
+    [rj + 0.2, L, { a: 1.4, fin: 0.45 }], [grand + 0.65, L], [fond, L - 1.2]);
+  // 48 segments : l'écrou revient jusqu'à vingt-quatre fois dans une nourrice, et à sa taille à l'écran
+  // un tour plus fin ne se verrait pas.
+  morceaux.push(tourne(dehors, { segments: 48 }));
   // Le dedans : le taraudage, sa sortie, le dégagement, la face où s'appuie le joint plat, l'alésage du
   // canon, puis le fond de l'écrou et le trou du collet.
   var zt = Math.max(zj + 0.5, L - prise + 0.6), appui = L - prise - 0.2;
-  morceaux.push(taraudage({ gaz: g, z0: zt, z1: L - 1.2, segments: 36 }));
-  morceaux.push(tourne([[fond, zt], [grand, zt - 0.6], [grand, appui], [rc - 1.9, appui], [rc - 1.9, 3], [rCollet, 3], [rCollet, siege]], { segments: 36 }));
+  morceaux.push(taraudage({ gaz: g, z0: zt, z1: L - 1.2, segments: 24 }));
+  morceaux.push(tourne([[fond, zt], [grand, zt - 0.6], [grand, appui], [rc - 1.9, appui], [rc - 1.9, 3], [rCollet, 3], [rCollet, siege]], { segments: 28 }));
   // Une nervure : une barre au dos plat et aux arêtes arrondies, dont le contour est un stade (deux
   // demi-cercles, deux côtés droits). Ses anneaux sont ce contour, de plus en plus rentré : le pied
   // noyé dans le canon, le flanc, l'arrondi de l'arête, puis le dos jusqu'à sa ligne de milieu. Le dos
   // garde le même rayon tout du long : passé l'épaule il n'affleure plus que de 0,7 mm sur la jupe.
-  var rb = larg / 2, re = Math.min(1.5, rb - 0.4), dos = rc + saillie, z0 = 0.9 + rb, z1 = zj + 0.9 - rb, rm = rc + saillie / 2, ns = 8, np = 2 * ns + 2;
+  var rb = larg / 2, re = rb - 0.3, dos = rc + saillie, z0 = 0.9 + rb, z1 = zj + 0.9 - rb, rm = rc + saillie / 2, ns = 6, np = 2 * ns + 2;
   var anneaux = [[0, rc - 0.6], [0, dos - re]];
-  for (k = 1; k <= 4; k++) anneaux.push([re * (1 - Math.cos(Math.PI / 8 * k)), dos - re + re * Math.sin(Math.PI / 8 * k)]);
+  for (k = 1; k <= 3; k++) anneaux.push([re * (1 - Math.cos(Math.PI / 6 * k)), dos - re + re * Math.sin(Math.PI / 6 * k)]);
   anneaux.push([rb, dos]);
   var pos = [], index = [];
   anneaux.forEach(function (an, ia) {
