@@ -139,7 +139,7 @@ ton oui.
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
 | la batterie, puis `main`, pour les trois corrections du 22 (plan agrandi, mot « nourrice » et losange, angle) | toi : ton oui |
-| « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite | à faire, si tu le veux |
+| « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite. **Corrigé le 22 :** je te l'avais présenté comme une question, mais ta planche le montrait et ton « tout coder » l'a validé. Il reste à le coder : une pelouse coupée par un massif devient plusieurs zones, donc chaque zone doit garder la trace de la zone lue d'où elle vient | moi, sans réponse de toi |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---

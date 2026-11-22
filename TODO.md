@@ -42,7 +42,14 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 - **« Voir la saisie » ne dit pas ce qu'il a corrigé** de la lecture de l'IA
   (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée dans
   la saisie, la comparaison zone par zone n'est pas écrite. Les cotes montrées
-  sont celles qui ont servi au calcul ;
+  sont celles qui ont servi au calcul. **À CODER, sans lui redemander** : sa
+  planche le montrait, et son « tout coder » du 21 l'a validée (le 21 au soir,
+  je le lui ai présenté à tort comme une question). **Le travail** : une zone
+  du plan ne sait pas de quelle zone lue elle vient. `DessinerLePlan.tsx` les
+  nomme `lu1`, `lu2`… mais `croquisDuDessin` coupe une pelouse en morceaux
+  autour d'un massif et `planDuCroquis` écarte les zones sans cote : l'origine
+  doit suivre jusqu'aux zones des paramètres (et le relecteur de la saisie des
+  dossiers l'accepter). Entrée du calcul d'arrosage : niveau 3 ;
 - **le PDF n'a pas été lu sur son iPhone** : les pages se mesurent avec les
   polices embarquées (Inter, la serif d'Atlas), donc la même chose partout,
   mais personne ne l'a ouvert là.
