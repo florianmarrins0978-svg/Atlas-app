@@ -352,6 +352,46 @@ d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « 
 Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
 repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
+**UN RÉSEAU EST TOUT EN Ø25 OU TOUT EN Ø32, JAMAIS LES DEUX — sa règle du
+22 novembre 2026**, devant la proposition tirée du manuel Rain Bird (p. 65 et
+66) de ne poser le Ø32 que jusqu'au premier arroseur : *« c'est soit on fait
+tout les réseau en 32 soit tout en 25 mais pas de 32 jusqu'au 1er arroseur puis
+25 jamais ! »* Le dimensionnement tronçon par tronçon du manuel est écarté : ne
+pas le reproposer.
+
+**Le choix reste RÉSEAU PAR RÉSEAU, celui du 20 octobre** (paragraphe
+ci-dessus, `tuyauDuReseau`), et c'est déjà ce que fait le calcul. Le même soir,
+il a d'abord voulu un seul diamètre pour toute la nourrice (*« pas un réseau en
+25 et un en 32 »*), puis l'a retiré : *« si y a du goutte à goutte, tu vas pas
+faire le goutte à goutte en 32. Donc en fait, on peut faire un réseau en 32 et
+un en 25 par exemple. Ou même plusieurs en 32, plusieurs en 25. Enfin, reprends
+la règle d'avant quoi. »* Ne pas rouvrir le diamètre unique par nourrice.
+
+**LES ÉCARTEMENTS DE RAIN BIRD, PLUS SES 80 % — sa décision du 22 novembre
+2026 :** *« Non prend les écartement de rainbird »*, devant le manuel (p. 41 à
+43, `docs/arrosage-manuel-rain-bird.md`). Sans vent : **1,1 × la portée au plus
+en carré** (ses turbines alignées), 1,2 × en triangle (ses tuyères n'y passent pas, voir plus bas),
+1,2 × sur la longueur et 1,0 × sur la largeur en rectangle ; tête à tête
+(1,0 ×) dès 6 km/h de vent. Elle remplace les 80 à 100 % et les 75 % du
+16 octobre (`RECOUVREMENT_MIN`, `poseSelonSaRegle`).
+
+**TOUJOURS SANS VENT, ET CONFIRMÉE DEVANT SON COÛT** (même soir, ses deux
+réponses aux questions posées) : *« Oui, Rain Bird »*, après avoir lu que son
+12 × 12 passe de 1 à 2 réseaux, son 16 × 10 de 6 turbines à 12, son 30 × 22 de
+2 réseaux à 3 ; et *« Toujours sans vent »* : pas de case par jardin, pas de
+tête à tête d'office. Sa règle du 23 août (« son carré de 12 × 12 : 9 turbines,
+1 vanne ») tombe avec elle, sur sa décision. *(Le 16 × 10 annoncé à 12
+turbines était faux : avec la pose en rectangle de Rain Bird, il garde 6
+turbines et 1 réseau. Corrigé le même soir.)*
+
+**POUR LES TURBINES SEULEMENT : LES TUYÈRES GARDENT SES 80 % ET SON
+QUINCONCE** (même soir, sa réponse : *« Mes 7 en quinconce »*). Une tuyère ne
+se bride pas : sur son couloir de 10 × 2, aucune pose Rain Bird ne tient aussi
+« jamais moins que la portée », et la seule pose Rain Bird possible doublait
+ses tuyères (14 au lieu de 7 ; 8 × 4 : 8 au lieu de 4 ; 10 × 3 : 10 au lieu de
+5). Sa règle du 18 août (7 tuyères sur 10 × 2) tient. **Pas encore codé au
+22 novembre 2026.**
+
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
 goutte ; sur le plan, il n'en a compté qu'un, et pour les pièces aussi ; il n'a

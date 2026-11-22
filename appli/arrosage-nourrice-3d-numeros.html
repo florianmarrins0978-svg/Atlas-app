@@ -16,6 +16,11 @@
   pièce posée plusieurs fois (les électrovannes) porte le même numéro sur chacune. Toucher une ligne de la
   liste allume ses numéros sur la 3D et éteint les autres ; un second toucher rend tout.
 
+  LES PIÈCES CHOISIES RESTENT EN COULEUR, LES AUTRES SE GRISENT. Sa demande du même soir : « quand on
+  clique sur une pièce où il y a marqué 2 Dura Mamelon par exemple, ou 5 Dura Mamelon, ce qui serait bien,
+  c'est que les pièces qu'on a sélectionnées restent en couleur et toutes les autres se grisent ». Toutes
+  les pièces de la ligne gardent leur matière, sur chaque voie ; les autres deviennent un voile gris pâle.
+
   D'OÙ VIENT LE NUMÉRO. Celui de la légende de l'appli : la première pièce de chaque modèle, dans l'ordre
   de la composition (nourrice-3d/vue.js, `numeros`), le même que le dessin d'avant
   (src/lib/arrosage/nourrice-eclatee.ts), vérifié sur 1, 2, 3, 4 et 6 voies.
@@ -153,6 +158,7 @@ window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge
 </script>
 <script src="arrosage-catalogue.js"></script>
 <script type="module">
+import * as THREE from "three";
 import { ouvrirNourrice } from "./nourrice-3d/vue.js";
 
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CATALOGUE;
@@ -263,6 +269,35 @@ function placer() {
   });
 }
 
+// LA LIGNE CHOISIE : ses pièces gardent leur matière, les autres passent sous un voile. Un voile et pas un
+// gris plein : le PVC des pièces Dura est déjà gris, et un gris plein ne le distinguait plus d'une pièce
+// éteinte (essayé). Le voile écrit sa profondeur, sans quoi l'occlusion ambiante le salissait de taches.
+// La planche passe par `scene.interne` parce qu'elle n'est qu'une planche ; retenu, ce geste descendra
+// dans nourrice-3d/vue.js, qui le donnera à l'appli comme à la page des outils.
+var VOILE = new THREE.MeshStandardMaterial({ color: 0xbdbbb6, roughness: 0.95, metalness: 0, envMapIntensity: 0.6, transparent: true, opacity: 0.35 });
+function griser() {
+  var cle = etat.choisi ? cles[etat.choisi - 1] : null;
+  V.scene.interne.etat.lots.forEach(function (l) {
+    var m = l.maille;
+    if (!m.userData.matiere) m.userData.matiere = m.material;
+    m.material = cle && l.cle !== cle ? VOILE : m.userData.matiere;
+  });
+  V.scene.demander();
+}
+
+// PLUS D'OMBRES. Sa demande du 22 au soir : « Tu peux retirer les ombres ». La lampe n'en porte plus (ni
+// au sol, ni d'une pièce sur l'autre), et l'ombre de contact sous la nourrice s'éteint. Elles se cherchent
+// dans la scène parce que nourrice-3d/scene.js est celui de l'appli, qui garde les siennes tant qu'il n'a
+// pas choisi. Ce sont les matières qui s'éteignent : la scène rallume le sol et l'ombre de contact après
+// chaque calcul de cette ombre, elle ne touche jamais à leurs matières.
+function sansOmbres() {
+  V.scene.interne.etat.lots[0].maille.parent.parent.traverse(function (o) {
+    if (o.isDirectionalLight) o.castShadow = false;
+    else if (o.material && (o.material.isShadowMaterial || (o.material.map && o.material.map.isRenderTargetTexture))) o.material.visible = false;
+  });
+  V.scene.demander();
+}
+
 function boutons() {
   document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === etat.voies)); });
   document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
@@ -278,7 +313,8 @@ function boutons() {
   document.querySelectorAll("[data-numero]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.numero) === etat.choisi)); });
   if (couche) { couche.dataset.habit = etat.habit; placer(); }
 }
-function reposer() { V.montrer(etat.voies, etat.goutte); liste(); boutons(); }
+// Les pièces se refont à chaque fiche : le voile se repose sur les neuves.
+function reposer() { V.montrer(etat.voies, etat.goutte); liste(); boutons(); griser(); }
 
 document.addEventListener("click", function (e) {
   if (!V) return;
@@ -287,8 +323,9 @@ document.addEventListener("click", function (e) {
   else if (b.dataset.goutte) { etat.goutte = Number(b.dataset.goutte); reposer(); }
   else if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
   else if (b.dataset.vue) V.regarder(b.dataset.vue);
-  // Une ligne touchée allume ses numéros, et éclate la nourrice s'ils ne se voyaient pas encore.
-  else if (b.dataset.numero) { var n = Number(b.dataset.numero); etat.choisi = etat.choisi === n ? 0 : n; if (etat.choisi && etat.quand === "eclatee") V.eclater(true); boutons(); }
+  // Une ligne touchée allume ses numéros, grise les autres pièces, et éclate la nourrice si ses numéros
+  // ne se voyaient pas encore.
+  else if (b.dataset.numero) { var n = Number(b.dataset.numero); etat.choisi = etat.choisi === n ? 0 : n; if (etat.choisi && etat.quand === "eclatee") V.eclater(true); boutons(); griser(); }
   else if (b.dataset.habit) { etat.habit = b.dataset.habit; boutons(); }
   else if (b.dataset.quand) { etat.quand = b.dataset.quand; boutons(); }
 });
@@ -300,6 +337,7 @@ try {
   // Les boutons suivent l'état : un toucher sur la nourrice, ou la vue tournée à la main.
   V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
   reposer();
+  sansOmbres();
   // La scène tourne : une phrase de refus posée par excès de prudence (un navigateur qui sait lire la
   // carte des imports sans savoir le dire) s'efface.
   NOURRICE_3D.prete = true; toile.style.visibility = "";
