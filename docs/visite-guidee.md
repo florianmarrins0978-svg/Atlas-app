@@ -100,7 +100,7 @@ sous l'onglet de la fiche client est replacé par la règle de l'appli.
 
 1. **La longueur** : 89 étapes, une dizaine de minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
-3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
+3. **Le bouton sur le site** : trois places à essayer sur la vraie page Cause 2 (`appli/vente/cause-2-visite.html`, 22 novembre). Rien n'est posé avant ton choix.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
 
 ## Pour la refaire quand un écran change
