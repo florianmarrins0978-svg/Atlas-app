@@ -352,13 +352,33 @@ d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « 
 Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
 repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
-**UN RÉSEAU EST TOUT EN Ø25 OU TOUT EN Ø32, JAMAIS LES DEUX — sa règle du
-22 novembre 2026**, devant la proposition tirée du manuel Rain Bird (p. 65 et
-66) de ne poser le Ø32 que sur le trajet jusqu'au premier arroseur : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32
-jusqu'au 1er arroseur puis 25 jamais ! »* (lu : chaque réseau tout en 25 ou
-tout en 32). Le dimensionnement tronçon par tronçon du
-manuel est écarté : ne pas le reproposer (`docs/arrosage-manuel-rain-bird.md`).
-Le choix reste celui du 20 octobre, réseau par réseau (`tuyauDuReseau`).
+**TOUS LES RÉSEAUX D'UNE NOURRICE ONT LE MÊME DIAMÈTRE : TOUS EN Ø25 OU TOUS
+EN Ø32 — sa règle du 22 novembre 2026**, qui remplace le choix réseau par
+réseau du 20 octobre (paragraphe ci-dessus). Devant la proposition tirée du
+manuel Rain Bird (p. 65 et 66) de ne poser le Ø32 que jusqu'au premier
+arroseur : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas
+de 32 jusqu'au 1er arroseur puis 25 jamais ! »* Puis, parce que je l'avais lu
+réseau par réseau : *« tu me fais une nourrice avec trois réseaux, bah, les
+trois réseaux c'est du 25, ou alors les trois réseaux c'est du 32. Et si, vu
+qu'on passe en 32, tu peux faire deux réseaux, bah, c'est deux réseaux en 32,
+mais pas un réseau en 25 et un en 32. »*
+
+Donc ni un Ø32 limité à un tronçon (le dimensionnement tronçon par tronçon du
+manuel est écarté, ne pas le reproposer), ni deux diamètres sur une même
+nourrice. Le Ø32 se juge sur l'ensemble des réseaux, avec le nombre de réseaux
+qu'il permet. **Pas encore codé au 22 novembre 2026** : le calcul choisit
+encore réseau par réseau (`tuyauDuReseau`, `etat.diametres.reseaux`). Non dit
+par lui : l'amenée et le goutte-à-goutte suivent-ils ce diamètre ?
+
+**LES ÉCARTEMENTS DE RAIN BIRD, PLUS SES 80 % — sa décision du 22 novembre
+2026 :** *« Non prend les écartement de rainbird »*, devant le manuel (p. 41 à
+43, `docs/arrosage-manuel-rain-bird.md`). Sans vent : **1,1 × la portée au plus
+en carré** (ses turbines alignées), 1,2 × en triangle (ses tuyères en damier),
+1,2 × sur la longueur et 1,0 × sur la largeur en rectangle ; tête à tête
+(1,0 ×) dès 6 km/h de vent. Elle remplace les 80 à 100 % et les 75 % du
+16 octobre (`RECOUVREMENT_MIN`, `poseSelonSaRegle`). **Pas encore codé** : il
+faut trancher le vent, et elle fait rougir sa règle du 23 août (« son carré de
+12 × 12 : 9 turbines, 1 vanne »), qui passe à 2 vannes.
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
