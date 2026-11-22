@@ -63,8 +63,16 @@ const etat = (p) => p.evaluate(() => {
   const sous = allume ? document.elementsFromPoint(dr.left + dr.width / 2, dr.top + dr.height / 2).find((x) => x.closest(".visite-ecran:not([hidden])")) : null;
   let fixe = false;
   for (let x = sous; x && !x.matches(".visite-ecran"); x = x.parentElement) if (getComputedStyle(x).position === "fixed") fixe = true;
+  // Le halo qui pulse autour de l'anneau sort de 16 points de sa boîte. Posé dans
+  // la page près d'un bord (le micro en haut à droite), il dépassait de l'écran :
+  // Chromium le coupait (« overflow: clip »), Safari élargissait toute la page, et
+  // la visite paraissait débordée et décalée (sa capture du 22 novembre, l'aperçu
+  // du PDF). Seul un plan qui ne défile pas (« overflow: hidden ») le coupe partout.
+  const W = document.documentElement.clientWidth;
+  const halo = allume && d.parentElement.matches(".v-plan") && (dr.right + 16 > W || dr.left - 16 < 0) && getComputedStyle(d.parentElement).overflowX !== "hidden";
   return {
     planFaux: !!sous && d.parentElement.matches(".v-calque") !== fixe,
+    halo,
     rang: visite.etape(), titre: g.querySelector("h2").textContent,
     sousLeGuide: allume && dr.bottom - 4 > gr.top && dr.top + 4 < gr.bottom && dr.right > gr.left && dr.left < gr.right,
     horsEcran: allume && (dr.top < -2 || dr.bottom > innerHeight + 2),
@@ -91,6 +99,7 @@ async function parcourirLaVisite(largeur, hauteur) {
     dire(cas, !e.horsEcran, `étape ${k + 1}, la cible est hors de l'écran`);
     dire(cas, !e.deborde, `étape ${k + 1}, la page déborde`);
     dire(cas, !e.planFaux, `étape ${k + 1}, l'anneau n'est pas dans le plan de son bouton`);
+    dire(cas, !e.halo, `étape ${k + 1}, le halo de l'anneau sort de l'écran sans être coupé partout`);
     const etp = await p.evaluate(() => visite.etapes[visite.etape()]);
     if (etp.libre) break;
     if (e.allume && etp.cible) await toucherLeDoigt(p); else await suivant(p);

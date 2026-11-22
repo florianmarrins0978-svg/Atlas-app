@@ -1756,7 +1756,7 @@ html,body{overflow-x:clip}
    en une ligne dès qu'on fait défiler (sa demande du 21 novembre). */
 ::selection{background:rgba(185,139,71,.3)}
 .v-calque{position:fixed;inset:0;z-index:200;overflow:hidden;pointer-events:none}
-.v-plan{position:absolute;top:0;left:0;width:100%;overflow:clip;z-index:200;pointer-events:none}
+.v-plan{position:absolute;top:0;left:0;width:100%;overflow:hidden;z-index:200;pointer-events:none}
 .v-doigt{position:absolute;pointer-events:none;border-radius:999px;box-shadow:0 0 0 3px var(--v-or),0 0 0 9999px rgba(28,28,26,.2);transition:opacity 200ms}
 .v-doigt::after{content:"";position:absolute;inset:-4px;border-radius:inherit;border:2px solid var(--v-or);animation:v-pouls 1.6s cubic-bezier(.16,1,.3,1) infinite}
 .v-doigt.regard{box-shadow:0 0 0 9999px rgba(28,28,26,.3)}
@@ -2008,6 +2008,8 @@ html,body{overflow-x:clip}
   // Sans borne, l'anneau de l'étape d'avant, éteint mais encore posé plus bas,
   // agrandissait la page : la visite calait la cible sur une page plus haute
   // qu'elle n'est, et « J'ai bien reçu » finissait sous le guide (1024 points).
+  // Coupé par « overflow: hidden », pas « clip » : Safari laissait le halo d'un
+  // anneau collé au bord élargir toute la page (sa capture du 22 novembre).
   const borner = () => { plan.style.height = Math.max(0, Math.floor(courant.getBoundingClientRect().bottom - plan.getBoundingClientRect().top)) + "px"; };
   const montrer = (nom, defile) => {
     ecrans.forEach((e, n) => (e.hidden = n !== nom));

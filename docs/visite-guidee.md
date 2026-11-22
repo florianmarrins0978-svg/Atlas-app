@@ -43,6 +43,7 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 
 - Téléphones de la **tranche de fiction de l'ARCEP** (06 39 98…, 02 61 91…), qui n'est attribuée à personne.
 - E-mails sur **example.com**, un domaine réservé qui ne mène nulle part.
+- Plaques des véhicules en **DE-…-MO** (DE-123-MO, DE-456-MO, DE-789-MO) : la lettre O n'est jamais attribuée sur une plaque française (le système d'immatriculation écarte I, O et U, trop proches de 1, 0 et V). Aucun véhicule réel ne peut porter ces plaques. Les modèles (Renault Master, Peugeot Boxer, Renault Kangoo) ne désignent personne, et les dates de contrôle sont inventées.
 - Station du Rond-Point, Pépinière des Saules, Banque Démo, signature : inventées.
 
 ## Ce que la planche retouche, et pourquoi
