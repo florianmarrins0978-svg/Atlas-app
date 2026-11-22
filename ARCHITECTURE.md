@@ -37984,3 +37984,48 @@ des têtes, et ignorait les vignettes qui touchaient alors le plan ou la tête d
 bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose :
 relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
 ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
+
+## §600 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
+
+**Sa lecture du PDF, le 21 novembre 2026, et son « oui » du 22.** Le mot
+« nourrice » se posait vers le centre de gravité du terrain, à 1,5 m du regard
+(`versLInterieur`, retirée) : une direction, sans regarder ce qui s'y trouvait.
+Le regard se pose presque toujours au bord d'une pelouse, souvent dans un
+passage de 2 m entre deux, et c'est justement là que passent la tranchée, la
+sortie de chaque réseau et les pointillés : le mot était barré sur chaque page
+du PDF. Le losange d'un té égal, lui, se posait sur la ligne qui sort du
+regard, parfois au point même où il l'a posé : caché, en tout ou en moitié.
+
+**Ce qui le remplace** (`plan-dessine.ts`) :
+
+| | |
+|---|---|
+| le mot | `placeDuMotNourrice` : une grille de 25 cm autour du regard, de la place la plus proche à la plus loin ; la première où aucun trait ne le barre (tranchée, tuyaux, antennes, pointillés, bords des zones, chacun avec son épaisseur) et où il ne couvre ni tête, ni losange, ni cote, ni le regard. À distance égale, dessous d'abord. Sans place libre à 6 m, la moins encombrée |
+| les losanges | `degagerLesLosanges` : un losange qui tomberait sous le regard sort au plus près, sans tomber sur une tête, un autre losange ou une cote. Le point vrai ne change pas, seul le dessin s'écarte (sa règle du 11 septembre) |
+| le cadre | il contient le mot, qui peut se poser hors du terrain |
+
+**Les mesures du dessin vivent dans la règle**, plus dans l'écran :
+`EPAISSEURS`, `REGARD`, `LOSANGE`, que `PlanDessine.tsx` lit pour tracer. Le mot
+s'écarte des traits avec les épaisseurs mêmes qui les dessinent ; deux copies
+auraient fini par diverger.
+
+**Au robinet**, la règle réserve quand même la place du rectangle et d'un mot de
+huit lettres : la croix et « robinet » y tiennent, et le dessin n'a pas à
+savoir le montage.
+
+**Un plan enregistré dans un dossier ne bouge pas** : il garde la place de ce
+jour-là (§599, « revoir ne recalcule jamais »). L'ancre `start` ou `end` ne se
+lit plus que là.
+
+**Le contrôle** (`test-plan-dessine.ts`) refait la géométrie à part, en
+échantillonnant chaque trait tous les 5 cm, sur huit nourrices dans trois
+jardins. Il a rougi partout sur l'ancien code, puis une seconde fois sur un
+losange sorti du regard et posé sur la cote « 14 m », vu à la capture
+(`capture-plan-arrosage.ts`) avant d'être vu par le test.
+
+**Et l'angle de la nourrice éclatée s'arrondit là où il naît**
+(`nourrice-eclatee.ts`) : `Math.atan2` et `Math.hypot` ne rendent pas le même
+dernier chiffre dans Node et dans Chrome, et React refuse une transformation qui
+diffère entre le serveur et le navigateur. Six décimales ; mesuré dans les deux
+moteurs, 5 rotations sur 140 différaient avant, aucune après.
+

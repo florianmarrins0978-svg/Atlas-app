@@ -118,18 +118,27 @@ place, le dessin des pièces rétrécit un peu plus que lui, pour que les photos
 restent lisibles. Le vide gardé autour du dessin des pièces et trois lignes
 vides sous la tête du bas ont été rendus au plan.
 
-Ce qui n'est pas changé : le mot « nourrice » barré (ci-dessous), qui se voit
-davantage maintenant que le plan est grand.
+### Le 22 novembre, ensuite : le mot « nourrice », le losange et l'angle
 
-Pas encore chez toi : le lot attend la batterie, sur ton oui.
+Ton « oui, corrige d'abord le mot nourrice et l'écart d'angle ».
+
+| | Ce qui est fait | Comment je le sais |
+|---|---|---|
+| le mot « nourrice » | il se pose à la place libre la plus proche du regard : plus aucun trait ne le barre, il ne couvre ni tête, ni losange, ni cote. Le regard est souvent dans un passage de 2 m, plus étroit que le mot : il se pose alors à côté, dans la pelouse | `test-plan-dessine.ts`, sur huit places de nourrice dans trois jardins : rouge partout avant, vert après. Regardé sur les quatre réseaux du PDF, sur quatre jardins et au robinet |
+| le losange sous le regard | il sort, à côté, sans tomber sur une tête ni sur une cote | le même contrôle. **Trouvé en regardant** : dans un jardin d'essai, le losange sorti se posait sur la cote « 14 m ». Corrigé, et ajouté au contrôle |
+| l'écart d'angle | l'angle et l'échelle s'arrondissent à six décimales | la même nourrice calculée dans Node et dans Chromium : 5 rotations sur 140 différaient avant, aucune après |
+
+Un plan déjà enregistré dans un dossier garde son dessin de ce jour-là.
+
+Pas encore chez toi : les trois corrections du 22 attendent la batterie, sur
+ton oui.
 
 ### Ce qui reste, et qui le tranche
 
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| le mot « nourrice » barré par la tranchée, le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le losange du té égal à moitié caché sous elle, sur le plan en couleur (écran et PDF). J'avais écrit « mord sur le losange » : c'est plus large | toi : c'est l'appli, sur ton oui |
-| le plan revu signale une erreur en développement : un angle de la nourrice éclatée diffère à la 14ᵉ décimale entre le serveur et le téléphone. Rien ne se voit | moi, sur ton oui |
+| la batterie, puis `main`, pour les trois corrections du 22 (plan agrandi, mot « nourrice » et losange, angle) | toi : ton oui |
 | « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite | à faire, si tu le veux |
 | le PDF ouvert sur ton iPhone | toi |
 
