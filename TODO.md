@@ -92,6 +92,19 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
   polices embarquées (Inter, la serif d'Atlas), donc la même chose partout,
   mais personne ne l'a ouvert là.
 
+## ⚠️ ARROSAGE : LA PERTE DE CHARGE (22 novembre 2026)
+
+Darcy et Moody remplacent Hazen-Williams (`ARCHITECTURE.md` §601), commité sur
+`claude/adoring-mendel-e8roex`. **Pas sur `main`** : `src/lib/arrosage/` touche
+le plan, donc une batterie, qui attend son oui. Restent, par ordre de poids :
+
+1. **le dénivelé n'est pas compté** : 0,1 bar par mètre de montée, autant que
+   toute la ligne sur 3 m de pente. Une case à l'écran, donc une maquette
+   d'abord (`CLAUDE.md` §3 bis) ;
+2. **l'amenée ne prend pas les +15 % de raccords** que le réseau prend
+   (`amenee()`, `calcul.js`) ;
+3. les deux valeurs non relevées de §601 (eau à 10 °C, rugosité 0,007 mm).
+
 ## ⚠️ ARROSAGE : « LES PIÈCES DES RÉSEAUX » DIT PEHD Ø25 APRÈS LE CHOIX DU Ø32 (vu le 20 novembre 2026, non corrigé)
 
 Vu en filmant le plan pour le site (`appli/scripts/film-outils.cjs`). Sur le

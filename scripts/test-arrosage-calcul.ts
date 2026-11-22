@@ -528,11 +528,14 @@ dire(
   // **ELLE A BOUGÉ LE 17 OCTOBRE 2026, DE 0,606 À 0,618**, et c'est l'électrovanne :
   // le forfait de 0,25 bar cède la place à la fiche Rain Bird de sa 100-DV, lue
   // au débit de la vanne (Valves, p. 89). Le plan ne change pas.
-  const PERTE_RESEAU_ATTENDUE = 0.618;
+  //
+  // **ELLE A BOUGÉ LE 22 NOVEMBRE 2026, DE 0,618 À 0,697**, et cette fois c'est
+  // la formule : Darcy et Moody à la place de Hazen-Williams (plus bas). Le plan
+  // est le même, deux vannes et quatorze têtes ; le tuyau perd ce qu'il perd.
+  const PERTE_RESEAU_ATTENDUE = 0.697;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
-    `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
-      "0,773 si le débit ne décroissait pas le long de la ligne)",
+    `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu)`,
   );
 
   // **Une pression de source trop faible se DIT, et ne se rattrape pas.**
@@ -612,6 +615,34 @@ dire(
 }
 
 // ── LA PERTE DE SON ÉLECTROVANNE, LUE SUR LA FICHE RAIN BIRD ────────────────
+// ── LA PERTE DANS LE TUYAU SE CALCULE PAR DARCY ET MOODY, PAS PAR HAZEN-WILLIAMS ──
+// Sa question du 22 novembre 2026, deux vidéos à l'appui (FmecaT n° 101 et 102,
+// « calculer les pertes de charge linéaires », « le coefficient avec le
+// diagramme de Moody ») : *« je pense qu'on a un problème sur notre calcul de
+// perte de charge »*. Hazen-Williams est une formule de grosses conduites ; sur
+// un PE de 19 mm à nos débits, elle compte 4 à 25 % de perte en MOINS que Darcy,
+// donc elle prête au dernier arroseur une pression qu'il n'a pas.
+//
+// La référence est écrite ici à part, sans rien emprunter au calcul : Darcy-
+// Weisbach, le coefficient lu sur Moody (Colebrook-White, qui en est l'équation),
+// 64/Re en laminaire. Eau à 10 °C et rugosité du PE de 0,007 mm : ni l'une ni
+// l'autre n'est relevée, on prend donc le côté qui perd le plus (§4 ter).
+const NU_EAU = 1.306e-6, RUGOSITE_PE_MM = 0.007;
+const lambdaDeMoody = (re: number, rel: number) => {
+  if (re < 2000) return 64 / re;
+  let f = 0.02;
+  for (let k = 0; k < 60; k++) f = Math.pow(-2 * Math.log10(rel / 3.7 + 2.51 / (re * Math.sqrt(f))), -2);
+  return re < 4000 ? Math.max(64 / re, f) : f;
+};
+const darcy = (qM3h: number, L: number, dMm: number) => {
+  if (!(qM3h > 0) || !(L > 0)) return 0;
+  const d = dMm / 1000, v = qM3h / 3600 / (Math.PI * d * d / 4);
+  return lambdaDeMoody(v * d / NU_EAU, RUGOSITE_PE_MM / dMm) * (L / d) * (v * v / (2 * 9.81)) / 10.2;
+};
+// La référence elle-même se confronte au diagramme : tube lisse, Re = 100 000,
+// Moody donne 0,018.
+dire(Math.abs(lambdaDeMoody(1e5, 0) - 0.018) < 0.0005, `Moody, tube lisse à Re 100 000 : λ = ${lambdaDeMoody(1e5, 0).toFixed(4)}, 0,018 attendu`);
+
 // Son accord du 17 octobre 2026 : le forfait de 0,25 bar cède la place au
 // tableau de la 100-DV 1" (catalogue Rain Bird, Valves, p. 89, métrique), lu au
 // débit de la vanne. À 1,32 m³/h, le tableau donne 0,263 bar : le forfait
@@ -624,7 +655,6 @@ dire(
       { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
     ],
   } as never) as { secteurs: { debit: number; debitUnitaire: number; points: { x: number; y: number; debit: number }[] }[]; perteReseau: number };
-  const hw = (q: number, L: number, d: number) => (10.67 * L * Math.pow(q / 3600 / 150, 1.852)) / Math.pow(d / 1000, 4.87) / 10.2;
   const TABLE: [number, number][] = [[0.23, 0.23], [0.6, 0.24], [1.2, 0.26], [3.6, 0.32], [4.5, 0.35], [6, 0.41], [9, 0.59]];
   const vanne = (q: number) => {
     if (q <= TABLE[0][0]) return TABLE[0][1];
@@ -638,12 +668,27 @@ dire(
     let restant = s.points.reduce((n, x) => n + x.debit, 0), lin = 0;
     for (let i = 1; i < s.points.length; i++) {
       restant -= s.points[i - 1].debit;
-      lin += hw(restant, Math.abs(s.points[i].x - s.points[i - 1].x) + Math.abs(s.points[i].y - s.points[i - 1].y), 19.0);
+      lin += darcy(restant, Math.abs(s.points[i].x - s.points[i - 1].x) + Math.abs(s.points[i].y - s.points[i - 1].y), 19.0);
     }
-    return lin * 1.15 + vanne(s.debit) + hw(s.debitUnitaire, 2, 12.4);
+    return lin * 1.15 + vanne(s.debit) + darcy(s.debitUnitaire, 2, 12.4);
   }));
   dire(Math.abs(p.perteReseau - pire) < 0.002, `la perte du pire réseau suit la fiche de la 100-DV : ${p.perteReseau.toFixed(3)} bar, à la main ${pire.toFixed(3)}`);
   dire(Math.abs(vanne(1.32) - 0.263) < 0.001, "à 1,32 m³/h, la fiche donne 0,263 bar");
+}
+
+{
+
+  // L'amenée : 30 m de Ø25 (19,0 mm de passage), au débit du plus gros réseau.
+  const p = calculerPlan({
+    seau: 10, temps: 20, pression: 3, compteur: "oui", amenee: 30,
+    zones: [{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }],
+  } as never) as { perteAmenee: number; secteurs: { debit: number }[] };
+  const debit = Math.max(...p.secteurs.map((s) => s.debit));
+  const attendu = darcy(debit, 30, 19.0);
+  dire(
+    attendu > 0 && Math.abs(p.perteAmenee - attendu) < 0.002,
+    `30 m de Ø25 à ${debit.toFixed(2)} m³/h perdent ${p.perteAmenee.toFixed(3)} bar, Darcy et Moody en donnent ${attendu.toFixed(3)}`,
+  );
 }
 
 // ── CE QUI MANQUE AU CATALOGUE SE DIT, IL NE SE COMBLE PAS ──────────────────

@@ -595,7 +595,7 @@ calcul, pas un tour de main.
 | Ce qui impose le Ø32 | La règle | Le chiffre |
 |---|---|---|
 | **le débit** — l'eau va trop vite | vitesse ≤ 1,5 m/s | Ø25 : **1,53 m³/h**, Ø32 : **2,87** (ses tubes, 16 octobre 2026) |
-| **la longueur** — la perte mange la marge | Hazen-Williams, retournée | dépend du débit et du budget |
+| **la longueur** — la perte mange la marge | Darcy et Moody, retournée (Hazen-Williams jusqu'au 22 novembre 2026, `ARCHITECTURE.md` §601) | dépend du débit et du budget |
 
 **Le piège, et il était dans le dépôt.** Le calcul ne regardait QUE la perte de
 charge. Or un tuyau court n'en perd presque aucune : sur ce seul critère, **un

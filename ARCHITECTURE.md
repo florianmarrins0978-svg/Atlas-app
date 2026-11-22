@@ -13102,7 +13102,7 @@ le réseau**, il arrive **2,28 bar**. Les buses étaient dimensionnées sur 3.
 
 | | Valeur | Source |
 |---|---|---|
-| la ligne, tronçon par tronçon | Hazen-Williams | formule, déjà au dépôt |
+| la ligne, tronçon par tronçon | Hazen-Williams (Darcy et Moody depuis le 22 novembre 2026, §601) | formule, déjà au dépôt |
 | l'antenne PEBD Ø16 | calculée, 2 m par tête | longueur de sa nomenclature |
 | l'électrovanne | 0,25 bar | **non relevée** — majorant |
 | les raccords | +15 % du linéaire | **non relevée** — règle de l'art |
@@ -38033,4 +38033,40 @@ interdisent de republier (`docs/nourrice-3d-realiste.md`).
 **Le contrôle de la page vit hors du dépôt.** Le lot est de niveau 1 (rien qui s'exécute) ; un script
 sous `scripts/` l'aurait fait passer au niveau 2 sans rien protéger de plus. Ce qu'il vérifie est écrit
 dans le document de retour.
+
+## §601 : La perte dans le tuyau se calcule par Darcy et Moody
+
+**Sa question du 22 novembre 2026**, deux vidéos à l'appui (FmecaT n° 101,
+« calculer les pertes de charge linéaires », et n° 102, « le coefficient avec le
+diagramme de Moody ») : *« je pense qu'on a un problème sur notre calcul de perte
+de charge »*.
+
+**Ce qui a changé.** `perteDeCharge` (`src/lib/arrosage/calcul.js`, copie octet
+pour octet dans `appli/arrosage-calcul.js`) passe de Hazen-Williams (C = 150) à
+Darcy-Weisbach, `λ × (L/D) × v²/2g`, avec λ de Colebrook-White (l'équation du
+diagramme de Moody), 64/Re en laminaire, le plus fort des deux entre Re 2000 et
+4000. `longueurMaxEn` se lit désormais comme budget ÷ perte d'un mètre : à débit
+et diamètre donnés, la perte est proportionnelle à la longueur.
+
+**Pourquoi.** Hazen-Williams a été établie pour des conduites de plus de 50 mm
+en écoulement pleinement turbulent. Sur nos tubes (19 mm, Re de 10 000 à
+30 000), elle compte 4 à 25 % de perte en moins que Darcy, toujours dans le
+mauvais sens : elle prête au dernier arroseur une pression qu'il n'a pas.
+
+| | Valeur | Source |
+|---|---|---|
+| viscosité de l'eau | 1,306 × 10⁻⁶ m²/s (10 °C) | **non relevée**, côté qui perd le plus |
+| rugosité du PE | 0,007 mm | **non relevée**, haute des valeurs publiées |
+
+**Effet mesuré** sur cinq jardins d'essai : mêmes réseaux, mêmes têtes ; 0,06 à
+0,15 bar de moins au dernier arroseur. Ses 37 règles
+(`test-regles-du-patron.ts`) tiennent.
+
+**Ce qui n'est toujours pas compté**, et qui pèse davantage : le dénivelé
+(0,1 bar par mètre de montée), et la majoration des raccords sur l'amenée
+(`TODO.md`).
+
+**Les planches** `appli/arrosage-plan-calcul.js`, `-planche-calcul.js`,
+`-schema-calcul.js` gardent leur propre Hazen-Williams : ce sont des maquettes
+figées, pas le calcul servi.
 

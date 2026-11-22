@@ -496,10 +496,22 @@ function debitDisponible(){
    insuffisant. » Le défaut est donc le Ø25, et le Ø32 doit se MÉRITER — il
    coûte plus cher et se pose moins bien.
 
-   La formule est celle de Hazen-Williams, l'usage en arrosage, avec C = 150
-   pour le polyéthylène lisse :
+   **La formule est celle de Darcy-Weisbach, le coefficient lu sur le
+   diagramme de Moody** (sa question du 22 novembre 2026, deux vidéos à
+   l'appui) :
 
-       perte (m) = 10,67 × L × (Q/C)^1,852 / D^4,87      Q en m³/s, D en m
+       perte (m) = λ × (L / D) × v² / 2g
+
+   λ sort de Colebrook-White, l'équation du diagramme de Moody, et vaut 64/Re
+   quand l'eau coule en laminaire. **Hazen-Williams, qu'elle remplace**, est
+   une formule de grosses conduites : sur un PE de 19 mm à nos débits, elle
+   comptait 4 à 25 % de perte en moins, donc elle prêtait au dernier arroseur
+   une pression qu'il n'avait pas (`test-arrosage-calcul.ts`).
+
+   Deux valeurs ne sont pas relevées, et chacune est prise du côté qui perd le
+   plus (`CLAUDE.md` §4 ter, « une perte de charge inconnue : la plus forte ») :
+   l'eau à 10 °C (plus froide, elle est plus visqueuse) et la rugosité du PE à
+   0,007 mm (la haute des valeurs publiées pour le polyéthylène).
 
    **Le débit retenu est celui du PLUS GROS SECTEUR, pas la somme** : les
    vannes s'ouvrent l'une après l'autre, jamais ensemble — c'est tout l'objet
@@ -510,11 +522,26 @@ function debitDisponible(){
    Un verdict « le Ø25 suffit » est donc un PLANCHER, pas une garantie. Ce
    qu'il tranche sûrement, c'est l'inverse : si le Ø25 ne passe déjà pas en
    ignorant tout le reste, il ne passera jamais. */
+var VISCOSITE_EAU = 1.306e-6;   // m²/s, eau à 10 °C, non relevée, côté qui perd le plus
+var RUGOSITE_PE_MM = 0.007;     // mm, polyéthylène, non relevée, côté qui perd le plus
+
+/* Le coefficient de Moody. Entre 2000 et 4000 l'écoulement hésite : on garde
+   le plus fort des deux régimes plutôt que de parier sur l'un. */
+function coefficientDeMoody(reynolds, rugositeRelative){
+  if (reynolds < 2000) return 64 / reynolds;
+  var f = 0.02;
+  for (var k = 0; k < 60; k++){
+    f = Math.pow(-2 * Math.log10(rugositeRelative / 3.7 + 2.51 / (reynolds * Math.sqrt(f))), -2);
+  }
+  return reynolds < 4000 ? Math.max(64 / reynolds, f) : f;
+}
+
 function perteDeCharge(debitM3h, longueurM, dInterieurMm){
   if (!(debitM3h > 0) || !(longueurM > 0) || !(dInterieurMm > 0)) return 0;
-  var q = debitM3h / 3600;          // m³/s
-  var d = dInterieurMm / 1000;      // m
-  var metres = 10.67 * longueurM * Math.pow(q / 150, 1.852) / Math.pow(d, 4.87);
+  var d = dInterieurMm / 1000;                          // m
+  var v = (debitM3h / 3600) / (Math.PI * d * d / 4);    // m/s
+  var lambda = coefficientDeMoody(v * d / VISCOSITE_EAU, RUGOSITE_PE_MM / dInterieurMm);
+  var metres = lambda * (longueurM / d) * v * v / (2 * 9.81);
   return metres / 10.2;             // 10,2 m de colonne d'eau = 1 bar
 }
 
@@ -531,13 +558,9 @@ function perteDeCharge(debitM3h, longueurM, dInterieurMm){
    sur place, au lieu de ressaisir la longueur trois fois pour trouver la
    bascule à tâtons.
 
-   C'est la formule de la perte de charge, retournée. De
-
-       perte = 10,67 × L × (Q/C)^1,852 / D^4,87 / 10,2
-
-   on tire la longueur que le budget de perte autorise :
-
-       L max = budget × 10,2 × D^4,87 / (10,67 × (Q/C)^1,852)
+   C'est la formule de la perte de charge, retournée. À débit et diamètre
+   donnés, la perte croît en proportion de la longueur ; la longueur que le
+   budget autorise est donc le budget divisé par la perte d'un mètre.
 
    **Le budget, c'est ce qui reste APRÈS les buses** : la pression à la source
    moins celle à laquelle la buse posée est donnée au catalogue. Une 5004
@@ -546,9 +569,7 @@ function perteDeCharge(debitM3h, longueurM, dInterieurMm){
    réclame 3 bar dynamiques au minimum. */
 function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
   if (!(budgetBar > 0) || !(debitM3h > 0) || !(dInterieurMm > 0)) return 0;
-  var q = debitM3h / 3600;          // m³/s
-  var d = dInterieurMm / 1000;      // m
-  return budgetBar * 10.2 * Math.pow(d, 4.87) / (10.67 * Math.pow(q / 150, 1.852));
+  return budgetBar / perteDeCharge(debitM3h, 1, dInterieurMm);
 }
 
 /* ══ PLUS DE PLAFOND DE VITESSE : LA PRESSION AU BOUT DÉCIDE SEULE ═════════

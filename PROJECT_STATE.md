@@ -1,5 +1,9 @@
 # État du projet
 
+## LA PERTE DE CHARGE DE L'ARROSAGE PAR DARCY ET MOODY : CODÉE (22 novembre 2026), PAS SUR `main`
+
+Sa question du 22, deux vidéos à l'appui. `perteDeCharge` passe de Hazen-Williams à Darcy-Weisbach avec le coefficient de Moody (`ARCHITECTURE.md` §601) : mêmes plans, 0,06 à 0,15 bar de moins au dernier arroseur. Suites d'arrosage vertes, ses 37 règles tiennent. La batterie attend son oui. Restent le dénivelé et les raccords de l'amenée (`TODO.md`).
+
 ## LA NOURRICE EN 3D, RÉALISTE, AVEC L'ÉCLATÉ AU TOUCHER : UNE PLANCHE (22 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 22. `appli/arrosage-nourrice-3d.html` : chaque pièce relevée sur ses photos, matières physiques, HDRI, ombres et occlusion ambiante ; un toucher éclate, un second remonte. De 1 à 6 voies, 0 à n en goutte-à-goutte. Les pièces dans `appli/nourrice-3d/` (`ARCHITECTURE.md` §600). 63 contrôles verts hors dépôt ; **non éprouvée sur un iPhone**. Retour : `docs/nourrice-3d-realiste.md`.
