@@ -21,7 +21,7 @@ Les pages citées sont celles imprimées dans le manuel (page du PDF moins 8).
 | **dénivelé** | 1 m de dénivelé vaut 0,1 bar (p. 3 à 5 ; la physique donne 0,098) ; une montée s'ajoute aux pertes, une descente s'en retranche (p. 71) | **rien** : aucun calcul ne porte de pente | une tête 2 m au-dessus de la nourrice perd 0,2 bar que l'outil ne voit pas, l'ordre de grandeur de toute la perte d'une ligne |
 | **raccords** | 10 % des pertes de tuyau, donné comme estimation (p. 71) | 15 % du linéaire, écrit « non relevée » | l'outil est au-dessus de Rain Bird, donc du côté sûr ; le 15 % a désormais une borne publiée |
 | **vitesse** | 1,5 m/s au plus, « établi par la profession » contre les coups de bélier (p. 6) | plafond retiré le 16 octobre 2026, sur sa décision | le commentaire de `calcul.js` dit « ce plafond était le NÔTRE » : c'est faux, c'est la règle écrite du fabricant |
-| **espacement** | 60 % du diamètre au plus, soit 1,2 fois la portée (recouvrement 83 %) ; 55 % sans vent ; 50 %, tête à tête, l'usage courant (p. 41 et 42) | 80 à 100 % de recouvrement (jusqu'à 1,25 fois la portée), 75 % s'il fait gagner un réseau ou une gamme (1,33 fois la portée) | l'outil espace au-delà du maximum Rain Bird : 4 % plus loin à 80 %, 11 % plus loin à 75 % |
+| **espacement** (corrigé, voir plus bas) | sans vent : 55 % du diamètre en **carré**, soit 1,1 fois la portée (recouvrement 91 %) ; 60 % en **triangle**, soit 1,2 fois (83 %) ; 50 %, tête à tête, l'usage courant (p. 41 à 43) | 80 à 100 % de recouvrement (jusqu'à 1,25 fois la portée), 75 % s'il fait gagner un réseau ou une gamme (1,33 fois la portée) | ses turbines se posent alignées, donc en carré : l'outil espace 14 % plus loin que Rain Bird à 80 %, 21 % plus loin à 75 % ; ses tuyères en damier, 4 % et 11 % |
 | **méthode** | partir du pire arroseur du pire réseau et remonter en additionnant les pertes (p. 69 à 71) | la même (`pirePerteDeReseau`, débit décroissant tronçon par tronçon) | concordant |
 
 **Recoupement de la formule.** La table PE de Rain Bird (C = 140, colonne
@@ -35,6 +35,50 @@ l'outil passée à C = 140 :
 | 1,588 m³/h | 0,319 | 0,315 | 0,277 |
 
 La formule est donc juste ; seul le coefficient diffère.
+
+**Corrigé le 22 novembre 2026, le même jour.** La première version de ce relevé,
+et la réponse faite au patron, donnaient 1,2 fois la portée comme maximum
+Rain Bird, « 1,1 sans vent ». C'était faux : 1,2 est le maximum du TRIANGLE
+sans vent ; en CARRÉ, la pose de ses turbines (sa réponse « la A » du
+11 septembre 2026), c'est 1,1 même sans vent. L'écart avec sa règle des 80 %
+est donc trois fois plus grand que ce qui lui avait été annoncé.
+
+## Quand passer en Ø32 : ce que dit le manuel (p. 65 à 68)
+
+**Sa règle à lui** : chaque tronçon se dimensionne pour le débit qu'IL porte, en
+partant de la dernière tête et en remontant vers la vanne, sans dépasser
+1,5 m/s ; puis l'on vérifie la pression au pire arroseur. Sur ses tubes, un
+tronçon qui porte plus de **1,53 m³/h** passe en Ø32 (qui porte **2,87 m³/h**
+au plus).
+
+**L'outil aujourd'hui** : sur un réseau, jamais d'office (sa règle du
+20 octobre 2026 : un réseau de plus d'abord, le Ø32 sur son choix, pour le
+réseau entier) ; sur l'amenée, il le propose quand la perte mange le budget, et
+donne le seuil en mètres (`longueurMaxEn`).
+
+**Ce que le manuel ajoute, chiffré avec la formule de l'outil** (réseau de
+6 têtes à 0,3 m³/h, 10 m de la nourrice à la première, 8 m entre têtes, perte
+de la seule ligne) :
+
+| la pose | perte de ligne | Ø32 posé |
+|---|---|---|
+| tout en Ø25 | 0,42 bar | 0 m |
+| le seul trajet nourrice, première tête en Ø32, puis un manchon réduit 32 x 25 (OPL71103225, Aqua Plus p. 28) | 0,28 bar | 10 m |
+| tout en Ø32 | 0,09 bar | 50 m |
+| tout en Ø25, alimenté **par le milieu** (nourrice en face du milieu, un té égal, deux branches de 3 têtes) | 0,23 bar | 0 m |
+
+1. **Le Ø32 sur les seuls tronçons chargés** : le premier tronçon porte tout le
+   débit, et la perte croît comme le débit à la puissance 1,852. Dans cet
+   exemple il passe 1,76 m/s dans le Ø25 du trajet : Rain Bird le mettrait en
+   Ø32, et lui seul.
+2. **Alimenter le réseau par le milieu** (p. 66 : *« eliminated the need for the
+   two larger pipe sizes »*, et moins d'écart de pression entre les têtes).
+   Chaque branche porte la moitié du débit. Le calcul de l'outil
+   (`perteDuReseau`) suit les têtes en une seule file : un réseau alimenté au
+   milieu y est compté comme une seule ligne. La perte est surestimée, ce qui
+   est le sens sûr, mais peut ajouter un réseau qui ne servait à rien.
+3. **Le seuil affiché est trop généreux** : à 1,5 m³/h et 0,5 bar de budget, le
+   Ø25 tient 39 m à C = 150, 34 m à C = 140, et 27 m avec 1 m de montée en plus.
 
 ## Le piège : ses tables ne se lisent pas pour nos tubes
 
@@ -68,5 +112,9 @@ sur SON tube.
 3. **La vitesse.** Le plafond retiré était la règle du fabricant. Son retrait
    tient tant qu'il le décide ; une réserve « plus de 1,5 m/s dans ce réseau »,
    qui n'ajoute aucune vanne, serait l'entre-deux.
-4. **L'espacement.** Sa règle de 80 % dépasse de peu le maximum Rain Bird,
-   celle de 75 % nettement. C'est son expérience contre le texte du fabricant.
+4. **L'espacement.** Sur ses turbines alignées, sa règle de 80 % espace 14 %
+   plus loin que le maximum Rain Bird du carré, celle de 75 % 21 % plus loin.
+   C'est son expérience contre le texte du fabricant.
+5. **Le Ø32 par tronçon, et le réseau alimenté par le milieu.** Deux façons de
+   gagner de la pression sans ajouter de réseau ni poser tout un réseau en Ø32.
+   Les deux changent le calcul et le plan : planche d'abord (`CLAUDE.md` §3 bis).
