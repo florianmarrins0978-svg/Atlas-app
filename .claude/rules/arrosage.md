@@ -352,23 +352,20 @@ d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « 
 Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
 repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
-**TOUS LES RÉSEAUX D'UNE NOURRICE ONT LE MÊME DIAMÈTRE : TOUS EN Ø25 OU TOUS
-EN Ø32 — sa règle du 22 novembre 2026**, qui remplace le choix réseau par
-réseau du 20 octobre (paragraphe ci-dessus). Devant la proposition tirée du
-manuel Rain Bird (p. 65 et 66) de ne poser le Ø32 que jusqu'au premier
-arroseur : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas
-de 32 jusqu'au 1er arroseur puis 25 jamais ! »* Puis, parce que je l'avais lu
-réseau par réseau : *« tu me fais une nourrice avec trois réseaux, bah, les
-trois réseaux c'est du 25, ou alors les trois réseaux c'est du 32. Et si, vu
-qu'on passe en 32, tu peux faire deux réseaux, bah, c'est deux réseaux en 32,
-mais pas un réseau en 25 et un en 32. »*
+**UN RÉSEAU EST TOUT EN Ø25 OU TOUT EN Ø32, JAMAIS LES DEUX — sa règle du
+22 novembre 2026**, devant la proposition tirée du manuel Rain Bird (p. 65 et
+66) de ne poser le Ø32 que jusqu'au premier arroseur : *« c'est soit on fait
+tout les réseau en 32 soit tout en 25 mais pas de 32 jusqu'au 1er arroseur puis
+25 jamais ! »* Le dimensionnement tronçon par tronçon du manuel est écarté : ne
+pas le reproposer.
 
-Donc ni un Ø32 limité à un tronçon (le dimensionnement tronçon par tronçon du
-manuel est écarté, ne pas le reproposer), ni deux diamètres sur une même
-nourrice. Le Ø32 se juge sur l'ensemble des réseaux, avec le nombre de réseaux
-qu'il permet. **Pas encore codé au 22 novembre 2026** : le calcul choisit
-encore réseau par réseau (`tuyauDuReseau`, `etat.diametres.reseaux`). Non dit
-par lui : l'amenée et le goutte-à-goutte suivent-ils ce diamètre ?
+**Le choix reste RÉSEAU PAR RÉSEAU, celui du 20 octobre** (paragraphe
+ci-dessus, `tuyauDuReseau`), et c'est déjà ce que fait le calcul. Le même soir,
+il a d'abord voulu un seul diamètre pour toute la nourrice (*« pas un réseau en
+25 et un en 32 »*), puis l'a retiré : *« si y a du goutte à goutte, tu vas pas
+faire le goutte à goutte en 32. Donc en fait, on peut faire un réseau en 32 et
+un en 25 par exemple. Ou même plusieurs en 32, plusieurs en 25. Enfin, reprends
+la règle d'avant quoi. »* Ne pas rouvrir le diamètre unique par nourrice.
 
 **LES ÉCARTEMENTS DE RAIN BIRD, PLUS SES 80 % — sa décision du 22 novembre
 2026 :** *« Non prend les écartement de rainbird »*, devant le manuel (p. 41 à
