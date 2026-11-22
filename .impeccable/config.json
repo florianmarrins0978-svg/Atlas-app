@@ -903,6 +903,15 @@
         ],
         "createdAt": "2026-11-17T17:05:19.109Z",
         "reason": "Claude : .ecran dessine un écran de téléphone, dont la barre d'état et le fond vont bord à bord ; la grille dedans a ses marges (27 px)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "instrument serif",
+        "files": [
+          "appli/vente/mentions-legales-cause.html"
+        ],
+        "createdAt": "2026-11-22T20:07:48.572Z",
+        "reason": "la police de titre du site de vente, charte retenue le 6 novembre 2026 : la même que sur cause-2.html, dont cette page est les mentions légales"
       }
     ]
   }

@@ -32,5 +32,6 @@ FINISH : unreviewed and undocumented is unfinished; this build ends with the fin
 
 ## Non résolu
 
-- Pas éprouvé sur Safari ici (Chromium seul) : à regarder sur son iPhone.
+- Safari : vu par lui sur son iPhone le 22 novembre 2026 (« Tout est bon », la fiche jusqu'au retour). Ce poste n'a que Chromium : une retouche du mouvement se regarde de nouveau chez lui.
+- Retenue le 22 novembre 2026 comme LE site (« la dernière page qu'on a faite en date, celle que tu as ») : `cause.html` et `chapitres-6.html` s'arrêtent là. Ce qui manque pour qu'elle vende est dans `TODO.md`.
 - DESIGN.md n'existe pas dans ce dépôt et cette planche n'en crée pas : le monde est celui de `cause.html`.
