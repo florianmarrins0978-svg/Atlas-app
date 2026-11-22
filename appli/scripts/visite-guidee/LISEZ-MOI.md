@@ -14,7 +14,7 @@ Il sort en erreur et nomme l'étape dès qu'un contrôle tombe.
 
 | Contrôle | Ce qu'il tient | La remarque qui l'a fait naître |
 |---|---|---|
-| `visite` | chaque étape mène à la suivante ; la cible n'est jamais sous le guide ni hors de l'écran ; rien ne déborde ; les 19 rubriques des Réglages s'ouvrent et reviennent ; faire défiler replie le guide ; l'anneau doré vit dans le plan de son bouton (la page, ou le calque fixe pour une feuille fixe) | « la petite barre noire cache les informations » (21 novembre) ; « la zone n'est pas vraiment centrée par rapport au bouton » (22 novembre, sur son iPhone) |
+| `visite` | chaque étape mène à la suivante ; la cible n'est jamais sous le guide ni hors de l'écran ; rien ne déborde ; les 19 rubriques des Réglages s'ouvrent et reviennent ; faire défiler replie le guide ; l'anneau doré vit dans le plan de son bouton (la page, ou le calque fixe pour une feuille fixe), et son halo ne sort jamais de l'écran sans être coupé par `overflow: hidden` | « la petite barre noire cache les informations » (21 novembre) ; « la zone n'est pas vraiment centrée par rapport au bouton » (22 novembre, sur son iPhone) |
 | `essais` | les boutons à essayer du devis et de la facture s'enchaînent sans Retour ; Suivant fait avancer ; ceux des travaux en plus de la facture s'essaient, Annuler ou Retirer y ramène, et ce qu'un essai posé doit montrer (`voir`) est à l'écran en arrivant | « on est obligé de faire retour pour essayer les autres » (21 novembre) ; « je peux pas ajouter un travail ou un règlement reçu » (22 novembre) |
 | `portes` | dans les Réglages libres, chaque porte de chaque rubrique (et des pages qu'elle ouvre) mène à un écran, dit ce qu'elle ferait, ou ramène | « n'importe quelle porte dans la page réglage » (21 novembre) |
 | `muets` | chaque bouton des écrans d'essai répond | `CLAUDE.md` §3 bis, 2 quater. **Il compte un guide qui tremble comme une réponse** : il n'a donc pas vu « Ajouter un travail » muet. Un bouton qui doit OUVRIR quelque chose se tient dans `essais` |
@@ -78,7 +78,9 @@ node appli/scripts/visite-guidee/parcourir.mjs                       # puis on v
 **Et dans le guide lui-même** : l'anneau posé dans la page (`.v-plan`) ne doit
 jamais la rallonger. Un anneau éteint reste placé où il était ; sans borne, il
 agrandissait l'écran suivant, et la visite calait sa cible sur une page qui
-n'existait plus. Le plan prend la hauteur de l'écran montré (`borner`).
+n'existait plus. Le plan prend la hauteur de l'écran montré (`borner`), et coupe
+par `overflow: hidden` : avec `overflow: clip`, Safari laissait le halo d'un
+anneau collé au bord élargir toute la page, ce que Chromium ne montre pas.
 
 **Ce qui manque toujours : le script qui FIGE les 95 écrans d'origine** de la
 visite (`scripts/planche-figee/visite-guidee/`, jamais enregistré, voir

@@ -249,6 +249,17 @@ visite calait alors « J'ai bien reçu » chez le client sur une page plus longu
 qu'elle n'est, et le bouton finissait sous le guide. Le contrôle complet l'a vu,
 deux fois de suite ; c'est corrigé (l'anneau ne peut plus rallonger la page).
 
+**Et elle élargissait la page sur ton iPhone** (ta capture de l'aperçu du
+PDF, coupé à droite, et la bulle absente après le choix de la date). Le halo
+doré qui pulse autour d'un anneau sort de 16 points autour de lui ; près d'un
+bord (le micro en haut à droite), il sortait de l'écran. Chrome le coupe, Safari
+a élargi toute la page pour le loger : l'écran débordait à droite, et ce qui est
+fixé en bas pouvait passer hors de l'écran. Le halo est maintenant coupé d'une
+façon que Safari respecte, et un contrôle refuse un halo qui sort de l'écran
+(rouge sur 4 étapes avant la correction). **La bulle absente après l'envoi du
+devis n'a pas pu être reproduite ici** : c'est la cause la plus probable, pas
+une certitude. Si elle manque encore, une capture de ce moment.
+
 **Pas vérifiable ici :** ce poste n'a que Chromium, où l'anneau tombait déjà
 juste à chaque étape (mesuré). Le contrôle de la visite exige maintenant que
 l'anneau soit dans le même plan que son bouton : rouge sur la visite d'avant

@@ -2,7 +2,9 @@
 // montrent : l'équipe, le chantier de M. Lefèvre et sa fiche de sécurité,
 // les véhicules. TOUT EST INVENTÉ (sa consigne du 20 novembre, redite le 21 :
 // « tu mets que des informations bidons ») : numéros de la tranche de fiction
-// de l'ARCEP, plaques « DE-…-MO », example.com.
+// de l'ARCEP, plaques « DE-…-MO », example.com. Les plaques portent un O, lettre
+// que le système d'immatriculation n'attribue jamais (il écarte I, O et U) :
+// aucun véhicule réel ne peut les porter (sa question du 22 novembre).
 //
 // À jouer sur une base de démonstration NEUVE, jamais sur la sienne :
 //   DATABASE_URL=… (rôle atlas_app) DATABASE_ADMIN_URL=… npx tsx appli/scripts/visite-guidee/donnees.ts avant
