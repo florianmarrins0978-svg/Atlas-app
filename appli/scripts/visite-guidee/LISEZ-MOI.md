@@ -14,7 +14,7 @@ Il sort en erreur et nomme l'étape dès qu'un contrôle tombe.
 
 | Contrôle | Ce qu'il tient | La remarque qui l'a fait naître |
 |---|---|---|
-| `visite` | chaque étape mène à la suivante ; la cible n'est jamais sous le guide ni hors de l'écran ; rien ne déborde ; les 19 rubriques des Réglages s'ouvrent et reviennent ; faire défiler replie le guide | « la petite barre noire cache les informations » (21 novembre) |
+| `visite` | chaque étape mène à la suivante ; la cible n'est jamais sous le guide ni hors de l'écran ; rien ne déborde ; les 19 rubriques des Réglages s'ouvrent et reviennent ; faire défiler replie le guide ; l'anneau doré vit dans le plan de son bouton (la page, ou le calque fixe pour une feuille fixe) | « la petite barre noire cache les informations » (21 novembre) ; « la zone n'est pas vraiment centrée par rapport au bouton » (22 novembre, sur son iPhone) |
 | `essais` | les boutons à essayer du devis et de la facture s'enchaînent sans Retour ; Suivant fait avancer ; ceux des travaux en plus de la facture s'essaient, Annuler ou Retirer y ramène, et ce qu'un essai posé doit montrer (`voir`) est à l'écran en arrivant | « on est obligé de faire retour pour essayer les autres » (21 novembre) ; « je peux pas ajouter un travail ou un règlement reçu » (22 novembre) |
 | `portes` | dans les Réglages libres, chaque porte de chaque rubrique (et des pages qu'elle ouvre) mène à un écran, dit ce qu'elle ferait, ou ramène | « n'importe quelle porte dans la page réglage » (21 novembre) |
 | `muets` | chaque bouton des écrans d'essai répond | `CLAUDE.md` §3 bis, 2 quater. **Il compte un guide qui tremble comme une réponse** : il n'a donc pas vu « Ajouter un travail » muet. Un bouton qui doit OUVRIR quelque chose se tient dans `essais` |
@@ -27,7 +27,11 @@ visite fautive.
 
 **Ce qu'il ne voit pas : Safari sur un iPhone.** Ce poste n'a que Chromium.
 La visite pose `cursor: pointer` sur chaque cible, sans quoi Safari n'envoie
-aucun appui hors d'un bouton.
+aucun appui hors d'un bouton. Et Safari 26 décale ses éléments fixes de
+quelques points quand sa barre bouge (WebKit 297779) : un anneau posé dans un
+calque fixe au-dessus d'un bouton de la page y tombait à côté. Le contrôle
+`visite` tient la règle (l'anneau dans le plan de son bouton), pas le décalage
+lui-même, que Chromium ne fait pas.
 
 ## Refaire les écrans ajoutés les 21 et 22 novembre
 

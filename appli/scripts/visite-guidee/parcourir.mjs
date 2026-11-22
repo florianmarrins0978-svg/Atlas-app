@@ -10,7 +10,9 @@
 //   visite    chaque étape mène à la suivante ; la cible n'est jamais sous le
 //             guide ni hors de l'écran ; rien ne déborde ; les 19 rubriques des
 //             Réglages s'ouvrent et reviennent ; faire défiler replie le guide
-//             (« la petite barre noire cache les informations », 21 novembre)
+//             (« la petite barre noire cache les informations », 21 novembre) ;
+//             l'anneau vit dans le plan de son bouton (« la zone n'est pas vraiment
+//             centrée par rapport au bouton », 22 novembre, sur Safari)
 //   essais    les boutons à essayer s'enchaînent sans Retour, et Suivant fait
 //             avancer (« on est obligé de faire retour », 21 novembre) ; ceux des
 //             travaux en plus de la facture s'essaient aussi (« je peux pas
@@ -54,7 +56,15 @@ const toucherLeDoigt = async (p) => {
 const etat = (p) => p.evaluate(() => {
   const g = document.querySelector(".g"), gr = g.getBoundingClientRect(), d = document.querySelector(".v-doigt"), dr = d.getBoundingClientRect();
   const allume = d.style.opacity === "1";
+  // L'anneau vit dans le plan de son bouton : avec la page, ou dans le calque fixe
+  // quand le bouton est dans une feuille fixe. Tout entier dans le calque fixe, il
+  // tombait à côté du bouton sur Safari 26, qui décale ses éléments fixes quand sa
+  // barre bouge (sa capture du 22 novembre). Le bouton : ce qui se touche sous l'anneau.
+  const sous = allume ? document.elementsFromPoint(dr.left + dr.width / 2, dr.top + dr.height / 2).find((x) => x.closest(".visite-ecran:not([hidden])")) : null;
+  let fixe = false;
+  for (let x = sous; x && !x.matches(".visite-ecran"); x = x.parentElement) if (getComputedStyle(x).position === "fixed") fixe = true;
   return {
+    planFaux: !!sous && d.parentElement.matches(".v-calque") !== fixe,
     rang: visite.etape(), titre: g.querySelector("h2").textContent,
     sousLeGuide: allume && dr.bottom - 4 > gr.top && dr.top + 4 < gr.bottom && dr.right > gr.left && dr.left < gr.right,
     horsEcran: allume && (dr.top < -2 || dr.bottom > innerHeight + 2),
@@ -69,7 +79,7 @@ async function parcourirLaVisite(largeur, hauteur) {
   // Rien ne vit hors d'un écran : un morceau d'écran échappé de son enveloppe se voit
   // par-dessus toute la visite (une barre « Réglages » posée sur la fiche de sécurité,
   // 21 novembre : un écran sur plusieurs lignes, recomposé ligne par ligne).
-  const echappes = await p.evaluate(() => [...document.body.children].filter((e) => !e.matches(".visite-ecran, .v-calque, .g, .v-photo, .v-ouverture, script, style")).length);
+  const echappes = await p.evaluate(() => [...document.body.children].filter((e) => !e.matches(".visite-ecran, .v-calque, .v-plan, .g, .v-photo, .v-ouverture, script, style")).length);
   dire(cas, echappes === 0, `${echappes} morceaux d'écran hors de leur enveloppe, visibles par-dessus la visite`);
   const n = await p.evaluate(() => visite.etapes.length);
   for (let k = 0; k < n; k++) {
@@ -80,6 +90,7 @@ async function parcourirLaVisite(largeur, hauteur) {
     dire(cas, !e.sousLeGuide, `étape ${k + 1}, la cible est sous le guide`);
     dire(cas, !e.horsEcran, `étape ${k + 1}, la cible est hors de l'écran`);
     dire(cas, !e.deborde, `étape ${k + 1}, la page déborde`);
+    dire(cas, !e.planFaux, `étape ${k + 1}, l'anneau n'est pas dans le plan de son bouton`);
     const etp = await p.evaluate(() => visite.etapes[visite.etape()]);
     if (etp.libre) break;
     if (e.allume && etp.cible) await toucherLeDoigt(p); else await suivant(p);
@@ -165,8 +176,13 @@ async function enchainerLesEssais(largeur, hauteur) {
     const r = await p.evaluate(() => {
       const x = visite.essai()?.x;
       if (visite.essai()?.phase !== "pose" || !x?.voir) return null;
+      // Le premier (ce qui a été posé) se voit toujours ; le second aussi, quand les
+      // deux tiennent ensemble au-dessus du guide (pas à 320 points de large).
       const g = document.querySelector(".g").getBoundingClientRect();
-      return x.voir.map((sel) => { const e = document.querySelector(".visite-ecran:not([hidden]) " + sel); const b = e?.getBoundingClientRect(); return b && b.top >= 0 && b.bottom <= g.top ? "" : sel; }).filter(Boolean).join(" ");
+      const r = x.voir.map((sel) => document.querySelector(".visite-ecran:not([hidden]) " + sel)?.getBoundingClientRect());
+      const vu = (b) => b && b.top >= 0 && b.bottom <= g.top;
+      const tiennent = r[0] && r.at(-1) && r.at(-1).bottom - r[0].top <= g.top - 12;
+      return x.voir.filter((sel, k) => (k === 0 || tiennent) && !vu(r[k])).join(" ");
     });
     dire(cas, !r, `${await essai()} : ${r} n'est pas à l'écran en arrivant`);
   };

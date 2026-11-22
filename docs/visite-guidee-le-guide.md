@@ -224,6 +224,30 @@ fois ; la visite passe de 6,6 à 7,3 Mo au lieu de 8,8.
 
 La visite compte 89 étapes.
 
+## Ta capture du 22 : l'anneau à côté du bouton
+
+*« Quand on arrive sur une page, en ayant cliqué sur passer, la zone qui nous
+montre où on doit cliquer est pas vraiment centrée par rapport au bouton. Et ça
+arrive assez souvent. »*
+
+**Ce qui se passait :** l'anneau doré était dessiné sur une couche fixée à
+l'écran, posée par-dessus la page ; le bouton, lui, est dans la page. Les deux ne
+tombent l'un sur l'autre que si Safari garde ses éléments fixes à leur place.
+Safari 26 les décale de quelques points quand sa barre d'adresse bouge (un défaut
+connu de WebKit, le 297779) : sur ta capture, l'anneau est remonté d'environ
+quatre points au-dessus de « Arrêter et ranger ».
+
+**Ce qui a été fait :** l'anneau vit maintenant dans la page avec son bouton, et
+défile avec lui. Seul l'anneau d'un bouton posé dans une feuille fixe (le
+calendrier de la date) reste sur la couche fixe, avec sa feuille : là, les deux
+bougent ensemble.
+
+**Pas vérifiable ici :** ce poste n'a que Chromium, où l'anneau tombait déjà
+juste à chaque étape (mesuré). Le contrôle de la visite exige maintenant que
+l'anneau soit dans le même plan que son bouton : rouge sur la visite d'avant
+(53 étapes), vert sur la nouvelle. **À regarder sur ton iPhone** ; si un anneau
+tombe encore à côté, une capture me dira lequel.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |
