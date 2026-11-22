@@ -119,8 +119,9 @@ sur SON tube.
    tient tant qu'il le décide ; une réserve « plus de 1,5 m/s dans ce réseau »,
    qui n'ajoute aucune vanne, serait l'entre-deux.
 4. **L'espacement : TRANCHÉ le 22 novembre 2026**, *« Non prend les écartement
-   de rainbird »*. Reste le vent, et le coût ci-dessous à lui montrer avant de
-   coder.
+   de rainbird »*, confirmé devant son coût (*« Oui, Rain Bird »*), *« Toujours
+   sans vent »*, et pour les turbines seulement (*« Mes 7 en quinconce »* pour
+   les tuyères). Pas encore codé.
 
 5. **Le réseau alimenté par le milieu.** Une façon de gagner de la pression
    sans ajouter de réseau ni passer le réseau en Ø32. Elle change le calcul et
@@ -129,19 +130,34 @@ sur SON tube.
 
 ## Ce que coûtent les écartements Rain Bird sur ses jardins
 
-Essai du 22 novembre 2026 : le calcul de l'outil, `RECOUVREMENT_MIN` passé de
-0,80 à 1 ÷ 1,1 (carré sans vent) puis à 1,0 (tête à tête), le reste inchangé,
-source à 1,8 m³/h et 3 bar. **Approché** : la règle du triangle n'y est pas
-codée (le damier des tuyères en sort faux, d'où l'absence des couloirs).
+Essai du 22 novembre 2026, source à 1,8 m³/h et 3 bar. **Premier essai,
+grossier** : `RECOUVREMENT_MIN` passé de 0,80 à 1 ÷ 1,1 (carré sans vent) puis
+à 1,0 (tête à tête), le reste inchangé.
 
 | jardin | aujourd'hui (80 %) | Rain Bird sans vent | Rain Bird tête à tête |
 |---|---|---|---|
 | carré 12 × 12 | 9 turbines, 1 réseau | 9 turbines, **2 réseaux** | 9, 2 |
 | pelouse 20 × 12 à 3,7 bar | 12, 2 | 12, 2 | **24, 3** |
 | pelouse 18 × 12 | 12, 2 | 12, 2 | 12, 2 |
-| pelouse 16 × 10 | 6, 1 | **12, 2** | 24, 3 |
+| pelouse 16 × 10 | 6, 1 | ~~12, 2~~ **6, 1** (voir dessous) | 24, 3 |
 | pelouse 30 × 22 | 12, 2 | **20, 3** | 20, 3 |
-   C'est son expérience contre le texte du fabricant.
+
+**Second essai, fidèle au manuel** (carré 1,1 ; rectangle 1,2 sur la longueur
+et 1,0 sur la largeur ; triangle 1,2 entre deux têtes du damier ; sa tolérance
+de 105 % gardée, ses 75 % retirés). Il corrige le 16 × 10 : la pose en
+rectangle de Rain Bird le tient à 6 turbines (5000 Plus buse 1,5, 8 m sur la
+longueur, 10 m sur la largeur, portée 8,4) et 1 réseau. **Le patron avait reçu
+le chiffre faux (12 turbines, 2 réseaux)** ; il a confirmé Rain Bird sur la
+base de ce coût, plus lourd que le vrai.
+
+**Les tuyères : aucune pose Rain Bird ne tient aussi « jamais moins que la
+portée ».** Une tuyère ne se bride pas (sa règle du 16 octobre) : sur 10 × 2,
+8 × 4 et 10 × 3, le second essai ne trouve aucune pose et retombe sur l'ancien
+compte. En autorisant des tuyères plus proches que leur portée, comme Rain Bird
+le fait, et une buse qui ne porte pas au-delà de la largeur : 14 tuyères au lieu
+de 7 sur 10 × 2, 8 au lieu de 4 sur 8 × 4, 10 au lieu de 5 sur 10 × 3. **Sa
+réponse : « Mes 7 en quinconce »**. Les tuyères gardent ses 80 % ; Rain Bird ne
+vaut que pour les turbines.
 
 ## La page « calcul des taux d'application », lue le 22 novembre 2026
 
