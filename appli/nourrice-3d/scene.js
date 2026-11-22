@@ -370,6 +370,28 @@ export function creerScene(toile, o) {
     }
     return dehors ? mini : 0;
   }
+  // OÙ EST CHAQUE PIÈCE À L'ÉCRAN, en pixels de la vue : la boîte de la pièce (toutes ses couches), vue de
+  // l'appareil photo, à l'instant de l'éclaté où elle est. Les numéros s'y accrochent ; la scène, elle, ne
+  // dessine rien de plus.
+  var boiteEcran = new THREE.Box3();
+  function ecran() {
+    if (!etat.compo) return [];
+    var rect = toile.getBoundingClientRect();
+    camera.updateMatrixWorld();
+    return etat.compo.pieces.map(function (p) {
+      matrice(p, etat.t, T);
+      boiteEcran.makeEmpty();
+      etat.definitions[p.cle].couches.forEach(function (c) { boiteEcran.union(c.geometrie.boundingBox); });
+      var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, bb = boiteEcran;
+      for (var i = 0; i < 8; i++) {
+        coin.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(T).project(camera);
+        var x = (coin.x + 1) / 2 * rect.width, y = (1 - coin.y) / 2 * rect.height;
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+      bb.getCenter(coin).applyMatrix4(T).project(camera);
+      return { indice: p.indice, cle: p.cle, x: (coin.x + 1) / 2 * rect.width, y: (1 - coin.y) / 2 * rect.height, gauche: x0, droite: x1, haut: y0, bas: y1 };
+    });
+  }
   function touche(x, y) {
     var rect = toile.getBoundingClientRect(), px = x - rect.left, py = y - rect.top;
     camera.updateMatrixWorld();
@@ -441,7 +463,7 @@ export function creerScene(toile, o) {
   }
 
   return {
-    pret: pret, detruire: detruire, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, mesurer: mesurer, demander: demander,
+    pret: pret, detruire: detruire, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, ecran: ecran, mesurer: mesurer, demander: demander,
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
