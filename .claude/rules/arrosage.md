@@ -373,9 +373,15 @@ la règle d'avant quoi. »* Ne pas rouvrir le diamètre unique par nourrice.
 en carré** (ses turbines alignées), 1,2 × en triangle (ses tuyères en damier),
 1,2 × sur la longueur et 1,0 × sur la largeur en rectangle ; tête à tête
 (1,0 ×) dès 6 km/h de vent. Elle remplace les 80 à 100 % et les 75 % du
-16 octobre (`RECOUVREMENT_MIN`, `poseSelonSaRegle`). **Pas encore codé** : il
-faut trancher le vent, et elle fait rougir sa règle du 23 août (« son carré de
-12 × 12 : 9 turbines, 1 vanne »), qui passe à 2 vannes.
+16 octobre (`RECOUVREMENT_MIN`, `poseSelonSaRegle`).
+
+**TOUJOURS SANS VENT, ET CONFIRMÉE DEVANT SON COÛT** (même soir, ses deux
+réponses aux questions posées) : *« Oui, Rain Bird »*, après avoir lu que son
+12 × 12 passe de 1 à 2 réseaux, son 16 × 10 de 6 turbines à 12, son 30 × 22 de
+2 réseaux à 3 ; et *« Toujours sans vent »* : pas de case par jardin, pas de
+tête à tête d'office. Sa règle du 23 août (« son carré de 12 × 12 : 9 turbines,
+1 vanne ») tombe avec elle, sur sa décision. **Pas encore codé au
+22 novembre 2026.**
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
