@@ -10,6 +10,7 @@
 | Toucher : éclate, retoucher : remonte | **fait**, le même geste que la planche (le même code) | `appli/nourrice-3d/vue.js` |
 | Déplacer, zoomer | **fait** : un doigt tourne, deux doigts rapprochent et déplacent ; à la souris, molette et clic droit | les commandes de la planche |
 | Montée / Éclatée, De biais / Dessus / De face | **gardés** | `Nourrice3D.tsx` |
+| Sur le site, le geste joué tout seul (sa seconde demande) | **fait** : un rond se pose comme un doigt, la nourrice s'éclate, reste ouverte 3 s, se remonte, et recommence tant qu'elle est à l'écran. Le premier toucher du visiteur l'arrête | `appli/vente/outils.html` |
 | Sur le site | **fait** : la photo `outils-nourrice.jpg` est remplacée par la 3D vivante, trois voies dont une en goutte-à-goutte. La page « Cause 2 » y mène par « Découvrir les outils » | `appli/vente/outils.html` |
 
 ## Ce qui a été fait autrement, et pourquoi
