@@ -70,7 +70,10 @@ de la seule ligne) :
 1. **Le Ø32 sur les seuls tronçons chargés** : le premier tronçon porte tout le
    débit, et la perte croît comme le débit à la puissance 1,852. Dans cet
    exemple il passe 1,76 m/s dans le Ø25 du trajet : Rain Bird le mettrait en
-   Ø32, et lui seul.
+   Ø32, et lui seul. **REFUSÉ par le patron le 22 novembre 2026** : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32
+   jusqu'au 1er arroseur puis 25 jamais ! »* (lu : chaque réseau tout en 25 ou
+   tout en 32). Ne pas le reproposer
+   (`.claude/rules/arrosage.md`).
 2. **Alimenter le réseau par le milieu** (p. 66 : *« eliminated the need for the
    two larger pipe sizes »*, et moins d'écart de pression entre les têtes).
    Chaque branche porte la moitié du débit. Le calcul de l'outil
@@ -115,6 +118,20 @@ sur SON tube.
 4. **L'espacement.** Sur ses turbines alignées, sa règle de 80 % espace 14 %
    plus loin que le maximum Rain Bird du carré, celle de 75 % 21 % plus loin.
    C'est son expérience contre le texte du fabricant.
-5. **Le Ø32 par tronçon, et le réseau alimenté par le milieu.** Deux façons de
-   gagner de la pression sans ajouter de réseau ni poser tout un réseau en Ø32.
-   Les deux changent le calcul et le plan : planche d'abord (`CLAUDE.md` §3 bis).
+5. **Le réseau alimenté par le milieu.** Une façon de gagner de la pression
+   sans ajouter de réseau ni passer le réseau en Ø32. Elle change le calcul et
+   le plan : planche d'abord (`CLAUDE.md` §3 bis). Le Ø32 par tronçon, lui, est
+   refusé (point 1 ci-dessus).
+
+## La page « calcul des taux d'application », lue le 22 novembre 2026
+
+`https://www.rainbird.com/fr/professionnels/conseil-de-conception-pour-systemes-darrosage-calcul-des-taux-dapplication`,
+envoyée par le patron. **C'est la traduction des pages 44 à 47 du même
+manuel** ; elle le dit elle-même (« Ces conseils sont extraits du manuel de
+conception de l'arrosage »). Rien sur les pertes de charge ni sur le diamètre.
+
+| Ce qu'elle dit | Pour l'outil |
+|---|---|
+| taux d'application (mm/h) = 1 000 × débit versé dans la maille (m³/h) ÷ (S × L) ; en triangle, L = 0,866 × S | la pluviométrie et les durées sont retirées de l'outil (ses décisions des 23 août et 18 octobre 2026) : ne sert pas |
+| un arroseur à impact garde **1 m³/h en demi-cercle** comme en plein cercle ; sa pluviométrie double (6,9 puis 13,9 mm/h sur une maille de 12 × 12) | **confirme sa règle du 21 août 2026** : le débit d'une turbine ne dépend pas de son arc |
+| des tuyères « à débit proportionnel à la surface » : 0,56 m³/h en plein cercle, 0,28 en demi, 0,14 en quart | **confirme** que le débit d'une tuyère se lit par angle (ses relevés de la 12-VAN) |
