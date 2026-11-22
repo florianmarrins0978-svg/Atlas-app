@@ -70,10 +70,13 @@ de la seule ligne) :
 1. **Le Ø32 sur les seuls tronçons chargés** : le premier tronçon porte tout le
    débit, et la perte croît comme le débit à la puissance 1,852. Dans cet
    exemple il passe 1,76 m/s dans le Ø25 du trajet : Rain Bird le mettrait en
-   Ø32, et lui seul. **REFUSÉ par le patron le 22 novembre 2026** : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32
-   jusqu'au 1er arroseur puis 25 jamais ! »* (lu : chaque réseau tout en 25 ou
-   tout en 32). Ne pas le reproposer
-   (`.claude/rules/arrosage.md`).
+   Ø32, et lui seul. **REFUSÉ par le patron le 22 novembre 2026** : *« c'est
+   soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32 jusqu'au
+   1er arroseur puis 25 jamais ! »* Et ce n'est pas réseau par réseau, comme je
+   l'avais d'abord lu : **tous les réseaux d'une nourrice ont le même
+   diamètre** (*« pas un réseau en 25 et un en 32 »*), et si le Ø32 permet un
+   réseau de moins, ce sont tous les réseaux restants en Ø32. Ne pas
+   reproposer de mélange (`.claude/rules/arrosage.md`).
 2. **Alimenter le réseau par le milieu** (p. 66 : *« eliminated the need for the
    two larger pipe sizes »*, et moins d'écart de pression entre les têtes).
    Chaque branche porte la moitié du débit. Le calcul de l'outil
@@ -115,13 +118,30 @@ sur SON tube.
 3. **La vitesse.** Le plafond retiré était la règle du fabricant. Son retrait
    tient tant qu'il le décide ; une réserve « plus de 1,5 m/s dans ce réseau »,
    qui n'ajoute aucune vanne, serait l'entre-deux.
-4. **L'espacement.** Sur ses turbines alignées, sa règle de 80 % espace 14 %
-   plus loin que le maximum Rain Bird du carré, celle de 75 % 21 % plus loin.
-   C'est son expérience contre le texte du fabricant.
+4. **L'espacement : TRANCHÉ le 22 novembre 2026**, *« Non prend les écartement
+   de rainbird »*. Reste le vent, et le coût ci-dessous à lui montrer avant de
+   coder.
+
 5. **Le réseau alimenté par le milieu.** Une façon de gagner de la pression
    sans ajouter de réseau ni passer le réseau en Ø32. Elle change le calcul et
    le plan : planche d'abord (`CLAUDE.md` §3 bis). Le Ø32 par tronçon, lui, est
    refusé (point 1 ci-dessus).
+
+## Ce que coûtent les écartements Rain Bird sur ses jardins
+
+Essai du 22 novembre 2026 : le calcul de l'outil, `RECOUVREMENT_MIN` passé de
+0,80 à 1 ÷ 1,1 (carré sans vent) puis à 1,0 (tête à tête), le reste inchangé,
+source à 1,8 m³/h et 3 bar. **Approché** : la règle du triangle n'y est pas
+codée (le damier des tuyères en sort faux, d'où l'absence des couloirs).
+
+| jardin | aujourd'hui (80 %) | Rain Bird sans vent | Rain Bird tête à tête |
+|---|---|---|---|
+| carré 12 × 12 | 9 turbines, 1 réseau | 9 turbines, **2 réseaux** | 9, 2 |
+| pelouse 20 × 12 à 3,7 bar | 12, 2 | 12, 2 | **24, 3** |
+| pelouse 18 × 12 | 12, 2 | 12, 2 | 12, 2 |
+| pelouse 16 × 10 | 6, 1 | **12, 2** | 24, 3 |
+| pelouse 30 × 22 | 12, 2 | **20, 3** | 20, 3 |
+   C'est son expérience contre le texte du fabricant.
 
 ## La page « calcul des taux d'application », lue le 22 novembre 2026
 
