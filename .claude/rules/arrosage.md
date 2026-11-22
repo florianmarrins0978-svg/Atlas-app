@@ -352,6 +352,14 @@ d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « 
 Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
 repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
+**UN RÉSEAU EST TOUT EN Ø25 OU TOUT EN Ø32, JAMAIS LES DEUX — sa règle du
+22 novembre 2026**, devant la proposition tirée du manuel Rain Bird (p. 65 et
+66) de ne poser le Ø32 que sur le trajet jusqu'au premier arroseur : *« c'est soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32
+jusqu'au 1er arroseur puis 25 jamais ! »* (lu : chaque réseau tout en 25 ou
+tout en 32). Le dimensionnement tronçon par tronçon du
+manuel est écarté : ne pas le reproposer (`docs/arrosage-manuel-rain-bird.md`).
+Le choix reste celui du 20 octobre, réseau par réseau (`tuyauDuReseau`).
+
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
 goutte ; sur le plan, il n'en a compté qu'un, et pour les pièces aussi ; il n'a
