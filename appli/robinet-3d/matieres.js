@@ -13,8 +13,10 @@ export function ajouterMatieres(m) {
   }
   // Un métal de fonderie : son grain se voit (le corps du robinet, celui de la double sortie sont
   // sablés, piqués), donc il porte un relief en plus de sa rugosité.
+  // Le relief prend le grain FIN : sur un métal, le grain moyen faisait des taches sombres qui
+  // scintillaient sous l'HDRI (essayé le 22 novembre 2026), loin du sablé régulier de ses photos.
   function metalBrut(couleur, rugosite, relief, reflet) {
-    return new THREE.MeshPhysicalMaterial({ color: couleur, roughness: rugosite, metalness: 1, roughnessMap: fin, bumpMap: moyen, bumpScale: relief * 0.06, envMapIntensity: reflet });
+    return new THREE.MeshPhysicalMaterial({ color: couleur, roughness: rugosite, metalness: 1, roughnessMap: fin, bumpMap: fin, bumpScale: relief * 0.06, envMapIntensity: reflet });
   }
   return Object.assign(m, {
     // Le vert du Solem BL-NR : son écrou d'entrée et la pièce de sa face.
@@ -23,8 +25,8 @@ export function ajouterMatieres(m) {
     // blanc cassé du raccord mâle de la nourrice).
     grisPlasson: plastique(0xbcbdba, 0.5, 0.5, fin, 1),
     // Le corps de fonderie de son robinet, laiton brut sablé ; ses parties tournées restent `laiton`.
-    laitonBrut: metalBrut(0xc6a14f, 0.55, 2.2, 5),
+    laitonBrut: metalBrut(0xc6a14f, 0.5, 0.9, 5),
     // Le corps de la double sortie : laiton nickelé, sablé, mat.
-    nickelSable: metalBrut(0xc4c2bb, 0.58, 2.4, 6)
+    nickelSable: metalBrut(0xc4c2bb, 0.52, 1, 6)
   });
 }
