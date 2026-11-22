@@ -38035,6 +38035,37 @@ sous `scripts/` l'aurait fait passer au niveau 2 sans rien protéger de plus. Ce
 dans le document de retour.
 
 
+## §601 : La nourrice en 3D vit dans `appli/`, et l'appli l'importe de là
+
+*22 novembre 2026. Sa demande : « mets-moi exactement cette planche dans l'application [...] et sur le site ».*
+
+**Un seul module, trois endroits.** `appli/nourrice-3d/vue.js` (`ouvrirNourrice`) porte la scène, le choix
+des deux finesses, la composition et le geste du toucher. La planche (`appli/arrosage-nourrice-3d.html`), la
+page des outils du site (`appli/vente/outils.html`) et l'écran du plan (`src/app/paysage/arrosage/Nourrice3D.tsx`)
+l'appellent. Le toucher et la finesse vivaient dans la planche : recopiés, ils auraient divergé (§3).
+
+**Pourquoi `src/` importe `appli/`, et pas l'inverse.** GitHub Pages ne publie que `appli/` : la planche et le
+site ne peuvent rien lire ailleurs. L'appli, elle, construit tout le dépôt : `Nourrice3D.tsx` importe
+`../../../../appli/nourrice-3d/vue.js` dynamiquement (rien ne part chez qui n'ouvre pas le plan), et l'HDRI par
+`new URL(…, import.meta.url)`, que la construction copie dans `/_next/static/media/`.
+
+**`three` est épinglé à 0.160.0 dans `package.json`.** Les modules de `appli/vendor/three/` (identiques, octet
+pour octet, à ceux du paquet) importent `three` par son nom : la planche le résout par sa carte des imports, la
+construction de l'appli par `node_modules`. **Monter `three` d'un côté sans l'autre casse la 3D** : les deux
+doivent bouger ensemble, et les copies de `vendor/` se recopient depuis le paquet.
+
+**`detruire()`.** La scène ne se défaisait pas : une page ne vit qu'une fois. Un écran de l'appli, quitté puis
+rouvert, aurait laissé tourner sa boucle et gardé un contexte WebGL par visite (un téléphone en refuse au-delà
+d'une quinzaine). `scene.detruire()` arrête la boucle, l'observateur de taille, les commandes, et rend les
+tampons et le contexte ; `vue.detruire()` y ajoute les écouteurs, les géométries et les matières.
+
+**Le repli est le dessin d'avant.** Sans WebGL 2, ou sur un chargement raté, l'écran montre le dessin SVG
+(`Dessin`, toujours employé aussi par `DepuisUnDevis`), et l'erreur se journalise. Le site, lui, dit une phrase.
+
+**Ce que la 3D ne montre pas, et le dessin montrait** : une pièce supprimée grisée et barrée, une pièce
+changée en doré (sa demande du 19 octobre 2026). La légende numérotée le dit toujours, en rouge barré et en
+doré. Poser ces signes dans la 3D demande une matière par pose : `TODO.md`.
+
 ## §602 : Une correction ne porte que ce qu'il change, et se pose sur la ligne en base
 
 **Vu le 22 novembre 2026, sur « Règlement reçu ».** Le moyen, la date et le

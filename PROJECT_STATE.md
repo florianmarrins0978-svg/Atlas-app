@@ -1,5 +1,9 @@
 # État du projet
 
+## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR SA BRANCHE, BATTERIE À JOUER
+
+Sa demande du 22. `Nourrice3D.tsx` remplace le dessin dans « La nourrice » ; `appli/vente/outils.html` montre la même 3D à la place de la photo. Un seul module (`appli/nourrice-3d/vue.js`), `three` épinglé. Niveau 3 (`package.json`) : la batterie attend son oui. `ARCHITECTURE.md` §601.
+
 ## LA NOURRICE EN 3D, RÉALISTE, AVEC L'ÉCLATÉ AU TOUCHER : UNE PLANCHE (22 novembre 2026), PAS ENCORE VUE PAR LUI
 
 Sa demande du 22. `appli/arrosage-nourrice-3d.html` : chaque pièce relevée sur ses photos, matières physiques, HDRI, ombres et occlusion ambiante ; un toucher éclate, un second remonte. De 1 à 6 voies, 0 à n en goutte-à-goutte. Les pièces dans `appli/nourrice-3d/` (`ARCHITECTURE.md` §600). 63 contrôles verts hors dépôt ; **non éprouvée sur un iPhone**. Retour : `docs/nourrice-3d-realiste.md`.
