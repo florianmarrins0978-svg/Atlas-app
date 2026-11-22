@@ -370,7 +370,7 @@ la règle d'avant quoi. »* Ne pas rouvrir le diamètre unique par nourrice.
 **LES ÉCARTEMENTS DE RAIN BIRD, PLUS SES 80 % — sa décision du 22 novembre
 2026 :** *« Non prend les écartement de rainbird »*, devant le manuel (p. 41 à
 43, `docs/arrosage-manuel-rain-bird.md`). Sans vent : **1,1 × la portée au plus
-en carré** (ses turbines alignées), 1,2 × en triangle (ses tuyères en damier),
+en carré** (ses turbines alignées), 1,2 × en triangle (ses tuyères n'y passent pas, voir plus bas),
 1,2 × sur la longueur et 1,0 × sur la largeur en rectangle ; tête à tête
 (1,0 ×) dès 6 km/h de vent. Elle remplace les 80 à 100 % et les 75 % du
 16 octobre (`RECOUVREMENT_MIN`, `poseSelonSaRegle`).
@@ -380,7 +380,16 @@ réponses aux questions posées) : *« Oui, Rain Bird »*, après avoir lu que s
 12 × 12 passe de 1 à 2 réseaux, son 16 × 10 de 6 turbines à 12, son 30 × 22 de
 2 réseaux à 3 ; et *« Toujours sans vent »* : pas de case par jardin, pas de
 tête à tête d'office. Sa règle du 23 août (« son carré de 12 × 12 : 9 turbines,
-1 vanne ») tombe avec elle, sur sa décision. **Pas encore codé au
+1 vanne ») tombe avec elle, sur sa décision. *(Le 16 × 10 annoncé à 12
+turbines était faux : avec la pose en rectangle de Rain Bird, il garde 6
+turbines et 1 réseau. Corrigé le même soir.)*
+
+**POUR LES TURBINES SEULEMENT : LES TUYÈRES GARDENT SES 80 % ET SON
+QUINCONCE** (même soir, sa réponse : *« Mes 7 en quinconce »*). Une tuyère ne
+se bride pas : sur son couloir de 10 × 2, aucune pose Rain Bird ne tient aussi
+« jamais moins que la portée », et la seule pose Rain Bird possible doublait
+ses tuyères (14 au lieu de 7 ; 8 × 4 : 8 au lieu de 4 ; 10 × 3 : 10 au lieu de
+5). Sa règle du 18 août (7 tuyères sur 10 × 2) tient. **Pas encore codé au
 22 novembre 2026.**
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
