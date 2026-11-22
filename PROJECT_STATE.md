@@ -1,5 +1,9 @@
 # État du projet
 
+## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026) : CODÉ, EN ATTENTE DE SA BATTERIE
+
+Sa décision du 22, sans vent, pour les turbines seulement ; les tuyères gardent ses 80 % (`poseRainBird`, `ARCHITECTURE.md` §603). Son 12 × 12 passe à 2 réseaux, son 30 × 22 à 3. Le relevé du manuel : `docs/arrosage-manuel-rain-bird.md`. Restent à lui demander : le dénivelé, le coefficient du PE, le réseau alimenté par le milieu (`TODO.md`).
+
 ## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR `main`
 
 Sa demande du 22. `Nourrice3D.tsx` remplace le dessin dans « La nourrice » ; `appli/vente/outils.html` montre la même 3D à la place de la photo. Un seul module (`appli/nourrice-3d/vue.js`), `three` épinglé. Batterie complète verte le 22 au soir, jouée avec le lot du règlement reçu (617/617 suites base, 218/218 navigateur, connexion), et `appli/tests/e2e.js` (261 contrôles). Les films `outils-options` et `outils-nourrice` du site sont retournés sur la 3D. `ARCHITECTURE.md` §601.

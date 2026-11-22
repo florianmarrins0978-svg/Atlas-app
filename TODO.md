@@ -1,5 +1,18 @@
 # Prochaines tâches
 
+## LE MANUEL RAIN BIRD : LES TURBINES CODÉES LE 22 NOVEMBRE 2026, CE QUI RESTE
+
+Le relevé : `docs/arrosage-manuel-rain-bird.md`. **Codé** : les turbines aux
+écartements de Rain Bird, sans vent (`poseRainBird`, `ARCHITECTURE.md` §603).
+
+| ce qui reste | qui |
+|---|---|
+| **compter le dénivelé** (0,1 bar par mètre, rien dans le calcul aujourd'hui) : une saisie de la hauteur du dernier arroseur par rapport à la nourrice ; tant qu'il n'est pas compté, une réserve sous le plan. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| **le coefficient du PE à 140** (Rain Bird) au lieu de 150 (sans source) : 12 % de perte de ligne en plus. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| **un réseau alimenté par le milieu** se calcule comme une seule file (`perteDuReseau`) : perte surestimée, un réseau de trop possible. Demandé le 22 novembre, sans réponse | lui, puis nous |
+| **la vitesse de 1,5 m/s** : son plafond retiré le 16 octobre était la règle écrite du fabricant ; le commentaire de `calcul.js` qui le dit « le nôtre » est faux. Une réserve qui n'ajoute aucune vanne serait l'entre-deux | lui |
+| **les instantanés des planches** (`appli/arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`, `arrosage-planche-calcul.js`, `arrosage-nourrice-calcul.js`) ne sont pas reconstruits : les planches posent encore les turbines à 80 % | nous, à la prochaine planche d'arrosage |
+
 ## ⏳ UNE PLANCHE À REGARDER : LES NUMÉROS DE LA NOURRICE EN 3D (22 novembre 2026)
 
 `appli/arrosage-nourrice-3d-numeros.html`. Sa demande : remettre sur la 3D le numéro de la liste, comme sur le dessin d'avant, *« une pastille noire ou autre chose pour que ça soit joli ? »*. Trois habillages (A noire, B or, C au fil), deux moments (à l'éclaté, toujours), une ligne touchée allume ses numéros. **Ce qui attend SA réponse** : A, B ou C, et quand. **Ce qui est su** : les numéros sortent de `vue.numeros()` (premier de chaque modèle dans l'ordre de la composition), identiques à `composerNourrice().ordre` sur 1, 2, 3, 4 et 6 voies ; de face sur 6 voies, les colonnes se cachent l'une l'autre et les numéros se serrent, de biais ils se lisent. **À coder s'il choisit** : la même surcouche dans `Nourrice3D.tsx`, et un contrôle qui confronte `numeros()` à `ordre`.

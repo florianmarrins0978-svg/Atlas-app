@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026)
+
+**Avant de toucher à la pose d'une zone** : lire `ARCHITECTURE.md` §603. Une turbine passe par `poseRainBird` (carré 1,1 × la portée, ou rectangle 1,2 × et 1,0 ×, sans vent), une tuyère par l'ancienne recherche à 80 %. Ne pas remettre les tuyères sous Rain Bird : il l'a refusé (« Mes 7 en quinconce »). Les instantanés `appli/arrosage-*-calcul.js` des planches ne sont pas reconstruits.
+
 ## LA NOURRICE EN 3D DANS L'APPLI ET SUR LE SITE (22 novembre 2026) : SUR `main`
 
 **Avant d'y toucher** : lire `ARCHITECTURE.md` §601. La 3D se retouche dans `appli/nourrice-3d/`, jamais ailleurs : la planche, le site et l'écran du plan l'importent. **`three` bouge partout à la fois** (`package.json` et `appli/vendor/three/`). Les films du site filment la démonstration des outils : après toute retouche de l'écran du plan, `npx tsx appli/scripts/demo-outils/construire.ts`, puis retourner les films concernés (`node appli/scripts/film-outils.cjs appli/vente/images --film <nom>`). La démonstration vise l'éclairage de la 3D par son chemin publié (`PHOTOS` dans `construire.ts`).
