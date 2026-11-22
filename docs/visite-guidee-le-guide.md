@@ -266,6 +266,33 @@ l'anneau soit dans le même plan que son bouton : rouge sur la visite d'avant
 (53 étapes), vert sur la nouvelle. **À regarder sur ton iPhone** ; si un anneau
 tombe encore à côté, une capture me dira lequel.
 
+## Ta remarque du 22 : la page des Réglages qui se balade
+
+*« La page de réglage se balade de droite à gauche. Il faut faire gaffe et
+regarder que les autres pages ne se baladent pas non plus. »*
+
+**La cause la plus probable :** les cases des écrans figés (le nom de
+l'entreprise dans les Réglages, « Quelle longueur ? » avant de chiffrer)
+étaient en lecture seule, mais elles prenaient encore le doigt. Sur l'iPhone,
+toucher une case dont le texte fait moins de 16 points fait zoomer la page ;
+zoomée, elle glisse ensuite de droite à gauche sous le doigt. Les cases de
+l'appli font 15 points.
+
+**Ce qui a été fait :** aucune case d'un écran figé ne prend plus le doigt, ni
+le clavier ; le doigt touche ce qui l'entoure, et les deux étapes qui visent une
+case (la longueur avant de chiffrer, le 25 du calendrier) avancent toujours. Le
+message du devis, qui s'écrivait encore dans la visite, est figé lui aussi. Un
+contrôle touche une case à ces deux endroits : rouge sur la visite d'avant (les
+deux cases prenaient la main), vert sur la nouvelle.
+
+**Les autres pages :** les 124 écrans de la visite, Réglages libres compris,
+ont été mesurés sur trois tailles d'iPhone (SE, 15 Pro, 15 Pro Max) : aucun ne
+dépasse de l'écran.
+
+**Pas vérifiable ici :** ce poste n'a pas d'iPhone, et Chromium ne zoome pas
+sur une case. À regarder sur ton téléphone ; si une page se balade encore, dis-moi
+laquelle et ce que tu as touché juste avant.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |
@@ -312,10 +339,10 @@ lequel.
    ligne telle qu'elle est en base. Vu rouge avant (en base, et au navigateur
    avec les trois champs changés sans attendre), vert après ; batterie complète
    au vert, avec la nourrice 3D de l'autre session, et c'est sur `main`.
-3. **Le bouton sur le site** : une planche sur la vraie page Cause 2, trois
-   places à essayer (`appli/vente/cause-2-visite.html`). Ma recommandation : une
-   bande à elle juste avant les prix, plus le lien dans la barre du haut. Rien
-   n'est posé tant que tu n'as pas choisi.
+3. **Le bouton sur le site** : la planche porte tes choix
+   (`appli/vente/cause-2-visite.html`) : la carte dans l'ouverture et sous
+   l'option des outils, son téléphone qui gigote, et la bande avant les prix.
+   Rien n'est posé sur le vrai site tant que tu n'as pas dit oui.
 4. **Le script qui refait la visite** n'a jamais été enregistré pour ses
    écrans d'origine (`docs/visite-guidee.md`). Ceux ajoutés depuis le 21 se
    refont, eux, par `appli/scripts/visite-guidee/`.
