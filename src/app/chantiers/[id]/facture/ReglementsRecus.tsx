@@ -18,7 +18,7 @@ import {
   type MoyenDePaiement,
   type PromesseDuDevis,
 } from "@/lib/acomptes-facture";
-import type { ReglementEnregistre, SaisieReglement } from "@/server/repositories/paiements-facture";
+import type { CorrectionReglement, ReglementEnregistre } from "@/server/repositories/paiements-facture";
 import {
   basculerAcquitteeAction,
   majReglementRecuAction,
@@ -132,16 +132,11 @@ export default function ReglementsRecus({
     );
   }
 
-  function corriger(g: ReglementEnregistre, saisie: Partial<SaisieReglement>) {
-    void appliquer(
-      majReglementRecuAction(g.id, {
-        date: saisie.date ?? g.date,
-        montant: saisie.montant ?? g.montant,
-        moyen: saisie.moyen === undefined ? g.moyen : saisie.moyen,
-        numero: saisie.numero === undefined ? g.numero : saisie.numero,
-        libelle: saisie.libelle === undefined ? g.libelle : saisie.libelle,
-      })
-    );
+  // Seul ce qu'il a changé part : le serveur le pose sur la ligne telle qu'elle
+  // est en base. Compléter ici avec la ligne reçue écrasait le champ changé juste
+  // avant, pas encore revenu (22 novembre 2026).
+  function corriger(g: ReglementEnregistre, correction: CorrectionReglement) {
+    void appliquer(majReglementRecuAction(g.id, correction));
   }
 
   const entete = { ...styleEntete, color: colors.muted };
@@ -242,7 +237,7 @@ export default function ReglementsRecus({
               data-atlas="moyen-reglement"
               onChange={(e) => {
                 const moyen = e.target.value as MoyenDePaiement;
-                corriger(g, { moyen, numero: moyen === "cheque" ? g.numero : null });
+                corriger(g, { moyen });
               }}
               // La flèche native du navigateur mange « Virement » sur un téléphone
               // (390 px) : la planche dessine la sienne, 4 px, comme ici.
