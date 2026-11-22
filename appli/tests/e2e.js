@@ -1036,6 +1036,31 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cFe.close();
   }
 
+  // ── Le site, c'est cause-2.html : il ne renvoie vers aucune version passée ─
+  //
+  // Sa décision du 22 novembre 2026, à « quelle page devient le site ? » :
+  // « c'est la dernière page qu'on a faite en date, celle que tu as ». Ce
+  // jour-là, « Retour au site », dans les mentions légales, ramenait encore à
+  // cause.html : le visiteur du site retombait sur la version d'avant, sans
+  // ses films. Le site retenu et les pages qu'il ouvre ne mènent donc à
+  // aucune des planches qui l'ont précédé (elles restent en ligne, pour
+  // l'histoire, et cause.html pour la demande de l'Afnic). On lit les liens
+  // tels qu'ils sont écrits, et une page qui n'en porte aucun ne prouve rien.
+  {
+    const PASSEE = /^(\.\/|index\.html|cause\.html|chapitres(-\d+)?\.html|defilement\.html)([#?].*)?$/;
+    const cSi = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
+    for (const fichier of ['cause-2.html', 'outils.html', 'mentions-legales-cause.html']) {
+      const page = await cSi.newPage();
+      await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
+      const liens = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href')));
+      const passes = liens.filter((h) => PASSEE.test(h));
+      ok('le site retenu : ' + fichier + ' ne renvoie vers aucune version passée du site',
+         liens.length > 0 && passes.length === 0, liens.length ? 'il renvoie vers ' + passes.join(', ') : 'aucun lien lu sur la page');
+      await page.close();
+    }
+    await cSi.close();
+  }
+
   // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────
   //
   // Ses demandes du 17 novembre 2026. Chaque planche attend une lettre, et
