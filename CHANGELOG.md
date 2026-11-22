@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-22
 
+- **La nourrice en 3D** (`appli/arrosage-nourrice-3d.html`, sur `main`). Sa demande, après une appli qui fabrique de la 3D par IA à partir d'une de ses images : « les électrovannes ne sont pas alignées », puis « tu serais capable de me le faire ? J'aimerais la nourrice en 3D réaliste ». Sur le dessin, elles l'étaient (mesuré : à moins d'un pixel de l'axe dans les 27 compositions) ; l'appli a deviné la profondeur et tourné l'électrovanne, dont la bobine décentre le corps. Ici chaque pièce est modélisée en millimètres aux proportions de ses photos (le filetage 1" sert d'étalon) et posée par ses bouts de vissage, donc l'axe est juste par construction. Composition de la fiche, montée ou éclatée, trois points de vue, tournée au doigt ; chaque bouton touché, aucun muet. Three.js 0.160 posé dans `appli/vendor/three/` avec sa licence. Rien n'est codé dans l'appli.
 - **La visite guidée montre la fiche client remplie par le micro d'en haut à droite** (`appli/visite-guidee.html`, sa demande du 22). Deux étapes avant que la fiche s'écrive seule : toucher le micro, puis l'écoute (micro rouge, « J'écoute. Touchez pour arrêter. », la phrase dictée dans la bulle). L'écoute est rejouée sur l'écran figé de la fiche vide, aux couleurs et à la phrase de `DicterCoordonnees.tsx`, et défaite en quittant l'étape : le même écran sert aussi à « Touchez Entreprise. ». Pendant que les champs s'écrivent, la ligne repliée dit « La fiche se remplit. » au lieu du geste d'après. 85 étapes.
 
 ## 2026-11-21

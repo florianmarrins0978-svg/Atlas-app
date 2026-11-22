@@ -14,7 +14,7 @@ chaque sortie de clarinette compris). **Pas vu sur l'écran
 de l'appli** (`npm run voir` demande un serveur) : à regarder sur
 `/paysage/arrosage` avec un plan. **Toutes les pièces sont à plat** : les
 clarinettes le sont depuis le 21 au soir, la face du bout de leurs sorties
-retirée (§600). **Reste à lui** : le régulateur, et le gris (« Gris clair » ou « Gris de vos photos », les deux sur la planche ; l'outil garde le gris clair jusqu'à sa réponse) (`TODO.md`). Une photo qui
+retirée (§600). **Reste à lui** : le régulateur, et son avis sur la nourrice en 3D (`appli/arrosage-nourrice-3d.html` : chaque pièce modélisée, posée par ses bouts de vissage, Three.js dans `appli/vendor/three/`) (`TODO.md`). Ses images, il les a gardées en gris clair. Une photo qui
 arrive se détoure, passe au gris clair (`median 145, écart 70`, §600), se
 mesure à 3x, et se pose dans `PHOTOS`.
 
