@@ -1,5 +1,9 @@
 # Prochaines tâches
 
+## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
+
+Proposé : poser une vraie question avant le plan quand le piquage est sur un robinet (« Garder une sortie libre pour un tuyau d'arrosage ? »), au lieu de l'interrupteur « Double sortie sous le robinet », éteint d'office (`LePlanDuJardin.tsx`). Sa réponse : *« Non »*. Ne pas le reproposer.
+
 ## LES NUMÉROS DE LA NOURRICE EN 3D : CODÉS LE 22 NOVEMBRE 2026, CE QUI RESTE
 
 Sa planche `appli/arrosage-nourrice-3d-numeros.html`, son choix (la A, à l'éclaté), « Voir » et les ombres : codés (`ARCHITECTURE.md` §603). **Ce qui reste** : la batterie de son niveau, à son « oui ». **Le bas blanc de la 3D sous la barre collante : un défaut du Chromium d'ici, pas de l'appli** (enquêté le 22 novembre 2026, à sa demande de le corriger). Quand un élément posé par-dessus recouvre le haut d'une toile WebGL, ce Chromium sans carte graphique (SwiftShader) ne peint plus le bas de la toile, sur la même hauteur. Reproduit avec une page de six lignes sans rien de l'appli (une barre collante, une toile WebGL), à l'écran (Xvfb) comme en capture, barre collante ou fixe, opaque ou non ; une toile 2D n'a rien. Rien n'y change côté page (coins, coupe, `will-change`, `isolation`, `contain`), sauf `desynchronized: true` sur le contexte WebGL, qui change la façon dont le navigateur présente la toile : **non appliqué**, ce serait un pansement pour un navigateur de test. Sur iPhone (WebKit), ce défaut de Chromium ne peut pas se produire. **S'il le voit sur un vrai appareil** (Chrome sur Android ou sur son PC), on revient ici : `desynchronized` est la piste.
