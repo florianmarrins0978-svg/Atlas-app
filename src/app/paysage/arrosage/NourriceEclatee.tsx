@@ -2,6 +2,7 @@
 
 import { colors, font } from "@/lib/design-tokens";
 import { OMBRE_VIGNETTE } from "./Vignette";
+import Nourrice3D from "./Nourrice3D";
 import { composerNourrice, etatsDesPoses, HAUT, type EtatPose, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
 import { PHOTOS_NOURRICE } from "@/lib/arrosage/photos-nourrice";
 import { photoDe } from "@/lib/arrosage/photos";
@@ -22,6 +23,11 @@ const CAT = CATALOGUE as unknown as { piece(ref: string): { nom: string; marque?
  *
  * Le fond du dessin reste blanc quelle que soit la charte : les photos sont
  * détourées sur blanc et fondues en `multiply`, et c'est ce qu'il a validé.
+ *
+ * **Depuis le 22 novembre 2026, l'écran montre la nourrice en 3D** à la place
+ * de ce dessin (`Nourrice3D`, sa planche `appli/arrosage-nourrice-3d.html`) ;
+ * le dessin ne sert plus que de repli, sur l'appareil qui ne sait pas afficher
+ * la 3D. La légende numérotée reste ce qu'on touche.
  */
 export default function NourriceEclatee({
   voies,
@@ -66,9 +72,16 @@ export default function NourriceEclatee({
     <div data-atlas="nourrice-eclatee">
       {/* Le dessin et sa légende dans une même plage : celle de la planche soignée du 26 octobre 2026. */}
       <div className="mt-4 rounded-[6px] px-[14px] pb-[14px] pt-4" style={{ backgroundColor: colors.card }}>
-      <div className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-        <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
-      </div>
+      {/* La nourrice en 3D, sa planche du 22 novembre 2026 ; le dessin d'avant reste pour l'appareil qui ne sait pas l'afficher. */}
+      <Nourrice3D
+        voies={voies.length}
+        nbGoutte={nbGoutte}
+        repli={
+          <div className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+            <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
+          </div>
+        }
+      />
 
       {/* La légende numérotée : c'est elle qu'on touche. */}
       <ol className="mt-3 grid list-none grid-cols-2 gap-x-[14px] gap-y-[2px] p-0" style={{ fontSize: 14, lineHeight: 1.35, color: colors.ink }}>

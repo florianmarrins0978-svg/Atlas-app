@@ -99,6 +99,22 @@ export function ouvrirNourrice(toile, o) {
   return {
     scene: S, montrer: montrer, eclater: eclater, regarder: regarder, detruire: detruire,
     surEtat: function (f) { ecoutes.push(f); },
+    // LES NUMÉROS : celui de la légende, donné à la première pièce de chaque modèle dans l'ordre de la
+    // composition (la rangée du haut, l'arrivée, puis les voies, le goutte-à-goutte en dernier). C'est
+    // l'ordre du dessin d'avant (src/lib/arrosage/nourrice-eclatee.ts, `numero`) : une électrovanne
+    // porte le même numéro sur chaque voie. Chaque entrée dit où la pièce est à l'écran.
+    numeros: function () {
+      var ordre = [];
+      return S.ecran().map(function (e) {
+        var i = ordre.indexOf(e.cle); if (i < 0) { ordre.push(e.cle); i = ordre.length - 1; }
+        e.numero = i + 1; return e;
+      });
+    },
+    // LES COLONNES : l'arrivée, puis une par voie, le goutte-à-goutte en dernier, chacune avec les indices
+    // de ses pièces du haut vers le bas. Les mots du bas (« Arrivée d'eau », R1, R2…) s'y accrochent.
+    colonnes: function () {
+      return etat.compo ? etat.compo.colonnes.map(function (c) { return { arrivee: c.arrivee, goutte: c.goutte, pieces: c.pieces.slice() }; }) : [];
+    },
     etat: function () { return { voies: etat.voies, goutte: etat.goutte, eclatee: etat.eclatee, vue: etat.vue }; },
     erreurs: function () { return etat.compo ? etat.compo.erreurs : []; }
   };

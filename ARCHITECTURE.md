@@ -37968,6 +37968,23 @@ PDF se confronte à ces quatre-là avant la batterie.
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.
 
+**La page d'un réseau dans le PDF (22 novembre 2026).** Sa demande :
+*« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur
+celle où il n'y a pas vraiment la place »*. Le plan en couleur ne loge plus à
+côté du texte (200 points) : il prend la largeur de la page sous l'en-tête, et
+`disposerLeMilieu` (pure) partage avec le dessin des pièces ce qui reste entre
+l'en-tête et la tête du bas. Quand les deux tiennent, le plan est en pleine
+largeur ; sinon ils rétrécissent ensemble, le plan 1,3 fois moins vite
+(`PRIORITE_DU_PLAN`) : à parts égales il ne gagnait que deux tiers sur une
+pelouse carrée, et il a aussi demandé à voir les photos des pièces. **Le dessin
+des pièces se mesure sur ce qu'il montre** (`encombrementDesPieces`) : ses zones
+coupées au cadre, ses tuyaux, et ses vignettes, qui débordent du dessin quand
+une tête est sur un coin. Mesuré sur son cadre, il gardait 1,60 m de vide autour
+des têtes, et ignorait les vignettes qui touchaient alors le plan ou la tête du
+bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose :
+relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
+ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
+
 ## §600 : La nourrice en 3D est faite de pièces qui déclarent leurs bouts, et rien d'autre ne les pose
 
 *22 novembre 2026. Une maquette (`appli/arrosage-nourrice-3d.html`), rien dans `src/`.*
@@ -38034,24 +38051,66 @@ interdisent de republier (`docs/nourrice-3d-realiste.md`).
 sous `scripts/` l'aurait fait passer au niveau 2 sans rien protéger de plus. Ce qu'il vérifie est écrit
 dans le document de retour.
 
-**La page d'un réseau dans le PDF (22 novembre 2026).** Sa demande :
-*« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur
-celle où il n'y a pas vraiment la place »*. Le plan en couleur ne loge plus à
-côté du texte (200 points) : il prend la largeur de la page sous l'en-tête, et
-`disposerLeMilieu` (pure) partage avec le dessin des pièces ce qui reste entre
-l'en-tête et la tête du bas. Quand les deux tiennent, le plan est en pleine
-largeur ; sinon ils rétrécissent ensemble, le plan 1,3 fois moins vite
-(`PRIORITE_DU_PLAN`) : à parts égales il ne gagnait que deux tiers sur une
-pelouse carrée, et il a aussi demandé à voir les photos des pièces. **Le dessin
-des pièces se mesure sur ce qu'il montre** (`encombrementDesPieces`) : ses zones
-coupées au cadre, ses tuyaux, et ses vignettes, qui débordent du dessin quand
-une tête est sur un coin. Mesuré sur son cadre, il gardait 1,60 m de vide autour
-des têtes, et ignorait les vignettes qui touchaient alors le plan ou la tête du
-bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose :
-relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
-ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
 
-## §601 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
+## §601 : La nourrice en 3D vit dans `appli/`, et l'appli l'importe de là
+
+*22 novembre 2026. Sa demande : « mets-moi exactement cette planche dans l'application [...] et sur le site ».*
+
+**Un seul module, trois endroits.** `appli/nourrice-3d/vue.js` (`ouvrirNourrice`) porte la scène, le choix
+des deux finesses, la composition et le geste du toucher. La planche (`appli/arrosage-nourrice-3d.html`), la
+page des outils du site (`appli/vente/outils.html`) et l'écran du plan (`src/app/paysage/arrosage/Nourrice3D.tsx`)
+l'appellent. Le toucher et la finesse vivaient dans la planche : recopiés, ils auraient divergé (§3).
+
+**Pourquoi `src/` importe `appli/`, et pas l'inverse.** GitHub Pages ne publie que `appli/` : la planche et le
+site ne peuvent rien lire ailleurs. L'appli, elle, construit tout le dépôt : `Nourrice3D.tsx` importe
+`../../../../appli/nourrice-3d/vue.js` dynamiquement (rien ne part chez qui n'ouvre pas le plan), et l'HDRI par
+`new URL(…, import.meta.url)`, que la construction copie dans `/_next/static/media/`.
+
+**`three` est épinglé à 0.160.0 dans `package.json`.** Les modules de `appli/vendor/three/` (identiques, octet
+pour octet, à ceux du paquet) importent `three` par son nom : la planche le résout par sa carte des imports, la
+construction de l'appli par `node_modules`. **Monter `three` d'un côté sans l'autre casse la 3D** : les deux
+doivent bouger ensemble, et les copies de `vendor/` se recopient depuis le paquet.
+
+**`detruire()`.** La scène ne se défaisait pas : une page ne vit qu'une fois. Un écran de l'appli, quitté puis
+rouvert, aurait laissé tourner sa boucle et gardé un contexte WebGL par visite (un téléphone en refuse au-delà
+d'une quinzaine). `scene.detruire()` arrête la boucle, l'observateur de taille, les commandes, et rend les
+tampons et le contexte ; `vue.detruire()` y ajoute les écouteurs, les géométries et les matières.
+
+**Le repli est le dessin d'avant.** Sans WebGL 2, ou sur un chargement raté, l'écran montre le dessin SVG
+(`Dessin`, toujours employé aussi par `DepuisUnDevis`), et l'erreur se journalise. Le site, lui, dit une phrase.
+
+**Ce que la 3D ne montre pas, et le dessin montrait** : une pièce supprimée grisée et barrée, une pièce
+changée en doré (sa demande du 19 octobre 2026). La légende numérotée le dit toujours, en rouge barré et en
+doré. Poser ces signes dans la 3D demande une matière par pose : `TODO.md`.
+
+## §602 : Une correction ne porte que ce qu'il change, et se pose sur la ligne en base
+
+**Vu le 22 novembre 2026, sur « Règlement reçu ».** Le moyen, la date et le
+montant changés d'affilée, seul le dernier restait : « Virement » revenait à
+« Chèque », la date au jour même, sans un mot. Chaque champ renvoyait la ligne
+ENTIÈRE telle que l'écran l'avait reçue ; le second enregistrement, parti avant
+le retour du premier, la réécrivait avec l'ancienne valeur. À la main, sur un
+bon réseau, l'aller et retour est plus court que le geste suivant ; sur un
+chantier mal couvert, non.
+
+**La règle.** Un écran qui enregistre champ par champ n'envoie que le champ
+changé (`CorrectionReglement`, partielle). Le dépôt la pose sur la ligne lue EN
+BASE, dans la transaction, verrouillée (`for("update")`) : deux corrections
+parties ensemble passent l'une après l'autre, et la seconde lit ce que la
+première a écrit. Ce qui dépend d'un autre champ se déduit là aussi (le numéro
+ne vit qu'avec un chèque).
+
+**Ce qui a été écarté.** Garder la ligne à jour côté écran avant d'envoyer :
+deux enregistrements en vol restent deux photos de l'écran, et l'ordre de leurs
+retours n'est pas garanti. Seule la base sait ce qui est écrit.
+
+**Ce qui le tient.** `scripts/test-papier-facture-db.ts` (deux corrections
+parties ensemble, sous `atlas_app`) et `scripts/test-papier-facture-e2e.ts`
+(les trois champs changés sans attendre, au navigateur). Les autres écrans qui
+enregistrent champ par champ n'ont pas été revus : à faire quand l'un d'eux
+montrera le même symptôme.
+
+## §603 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
 
 **Sa lecture du PDF, le 21 novembre 2026, et son « oui » du 22.** Le mot
 « nourrice » se posait vers le centre de gravité du terrain, à 1,5 m du regard
@@ -38095,7 +38154,7 @@ dernier chiffre dans Node et dans Chrome, et React refuse une transformation qui
 diffère entre le serveur et le navigateur. Six décimales ; mesuré dans les deux
 moteurs, 5 rotations sur 140 différaient avant, aucune après.
 
-## §602 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
+## §604 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
 
 **Sa planche du 21 novembre 2026, validée par son « tout coder », et son « tu
 me codes aussi » du 22.** « Voir la saisie » d'un plan enregistré dit ce qu'il
@@ -38126,7 +38185,7 @@ entière, et la note se lit sans rouvrir la lecture.
 Le calcul ne lit pas ce champ, et l'empreinte du plan non plus. Un plan
 enregistré avant le 22 novembre n'en a pas : il ne dit rien, faute de savoir.
 
-## §603 : La page de la nourrice du PDF montre l'éclaté 3D, photographié d'avance
+## §605 : La page de la nourrice du PDF montre l'éclaté 3D, photographié d'avance
 
 **Sa remarque du 22 novembre 2026 :** *« ton plan d'arrosage ne comprend pas la
 nourrice [...] prends la vue éclatée [...] tu utiliseras ça pour faire le plan de
@@ -38157,7 +38216,7 @@ change pas ce qu'on monte. `test-pdf-du-plan-arrosage.ts` compare, et son rouge
 dit la commande à jouer. Le même contrôle exige une photo pour chacune des 27
 nourrices.
 
-## §604 : Chaque page du PDF numérote ses pièces, sur la photo et dans la liste
+## §606 : Chaque page du PDF numérote ses pièces, sur la photo et dans la liste
 
 **Sa demande du 22 novembre 2026 :** *« c'est un peu compliqué de savoir quelle
 pièce il faut pour quel réseau [...] quand je suis sur la nourrice, la liste des
@@ -38203,4 +38262,3 @@ l'autre. La nourrice n'en porte pas : sa grande photo les montre déjà.
 pièce montrée a son numéro, tout numéro a sa pièce montrée sur la page. Il lit
 ce que la page montre dans les données qui la dessinent, pas dans le PDF : un
 numéro dessiné ne se distingue pas d'un chiffre d'un nom de pièce.
-

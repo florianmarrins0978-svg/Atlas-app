@@ -202,6 +202,34 @@ async function main() {
     assert.equal(nomAcompte(efface.reglements, 0, [{ rang: 1, tauxCumule: "30" }]), "Acompte 30 %");
   });
 
+  await essai("un champ corrigé seul garde les autres, même deux corrigés en même temps", async () => {
+    // Vu le 22 novembre 2026 : sur « Règlement reçu », le moyen, la date et le
+    // montant changés d'affilée, seul le dernier restait. Chaque champ renvoyait
+    // la ligne entière telle que l'écran l'avait reçue : le second effaçait le
+    // premier. Une correction ne porte plus que ce qu'il change, et le dépôt la
+    // pose sur la ligne telle qu'elle est EN BASE, verrouillée le temps de
+    // l'écrire : deux corrections parties ensemble ne s'écrasent pas.
+    const [g] = await reglementsRecus(ctx, factureId);
+    const [a, b] = await Promise.all([
+      majReglementRecu(ctx, g.id, { moyen: "virement" }),
+      majReglementRecu(ctx, g.id, { date: "2026-09-05" }),
+    ]);
+    assert.ok(a.ok && b.ok, `une correction seule a été refusée : ${JSON.stringify([a, b])}`);
+    const [apres] = await reglementsRecus(ctx, factureId);
+    assert.equal(apres.moyen, "virement", "le moyen corrigé a été écrasé par la date");
+    assert.equal(apres.date, "2026-09-05", "la date corrigée a été écrasée par le moyen");
+    assert.equal(apres.montant, g.montant, "le montant a bougé sans qu'on y touche");
+    assert.equal(apres.libelle, g.libelle, "le nom a bougé sans qu'on y touche");
+    const montant = await majReglementRecu(ctx, g.id, { montant: "500" });
+    assert.ok(montant.ok);
+    assert.equal(montant.reglements[0].moyen, "virement", "corriger le montant a remis l'ancien moyen");
+    assert.equal(montant.reglements[0].montant, "500.00");
+    // La ligne d'avant revient, pour le papier qui suit.
+    const remis = await majReglementRecu(ctx, g.id, { date: g.date, montant: g.montant, moyen: g.moyen, numero: g.numero });
+    assert.ok(remis.ok);
+    assert.deepEqual(remis.reglements[0], g);
+  });
+
   await essai("acquittée, le papier porte le tampon ; émise, plus rien ne se pose", async () => {
     await basculerAcquittee(ctx, factureId, true, "2026-09-21");
     const texte = texteDuPdf(await genererPdfFacturePourApercu(ctx, factureId));

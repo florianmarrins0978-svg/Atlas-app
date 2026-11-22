@@ -591,17 +591,35 @@ export async function poserReglementRecu(
   });
 }
 
-/** Corrige un acompte reçu — sa date, son moyen, son numéro, son montant. */
+/**
+ * Ce qu'il corrige sur un acompte reçu : seulement les champs qu'il a changés.
+ * Le reste se lit sur la ligne en base, pas sur ce que l'écran avait reçu : vu
+ * le 22 novembre 2026, chaque champ renvoyait la ligne entière telle que l'écran
+ * l'avait reçue, et le moyen, la date et le montant changés d'affilée n'en
+ * gardaient qu'un, sans un mot (« Virement » revenait à « Chèque »).
+ */
+export type CorrectionReglement = Partial<SaisieReglement>;
+
+/** Corrige un acompte reçu : sa date, son moyen, son numéro, son montant, son nom. */
 export async function majReglementRecu(
   ctx: Ctx,
   reglementId: string,
-  saisie: SaisieReglement
+  correction: CorrectionReglement
 ): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, reglementId)).limit(1);
+    // Verrouillée le temps d'écrire : deux corrections parties ensemble passent
+    // l'une après l'autre, et la seconde lit ce que la première a écrit.
+    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, reglementId)).limit(1).for("update");
     if (!p) return { ok: false as const, raison: "Ce règlement est introuvable." };
     const garde = await factureEnBrouillon(tx, p.factureId);
     if (!garde.ok) return garde;
+    const saisie: SaisieReglement = {
+      date: correction.date === undefined ? p.datePaiement : correction.date,
+      montant: correction.montant === undefined ? p.montant : correction.montant,
+      moyen: correction.moyen === undefined ? p.moyen : correction.moyen,
+      numero: correction.numero === undefined ? p.numero : correction.numero,
+      libelle: correction.libelle === undefined ? p.libelle : correction.libelle,
+    };
     const autres = (await lireReglements(tx, p.factureId)).filter((g) => g.id !== reglementId);
     const montant = montantPropre(saisie.montant);
     const refus = refusDuReglementRecu(garde.facture.totalTtc, autres, { date: saisie.date, montant });
