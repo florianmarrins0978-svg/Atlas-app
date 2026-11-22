@@ -137,7 +137,7 @@ export default function Nourrice3D({ voies, nbGoutte, repli }: { voies: number; 
             aria-pressed={eclatee === oui}
             data-atlas={oui ? "nourrice-eclater" : "nourrice-monter"}
             onClick={() => ouverte.current?.eclater(oui)}
-            className="min-h-[44px] min-w-0 flex-1 rounded-[10px] border-0 text-[15px]"
+            className="min-h-[44px] min-w-0 flex-1 rounded-full border-0 text-[15px]"
             style={bouton(eclatee === oui)}
           >
             {oui ? "Éclatée" : "Montée"}
@@ -151,7 +151,7 @@ export default function Nourrice3D({ voies, nbGoutte, repli }: { voies: number; 
             type="button"
             aria-pressed={vue === v.cle}
             onClick={() => ouverte.current?.regarder(v.cle)}
-            className="min-h-[44px] min-w-0 flex-1 rounded-[10px] border-0 text-[15px]"
+            className="min-h-[44px] min-w-0 flex-1 rounded-full border-0 text-[15px]"
             style={bouton(vue === v.cle)}
           >
             {v.nom}
