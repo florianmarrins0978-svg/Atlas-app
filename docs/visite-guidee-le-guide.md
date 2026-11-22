@@ -161,6 +161,69 @@ micro remplit les champs vides, il n'écrase rien et ne valide rien.
 
 La visite compte 85 étapes.
 
+## Ta demande du 22 : les sauts dans l'aperçu du PDF, et la facture qui s'essaie
+
+*« Expliquer aussi qu'on peut faire des sauts de ligne et des sauts de page avec
+l'aperçu du PDF du devis. Sur la facture, je peux pas ajouter un travail ou un
+règlement reçu. Faudrait le faire, ça. »*
+
+**L'aperçu du devis, quatre étapes de plus** (figées dans l'appli, sur le devis
+de M. Lefèvre) :
+
+| Étape | Ce qu'on voit |
+|---|---|
+| Touchez l'élagage du tilleul. | le PDF, et la phrase de l'appli : « Touchez une ligne pour commencer une nouvelle page à cet endroit. » |
+| Touchez Nouvelle page. | la ligne du tilleul encadrée d'or, et en bas « Nouvelle page » ou « Un espace ici » |
+| Touchez le ramassage. | le tilleul en haut de la page 2, et la pastille « Saut de page » entre les deux pages |
+| Touchez Un espace ici. | la ligne du ramassage encadrée |
+| Revenez au devis. | une ligne blanche avant le ramassage, la pastille « Espace », et « Tout remettre » en haut |
+
+**La facture : « Travaux en plus » et ses quatre boutons** s'essaient
+maintenant, à la suite, comme ceux du devis :
+
+| Bouton | Ce qu'il montre |
+|---|---|
+| Ajouter un travail | un dessouchage à 85 € : le total passe à 1 026 € |
+| Main d'œuvre | sa vraie feuille, puis la ligne posée : 280 €, le total à 1 260 € |
+| Ajouter une TVA | sa vraie feuille, puis une ligne à 10 % |
+| Règlement reçu | 300 € d'acompte par virement le 21 : il reste 624 € à payer |
+
+Annuler une feuille, ou retirer ce qu'un bouton a posé, ramène aux travaux en
+plus ; « Revenir à la facture » ramène à la facture ; Suivant continue la visite.
+
+**Trouvé en regardant les captures :** en arrivant sur « Travaux en plus », la
+page se calait tout en bas, sur Facture acquittée. Les quatre boutons, puis la
+ligne ajoutée, restaient au-dessus, hors de l'écran : tu aurais dû faire défiler
+pour voir ce que tu venais de faire. Chaque bouton montre maintenant ce qu'il a
+posé en arrivant.
+
+**Fait autrement que ta demande, et pourquoi :** tu as demandé le travail et le
+règlement. Main d'œuvre et Ajouter une TVA, sur le même écran, ne répondaient
+pas non plus : les laisser muets, c'était la même déception un bouton plus loin.
+
+**Ce qui s'est révélé faux de mon côté :** le contrôle des boutons muets
+(21 novembre, « 233 boutons touchés, aucun muet ») comptait un guide qui tremble
+comme une réponse. Ajouter un travail tremblait : il était donc « vert ». Le
+contrôle des essais touche maintenant ces quatre boutons et exige qu'ils
+s'ouvrent : rouge sur la visite d'avant (9 défauts), vert après.
+
+**Trouvé en route, dans l'appli elle-même, et pas corrigé :** sur un règlement
+reçu, changer le moyen, la date et le montant d'affilée ne garde que le dernier
+champ. Chaque champ renvoie la ligne entière telle que l'écran l'a reçue ; si le
+précédent n'est pas encore revenu du serveur, il est écrasé, sans message.
+Reproduit ici en enchaînant les trois gestes sans pause : « Chèque » et la date
+du jour sont revenus. À deux secondes d'écart, tout est gardé. Sur un bon
+réseau, ta main est plus lente que l'aller et retour ; **sur un chantier mal
+couvert, un « Virement » peut revenir à « Chèque » sans que tu le voies.** Pas
+vérifié sur ton téléphone. La correction touche l'argent, donc une batterie :
+elle attend ton « oui » (`TODO.md`).
+
+**Le poids de la page :** une même page de PDF (conditions générales, formulaire,
+attestation) revenait sur les cinq écrans de l'aperçu. Elle n'est écrite qu'une
+fois ; la visite passe de 6,6 à 7,3 Mo au lieu de 8,8.
+
+La visite compte 89 étapes.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |

@@ -12,7 +12,9 @@
 //             Réglages s'ouvrent et reviennent ; faire défiler replie le guide
 //             (« la petite barre noire cache les informations », 21 novembre)
 //   essais    les boutons à essayer s'enchaînent sans Retour, et Suivant fait
-//             avancer (« on est obligé de faire retour », 21 novembre)
+//             avancer (« on est obligé de faire retour », 21 novembre) ; ceux des
+//             travaux en plus de la facture s'essaient aussi (« je peux pas
+//             ajouter un travail ou un règlement reçu », 22 novembre)
 //   portes    dans les Réglages libres, chaque porte s'ouvre et sa flèche ramène
 //             (« n'importe quelle porte dans la page réglage », 21 novembre)
 //   muets     chaque bouton des écrans d'essai répond (CLAUDE.md §3 bis, 2 quater)
@@ -153,6 +155,37 @@ async function enchainerLesEssais(largeur, hauteur) {
   await toucher('[data-atlas="facture-acquittee"]');
   await toucher('[data-atlas="ajouter-travaux-supplementaires"]');
   dire(cas, (await essai()).startsWith("Des travaux"), "Travaux en plus ne s'ouvre pas depuis la facture acquittée");
+  // Ses boutons s'essaient à leur tour (« je peux pas ajouter un travail ou un règlement
+  // reçu », 22 novembre : ils faisaient seulement trembler le guide), et ce qu'ils posent
+  // se retire, ou leur feuille s'annule, pour revenir aux travaux en plus.
+  // Ce qu'un essai posé doit montrer (`voir`) est à l'écran en arrivant, hors du guide :
+  // la visite arrivait tout en bas des travaux en plus, sous la ligne ajoutée.
+  const montre = async () => {
+    await p.waitForTimeout(300);
+    const r = await p.evaluate(() => {
+      const x = visite.essai()?.x;
+      if (visite.essai()?.phase !== "pose" || !x?.voir) return null;
+      const g = document.querySelector(".g").getBoundingClientRect();
+      return x.voir.map((sel) => { const e = document.querySelector(".visite-ecran:not([hidden]) " + sel); const b = e?.getBoundingClientRect(); return b && b.top >= 0 && b.bottom <= g.top ? "" : sel; }).filter(Boolean).join(" ");
+    });
+    dire(cas, !r, `${await essai()} : ${r} n'est pas à l'écran en arrivant`);
+  };
+  await montre();
+  const enPlus = async (sel, attendu, retour) => {
+    await toucher(sel);
+    dire(cas, (await essai()).startsWith(attendu), `${sel} ne s'essaie pas depuis les travaux en plus (${await essai()})`);
+    await montre();
+    await toucher(...retour);
+    dire(cas, (await essai()).startsWith("Des travaux"), `${retour.join(" ")} ne ramène pas aux travaux en plus (${await essai()})`);
+  };
+  await enPlus('[data-atlas="ajouter-ligne-supplement"]', "Un travail en plus", ['[data-atlas="retirer-supplement"]']);
+  await enPlus('[data-atlas="poser-main-doeuvre"]', "La main d'œuvre feuille", ["button", "Annuler"]);
+  await enPlus('[data-atlas="ajouter-tva-supplement"]', "Un autre taux feuille", ["button", "Annuler"]);
+  await enPlus('[data-atlas="poser-reglement"]', "Un règlement reçu", ['[data-atlas="retirer-reglement"]']);
+  await toucher('[data-atlas="poser-main-doeuvre"]');
+  await toucherLeDoigt(p); await p.waitForTimeout(400);
+  dire(cas, (await essai()) === "La main d'œuvre pose", "Ajouter la main d'œuvre ne se pose pas sur les travaux en plus");
+  await montre();
   await suivant(p); await p.waitForTimeout(400);
   dire(cas, (await p.evaluate(() => visite.etape())) === facture + 1, "Suivant ne fait pas avancer après les essais de la facture");
   await ctx.close();
@@ -170,6 +203,8 @@ async function aucunBoutonMuet() {
       while (visite.etape() !== r) document.querySelector(visite.etape() < r ? ".g-droite" : ".g-gauche").click();
       const trouver = (sel) => { const m = sel.match(/^(.*):has-text\("(.*)"\)$/); return [...document.querySelectorAll(".visite-ecran:not([hidden]) " + (m ? m[1] : sel))].find((e) => e.getBoundingClientRect().width && (!m || e.textContent.includes(m[2]))); };
       const x = visite.essais[g][k];
+      // Un essai qui s'ouvre depuis l'écran d'un autre (les travaux en plus) : celui-là d'abord.
+      if (x.depuis) trouver(visite.essais[g].find((z) => z.pose === x.depuis).ouvre).click();
       trouver(x.ouvre).click();
       if (visite.essai()?.phase === "feuille") trouver(x.applique).click();
     }, [rang, groupe, k]);
