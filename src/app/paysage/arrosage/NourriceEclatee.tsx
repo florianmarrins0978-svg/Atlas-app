@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { OMBRE_VIGNETTE } from "./Vignette";
 import Nourrice3D from "./Nourrice3D";
@@ -28,6 +29,11 @@ const CAT = CATALOGUE as unknown as { piece(ref: string): { nom: string; marque?
  * de ce dessin (`Nourrice3D`, sa planche `appli/arrosage-nourrice-3d.html`) ;
  * le dessin ne sert plus que de repli, sur l'appareil qui ne sait pas afficher
  * la 3D. La légende numérotée reste ce qu'on touche.
+ *
+ * **« Voir »** (sa réponse du 22 novembre 2026 : *« rajouter voir à changer
+ * supprimer »*) : une ligne de la légende passe à sa feuille de quoi montrer
+ * ses pièces sur la 3D, tant que la 3D s'affiche. Le bac « Avec la nourrice »
+ * n'en a pas : ses pièces ne sont pas dans la 3D.
  */
 export default function NourriceEclatee({
   voies,
@@ -48,8 +54,12 @@ export default function NourriceEclatee({
   retouches: Retouches;
   /** Combien de chaque pièce la fiche compte, pour dire « 2 en moins » dans la légende. */
   nombre: Record<string, number>;
-  onTouche: (ref: string, nom: string) => void;
+  /** `voir`, quand la pièce peut se montrer sur la 3D : la feuille le propose. */
+  onTouche: (ref: string, nom: string, voir?: () => void) => void;
 }) {
+  const [prete, setPrete] = useState(false);
+  const [montree, setMontree] = useState<{ ref: string } | null>(null);
+  const rendre = useCallback(() => setMontree(null), []);
   const n = composerNourrice(voies.length, nbGoutte);
   if (!n) {
     return (
@@ -76,6 +86,11 @@ export default function NourriceEclatee({
       <Nourrice3D
         voies={voies.length}
         nbGoutte={nbGoutte}
+        // R1, R2… au bout des colonnes : le numéro du réseau que la voie alimente, dans sa couleur, comme le dessin.
+        reseaux={voies.map((r) => ({ nom: `R${r + 1}`, couleur: couleurs[r] ?? "#4a4a44" }))}
+        montree={montree}
+        onRendre={rendre}
+        onPrete={setPrete}
         repli={
           <div className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
             <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
@@ -93,7 +108,7 @@ export default function NourriceEclatee({
                 type="button"
                 data-atlas="piece-nourrice"
                 data-nr={ref}
-                onClick={() => onTouche(ref, nomCatalogue(ref))}
+                onClick={() => onTouche(ref, nomCatalogue(ref), prete ? () => setMontree({ ref }) : undefined)}
                 className="flex min-h-[40px] w-full items-start gap-2 border-0 bg-transparent px-0 py-1 text-left"
                 style={{ font: "inherit", color: "inherit", cursor: "pointer" }}
               >

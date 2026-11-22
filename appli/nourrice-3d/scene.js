@@ -1,11 +1,13 @@
-// LA SCÈNE DE LA NOURRICE EN 3D : la lumière, les ombres, l'occlusion ambiante, l'appareil photo, et
-// les pièces dessinées en instances.
+// LA SCÈNE DE LA NOURRICE EN 3D : la lumière, l'occlusion ambiante, l'appareil photo, et les pièces
+// dessinées en instances.
 //
 // CE QUI FAIT LE RENDU.
 //   La lumière d'ambiance vient d'une HDRI libre (CC0, appli/vendor/hdri/) ; si elle ne se charge pas,
 //   une pièce éclairée calculée par three (RoomEnvironment) la remplace.
-//   Une lampe porte des ombres douces ; sous les pièces, une ombre de contact (la profondeur vue d'en
-//   dessous, floutée) les pose au fond du regard.
+//   Une lampe donne le sens de la lumière. AUCUNE OMBRE PORTÉE, ni au sol, ni d'une pièce sur l'autre :
+//   sa demande du 22 novembre 2026, « Tu peux retirer les ombres », puis « oui, partout ». Elles
+//   salissaient le gris des pièces voilées (la pièce choisie gardait des ombres de pièces qu'on ne
+//   voyait plus).
 //   L'occlusion ambiante (GTAO) creuse les filets, les cannelures et les jonctions.
 //   L'image se compose en haute dynamique, se ramène à l'écran par la courbe ACES, et l'anticrénelage
 //   est celui du tampon de rendu (MSAA).
@@ -41,7 +43,6 @@ export function creerScene(toile, o) {
   var rendu = new THREE.WebGLRenderer({ canvas: toile, antialias: false, powerPreference: "high-performance" });
   if (!rendu.capabilities.isWebGL2) { rendu.dispose(); throw new Error("WebGL 2 absent"); }
   rendu.toneMapping = THREE.ACESFilmicToneMapping; rendu.toneMappingExposure = o.exposition || 1;
-  rendu.shadowMap.enabled = true; rendu.shadowMap.type = THREE.PCFSoftShadowMap; rendu.shadowMap.autoUpdate = false;
 
   var scene = new THREE.Scene(); scene.background = fond;
   var racine = new THREE.Group(); scene.add(racine);
@@ -66,50 +67,16 @@ export function creerScene(toile, o) {
   var pret = new Promise(eclairer);
   // LE CONTEXTE PERDU. Un téléphone reprend la mémoire graphique d'un onglet laissé en arrière-plan ; au
   // retour, three refait ses tampons tout seul, mais ce qui avait été CALCULÉ dedans (l'ambiance
-  // filtrée, les ombres) est vide. On le refait, et on redessine.
+  // filtrée) est vide. On le refait, et on redessine.
   toile.addEventListener("webglcontextlost", function (e) { e.preventDefault(); });
   toile.addEventListener("webglcontextrestored", function () {
-    eclairer(function () {}); etat.ombrePerimee = true; etat.contactPerime = true; qualite.enCours = -1; demander();
+    eclairer(function () {}); qualite.enCours = -1; demander();
   });
 
-  // LA LAMPE : elle donne le sens de la lumière et porte les ombres.
+  // LA LAMPE : elle donne le sens de la lumière.
   var lampe = new THREE.DirectionalLight(0xfff4e6, o.lampe != null ? o.lampe : 0.5);
-  lampe.castShadow = true; lampe.shadow.mapSize.set(2048, 2048); lampe.shadow.bias = -0.0002; lampe.shadow.normalBias = 0.6;
   scene.add(lampe); scene.add(lampe.target);
   var contre = new THREE.DirectionalLight(0xfff1e0, o.contre != null ? o.contre : 0.25); scene.add(contre); scene.add(contre.target);
-
-  // LE FOND DU REGARD : un plan qui ne montre que les ombres, puis l'ombre de contact au-dessus de lui.
-  var sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: 0.26, color: 0x1a1612 }));
-  sol.rotation.x = -Math.PI / 2; sol.receiveShadow = true; sol.scale.setScalar(20000); scene.add(sol);
-
-  var CONTACT = 512, HAUTEUR = 110;   // les pièces à moins de 11 cm du fond y posent leur ombre
-  var cibleContact = new THREE.WebGLRenderTarget(CONTACT, CONTACT), cibleFlou = new THREE.WebGLRenderTarget(CONTACT, CONTACT);
-  cibleContact.texture.generateMipmaps = false; cibleFlou.texture.generateMipmaps = false;
-  var planContact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: cibleContact.texture, transparent: true, opacity: 0.78, depthWrite: false, toneMapped: false }));
-  planContact.rotation.x = -Math.PI / 2; planContact.scale.y = -1; planContact.renderOrder = 2; scene.add(planContact);
-  var dessous = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, HAUTEUR);
-  dessous.rotation.x = Math.PI / 2;   // elle regarde vers le haut
-  var matiereProfondeur = new THREE.MeshDepthMaterial();
-  matiereProfondeur.userData.noirceur = { value: 1.25 };
-  matiereProfondeur.onBeforeCompile = function (sh) {
-    sh.uniforms.noirceur = matiereProfondeur.userData.noirceur;
-    sh.fragmentShader = "uniform float noirceur;\n" + sh.fragmentShader.replace("gl_FragColor = vec4( vec3( 1.0 - fragCoordZ ), opacity );",
-      "gl_FragColor = vec4( vec3( 0.0 ), pow( 1.0 - fragCoordZ, 1.6 ) * noirceur );");
-  };
-  matiereProfondeur.depthTest = false; matiereProfondeur.depthWrite = false; matiereProfondeur.side = THREE.DoubleSide;
-  matiereProfondeur.blending = THREE.CustomBlending; matiereProfondeur.blendEquation = THREE.MaxEquation;
-  matiereProfondeur.blendSrc = THREE.OneFactor; matiereProfondeur.blendDst = THREE.OneFactor;
-  var flou = new THREE.ShaderMaterial({
-    uniforms: { carte: { value: null }, pas: { value: new THREE.Vector2() } },
-    vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4( position.xy * 2.0, 0.0, 1.0 ); }",
-    fragmentShader: "uniform sampler2D carte; uniform vec2 pas; varying vec2 vUv; void main() { vec4 s = vec4( 0.0 );" +
-      " s += texture2D( carte, vUv - 4.0 * pas ) * 0.051; s += texture2D( carte, vUv - 3.0 * pas ) * 0.0918; s += texture2D( carte, vUv - 2.0 * pas ) * 0.12245;" +
-      " s += texture2D( carte, vUv - pas ) * 0.1531; s += texture2D( carte, vUv ) * 0.1633; s += texture2D( carte, vUv + pas ) * 0.1531;" +
-      " s += texture2D( carte, vUv + 2.0 * pas ) * 0.12245; s += texture2D( carte, vUv + 3.0 * pas ) * 0.0918; s += texture2D( carte, vUv + 4.0 * pas ) * 0.051; gl_FragColor = s; }",
-    depthTest: false, depthWrite: false
-  });
-  var carreFlou = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), flou), cameraFlou = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  carreFlou.frustumCulled = false;
 
   // LA COMPOSITION DE L'IMAGE : le rendu, l'occlusion ambiante, puis la courbe ACES et l'écran.
   var cible = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
@@ -128,7 +95,7 @@ export function creerScene(toile, o) {
 
   // LES PIÈCES, EN INSTANCES. Une couche (une matière d'un modèle de pièce) se dessine une seule fois
   // pour toutes les pièces de ce modèle ; une pièce retournée bout pour bout reste le même modèle.
-  var etat = { compo: null, definitions: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0 };
+  var etat = { compo: null, definitions: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0, choisie: null };
   var M = new THREE.Matrix4(), demiTour = new THREE.Matrix4().makeRotationY(Math.PI), T = new THREE.Matrix4();
   function matrice(pose, t, sortie) {
     var p = place(pose, t);
@@ -149,16 +116,30 @@ export function creerScene(toile, o) {
       var d = etat.definitions[cle], poses = parCle[cle];
       d.couches.forEach(function (c) {
         var m = new THREE.InstancedMesh(c.geometrie, matieres[c.matiere] || matieres.pvc, poses.length);
-        m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         racine.add(m); etat.lots.push({ maille: m, poses: poses, cle: cle });
       });
     });
-    // Le fond du regard : juste sous le point le plus bas, quelle que soit la composition.
+    // Le dessous de la nourrice, quelle que soit la composition : les lampes se placent par rapport à lui.
     var bas = Infinity;
     Object.keys(parCle).forEach(function (cle) { etat.definitions[cle].couches.forEach(function (c) { bas = Math.min(bas, c.geometrie.boundingBox.min.y); }); });
-    etat.bas = bas - 1.2; sol.position.y = etat.bas; planContact.position.y = etat.bas + 0.15;
+    etat.bas = bas - 1.2;
+    voiler();
     regler(etat.t);
   }
+  // UNE PIÈCE CHOISIE : toutes celles de son modèle, sur chaque voie, gardent leur matière ; les autres
+  // passent sous le voile (sa demande du 22 novembre 2026 : « les pièces qu'on a sélectionnées restent en
+  // couleur et toutes les autres se grisent »). `null` rend la couleur à tout. Le choix survit à une
+  // nouvelle fiche : les lots se refont, le voile se repose sur eux.
+  function voiler() {
+    etat.lots.forEach(function (l) {
+      var m = l.maille;
+      if (!m.userData.matiere) m.userData.matiere = m.material;
+      m.material = etat.choisie && l.cle !== etat.choisie ? matieres.voile : m.userData.matiere;
+    });
+    demander();
+  }
+  function choisir(cle) { etat.choisie = cle || null; voiler(); }
   var boitePiece = new THREE.Box3();
   function boiteA(t, sortie) {
     sortie.makeEmpty();
@@ -175,35 +156,12 @@ export function creerScene(toile, o) {
       l.maille.instanceMatrix.needsUpdate = true;
     });
     boiteA(t, etat.boite);
-    // La lampe et son ombre suivent la nourrice, tout comme l'ombre de contact.
+    // Les lampes suivent la nourrice : la lumière vient toujours du même côté d'elle.
     var c = etat.boite.getCenter(new THREE.Vector3()), s = etat.boite.getSize(new THREE.Vector3()), e = Math.hypot(s.x, s.z) / 2 + 60;
     lampe.position.set(c.x - e * 0.55, etat.bas + e * 1.9, c.z + e * 0.5); lampe.target.position.set(c.x, etat.bas, c.z);
     contre.position.set(c.x + e, etat.bas + e, c.z - e); contre.target.position.copy(lampe.target.position);
-    var sc = lampe.shadow.camera; sc.left = -e; sc.right = e; sc.top = e; sc.bottom = -e; sc.near = e * 0.2; sc.far = e * 4; sc.updateProjectionMatrix();
-    etat.ombrePerimee = true;
-    var lx = s.x + 160, lz = s.z + 160;
-    planContact.position.x = c.x; planContact.position.z = c.z; planContact.scale.set(lx, -lz, 1);
-    dessous.position.set(c.x, etat.bas, c.z); dessous.left = -lx / 2; dessous.right = lx / 2; dessous.top = lz / 2; dessous.bottom = -lz / 2; dessous.updateProjectionMatrix();
-    etat.contactLarge = [lx, lz]; etat.contactPerime = true;
     demander();
   }
-  function ombreDeContact() {
-    var fondAvant = scene.background, clair = rendu.getClearAlpha();
-    scene.background = null; sol.visible = false; planContact.visible = false; scene.overrideMaterial = matiereProfondeur;
-    rendu.setClearAlpha(0); rendu.setRenderTarget(cibleContact); rendu.clear(); rendu.render(scene, dessous);
-    scene.overrideMaterial = null;
-    // Deux passes de flou, large puis fine : l'ombre s'étale sous la pièce et s'éteint en s'éloignant.
-    // Le pas du flou est en millimètres, pour que l'ombre garde la même mollesse quelle que soit la
-    // taille de la nourrice.
-    [[8, 0], [0, 8], [2.5, 0], [0, 2.5]].forEach(function (p, i) {
-      var source = i % 2 === 0 ? cibleContact : cibleFlou, dest = i % 2 === 0 ? cibleFlou : cibleContact;
-      flou.uniforms.carte.value = source.texture; flou.uniforms.pas.value.set(p[0] / etat.contactLarge[0], p[1] / etat.contactLarge[1]);
-      rendu.setRenderTarget(dest); rendu.clear(); rendu.render(carreFlou, cameraFlou);
-    });
-    rendu.setRenderTarget(null); rendu.setClearAlpha(clair);
-    scene.background = fondAvant; sol.visible = true; planContact.visible = true; etat.contactPerime = false;
-  }
-
   // CADRER : toute la nourrice dans l'image, le plus grand possible, depuis une direction donnée.
   function cadrage(direction, t, sortie) {
     var b = boiteA(t, new THREE.Box3()), c = b.getCenter(new THREE.Vector3()), d = b.getSize(new THREE.Vector3()).length() * 1.6;
@@ -337,13 +295,6 @@ export function creerScene(toile, o) {
     suite = enMouvement;
     appliquerQualite(enMouvement ? qualite.niveau : 0);
     aDessiner = false;
-    // Les ombres ne se refont que si les pièces ont bougé. Sur un appareil qui peine, pendant un
-    // mouvement, une image sur deux seulement : ce sont deux passes de géométrie de moins, et une ombre
-    // floue en retard d'une image ne se voit pas. L'image posée les rattrape toujours.
-    var sauter = enMouvement && qualite.enCours >= 1 && images % 2 === 1;
-    if (etat.ombrePerimee && !sauter) { rendu.shadowMap.needsUpdate = true; etat.ombrePerimee = false; }
-    if (etat.contactPerime && !sauter) ombreDeContact();
-    if (etat.ombrePerimee || etat.contactPerime) aDessiner = true;
     composition.render(); images++;
     ecoutes.image.forEach(function (f) { f(); });
   }
@@ -458,12 +409,12 @@ export function creerScene(toile, o) {
     arretee = true; cancelAnimationFrame(prochaine); guetteur.disconnect(); commandes.dispose();
     etat.lots.forEach(function (l) { racine.remove(l.maille); l.maille.dispose(); }); etat.lots = [];
     if (scene.environment) scene.environment.dispose();
-    pmrem.dispose(); composition.dispose(); ao.dispose(); cible.dispose(); cibleContact.dispose(); cibleFlou.dispose();
+    pmrem.dispose(); composition.dispose(); ao.dispose(); cible.dispose();
     rendu.dispose(); rendu.forceContextLoss();
   }
 
   return {
-    pret: pret, detruire: detruire, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, ecran: ecran, mesurer: mesurer, demander: demander,
+    pret: pret, detruire: detruire, poser: poser, choisir: choisir, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, ecran: ecran, mesurer: mesurer, demander: demander,
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
