@@ -72,11 +72,11 @@ de la seule ligne) :
    exemple il passe 1,76 m/s dans le Ø25 du trajet : Rain Bird le mettrait en
    Ø32, et lui seul. **REFUSÉ par le patron le 22 novembre 2026** : *« c'est
    soit on fait tout les réseau en 32 soit tout en 25 mais pas de 32 jusqu'au
-   1er arroseur puis 25 jamais ! »* Et ce n'est pas réseau par réseau, comme je
-   l'avais d'abord lu : **tous les réseaux d'une nourrice ont le même
-   diamètre** (*« pas un réseau en 25 et un en 32 »*), et si le Ø32 permet un
-   réseau de moins, ce sont tous les réseaux restants en Ø32. Ne pas
-   reproposer de mélange (`.claude/rules/arrosage.md`).
+   1er arroseur puis 25 jamais ! »* Un réseau est donc tout en Ø25 ou tout en
+   Ø32. **Et le choix reste réseau par réseau** (sa règle du 20 octobre) : il a
+   voulu un seul diamètre par nourrice, puis l'a retiré le même soir, *« si y a
+   du goutte à goutte, tu vas pas faire le goutte à goutte en 32 […] reprends
+   la règle d'avant quoi »* (`.claude/rules/arrosage.md`).
 2. **Alimenter le réseau par le milieu** (p. 66 : *« eliminated the need for the
    two larger pipe sizes »*, et moins d'écart de pression entre les têtes).
    Chaque branche porte la moitié du débit. Le calcul de l'outil
