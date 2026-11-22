@@ -188,7 +188,7 @@ goutte-à-goutte tombait en bas de page, loin de son rail ; elle le suit.
 
 | | |
 |---|---|
-| « la vanne 3/4, c'est pas la marque Dura », puis le régulateur et le regard jumbo | corrigé partout : la vanne, le régulateur, le regard jumbo (et ses 5 et 6 voies) et le regard rectangle 12" s'écrivent sans marque, dans l'appli, le PDF et les planches. Le relevé Aqua Plus les donnait déjà sans Dura. Les coudes, mamelons, union, té et collecteurs gardent Dura : Aqua Plus les vend sous des références Dura |
+| « la vanne 3/4, c'est pas la marque Dura », puis le régulateur, le regard jumbo et le PEBD Ø16 | corrigé partout : la vanne, le régulateur, le regard jumbo (et ses 5 et 6 voies), le regard rectangle 12" et le PEBD rigide Ø16 s'écrivent sans marque, dans l'appli, le PDF et les planches. Le relevé Aqua Plus les donnait déjà sans Dura. Les coudes, mamelons, union, té et collecteurs gardent Dura : Aqua Plus les vend sous des références Dura |
 | « mettre les pièces, les numéroter pour qu'on les voie » | sur chaque page de réseau, chaque ligne de « Ses pièces » montre sa pièce : le numéro, la photo, la quantité, le nom |
 | ce que ça coûte | le plan en couleur des réseaux 1 et 2 rétrécit encore (332 à 287 points, 286 à 245) ; les réseaux 3 et 4 gardent presque toute la largeur |
 

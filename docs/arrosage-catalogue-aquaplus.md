@@ -57,7 +57,8 @@ pansements, le code mort. Tous verts.
 
 **Corrigé le 22 novembre 2026, sur sa parole** : le regard rectangle 12", les
 regards jumbo et le régulateur FF 3/4" ne sont pas des Dura (*« il faut le
-corriger pour tout »*), pas plus que la vanne avec vis de purge. La marque est
+corriger pour tout »*), pas plus que la vanne avec vis de purge et le PEBD
+rigide Ø16 (*« oui retire Dura pour le PEHD 16 »*). La marque est
 retirée du catalogue et des planches, sans en écrire une autre. Les pièces à
 référence « ODU » (Dura chez Aqua Plus) la gardent.
 

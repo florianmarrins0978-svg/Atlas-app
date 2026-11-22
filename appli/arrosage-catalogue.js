@@ -755,7 +755,8 @@ var CATALOGUE = {
     // sortie part en 32. Absent du relevé Aqua Plus : sans référence, à sa
     // règle (« n'importe quel fournisseur sait de quoi on parle »).
     'te-25-32-25':         { nom:'Té 90° réduit 25×32×25', marque:'Plasson' },
-    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
+    // Pas un Dura (sa réponse du 22 novembre 2026, « oui retire Dura ») : Aqua Plus le vend sans marque (UPE1116).
+    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', unite:'ml' },
     // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
     // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
     // ceux d'Aqua Plus 2026, p. 58 ; sans référence, à sa demande (« ils sauront

@@ -173,14 +173,16 @@ for (const [ref, nom] of [
 
 // **Ce qui n'est pas un Dura** (sa correction du 22 novembre 2026 : *« la vanne
 // 3/4, c'est pas la marque Dura ; pareil pour le régulateur de pression et le
-// regard jumbo, il faut le corriger pour tout »*). Le catalogue leur prêtait la
+// regard jumbo, il faut le corriger pour tout »*, puis « oui retire Dura pour le
+// PEHD 16 »). Le catalogue leur prêtait la
 // marque des raccords de la nourrice ; Aqua Plus les vend sans la nommer. Ni le
 // catalogue (ses deux copies) ni une planche figée ne doivent la leur rendre.
 {
-  const C = CATALOGUE as unknown as { piece(ref: string): { marque?: string } | null };
-  const pasDura = ["vanne-purge", "regulateur-ff34", "regard-rect12", "regard-rg17106", "regard-jumbo5", "regard-jumbo6"];
+  // Les pièces de la nourrice et celles du réseau (le PEBD Ø16) : `piece()` ne lit que les premières.
+  const C = CATALOGUE as unknown as Record<"piecesNourrice" | "piecesReseau", Record<string, { marque?: string } | undefined>>;
+  const pasDura = ["vanne-purge", "regulateur-ff34", "regard-rect12", "regard-rg17106", "regard-jumbo5", "regard-jumbo6", "pebd16"];
   for (const ref of pasDura) {
-    const p = C.piece(ref);
+    const p = C.piecesNourrice[ref] ?? C.piecesReseau[ref];
     if (!p) { console.log(`  ✗ ${ref} n'est plus au catalogue : le contrôle ne mesure rien`); echecs++; continue; }
     if (p.marque === "Dura") { console.log(`  ✗ ${ref} est encore marqué Dura`); echecs++; }
   }
@@ -192,7 +194,7 @@ for (const [ref, nom] of [
   const planches = ["appli", "appli/soignee"].flatMap((d) => readdirSync(d).filter((f) => f.endsWith(".html")).map((f) => `${d}/${f}`));
   for (const f of planches) {
     const t = readFileSync(f, "utf8");
-    for (const nom of ["Dura Vanne", "Dura Régulateur", "Dura Regard"]) if (t.includes(nom)) { console.log(`  ✗ ${f} écrit encore « ${nom} »`); echecs++; }
+    for (const nom of ["Dura Vanne", "Dura Régulateur", "Dura Regard", "Dura PEBD"]) if (t.includes(nom)) { console.log(`  ✗ ${f} écrit encore « ${nom} »`); echecs++; }
   }
   if (planches.length < 20) { console.log("  ✗ les planches ne se lisent pas : le contrôle ne mesure rien"); echecs++; }
 }

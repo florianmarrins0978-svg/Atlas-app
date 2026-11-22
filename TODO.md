@@ -69,10 +69,8 @@ chercher `mes-dossiers` et `enregistrer-dossier` dans `src/` (`CLAUDE.md` §1).
 - **les numéros sur chaque page du PDF** (sa demande du 22 : savoir tout de
   suite à quoi correspond chaque ligne, `ARCHITECTURE.md` §604), avec la photo
   de chaque pièce dans la liste d'un réseau, et la vanne de purge, le
-  régulateur et les regards sans la marque Dura qu'ils n'ont pas : codés,
+  régulateur, les regards et le PEBD Ø16 sans la marque Dura qu'ils n'ont pas : codés,
   commités sur la branche de session, PAS sur `main`, avec ce qui suit ;
-- **le PEBD rigide Ø16 est marqué Dura** au catalogue, et Aqua Plus le vend sans
-  marque (UPE1116) : question posée le 22 novembre, à lui de dire ;
 - **`scripts/verifier-maquette-arrosage-plan.mjs` est rouge sur `main`**
   (« Cannot read properties of null (reading 'getAttribute') ») : vu le
   22 novembre, déjà rouge avant le lot de cette session, dont les fichiers de
