@@ -31,6 +31,7 @@ import assert from "node:assert/strict";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
 import { lireReponseCroquis } from "../src/server/ai/services/lire-croquis";
 import { zoneMesuree } from "../src/lib/arrosage/croquis-complet";
+import { cotesLuesDe } from "../src/lib/arrosage/lu-sur-la-photo";
 import {
   AIMANT_M,
   croquisDuDessin,
@@ -320,6 +321,49 @@ dire(pasDuDoigt(1) === 0.1 && pasDuDoigt(2.25) === 0.05 && pasDuDoigt(5) === 0.0
 dire(Math.abs(auPas(5.63, 2.25) - 5.65) < 1e-9 && Math.abs(auPas(5.63, 1) - 5.6) < 1e-9, "le doigt tombe sur le pas");
 const bords = cotesAuxBords({ x: 5.6, y: 0, L: 10, l: 10 }, terrain20);
 dire(Math.abs(bords.gauche - 5.6) < 1e-9 && Math.abs(bords.droite - 4.4) < 1e-9 && bords.haut === 0 && bords.bas === 10, "la maison collée au fond : 5,6 m à gauche, 4,4 m à droite, 10 m devant");
+
+// ── Ce que l'IA avait lu voyage jusqu'au plan (sa planche du 21 novembre 2026) ──
+// « Voir la saisie » dit « lu 2 m, corrigé par vous » : la cote lue sur la photo
+// doit donc suivre la zone de la lecture à l'éditeur, puis au serveur. Une zone
+// coupée en morceaux autour d'un massif ne la garde pas : un morceau n'a été lu
+// nulle part, et lui prêter la cote de la pelouse entière serait faux.
+{
+  const lue = cotesLuesDe({ type: "massif", nom: "Massif", L: 20, l: 2, x: 0, y: 0 });
+  dire(lue !== undefined && lue.L === 20 && lue.l === 2 && lue.deduites.length === 0, "une zone lue garde ses cotes lues");
+  const manque = cotesLuesDe({ type: "gazon", nom: null, L: 2, l: 9, x: 0, y: 0, aVerifier: { manque: ["L"], deduites: [{ champ: "l", depuis: "le bord commun" }] } });
+  dire(manque !== undefined && manque.L === null && manque.l === 9 && manque.deduites.join() === "l", "une cote non lue reste vide (la taille posée à l'estime n'est pas une lecture), une cote déduite le dit");
+  dire(cotesLuesDe({ type: "haie", nom: null, L: 15, l: 2, x: 0, y: 0 }) === undefined, "une haie se lit en mètres linéaires : elle ne porte pas de cotes lues");
+
+  const avec = lireLeDessin({
+    terrain: { L: 34, l: 16 },
+    zones: [
+      { type: "gazon", nom: "Pelouse", L: 12, l: 12, x: 0, y: 0, luSurLaPhoto: { L: 12, l: 10, deduites: [] } },
+      { type: "massif", nom: "Massif", L: 4, l: 2.4, x: 4, y: 5, luSurLaPhoto: { L: 4, l: 2, deduites: ["l"] } },
+      { type: "gazon", nom: "Avant", L: 8, l: 8, x: 14, y: 0, luSurLaPhoto: { L: 8, l: 6, deduites: [] } },
+      { type: "gazon", nom: "Ajoutée", L: 3, l: 3, x: 24, y: 0 },
+    ],
+    nourrice: { x: 13, y: 6 },
+    piquage: { x: 1, y: 1 },
+  });
+  dire(avec.ok && avec.dessin.zones[2].luSurLaPhoto?.l === 6, `le serveur relit ce que l'IA avait lu${avec.ok ? "" : ` (${avec.raison})`}`);
+  if (avec.ok) {
+    const c = croquisDuDessin(avec.dessin, "compteur");
+    const nommees = (debut: string) => c.zones.filter((z) => (z.nom ?? "").startsWith(debut));
+    dire(nommees("Pelouse").length > 1 && nommees("Pelouse").every((z) => z.luSurLaPhoto === undefined), "la pelouse coupée autour du massif : ses morceaux ne portent aucune cote lue");
+    dire(nommees("Massif")[0]?.luSurLaPhoto?.l === 2 && nommees("Massif")[0]?.luSurLaPhoto?.deduites.join() === "l", "le massif, entier, garde la sienne");
+    dire(nommees("Avant")[0]?.luSurLaPhoto?.l === 6, "la pelouse entière garde la sienne");
+    dire(nommees("Ajoutée")[0]?.luSurLaPhoto === undefined, "une zone ajoutée à la main n'en a pas");
+  }
+  for (const [faux, quoi] of [
+    [{ L: -1, l: 2, deduites: [] }, "une cote négative"],
+    [{ L: "12", l: 2, deduites: [] }, "une cote écrite en lettres"],
+    [{ L: 100000, l: 2, deduites: [] }, "cent kilomètres"],
+    [{ L: 12, l: 2, deduites: ["ml"] }, "une déduction inconnue"],
+  ] as const) {
+    const r = lireLeDessin({ terrain: { L: 34, l: 16 }, zones: [{ type: "gazon", nom: "P", L: 12, l: 12, x: 0, y: 0, luSurLaPhoto: faux }], nourrice: { x: 13, y: 6 }, piquage: null });
+    dire(!r.ok, `une cote lue fausse est refusée : ${quoi}`);
+  }
+}
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

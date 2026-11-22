@@ -276,6 +276,8 @@ function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
       ecartLignes: z.ecartLignes,
       ecartBord: z.ecartBord,
       sensLignes: z.sensLignes,
+      // Ce que l'IA avait lu : « Voir la saisie » d'un plan enregistré le compare à la cote finale.
+      luSurLaPhoto: z.luSurLaPhoto,
       // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
       // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
       // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse

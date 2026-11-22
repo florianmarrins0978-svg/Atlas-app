@@ -1,3 +1,4 @@
+import type { CotesLues } from "@/lib/arrosage/lu-sur-la-photo";
 import { getFournisseurVision } from "../providers/llm/fabrique";
 import type { FinDeReponse } from "../providers/llm/interface";
 import { zoneMesuree } from "@/lib/arrosage/croquis-complet";
@@ -75,6 +76,11 @@ export type ZoneLue = {
    * confirme (sa planche du 21 octobre 2026).
    */
   deduites?: { champ: "L" | "l" | "ml"; depuis: string }[];
+  /**
+   * Ce que l'IA avait lu de cette zone, quand elle revient du dessin vérifié
+   * (`croquisDuDessin`) : il part dans les paramètres, que l'enregistrement fige.
+   */
+  luSurLaPhoto?: CotesLues;
   /**
    * Où la zone se trouve SUR LE DESSIN, en fraction (0 à 1) — pas en mètres.
    *

@@ -1,3 +1,4 @@
+import { lireLesCotesLues, type CotesLues } from "./lu-sur-la-photo";
 import { CATALOGUE } from "./catalogue.js";
 import type { Depart, Montage } from "./robinet";
 
@@ -72,6 +73,8 @@ export type ZoneParametre = {
   sortieGoutte?: "ligne" | "boucle";
   /** Ajoutée à la main et pas encore glissée à sa place : posée sous les autres, et le plan le dit (20 octobre 2026). */
   aPlacer?: boolean;
+  /** Ce que l'IA avait lu de cette zone sur la photo (`lu-sur-la-photo.ts`) ; le calcul ne le lit pas. */
+  luSurLaPhoto?: CotesLues;
 };
 
 /** Tout ce qu'il faut pour refaire le plan, sans la photo. */
@@ -314,6 +317,10 @@ export function cotesDuPlanTiennentDebout(
   for (const z of parametres.zones) {
     if (z?.sensLignes !== undefined && z.sensLignes !== "longueur" && z.sensLignes !== "largeur") {
       return { ok: false, raison: `Le sens des lignes de « ${z?.nom || z?.type || "une zone"} » n’est pas lisible.` };
+    }
+    // Elles partent dans la saisie d'un dossier et se relisent à l'écran : relues comme le reste.
+    if (lireLesCotesLues(z?.luSurLaPhoto, COTE_MAX_M) === "faux") {
+      return { ok: false, raison: `Ce que la photo disait de « ${z?.nom || z?.type || "une zone"} » n’est pas lisible.` };
     }
   }
   // **Le tuyau choisi n'est que 25 ou 32**, et il vise un réseau qui peut

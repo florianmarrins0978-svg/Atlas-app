@@ -130,6 +130,25 @@ Ton « oui, corrige d'abord le mot nourrice et l'écart d'angle ».
 
 Un plan déjà enregistré dans un dossier garde son dessin de ce jour-là.
 
+### Le 22 novembre, enfin : « lu 2 m, corrigé par vous »
+
+Ton « tu me codes aussi ». Dans « Voir la saisie » d'un plan fait depuis une
+photo, à la suite de la zone, dans l'or du texte : « Massif, 20 m sur 2,4 m
+(lu 2 m, corrigé par vous) ».
+
+| | Ce qui s'écrit |
+|---|---|
+| une cote lue, que tu as changée | « (lu 2 m, corrigé par vous) » |
+| les deux cotes changées | « (lu 10 m sur 2 m, corrigé par vous) » |
+| une cote que l'IA a déduite, que tu as changée | « déduit » au lieu de « lu » |
+| une cote que l'IA n'a pas lue, tapée par toi | rien : écrire « lu » serait faux |
+| une zone tournée, sans autre changement | rien |
+| une zone ajoutée à la main, un morceau de pelouse coupée autour d'un massif, une haie | rien : la photo n'en disait rien de comparable |
+
+Éprouvé par trois suites, rouges avant. **Pas regardé à l'écran** : il faut un
+serveur, et tu as dit pas de batterie. Un plan enregistré avant n'a pas de
+quoi le dire.
+
 Pas encore chez toi : les trois corrections du 22 attendent la batterie, sur
 ton oui.
 
@@ -138,8 +157,7 @@ ton oui.
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| la batterie, puis `main`, pour les trois corrections du 22 (plan agrandi, mot « nourrice » et losange, angle) | toi : ton oui |
-| « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite. **Corrigé le 22 :** je te l'avais présenté comme une question, mais ta planche le montrait et ton « tout coder » l'a validé. Il reste à le coder : une pelouse coupée par un massif devient plusieurs zones, donc chaque zone doit garder la trace de la zone lue d'où elle vient | moi, sans réponse de toi |
+| la batterie, puis `main`, pour les quatre changements du 22 (plan agrandi, mot « nourrice » et losange, angle, « lu 2 m, corrigé par vous ») | toi : ton oui |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---

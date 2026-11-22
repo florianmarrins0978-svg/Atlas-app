@@ -38029,3 +38029,34 @@ dernier chiffre dans Node et dans Chrome, et React refuse une transformation qui
 diffère entre le serveur et le navigateur. Six décimales ; mesuré dans les deux
 moteurs, 5 rotations sur 140 différaient avant, aucune après.
 
+## §601 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
+
+**Sa planche du 21 novembre 2026, validée par son « tout coder », et son « tu
+me codes aussi » du 22.** « Voir la saisie » d'un plan enregistré dit ce qu'il
+a corrigé de la lecture : « Massif, 20 m sur 2,4 m (lu 2 m, corrigé par
+vous) ». C'est la trace que §599 promettait : une cote fausse peut venir de la
+photo ou de lui, et seule la cote lue gardée à côté de la cote finale permet de
+le dire.
+
+**Le problème** : une zone du plan ne savait pas de quelle zone lue elle venait.
+L'éditeur les nommait `lu1`, `lu2`…, mais le serveur coupe une pelouse en
+morceaux autour d'un massif (`croquisDuDessin`) et écarte les zones sans cote
+(`planDuCroquis`) : aucun indice ne suivait.
+
+**Ce qui le résout** : la cote lue voyage AVEC la zone, champ `luSurLaPhoto`
+(`src/lib/arrosage/lu-sur-la-photo.ts`), de `ZoneDessinee` à `ZoneLue` puis à
+`ZoneParametre`. Une valeur plutôt qu'un renvoi vers la lecture : « Modifier »
+après le calcul, la discussion et « Reprendre dans l'outil » recopient la zone
+entière, et la note se lit sans rouvrir la lecture.
+
+| | |
+|---|---|
+| ne la portent pas | une zone ajoutée à la main ; un morceau coupé autour d'un massif (lui prêter la cote de la pelouse entière serait faux) ; une haie, en mètres linéaires |
+| une cote non lue | reste vide : la taille posée à l'estime par `plan-lu.ts` n'est pas une lecture |
+| une cote déduite | s'écrit « déduit », jamais « lu » |
+| une zone tournée | se compare dans le sens qui change le moins : un quart de tour n'est pas une correction |
+| relue | par `lireLeDessin` et `cotesDuPlanTiennentDebout`, au plafond des cotes du plan |
+
+Le calcul ne lit pas ce champ, et l'empreinte du plan non plus. Un plan
+enregistré avant le 22 novembre n'en a pas : il ne dit rien, faute de savoir.
+
