@@ -38291,5 +38291,5 @@ Remonter la nourrice rend tout : le choix ne survit pas au montage, comme les nu
 
 **Plus aucune ombre portée dans la scène.** La lampe ne porte plus d'ombre, le sol d'ombres et l'ombre de
 contact (sa caméra, ses deux tampons, son flou) sont partis, avec la passe qui les refaisait. L'occlusion
-ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site et
-les deux planches.
+ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site, les
+deux planches et les photos de l'éclaté du PDF (§605), reprises sans ombres le même soir.
