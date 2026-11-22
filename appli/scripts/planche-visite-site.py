@@ -19,16 +19,22 @@ def rep(old, new):
 
 VISITE = "../visite-guidee.html"
 
-# A, retenue le 22 au soir, mais en carte : « Faire la visite », seul, ne disait pas
-# à quoi il menait (« il faut faire une vraie case qui explique bien que si vous
-# cliquez là, vous allez faire la visite guidée »). La carte se pose sous
-# l'ouverture, « Voir les prix » garde sa place.
+# A, retenue le 22 au soir, en entrée : « Faire la visite », seul, ne disait pas à
+# quoi il menait (« il faut faire une vraie case qui explique bien que si vous
+# cliquez là, vous allez faire la visite guidée ») ; puis la carte sombre n'était
+# « pas jolie » (« un truc plus joli qui donne vraiment envie de cliquer »). Ce qui
+# donne envie, c'est la visite elle-même : un petit téléphone montre sa vraie
+# image (le planning, l'anneau doré sur le 25, « Touchez le 25. »). Pas d'anneau
+# ni de pulsation dessinés par le site : il les a refusés sur cette page.
 rep("""      <p class="rassure">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
     </div>""", f"""      <p class="rassure">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
-      <a class="visite-carte" href="{VISITE}">
-        <span class="visite-carte-icone" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 6.5v11l9-5.5z" fill="currentColor"/></svg></span>
-        <span class="visite-carte-texte"><b>La visite guidée de l'appli</b><span>Les vrais écrans, pas à pas. Dix minutes, sans compte.</span></span>
-        <span class="visite-carte-bouton">Commencer la visite</span>
+      <a class="visite-entree" href="{VISITE}">
+        <span class="visite-entree-ecran"><img src="images/visite-apercu.jpg" alt="" width="1170" height="1992" decoding="async"></span>
+        <span class="visite-entree-texte">
+          <b>La visite guidée de l'appli</b>
+          <span class="dit">Les vrais écrans, guidés pas à pas. Dix minutes, sans compte.</span>
+          <span class="visite-entree-bouton">Commencer la visite</span>
+        </span>
       </a>
     </div>""")
 
@@ -46,17 +52,20 @@ rep("""<section class="papier" id="prix">""",
 
 rep("</head>", """<style data-planche>
 .visite-bande{padding-block:clamp(56px,9vw,96px)}
-.visite-carte{position:relative;display:grid;grid-template-columns:auto 1fr;gap:14px 14px;align-items:center;margin-top:28px;max-width:440px;padding:18px;border-radius:22px;background:var(--encre);color:var(--fond);text-decoration:none;text-align:left;box-shadow:0 18px 40px -22px rgba(var(--ombre),.85);transition:transform .3s var(--sortie),box-shadow .3s var(--sortie)}
-.visite-carte:hover{transform:translateY(-2px);box-shadow:0 24px 48px -22px rgba(var(--ombre),.9)}
-.visite-carte-icone{position:relative;display:grid;place-items:center;width:52px;height:52px;border-radius:999px;background:var(--or-clair);color:var(--encre)}
-.visite-carte-icone::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 0 color-mix(in srgb,var(--or-clair) 55%,transparent);animation:visite-pouls 2.4s var(--sortie) infinite}
-@keyframes visite-pouls{to{box-shadow:0 0 0 14px transparent}}
-.visite-carte-texte{display:grid;gap:4px}
-.visite-carte-texte b{font:400 24px/1.1 var(--display)}
-.visite-carte-texte span{font:400 15px/1.4 var(--texte);color:color-mix(in srgb,var(--fond) 78%,transparent)}
-.visite-carte-bouton{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:999px;background:var(--or-clair);color:var(--encre);font:600 16px/1 var(--texte)}
-@media (max-width:899px){.visite-carte{margin-inline:auto}}
-@media (prefers-reduced-motion:reduce){.visite-carte-icone::after{animation:none}}
+.visite-entree{position:relative;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;margin-top:40px;max-width:440px;padding:18px 22px 18px 18px;border-radius:28px;background:var(--papier);color:var(--encre);text-decoration:none;text-align:left;box-shadow:inset 0 0 0 1px var(--trait),0 26px 50px -30px rgba(var(--ombre),.6);transition:transform .5s var(--sortie),box-shadow .5s var(--sortie)}
+.visite-entree-ecran{display:block;width:104px;padding:4px;margin-top:-34px;border-radius:21px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 20px 30px -16px rgba(var(--ombre),.75),inset 0 0 0 1px #39433c;transform:rotate(-5deg);transition:transform .6s var(--sortie)}
+.visite-entree-ecran img{display:block;width:100%;height:auto;aspect-ratio:1170/1992;border-radius:17px;object-fit:cover;object-position:top}
+.visite-entree-texte{display:grid;gap:8px;justify-items:start}
+.visite-entree-texte b{font:400 clamp(25px,6.6vw,30px)/1.05 var(--display);letter-spacing:-.005em;text-wrap:balance}
+.visite-entree-texte .dit{font:400 15px/1.42 var(--texte);color:var(--encre-2)}
+.visite-entree-bouton{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;margin-top:6px;border-radius:999px;background:var(--encre);color:var(--fond);font:600 15.5px/1 var(--texte);transition:background .25s}
+.visite-entree:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--trait),0 32px 60px -30px rgba(var(--ombre),.7)}
+.visite-entree:hover .visite-entree-ecran,.visite-entree:focus-visible .visite-entree-ecran{transform:rotate(0deg) translateY(-6px)}
+.visite-entree:hover .visite-entree-bouton{background:var(--action)}
+.visite-entree:active{transform:translateY(0) scale(.99)}
+.visite-entree:focus-visible{outline:2px solid var(--action);outline-offset:4px}
+@media (max-width:899px){.visite-entree{margin-inline:auto}}
+@media (prefers-reduced-motion:reduce){.visite-entree,.visite-entree-ecran{transition:none}}
 </style>
 </head>""")
 open(dst, "w", encoding="utf8").write(s)
