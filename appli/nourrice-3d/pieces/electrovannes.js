@@ -26,6 +26,7 @@ function tourner(contour, angle) {
   var c = Math.cos(angle), s = Math.sin(angle);
   return contour.map(function (p) { var q = [p[0] * c - p[1] * s, p[0] * s + p[1] * c]; if (p[2]) q.push(p[2]); return q; });
 }
+function rond(r, n) { var pts = []; for (var k = 0; k < n; k++) pts.push([r * Math.cos(TAU * k / n), r * Math.sin(TAU * k / n)]); return pts; }
 function carre(cote, coin) { var h = cote / 2; return [[h, -h, { a: coin }], [h, h, { a: coin }], [-h, h, { a: coin }], [-h, -h, { a: coin }]]; }
 
 // Un contour fermé percé d'un trou, monté en volume : la lèvre du dessus de la bobine, l'empreinte de
@@ -82,9 +83,11 @@ var C = {
   rCorps: 27.2,
   yBande: 15, rBol: 24.6, // sous le plan de joint, une bande droite de 13 mm (60 px sur la photo de trois quarts, entre deux colonnes), puis la cuvette en retrait
   rJante: 23.4,         // la jante gravée fait 4 mm de large (photo de dessus)
+  biseau: 3.4,          // la jante est un épaulement en pente, pas un plat : de trois quarts le dessus du couvercle ne fait que 45 mm de large (190 px) pour un pied de 55,6
   yJoint: 29,           // le filet clair du plan de joint sur la colonne de devant
   yPont: 48.6,          // le dessus du couvercle
-  yFond: 45.4,          // le fond de ses alvéoles, 3 mm plus bas (estimé sur la photo de trois quarts)
+  yFond: 44.6,          // le fond de ses alvéoles, 4 mm plus bas (estimé sur les photos de trois quarts : l'ombre y remplit l'alvéole)
+  rayon: 3,             // la largeur d'un rayon de l'étoile : 12 px sur la photo de dessus de la FF, à 4,5 px par mm
   dVis: 33.5,           // le cercle des vis : 29 et 31 mm entre deux vis voisines, à 53 degrés
   rOreille: 6.6, rColonne: 6, yOreille: 43.8, yColonne: 4,
   dTour: 32.6, rTour: 17.5, yTour: 53.5,
@@ -122,7 +125,7 @@ function corps(F, lot, c, o) {
   // le col d'entrée à 18 mm sous l'axe. Sous la bande droite il rentre et s'arrondit : entre deux
   // colonnes la paroi fuit dans l'ombre, c'est ce qui détache les colonnes du corps.
   lot.ajouter("noir", F.tourne([[0, C.yBol], [15, C.yBol, { a: 9 }], [C.rBol, 1, { a: 14 }], [C.rBol, C.yBande - 1.6, { a: 1 }], [C.rCorps, C.yBande, { a: 0.8 }], [C.rCorps, yJ0 + 0.2]], { segments: 64 }), debout(0, c));
-  lot.ajouter("noir", F.tourne([[C.rCouvercle, yJ1 - 0.2], [C.rCouvercle, C.yPont, { c: 1.1 }], [C.rJante, C.yPont, { a: 0.5 }], [C.rJante, C.yFond, { a: 0.7 }], [0, C.yFond]], { segments: 64 }), debout(0, c));
+  lot.ajouter("noir", F.tourne([[C.rCouvercle, yJ1 - 0.2], [C.rCouvercle, C.yPont - C.biseau, { a: 0.9 }], [C.rJante + 0.9, C.yPont, { a: 0.4 }], [C.rJante, C.yPont, { a: 0.4 }], [C.rJante, C.yFond, { a: 0.7 }], [0, C.yFond]], { segments: 64 }), debout(0, c));
 
   var lobes = o.vis.map(function (a) { return { angle: ((a % 360) + 360) % 360 * DEG, d: C.dVis, r: C.rOreille + 1.4, oreille: true }; });
   lobes.push({ angle: ((o.tour % 360) + 360) % 360 * DEG, d: C.dTour, r: C.rTour + 1.2 });
@@ -148,7 +151,7 @@ function corps(F, lot, c, o) {
   lot.ajouter("noir", F.tourne([[0, C.yFond - 0.2], [o.rMoyeu, C.yFond - 0.2], [o.rMoyeu, C.yPont, { a: 0.6 }], [0, C.yPont]], { segments: 40 }), debout(0, c));
   for (var k = 0; k < 6; k++) {
     var a = k * 60 * DEG, m = vers(a, (o.rMoyeu + C.rJante) / 2);
-    lot.ajouter("noir", F.boite(C.rJante - o.rMoyeu + 2, C.yPont - C.yFond + 0.2, 2.2, 0.5), { ry: a, x: m[0], y: (C.yFond + C.yPont) / 2 - 0.25, z: c + m[1] });
+    lot.ajouter("noir", F.boite(C.rJante - o.rMoyeu + 1.4, C.yPont - C.yFond + 0.2, C.rayon, 0.5), { ry: a, x: m[0], y: (C.yFond + C.yPont) / 2 - 0.25, z: c + m[1] });
   }
 
   var t = vers(aTour, C.dTour);
@@ -157,12 +160,13 @@ function corps(F, lot, c, o) {
 }
 
 // LE PIED : la semelle plate sous le corps, plus longue du côté de la sortie, et son bossage rond sur
-// le chant de devant (photo de trois quarts). Sa largeur et sa moitié arrière ne se voient sur aucune
-// photo : elles sont estimées, la semelle tenue pour symétrique.
+// le chant de devant (photo de trois quarts), de la hauteur de la semelle : plus haut, il se lisait
+// comme un pion. Sa largeur et sa moitié arrière ne se voient sur aucune photo : elles sont estimées,
+// la semelle tenue pour symétrique.
 function pied(F, lot, c, sens) {
   var contour = [[-23, 29 * sens, { a: 4 }], [23, 29 * sens, { a: 4 }], [23, -43 * sens, { a: 4 }], [-23, -43 * sens, { a: 4 }]];
   lot.ajouter("noir", F.prisme(contour, C.yPied, C.yPied + 7, { arrondi: 1 }), debout(0, c));
-  lot.ajouter("noir", F.cylindre(4, C.yPied, -6.6, { c: 0.8, segments: 24 }), debout(-23, c + 13 * sens));
+  lot.ajouter("noir", F.cylindre(4, C.yPied, C.yPied + 7, { c: 0.9, segments: 24 }), debout(-23, c + 13 * sens));
 }
 
 // LA BOBINE 9V À IMPULSION, vissée sur la tour : sa collerette ronde, son corps carré aux coins
@@ -197,10 +201,11 @@ function fils(F, lot, x, y, z, o) {
       return [x + u * c + w * s, y + p[1], z - u * s + w * c];
     }), 1.3, { pas: 56, segments: 8 }));
   }
-  // La boucle monte à 66 mm du dessus de la bobine (320 px sur la photo de trois quarts), le fil noir
-  // juste à l'intérieur du rouge.
-  boucle("filRouge", [-10.5, 0.5], [[0, -1.5, 0], [-0.5, 14, -2], [-4.5, 34, -8], [-6, 52, -16], [1.5, 66, -24], [10.5, 58, -21], [13.5, 38, -12], [10, 15, -5], [7, -1.5, -3.5]]);
-  boucle("filNoir", [-8.2, 3.2], [[0, -1.5, 0], [-0.3, 14, -2], [-3, 33, -8], [-3.6, 49, -15.5], [1.5, 60, -22], [8, 53, -19], [10, 35, -11], [6.5, 14, -5], [3.2, -1.5, -4]]);
+  // Le fil fait 70 mm de la bobine au sommet de la boucle (320 px de haut sur la photo de trois quarts),
+  // le noir juste à l'intérieur du rouge. La boucle penche de 38 mm : c'est une estimation, prise pour
+  // qu'elle se lise de dessus comme sur sa photo (prise de biais, elle y couche une boucle qui est debout).
+  boucle("filRouge", [-10.5, 0.5], [[0, -1.5, 0], [-0.8, 14, -3], [-6, 33, -12], [-8, 50, -24], [1.5, 60, -38], [12, 53, -34], [15.5, 35, -20], [11, 15, -8], [7, -1.5, -3.5]]);
+  boucle("filNoir", [-8.2, 3.2], [[0, -1.5, 0], [-0.5, 13, -3], [-4.2, 31, -11.5], [-5.2, 46, -22], [1.5, 54, -33], [9.5, 48, -29.5], [12, 32, -17.5], [7.5, 14, -7], [3.2, -1.5, -4]]);
 }
 
 // LA VIS DE PURGE : son embase ronde, la tige cannelée qu'on tourne entre deux doigts, et la tête
@@ -265,6 +270,11 @@ function electrovanneFF(F) {
   var p = vers(330 * DEG, 17.5);
   purge(F, lot, p[0], c + p[1], { yPose: C.yFond, sens: 45, carree: true });
   lot.ajouter("jaune", F.cylindre(6.6, C.yPont, C.yPont + 0.3, { c: 0.1, segments: 36 }), debout(0, c));
+  // Le puits rond au fond d'une alvéole, à l'opposé de la bobine (photo de dessus : 5,4 mm de trou, à
+  // 15 mm du centre, à 2 mm près). Sa profondeur ne se voit pas : il est fermé d'un fond sombre.
+  var q = vers(254 * DEG, 15);
+  lot.ajouter("noir", perce(F, rond(4.3, 20), rond(2.7, 16), C.yFond - 0.2, C.yPont - 1, 0.4), debout(q[0], c + q[1]));
+  lot.ajouter("creux", F.tourne([[2.7, C.yFond + 0.2], [0, C.yFond + 0.2]], { segments: 16 }), debout(q[0], c + q[1]));
   var bout = { genre: "femelle", gaz: "1", prise: prise };
   return { couches: lot.couches(), haut: Object.assign({ z: 0 }, bout), bas: Object.assign({ z: L }, bout) };
 }

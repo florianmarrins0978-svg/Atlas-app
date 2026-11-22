@@ -1,5 +1,25 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LA NOURRICE EN 3D RÉALISTE (22 novembre 2026)
+
+`appli/arrosage-nourrice-3d.html`, rien dans `src/`. Le retour : `docs/nourrice-3d-realiste.md`.
+
+**Ce qui attend SA réponse :**
+
+| | |
+|---|---|
+| l'essai sur son iPhone | tourner et éclater la 6 voies dont 6 en goutte-à-goutte : la fluidité n'a pas pu être éprouvée ici (rendu logiciel) |
+| le sens du régulateur | posé le corps cannelé côté rangée, d'après la flèche moulée sur sa photo |
+| la bobine des électrovannes | côté rangée, comme sur la planche vue du dessus |
+| le gris du PVC | le gris clair de ses images ; « gris de vos photos » n'est pas proposé en 3D |
+
+**Ce qui reste à faire si la planche lui convient, et qui n'est pas fait :**
+
+- le raccord Plasson 25 x 1" est la photo du 32 x 1" ramenée par 25/32 : une photo à plat du 25 la remplacerait ;
+- la longueur du régulateur (131 mm) et la cote sur plats de la vanne (32 mm) ne viennent d'aucune de ses photos : à relire sur une fiche ou au pied à coulisse ;
+- le dessous des électrovannes et l'intérieur de la bague Plasson sont estimés ;
+- le contrôle de la page (63 points) vit hors du dépôt : le jour où la nourrice 3D entre dans `src/`, il devient une suite.
+
 ## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
 
 À chaque poussée sur `main`, GitHub répond : *« found 5 vulnerabilities on the

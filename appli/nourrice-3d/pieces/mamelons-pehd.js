@@ -50,7 +50,7 @@ export default {
   "pehd": function (F) {
     var lot = new F.Lot(), L = 150, R = 12.5, passage = 9.5, c = 0.5, bande = 2.8 / R, quart = Math.PI / 2;
     for (var i = 0; i < 4; i++) {
-      var a = i * quart + 0.6;
+      var a = i * quart - bande / 2;   // une bande sur le dessus du tuyau, comme sur sa photo
       lot.ajouter("bleu", F.tourne([[R, c], [R, L - c]], { arc: [a, a + bande], segments: 3 }));
       lot.ajouter("pehd", F.tourne([[R, c], [R, L - c]], { arc: [a + bande, a + quart], segments: 14 }));
     }

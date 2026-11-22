@@ -8,6 +8,8 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-22
 
+- **La nourrice en 3D, réaliste, avec l'éclaté au toucher** (`appli/arrosage-nourrice-3d.html`, sa demande du 22 : *« vraiment réaliste, avec un éclaté au toucher »*). Chaque pièce est relevée sur ses photos (filetages en hélice au pas du gaz, écrous cannelés, six pans, vis cruciformes, bobine et fils), sans logo ni texte ; matières physiques, HDRI de studio libre, ombres, ombre de contact, occlusion ambiante. Un toucher sur la nourrice écarte toutes les pièces de 2 cm sur leur axe en 0,6 s, un second les remonte, un glissé tourne la vue ; les boutons suivent. Une phrase remplace la vue si le téléphone ne sait pas l'afficher. Ce que ça évite : une nourrice en galets qu'il ne reconnaissait pas. Les pièces vivent dans `appli/nourrice-3d/` (`ARCHITECTURE.md` §600), le retour dans `docs/nourrice-3d-realiste.md`. **Non éprouvé sur un iPhone.**
+
 - **La visite guidée montre la fiche client remplie par le micro d'en haut à droite** (`appli/visite-guidee.html`, sa demande du 22). Deux étapes avant que la fiche s'écrive seule : toucher le micro, puis l'écoute (micro rouge, « J'écoute. Touchez pour arrêter. », la phrase dictée dans la bulle). L'écoute est rejouée sur l'écran figé de la fiche vide, aux couleurs et à la phrase de `DicterCoordonnees.tsx`, et défaite en quittant l'étape : le même écran sert aussi à « Touchez Entreprise. ». Pendant que les champs s'écrivent, la ligne repliée dit « La fiche se remplit. » au lieu du geste d'après. 85 étapes.
 
 ## 2026-11-21

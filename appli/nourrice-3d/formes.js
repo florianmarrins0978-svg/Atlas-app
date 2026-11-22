@@ -25,6 +25,13 @@ export var GAZ = {
 // La taille d'un carreau de texture, en millimètres : le grain d'une matière a la même finesse partout.
 export var CARREAU = 16;
 
+// LA FINESSE DES FORMES RONDES. À 1, une pièce est faite pour être vue de près. Une grande nourrice
+// (cinq ou six voies) met chaque pièce deux fois plus petite à l'écran : la page la fait alors
+// construire à une finesse moindre, et elle pèse un tiers de triangles en moins sans que l'oeil le voie.
+var FINESSE = 1;
+export function finesse(k) { FINESSE = k; }
+function tour(n, mini) { return Math.max(mini, Math.round(n * FINESSE)); }
+
 function gazDe(o) { return o.gaz ? GAZ[o.gaz] : { d: o.d, pas: o.pas, h: o.h != null ? o.h : 0.64 * o.pas }; }
 function lisse(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
 function tours(rayon) { return Math.max(1, Math.round(TAU * rayon / CARREAU)); }
@@ -65,7 +72,7 @@ export function adoucir(profil) {
 // Options : segments (48), pli (28), arc ([début, fin] en radians, pour un secteur).
 export function tourne(profil, o) {
   o = o || {};
-  var seg = o.segments || 48, seuil = Math.cos((o.pli || 28) * Math.PI / 180);
+  var seg = tour(o.segments || 48, o.arc ? 1 : 12), seuil = Math.cos((o.pli || 28) * Math.PI / 180);
   var a0 = o.arc ? o.arc[0] : 0, a1 = o.arc ? o.arc[1] : TAU;
   var pts = adoucir(profil), sommets = [], liens = [], dernier = -1, avant = null, long = 0, rmax = 0;
   for (var i = 0; i < pts.length; i++) rmax = Math.max(rmax, pts[i][0]);
@@ -125,7 +132,7 @@ export function cylindre(r, z0, z1, o) {
 // filet tombe toujours sur un rang : pas d'escalier, pas de moiré, et quatre rangs par filet suffisent
 // (le fond, un flanc, le sommet, l'autre flanc).
 function helice(o, rayon, dedans) {
-  var seg = o.segments || 36, parPas = o.parPas || 4, z0 = o.z0, L = o.z1 - o.z0, pas = o.pasFilet;
+  var seg = tour(o.segments || 36, 16), parPas = o.parPas || 4, z0 = o.z0, L = o.z1 - o.z0, pas = o.pasFilet;
   var rangs = Math.ceil(L / pas * parPas) + parPas, r0 = -parPas;
   var nb = (rangs - r0 + 1), pos = new Float32Array(nb * (seg + 1) * 3), nor = new Float32Array(nb * (seg + 1) * 3), uv = new Float32Array(nb * (seg + 1) * 2);
   var nu = tours(o.rayonMoyen), e = pas / 40;
@@ -182,7 +189,7 @@ export function taraudage(o) {
 // en arcs. `surPlats` est la cote sur plats ; `alesage` le perce.
 export function hexagone(o) {
   var a = o.surPlats / 2, z0 = o.z0, z1 = o.z1, coin = a / Math.cos(Math.PI / 6), pente = Math.tan((o.angle || 30) * Math.PI / 180);
-  var r0 = a * (o.depart != null ? o.depart : 0.97), hc = Math.min((coin - r0) * pente, (z1 - z0) * 0.45), parFace = 6, n = parFace * 6;
+  var r0 = a * (o.depart != null ? o.depart : 0.97), hc = Math.min((coin - r0) * pente, (z1 - z0) * 0.45), parFace = tour(6, 3), n = parFace * 6;
   var niveaux = [0, hc * 0.15, hc * 0.4, hc * 0.7, hc, (z1 - z0) - hc, (z1 - z0) - hc * 0.7, (z1 - z0) - hc * 0.4, (z1 - z0) - hc * 0.15, z1 - z0];
   function rayon(th, d) {
     var m = th % (Math.PI / 3); if (m < 0) m += Math.PI / 3;
@@ -209,28 +216,8 @@ export function hexagone(o) {
     }
     faces.push(geometrie(new Float32Array(p), new Float32Array(nrm), new Float32Array(uvs), idx));
   });
-  if (al > 0) faces.push(tourne([[al, z1], [al, z0]], { segments: 32 }));
+  if (al > 0) faces.push(tourne([[al, z1], [al, z0]], { segments: n }));
   return mergeGeometries(faces);
-}
-
-// UN COUDE : un tube cintré d'un quart de tour (ou de `angle`), qui part de l'axe X et arrive sur
-// l'axe Z. Le coin du coude est à l'origine ; le tube quitte l'axe X en (cintrage, 0, 0) et rejoint
-// l'axe Z en (0, 0, cintrage). Un cintrage proche du rayon du tube donne le coin intérieur vif d'un
-// coude moulé.
-export function coude(o) {
-  var rho = o.cintrage, r = o.rayon, angle = o.angle || Math.PI / 2, na = o.pas || 20, seg = o.segments || 48;
-  var pos = [], nor = [], uv = [], index = [], nu = tours(r);
-  for (var i = 0; i <= na; i++) {
-    var a = angle * i / na, ox = -Math.sin(a), oz = -Math.cos(a);   // du centre du cintrage vers la fibre moyenne
-    for (var j = 0; j <= seg; j++) {
-      var ph = TAU * j / seg, cx = Math.cos(ph), sy = Math.sin(ph), d = rho + r * cx;
-      pos.push(rho + d * ox, r * sy, rho + d * oz); nor.push(cx * ox, sy, cx * oz); uv.push(nu * j / seg, rho * a / CARREAU);
-    }
-  }
-  for (i = 0; i < na; i++) for (j = 0; j < seg; j++) {
-    var A = i * (seg + 1) + j, B = A + seg + 1; index.push(A, B, A + 1, B, B + 1, A + 1);
-  }
-  return geometrie(new Float32Array(pos), new Float32Array(nor), new Float32Array(uv), index);
 }
 
 // L'ÉCROU UNION CANNELÉ des pièces Dura (l'écrou tournant de chaque bout femelle), relevé sur ses
@@ -301,7 +288,7 @@ export function ecrouUnion(o) {
 // tête est posée sur le plan z = 0 et monte vers +z ; `rondelle` ajoute son embase.
 export function visCruciforme(o) {
   o = o || {};
-  var r = o.rayon || 3.6, h = o.hauteur || 2.4, anneaux = 10, seg = 32, pos = [], index = [];
+  var r = o.rayon || 3.6, h = o.hauteur || 2.4, anneaux = tour(10, 5), seg = tour(32, 14), pos = [], index = [];
   var prof = o.creux != null ? o.creux : h * 0.55, bras = r * 0.62, larg = r * 0.17;
   function haut(x, y) {
     var d = Math.hypot(x, y) / r, dome = h * Math.sqrt(Math.max(0, 1 - d * d * 0.86)) * (d > 0.94 ? (1 - d) / 0.06 * 0.5 + 0.5 : 1);
@@ -378,7 +365,7 @@ function aIndexer(g) {
   if (!g.getIndex()) { var n = g.getAttribute("position").count, idx = new Array(n); for (var i = 0; i < n; i++) idx[i] = i; g.setIndex(idx); }
   return g;
 }
-export function nettoyer(g) {
+function nettoyer(g) {
   if (!g.getAttribute("normal")) g.computeVertexNormals();
   if (!g.getAttribute("uv")) g.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(g.getAttribute("position").count * 2), 2));
   Object.keys(g.attributes).forEach(function (k) { if (k !== "position" && k !== "normal" && k !== "uv") g.deleteAttribute(k); });
@@ -394,11 +381,6 @@ export function placer(g, t) {
   if (t.x || t.y || t.z) g.translate(t.x || 0, t.y || 0, t.z || 0);
   return g;
 }
-// L'axe Z local couché sur l'axe X (ce qui était en +z part vers +x) : pour la rangée du haut.
-export function coucher(g) { return g.rotateY(Math.PI / 2); }
-// Retourner une forme bout pour bout autour de l'axe Y, le haut restant en haut : z devient L - z.
-export function retourner(g, L) { g.rotateY(Math.PI); g.translate(0, 0, L || 0); return g; }
-
 // LE LOT D'UNE PIÈCE : ses formes rangées par matière, puis fusionnées. Une pièce devient ainsi une
 // couche par matière, et chaque couche se dessine en une seule fois pour toutes les pièces pareilles.
 export function Lot() { this.tas = {}; this.ordre = []; }
@@ -413,30 +395,41 @@ Lot.prototype.couches = function () {
   return this.ordre.map(function (m) { var g = mergeGeometries(tas[m]); g.computeBoundingBox(); g.computeBoundingSphere(); return { matiere: m, geometrie: g }; });
 };
 
-// MESURER UN BOUT DANS LA GÉOMÉTRIE ELLE-MÊME : le centre des sommets posés sur la face de ce bout
-// (à 0,02 mm près de son plan, autour de son axe). Une face de bout est faite de cercles : leur centre
-// est celui du bout. C'est ce qui permet de vérifier qu'une pièce est sur son axe sans croire sur
-// parole les cotes qu'elle annonce.
+// MESURER UN BOUT DANS LA GÉOMÉTRIE ELLE-MÊME : le centre des cercles que dessinent les sommets posés
+// sur la face de ce bout (à 0,02 mm près de son plan, autour de son axe). C'est ce qui permet de
+// vérifier qu'une pièce est sur son axe sans croire sur parole les cotes qu'elle annonce.
 // `axe` est "x" ou "z" ; `place` la cote du bout sur cet axe ; `rayon` celui de son filetage.
+//
+// On cherche LE centre commun de ces cercles (moindres carrés), pas la moyenne des sommets : une
+// moyenne se laisse tirer par des sommets mal répartis. Deux formes qui posent chacune un cercle au même
+// rayon, avec des nombres de segments différents, la décalaient de 0,2 mm sur une pièce parfaitement
+// centrée. Un cercle, lui, donne son centre avec trois points, où qu'ils soient sur son tour.
 export function centreDuBout(couches, axe, place, rayon, centre) {
-  var c = centre || [0, 0, 0], vus = {}, sx = 0, sy = 0, sz = 0, n = 0, secteurs = {}, ns = 0;
+  var c = centre || [0, 0, 0], cercles = {}, secteurs = {}, ns = 0, n = 0;
   couches.forEach(function (co) {
     var p = co.geometrie.getAttribute("position");
     for (var i = 0; i < p.count; i++) {
-      var x = p.getX(i), y = p.getY(i), z = p.getZ(i), le = axe === "x" ? x : z;
-      if (Math.abs(le - place) > 0.02) continue;
-      var d = axe === "x" ? Math.hypot(y - c[1], z - c[2]) : Math.hypot(x - c[0], y - c[1]);
+      var x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+      if (Math.abs((axe === "x" ? x : z) - place) > 0.02) continue;
+      var u = axe === "x" ? y - c[1] : x - c[0], v = axe === "x" ? z - c[2] : y - c[1], d = Math.hypot(u, v);
       if (d < rayon * 0.25 || d > rayon * 1.6) continue;
-      // Un sommet répété (la couture d'un tour, deux formes qui se touchent) ne compte qu'une fois :
-      // un cercle se retrouve alors avec ses points à écarts égaux, et leur moyenne est son centre.
-      var cle = Math.round(x * 1000) + "," + Math.round(y * 1000) + "," + Math.round(z * 1000);
-      if (vus[cle]) continue;
-      vus[cle] = true; sx += x; sy += y; sz += z; n++;
-      var an = axe === "x" ? Math.atan2(z - c[2], y - c[1]) : Math.atan2(y - c[1], x - c[0]), s = Math.floor((an + Math.PI) / TAU * 12) % 12;
+      var k = Math.round(d / 0.05), g = cercles[k] || (cercles[k] = { n: 0, u: 0, v: 0, w: 0, uu: 0, uv: 0, vv: 0, uw: 0, vw: 0 }), w = u * u + v * v;
+      g.n++; g.u += u; g.v += v; g.w += w; g.uu += u * u; g.uv += u * v; g.vv += v * v; g.uw += u * w; g.vw += v * w; n++;
+      var s = Math.floor((Math.atan2(v, u) + Math.PI) / TAU * 12) % 12;
       if (!secteurs[s]) { secteurs[s] = true; ns++; }
     }
   });
-  return ns === 12 && n >= 24 ? [sx / n, sy / n, sz / n] : null;   // un tour complet, ou la mesure ne vaut rien
+  if (ns < 12 || n < 12) return null;   // un tour complet, ou la mesure ne vaut rien
+  // Pour chaque cercle : u² + v² = 2 a u + 2 b v + constante. Le centre (a, b) est le même pour tous.
+  var A = 0, B = 0, C = 0, D = 0, E = 0;
+  Object.keys(cercles).forEach(function (k) {
+    var g = cercles[k];
+    A += g.uu - g.u * g.u / g.n; B += g.uv - g.u * g.v / g.n; C += g.vv - g.v * g.v / g.n; D += g.uw - g.u * g.w / g.n; E += g.vw - g.v * g.w / g.n;
+  });
+  var det = A * C - B * B;
+  if (Math.abs(det) < 1e-9) return null;
+  var a = (D * C - E * B) / det / 2, b = (A * E - B * D) / det / 2;
+  return axe === "x" ? [place, c[1] + a, c[2] + b] : [c[0] + a, c[1] + b, place];
 }
 
-export { THREE, mergeGeometries, toCreasedNormals };
+export { THREE, toCreasedNormals };

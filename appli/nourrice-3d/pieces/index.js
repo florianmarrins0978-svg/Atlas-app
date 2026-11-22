@@ -13,9 +13,13 @@ import raccordPlasson from "./plasson-raccord.js";
 
 var FAMILLES = [coudesEtTe, collecteursEtUnion, electrovannes, vanneEtRegulateur, mamelonsEtTuyau, raccordPlasson];
 
-// Rend { clé : { couches, haut, bas } ou { couches, gauche, droite, branches } } pour toutes les pièces.
-export function creerPieces() {
+// Rend { clé : { couches, haut, bas } ou { couches, gauche, droite, branches } } pour toutes les pièces,
+// à la finesse demandée (1 d'office). Les bouts de vissage sont les mêmes à toute finesse : seule la
+// rondeur des formes change.
+export function creerPieces(k) {
   var pieces = {};
+  F.finesse(k || 1);
   FAMILLES.forEach(function (famille) { Object.keys(famille).forEach(function (cle) { pieces[cle] = famille[cle](F); pieces[cle].cle = cle; }); });
+  F.finesse(1);
   return pieces;
 }

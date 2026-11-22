@@ -1,5 +1,9 @@
 # État du projet
 
+## LA NOURRICE EN 3D, RÉALISTE, AVEC L'ÉCLATÉ AU TOUCHER : UNE PLANCHE (22 novembre 2026), PAS ENCORE VUE PAR LUI
+
+Sa demande du 22. `appli/arrosage-nourrice-3d.html` : chaque pièce relevée sur ses photos, matières physiques, HDRI, ombres et occlusion ambiante ; un toucher éclate, un second remonte. De 1 à 6 voies, 0 à n en goutte-à-goutte. Les pièces dans `appli/nourrice-3d/` (`ARCHITECTURE.md` §600). 63 contrôles verts hors dépôt ; **non éprouvée sur un iPhone**. Retour : `docs/nourrice-3d-realiste.md`.
+
 ## LE DÉBUT DE LA VISITE GUIDÉE : DEUX PROPOSITIONS SUR SES QUATRE PREMIÈRES ÉTAPES (21 novembre 2026), PAS ENCORE CHOISIES
 
 Sa demande du 21, reçue par deux sessions. `appli/visite-guidee-le-debut.html` (le geste en titre, bulle courte) et `appli/visite-guidee-le-debut-2.html` (l'appli à ses couleurs, la page qui arrive en haut puis glisse, la main, le surligneur). Mêmes écrans, rien dans `src/`, la visite d'aujourd'hui intacte. Safari d'iPhone non vérifié ici pour la seconde. `TODO.md` dit ce qui les sépare et ce qu'il doit trancher.

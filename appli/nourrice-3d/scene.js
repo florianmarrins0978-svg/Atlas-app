@@ -35,7 +35,7 @@ function arrivee(t) { return 1 - Math.pow(1 - t, 4); }
 
 export function creerScene(toile, o) {
   o = o || {};
-  var matieres = o.matieres, definitions = o.definitions, fond = new THREE.Color(o.fond != null ? o.fond : 0xdcd9d2);
+  var matieres = o.matieres, fond = new THREE.Color(o.fond != null ? o.fond : 0xdcd9d2);
   var reduit = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var rendu = new THREE.WebGLRenderer({ canvas: toile, antialias: false, powerPreference: "high-performance" });
@@ -49,9 +49,9 @@ export function creerScene(toile, o) {
 
   // LA LUMIÈRE D'AMBIANCE. La pièce calculée sert tout de suite ; l'HDRI la remplace dès qu'elle arrive.
   var pmrem = new THREE.PMREMGenerator(rendu);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   var ambiance = "piece";
-  var pret = new Promise(function (ok) {
+  function eclairer(ok) {
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; ambiance = "piece";
     if (!o.hdri) { ok(ambiance); return; }
     new EXRLoader().load(o.hdri, function (texture) {
       // L'image est tendue dans une boule, tournée pour que sa grande source éclaire la nourrice par
@@ -62,6 +62,14 @@ export function creerScene(toile, o) {
       var ancienne = scene.environment; scene.environment = pmrem.fromScene(studio, 0, 1, 2000).texture;
       ancienne.dispose(); texture.dispose(); boule.geometry.dispose(); boule.material.dispose(); ambiance = "hdri"; demander(); ok(ambiance);
     }, undefined, function () { ok(ambiance); });
+  }
+  var pret = new Promise(eclairer);
+  // LE CONTEXTE PERDU. Un téléphone reprend la mémoire graphique d'un onglet laissé en arrière-plan ; au
+  // retour, three refait ses tampons tout seul, mais ce qui avait été CALCULÉ dedans (l'ambiance
+  // filtrée, les ombres) est vide. On le refait, et on redessine.
+  toile.addEventListener("webglcontextlost", function (e) { e.preventDefault(); });
+  toile.addEventListener("webglcontextrestored", function () {
+    eclairer(function () {}); etat.ombrePerimee = true; etat.contactPerime = true; qualite.enCours = -1; demander();
   });
 
   // LA LAMPE : elle donne le sens de la lumière et porte les ombres.
@@ -71,13 +79,13 @@ export function creerScene(toile, o) {
   var contre = new THREE.DirectionalLight(0xfff1e0, o.contre != null ? o.contre : 0.25); scene.add(contre); scene.add(contre.target);
 
   // LE FOND DU REGARD : un plan qui ne montre que les ombres, puis l'ombre de contact au-dessus de lui.
-  var sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: 0.2, color: 0x1a1612 }));
+  var sol = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: 0.26, color: 0x1a1612 }));
   sol.rotation.x = -Math.PI / 2; sol.receiveShadow = true; sol.scale.setScalar(20000); scene.add(sol);
 
   var CONTACT = 512, HAUTEUR = 110;   // les pièces à moins de 11 cm du fond y posent leur ombre
   var cibleContact = new THREE.WebGLRenderTarget(CONTACT, CONTACT), cibleFlou = new THREE.WebGLRenderTarget(CONTACT, CONTACT);
   cibleContact.texture.generateMipmaps = false; cibleFlou.texture.generateMipmaps = false;
-  var planContact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: cibleContact.texture, transparent: true, opacity: 0.62, depthWrite: false, toneMapped: false }));
+  var planContact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: cibleContact.texture, transparent: true, opacity: 0.78, depthWrite: false, toneMapped: false }));
   planContact.rotation.x = -Math.PI / 2; planContact.scale.y = -1; planContact.renderOrder = 2; scene.add(planContact);
   var dessous = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, HAUTEUR);
   dessous.rotation.x = Math.PI / 2;   // elle regarde vers le haut
@@ -120,23 +128,25 @@ export function creerScene(toile, o) {
 
   // LES PIÈCES, EN INSTANCES. Une couche (une matière d'un modèle de pièce) se dessine une seule fois
   // pour toutes les pièces de ce modèle ; une pièce retournée bout pour bout reste le même modèle.
-  var etat = { compo: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0 };
+  var etat = { compo: null, definitions: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0 };
   var M = new THREE.Matrix4(), demiTour = new THREE.Matrix4().makeRotationY(Math.PI), T = new THREE.Matrix4();
   function matrice(pose, t, sortie) {
     var p = place(pose, t);
     if (pose.retourne) { sortie.makeTranslation(p[0], 0, p[1] + pose.L).multiply(demiTour); } else sortie.makeTranslation(p[0], 0, p[1]);
     return sortie;
   }
-  function poser(compo) {
+  // `definitions` : les pièces de cette composition (la page en tient deux jeux, un fin et un plus léger
+  // pour les grandes nourrices).
+  function poser(compo, definitions) {
     etat.lots.forEach(function (l) { racine.remove(l.maille); l.maille.dispose(); });
-    etat.lots = []; etat.compo = compo;
+    etat.lots = []; etat.compo = compo; etat.definitions = definitions;
     // La fiche change en plein éclaté : les pièces finissent leur trajet, mais le cadre visé était celui
     // de l'ancienne fiche. On le lâche, celui qui pose la nouvelle fiche recadre.
     if (mouvement && mouvement.pieces) mouvement.libre = true;
     var parCle = {};
     compo.pieces.forEach(function (p) { (parCle[p.cle] = parCle[p.cle] || []).push(p); });
     Object.keys(parCle).forEach(function (cle) {
-      var d = definitions[cle], poses = parCle[cle];
+      var d = etat.definitions[cle], poses = parCle[cle];
       d.couches.forEach(function (c) {
         var m = new THREE.InstancedMesh(c.geometrie, matieres[c.matiere] || matieres.pvc, poses.length);
         m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -145,7 +155,7 @@ export function creerScene(toile, o) {
     });
     // Le fond du regard : juste sous le point le plus bas, quelle que soit la composition.
     var bas = Infinity;
-    Object.keys(parCle).forEach(function (cle) { definitions[cle].couches.forEach(function (c) { bas = Math.min(bas, c.geometrie.boundingBox.min.y); }); });
+    Object.keys(parCle).forEach(function (cle) { etat.definitions[cle].couches.forEach(function (c) { bas = Math.min(bas, c.geometrie.boundingBox.min.y); }); });
     etat.bas = bas - 1.2; sol.position.y = etat.bas; planContact.position.y = etat.bas + 0.15;
     regler(etat.t);
   }
@@ -154,7 +164,7 @@ export function creerScene(toile, o) {
     sortie.makeEmpty();
     etat.compo.pieces.forEach(function (p) {
       matrice(p, t, T);
-      definitions[p.cle].couches.forEach(function (c) { boitePiece.copy(c.geometrie.boundingBox).applyMatrix4(T); sortie.union(boitePiece); });
+      etat.definitions[p.cle].couches.forEach(function (c) { boitePiece.copy(c.geometrie.boundingBox).applyMatrix4(T); sortie.union(boitePiece); });
     });
     return sortie;
   }
@@ -202,7 +212,7 @@ export function creerScene(toile, o) {
     var coins = [], essai = camera.clone(), q = new THREE.Vector3(), droite = new THREE.Vector3(), haut = new THREE.Vector3();
     etat.compo.pieces.forEach(function (p) {
       matrice(p, t, T);
-      definitions[p.cle].couches.forEach(function (co) {
+      etat.definitions[p.cle].couches.forEach(function (co) {
         var bb = co.geometrie.boundingBox;
         [bb.min.x, bb.max.x].forEach(function (x) { [bb.min.y, bb.max.y].forEach(function (y) { [bb.min.z, bb.max.z].forEach(function (z) { coins.push(new THREE.Vector3(x, y, z).applyMatrix4(T)); }); }); });
       });
@@ -289,7 +299,7 @@ export function creerScene(toile, o) {
   }
 
   // LA BOUCLE : on ne redessine que s'il y a quelque chose de neuf.
-  var aDessiner = true, bouge = false, dernier = 0, images = 0, arret = false, ecoutes = { vue: [], image: [] }, calme = 0, suite = false;
+  var aDessiner = true, bouge = false, dernier = 0, images = 0, ecoutes = { vue: [], image: [] }, calme = 0, suite = false;
   function demander() { aDessiner = true; }
   commandes.addEventListener("change", function () { aDessiner = true; bouge = true; calme = 0; });
   // Tourner à la main défait le point de vue choisi : son bouton ne reste pas allumé à tort. Un simple
@@ -305,7 +315,6 @@ export function creerScene(toile, o) {
   commandes.addEventListener("end", function () { prise = null; });
 
   function boucle(maintenant) {
-    if (arret) return;
     requestAnimationFrame(boucle);
     var enMouvement = false;
     if (mouvement) {
@@ -364,7 +373,7 @@ export function creerScene(toile, o) {
     camera.updateMatrixWorld();
     return etat.compo.pieces.some(function (p) {
       matrice(p, etat.t, T);
-      return definitions[p.cle].couches.some(function (c) {
+      return etat.definitions[p.cle].couches.some(function (c) {
         var bb = c.geometrie.boundingBox, pts = [];
         for (var i = 0; i < 8; i++) {
           coin.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(T).project(camera);
@@ -377,10 +386,10 @@ export function creerScene(toile, o) {
 
   // MESURER DANS LA SCÈNE : chaque bout de chaque pièce, relu dans la géométrie qu'on dessine et dans la
   // matrice de son instance, comparé à l'axe où il doit être. Rend le plus grand écart, en millimètres.
-  var centresLocaux = {};
+  var centresLocaux = new WeakMap();
   function boutsDe(cle) {
-    if (centresLocaux[cle]) return centresLocaux[cle];
-    var d = definitions[cle], liste = [];
+    var d = etat.definitions[cle], liste = [];
+    if (centresLocaux.has(d)) return centresLocaux.get(d);
     function rayon(b) { return b.gaz === "pe25" ? 12.5 : GAZ[b.gaz].d / 2 + (b.genre === "femelle" ? 2 : 0); }
     if (d.haut) {
       [["haut", d.haut], ["bas", d.bas]].forEach(function (x) { liste.push({ nom: x[0], axe: "z", local: centreDuBout(d.couches, "z", x[1].z, rayon(x[1])), attendu: [0, 0, x[1].z] }); });
@@ -388,7 +397,7 @@ export function creerScene(toile, o) {
       [["gauche", d.gauche], ["droite", d.droite]].forEach(function (x) { if (x[1]) liste.push({ nom: x[0], axe: "x", local: centreDuBout(d.couches, "x", x[1].x, rayon(x[1])), attendu: [x[1].x, 0, 0] }); });
       d.branches.forEach(function (b, i) { liste.push({ nom: "branche " + (i + 1), axe: "z", branche: i, local: centreDuBout(d.couches, "z", b.z, rayon(b), [b.x, 0, 0]), attendu: [b.x, 0, b.z] }); });
     }
-    centresLocaux[cle] = liste; return liste;
+    centresLocaux.set(d, liste); return liste;
   }
   function mesurer() {
     var pire = 0, ou = "", manquants = [], lignes = [], v = new THREE.Vector3(), lu = new THREE.Matrix4();
@@ -414,7 +423,7 @@ export function creerScene(toile, o) {
     return { pire: pire, ou: ou, bouts: lignes.length, manquants: manquants, lignes: lignes };
   }
 
-  var observateur = new ResizeObserver(taille); observateur.observe(toile);
+  new ResizeObserver(taille).observe(toile);
   taille(); requestAnimationFrame(boucle);
 
   return {
@@ -424,8 +433,7 @@ export function creerScene(toile, o) {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
       return { t: etat.t, vue: etat.vue, ambiance: ambiance, images: images, niveau: qualite.enCours, densite: densite, triangles: tri, lots: etat.lots.length, pieces: etat.compo ? etat.compo.pieces.length : 0, enMouvement: !!mouvement, dureeEclate: etat.dureeEclate, appels: rendu.info.render.calls };
     },
-    // Pour le banc de rendu et les contrôles : la scène, l'appareil photo, le rendu.
-    interne: { scene: scene, camera: camera, rendu: rendu, commandes: commandes, ao: ao, lampe: lampe, sol: sol, planContact: planContact, composition: composition, etat: etat, cadrage: cadrage, placerCamera: placerCamera },
-    arreter: function () { arret = true; observateur.disconnect(); commandes.dispose(); rendu.dispose(); }
+    // Pour les contrôles : l'appareil photo, ses commandes, l'occlusion ambiante, l'état, le cadrage.
+    interne: { camera: camera, commandes: commandes, ao: ao, etat: etat, cadrage: cadrage }
   };
 }

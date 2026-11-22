@@ -31,42 +31,46 @@ function grain(taille, graine) {
 var RELIEF = 0.06;
 
 export function creerMatieres() {
-  var fin = grain(64, 7), moyen = grain(24, 31), brosse = grain(48, 113);
-  brosse.repeat.set(1, 6);   // un métal tourné : le grain file autour de la pièce
-  function plastique(couleur, rugosite, relief, texture, plus) {
-    return new THREE.MeshPhysicalMaterial(Object.assign({ color: couleur, roughness: rugosite, metalness: 0, ior: 1.52, bumpMap: texture || fin, bumpScale: relief * RELIEF }, plus || {}));
+  var fin = grain(64, 7), moyen = grain(24, 31);
+  // `reflet` : la part de l'ambiance qu'une matière renvoie. Le studio de l'HDRI est sombre autour de
+  // ses deux sources ; réglé pour que le PVC gris reste gris, il laissait les noirs sans un reflet et
+  // le nickel presque noir. Un noir et un métal prennent donc plus de l'ambiance qu'un gris clair.
+  function plastique(couleur, rugosite, relief, texture, reflet, plus) {
+    return new THREE.MeshPhysicalMaterial(Object.assign({ color: couleur, roughness: rugosite, metalness: 0, ior: 1.52, bumpMap: texture || fin, bumpScale: relief * RELIEF, envMapIntensity: reflet || 1 }, plus || {}));
   }
-  function metal(couleur, rugosite, plus) {
-    return new THREE.MeshPhysicalMaterial(Object.assign({ color: couleur, roughness: rugosite, metalness: 1, roughnessMap: brosse, bumpMap: brosse, bumpScale: 0.25 * RELIEF }, plus || {}));
+  // Un métal : son grain est dans sa rugosité (des reflets qui frémissent), pas dans un relief, qui
+  // dessinait un quadrillage sur les plats d'un six pans.
+  function metal(couleur, rugosite, reflet) {
+    return new THREE.MeshPhysicalMaterial({ color: couleur, roughness: rugosite, metalness: 1, roughnessMap: fin, envMapIntensity: reflet });
   }
   return {
     // Le PVC gris clair des pièces Dura : légèrement satiné.
-    pvc: plastique(0xa1a09f, 0.4, 0.5, fin, { clearcoat: 0.12, clearcoatRoughness: 0.5 }),
+    pvc: plastique(0xa1a09f, 0.4, 0.5, fin, 1, { clearcoat: 0.12, clearcoatRoughness: 0.5 }),
     // Le joint qu'on voit entre un écrou union et son corps.
-    joint: plastique(0x18191a, 0.75, 0.3),
+    joint: plastique(0x18191a, 0.75, 0.3, fin, 2),
     // Le plastique noir mat chargé de verre des électrovannes et du régulateur : un grain plus marqué.
-    noir: plastique(0x2b2c2e, 0.55, 1.1, moyen),
+    noir: plastique(0x2b2c2e, 0.55, 1.1, moyen, 3),
     // Le corps noir du raccord Plasson : un polypropylène plus lisse.
-    noirLisse: plastique(0x222325, 0.4, 0.4),
+    noirLisse: plastique(0x222325, 0.4, 0.4, fin, 3),
     // Sa bague, d'un blanc cassé.
-    blanc: plastique(0xdcdcd8, 0.5, 0.5),
-    laiton: metal(0xc8a55a, 0.34),
+    blanc: plastique(0xdcdcd8, 0.5, 0.5, fin, 0.9),
+    laiton: metal(0xc8a55a, 0.34, 5),
     // Le laiton nickelé du corps de la vanne (sa photo : un corps satiné, argenté).
-    nickel: metal(0xc9c6bd, 0.38),
-    inox: metal(0xd2d4d6, 0.28),
+    nickel: metal(0xc9c6bd, 0.42, 6),
+    inox: metal(0xd2d4d6, 0.3, 5),
     // Le chrome mat de la tige et de la clé de purge.
-    acier: metal(0xb9bcc0, 0.33),
+    acier: metal(0xb9bcc0, 0.36, 5),
     // La manette de la vanne : une gaine rouge brillante.
-    rouge: plastique(0xc4161c, 0.32, 0.25, fin, { clearcoat: 0.6, clearcoatRoughness: 0.25 }),
+    rouge: plastique(0xc4161c, 0.32, 0.25, fin, 1.6, { clearcoat: 0.6, clearcoatRoughness: 0.25 }),
     // La pastille rouge du dessus de la bobine 9V.
-    rougeBobine: plastique(0xc8283a, 0.5, 0.4),
-    jaune: plastique(0xe4c41c, 0.55, 0.2),
-    filRouge: plastique(0xc4161c, 0.4, 0.15),
-    filNoir: plastique(0x121212, 0.45, 0.15),
-    cuivre: metal(0xc87a50, 0.4),
+    rougeBobine: plastique(0xc8283a, 0.5, 0.4, fin, 1.4),
+    jaune: plastique(0xe4c41c, 0.55, 0.2, fin, 1.2),
+    filRouge: plastique(0xc4161c, 0.4, 0.15, fin, 1.6),
+    filNoir: plastique(0x121212, 0.45, 0.15, fin, 3),
+    cuivre: metal(0xc87a50, 0.4, 5),
     // Le PEHD : un noir mat, ses bandes bleues.
-    pehd: plastique(0x242527, 0.62, 0.6, moyen),
-    bleu: plastique(0x1565c0, 0.5, 0.4),
+    pehd: plastique(0x1c1d1f, 0.6, 0.6, moyen, 1.8),
+    bleu: plastique(0x1565c0, 0.5, 0.4, fin, 1.2),
     // Le fond d'une empreinte, d'un trou : un noir qui ne renvoie rien.
     creux: new THREE.MeshPhysicalMaterial({ color: 0x08080a, roughness: 0.95, metalness: 0 })
   };
