@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
-import { dessinerPlan, type ZoneDessinee } from "../src/lib/arrosage/plan-dessine";
+import { dessinerPlan, EPAISSEURS, LOSANGE, REGARD, type ZoneDessinee } from "../src/lib/arrosage/plan-dessine";
+import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
 import { contourDesZones } from "../src/lib/arrosage/terrain";
 import { surLeBord } from "../src/lib/arrosage/trace";
 
@@ -259,6 +260,90 @@ dire(
       return x0 < vx || x0 + w > vx + vw || c.y - 0.95 < vy || c.y > vy + vh;
     });
     dire(sorties.length === 0, `aucune cote hors du cadre (${sorties.map((c) => c.texte).join(", ") || "aucune"})`);
+  }
+}
+
+// ── Le mot « nourrice » ne se barre pas, le losange ne passe pas sous le regard ──
+// Sa lecture du PDF, le 21 novembre 2026 : le mot était barré par la tranchée,
+// le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le
+// losange du té égal était à moitié sous le regard. Sa règle du 11 septembre :
+// deux symboles côte à côte, jamais l'un sur l'autre.
+//
+// La géométrie est refaite ICI, à part de celle qui place le mot : chaque trait
+// est échantillonné tous les 5 cm et l'on regarde si un point tombe dans la
+// boîte du mot élargie de la demi-épaisseur du trait.
+{
+  const JARDIN_DU_PDF = {
+    seau: 10, temps: 18, pression: 3, compteur: "oui", regardVersZone: 0, amenee: 0,
+    zones: [
+      { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+      { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: "boucle" },
+      { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" },
+    ],
+    couronne: 50,
+  };
+  type Pt = { x: number; y: number };
+  type Seg = { de: Pt; a: Pt };
+  const HAUT = 0.95;
+  const boiteDuMot = (e: Pt & { ancre: string }, texte: string) => {
+    const w = texte.length * HAUT * 0.6;
+    const x0 = e.ancre === "start" ? e.x : e.ancre === "end" ? e.x - w : e.x - w / 2;
+    return { x0, y0: e.y - HAUT, x1: x0 + w, y1: e.y };
+  };
+  const dans = (p: Pt, b: { x0: number; y0: number; x1: number; y1: number }, marge: number) =>
+    p.x > b.x0 - marge && p.x < b.x1 + marge && p.y > b.y0 - marge && p.y < b.y1 + marge;
+  const touche = (s: Seg, b: { x0: number; y0: number; x1: number; y1: number }, demi: number) => {
+    const n = Math.max(1, Math.ceil(Math.hypot(s.a.x - s.de.x, s.a.y - s.de.y) / 0.05));
+    for (let k = 0; k <= n; k++) if (dans({ x: s.de.x + ((s.a.x - s.de.x) * k) / n, y: s.de.y + ((s.a.y - s.de.y) * k) / n }, b, demi)) return true;
+    return false;
+  };
+  const aretes = (c: Pt[]): Seg[] => c.map((p, i) => ({ de: p, a: c[(i + 1) % c.length] }));
+  const places: Pt[] = [{ x: 13, y: 6 }, { x: 12, y: 3 }, { x: 6, y: 13 }, { x: -1.5, y: 5 }, { x: 23.5, y: 4 }, { x: 18, y: 9 }];
+  // Les jardins de `capture-plan-arrosage.ts`, où la capture a montré un
+  // losange sorti du regard posé sur la cote « 14 m ».
+  const jardins = [
+    ...places.map((nourrice) => ({ ...JARDIN_DU_PDF, nourrice })),
+    { ...JARDIN_DU_PDF, zones: [{ id: 1, type: "gazon", nom: "Grande", x: 0, y: 0, L: 14, l: 14 }, { id: 2, type: "gazon", nom: "Petite", x: 14, y: 0, L: 5, l: 5 }], nourrice: { x: 0, y: 7 } },
+    { ...JARDIN_DU_PDF, zones: [{ id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 18, l: 12 }, { id: 2, type: "gazon", nom: "Pelouse avant", x: 0, y: 14, L: 12, l: 8 }, { id: 3, type: "gazon", nom: "Couloir", x: 18, y: 0, L: 10, l: 2 }], nourrice: { x: 0, y: 13 } },
+  ];
+  for (const jardin of jardins) {
+    const nourrice = jardin.nourrice;
+    const { dessin } = calculerEtDessiner(jardin as never, null);
+    if (!dessin) { dire(false, `nourrice en (${nourrice.x} ; ${nourrice.y}) : pas de dessin, le contrôle ne mesure rien`); continue; }
+    const ici = `${jardin.zones.length} zones, nourrice en (${nourrice.x} ; ${nourrice.y})`;
+    const mot = boiteDuMot(dessin.etiquetteNourrice, "nourrice");
+    const traits: { s: Seg; demi: number; quoi: string }[] = [
+      ...dessin.tranchee.map((s) => ({ s, demi: EPAISSEURS.tranchee / 2, quoi: "la tranchée" })),
+      ...dessin.liaisons.map((s) => ({ s, demi: EPAISSEURS.liaison / 2, quoi: "un pointillé" })),
+      ...[...dessin.contours, ...dessin.trous].flatMap(aretes).map((s) => ({ s, demi: EPAISSEURS.contour / 2, quoi: "le bord d'une zone" })),
+      ...dessin.reseaux.flatMap((r) => [
+        ...r.traits.map((s) => ({ s, demi: EPAISSEURS.ligne / 2, quoi: `le tuyau du réseau ${r.numero + 1}` })),
+        ...r.antennes.map((s) => ({ s, demi: EPAISSEURS.antenne / 2, quoi: `une antenne du réseau ${r.numero + 1}` })),
+      ]),
+    ];
+    const barre = traits.filter((t) => touche(t.s, mot, t.demi));
+    dire(barre.length === 0, `${ici} : le mot « nourrice » n'est barré par rien${barre.length ? ` (barré par ${[...new Set(barre.map((t) => t.quoi))].join(", ")})` : ""}`);
+    const symboles: { p: Pt; r: number; quoi: string }[] = dessin.reseaux.flatMap((r) => [
+      ...r.tetes.map((t) => ({ p: { x: t.x + t.decalage.x, y: t.y + t.decalage.y }, r: 0.67, quoi: "une tête" })),
+      ...r.jonctions.map((p) => ({ p, r: LOSANGE.demi * Math.SQRT2 + LOSANGE.trait / 2, quoi: "un losange" })),
+    ]);
+    const regard = { x0: nourrice.x - REGARD.demiLargeur, y0: nourrice.y - REGARD.demiHauteur, x1: nourrice.x + REGARD.demiLargeur, y1: nourrice.y + REGARD.demiHauteur };
+    const couverts = symboles.filter((s) => dans(s.p, mot, s.r));
+    const surLeRegard = mot.x1 > regard.x0 - REGARD.trait / 2 && mot.x0 < regard.x1 + REGARD.trait / 2 && mot.y1 > regard.y0 - REGARD.trait / 2 && mot.y0 < regard.y1 + REGARD.trait / 2;
+    dire(couverts.length === 0 && !surLeRegard,
+      `${ici} : le mot ne couvre ni un symbole ni le regard${couverts.length ? ` (couvre ${couverts.map((c) => c.quoi).join(", ")})` : ""}`);
+    const cotes = dessin.cotes.filter((c) => { const b = boiteDuMot(c, c.texte); return b.x1 > mot.x0 && b.x0 < mot.x1 && b.y1 > mot.y0 && b.y0 < mot.y1; });
+    dire(cotes.length === 0, `${ici} : le mot ne tombe sur aucune cote${cotes.length ? ` (« ${cotes.map((c) => c.texte).join(" », « ")} »)` : ""}`);
+    const emprise = LOSANGE.demi * Math.SQRT2 + LOSANGE.trait / 2;
+    const sous = dessin.reseaux.flatMap((r) => r.jonctions.filter((p) => dans(p, regard, emprise + REGARD.trait / 2)).map(() => r.numero + 1));
+    dire(sous.length === 0, `${ici} : aucun losange sous le regard${sous.length ? ` (réseau ${sous.join(", ")})` : ""}`);
+    const surUneCote = dessin.reseaux.flatMap((r) => r.jonctions.flatMap((p) => dessin.cotes.filter((c) => dans(p, boiteDuMot(c, c.texte), emprise)).map((c) => c.texte)));
+    dire(surUneCote.length === 0, `${ici} : aucun losange sur une cote${surUneCote.length ? ` (« ${surUneCote.join(" », « ")} »)` : ""}`);
+    const [vx, vy, vw, vh] = dessin.viewBox.split(" ").map(Number);
+    dire(mot.x0 >= vx && mot.x1 <= vx + vw && mot.y0 >= vy && mot.y1 <= vy + vh, `${ici} : le mot tient dans le cadre du dessin`);
+    const loin = Math.hypot(Math.max(regard.x0 - mot.x1, 0, mot.x0 - regard.x1), Math.max(regard.y0 - mot.y1, 0, mot.y0 - regard.y1));
+    dire(loin <= 4, `${ici} : le mot reste près du regard (${loin.toFixed(2)} m)`);
   }
 }
 

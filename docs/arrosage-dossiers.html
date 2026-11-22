@@ -177,6 +177,177 @@
 <li>« Télécharger le PDF » était un simple lien : sur iPhone, le PDF se serait ouvert au lieu de se ranger. Il passe maintenant par le bouton commun des devis et des factures, et la suite navigateur fait l'appui et reçoit le fichier.</li>
 </ol>
 <p>La suite des dossiers, qui fait ton geste du dessin au dossier supprimé : 8 cas sur 8.</p>
+<h3 id="le-22-novembre--le-plan-en-couleur-agrandi-dans-le-pdf">Le 22 novembre : le plan en couleur agrandi dans le PDF</h3>
+<p>Ta demande : <em>« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur celle où il n'y a pas vraiment la place »</em>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La page</th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>réseau 1, pelouse carrée</td>
+<td>200 points de large</td>
+<td>411 ; le dessin des pièces passe de 441 à 317, ses photos de 34 à 32 points</td>
+</tr>
+<tr>
+<td>réseau 2, deux pelouses</td>
+<td>200</td>
+<td>360 ; les pièces de 380 à 277, leurs photos de 34 à 28 points</td>
+</tr>
+<tr>
+<td>réseau 3, le couloir</td>
+<td>200</td>
+<td>toute la largeur, 511 ; les pièces aussi (470 avant)</td>
+</tr>
+<tr>
+<td>réseau 4, le goutte-à-goutte</td>
+<td>200</td>
+<td>toute la largeur, 511</td>
+</tr>
+</tbody></table></div>
+<p>Le plan est sous l'en-tête, sur la largeur de la page. Quand la page manque de place, le dessin des pièces rétrécit un peu plus que lui, pour que les photos restent lisibles. Le vide gardé autour du dessin des pièces et trois lignes vides sous la tête du bas ont été rendus au plan.</p>
+<h3 id="le-22-novembre-ensuite--le-mot--nourrice--le-losange-et-langle">Le 22 novembre, ensuite : le mot « nourrice », le losange et l'angle</h3>
+<p>Ton « oui, corrige d'abord le mot nourrice et l'écart d'angle ».</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui est fait</th>
+<th>Comment je le sais</th>
+</tr></thead><tbody>
+<tr>
+<td>le mot « nourrice »</td>
+<td>il se pose à la place libre la plus proche du regard : plus aucun trait ne le barre, il ne couvre ni tête, ni losange, ni cote. Le regard est souvent dans un passage de 2 m, plus étroit que le mot : il se pose alors à côté, dans la pelouse</td>
+<td><code>test-plan-dessine.ts</code>, sur huit places de nourrice dans trois jardins : rouge partout avant, vert après. Regardé sur les quatre réseaux du PDF, sur quatre jardins et au robinet</td>
+</tr>
+<tr>
+<td>le losange sous le regard</td>
+<td>il sort, à côté, sans tomber sur une tête ni sur une cote</td>
+<td>le même contrôle. <strong>Trouvé en regardant</strong> : dans un jardin d'essai, le losange sorti se posait sur la cote « 14 m ». Corrigé, et ajouté au contrôle</td>
+</tr>
+<tr>
+<td>l'écart d'angle</td>
+<td>l'angle et l'échelle s'arrondissent à six décimales</td>
+<td>la même nourrice calculée dans Node et dans Chromium : 5 rotations sur 140 différaient avant, aucune après</td>
+</tr>
+</tbody></table></div>
+<p>Un plan déjà enregistré dans un dossier garde son dessin de ce jour-là.</p>
+<h3 id="le-22-novembre-enfin---lu-2-m-corrigé-par-vous-">Le 22 novembre, enfin : « lu 2 m, corrigé par vous »</h3>
+<p>Ton « tu me codes aussi ». Dans « Voir la saisie » d'un plan fait depuis une photo, à la suite de la zone, dans l'or du texte : « Massif, 20 m sur 2,4 m (lu 2 m, corrigé par vous) ».</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui s'écrit</th>
+</tr></thead><tbody>
+<tr>
+<td>une cote lue, que tu as changée</td>
+<td>« (lu 2 m, corrigé par vous) »</td>
+</tr>
+<tr>
+<td>les deux cotes changées</td>
+<td>« (lu 10 m sur 2 m, corrigé par vous) »</td>
+</tr>
+<tr>
+<td>une cote que l'IA a déduite, que tu as changée</td>
+<td>« déduit » au lieu de « lu »</td>
+</tr>
+<tr>
+<td>une cote que l'IA n'a pas lue, tapée par toi</td>
+<td>rien : écrire « lu » serait faux</td>
+</tr>
+<tr>
+<td>une zone tournée, sans autre changement</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>une zone ajoutée à la main, un morceau de pelouse coupée autour d'un massif, une haie</td>
+<td>rien : la photo n'en disait rien de comparable</td>
+</tr>
+</tbody></table></div>
+<p>Éprouvé par trois suites, rouges avant. <strong>Pas regardé à l'écran</strong> : il faut un serveur, et tu as dit pas de batterie. Un plan enregistré avant n'a pas de quoi le dire.</p>
+<h3 id="le-22-novembre-encore--la-page-de-la-nourrice">Le 22 novembre, encore : la page de la nourrice</h3>
+<p>Ta remarque : <em>« il manque la nourrice »</em>. Le PDF a maintenant sa page, juste après la page de garde : son nom, la phrase qui dit l'ordre des voies, l'éclaté de la nourrice 3D <strong>vu du dessus</strong>, en grand, puis ses pièces.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>la photo</td>
+<td>celle de la 3D de l'autre session, prise d'avance pour chacune des 27 nourrices possibles (1 à 6 voies, de 0 à toutes en goutte-à-goutte)</td>
+</tr>
+<tr>
+<td>du dessus</td>
+<td>chaque pièce y est séparée, dans l'ordre du montage ; de biais, les colonnes se cachent</td>
+</tr>
+<tr>
+<td>au nez de robinet</td>
+<td>pas de nourrice, pas de page</td>
+</tr>
+<tr>
+<td>ce que la photo ne montre pas</td>
+<td>une pièce de la nourrice que tu as changée ou supprimée à la main : la liste dessous, si</td>
+</tr>
+</tbody></table></div>
+<p>Si la session 3D change une pièce, un contrôle rougit et dit la commande qui refait les photos.</p>
+<h3 id="le-22-novembre-au-soir--chaque-pièce-a-son-numéro">Le 22 novembre, au soir : chaque pièce a son numéro</h3>
+<p>Ta demande : <em>« quand je suis sur la nourrice, la liste des pièces en dessous, tout de suite je sais à quoi ça correspond ; pareil pour les réseaux »</em>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>sur chaque page</td>
+<td>la liste de SES pièces, numérotée, et le même numéro sur chaque photo de la page</td>
+</tr>
+<tr>
+<td>la nourrice</td>
+<td>les numéros de l'écran, posés sur la photo 3D à côté de chaque pièce ; regard, programmateur, pile et connexions à part, sous « Avec la nourrice »</td>
+</tr>
+<tr>
+<td>un réseau</td>
+<td>ses pièces, dans l'ordre de la liste de fin ; le numéro est sur le tuyau, sur chaque vignette et sur chaque pièce de « Une tête, de bas en haut »</td>
+</tr>
+<tr>
+<td>ce que ça coûte</td>
+<td>le plan en couleur des réseaux 1 et 2 du jardin d'essai rétrécit un peu (411 à 332 points, 360 à 286) pour faire place à la liste</td>
+</tr>
+</tbody></table></div>
+<p><strong>Trouvé en regardant</strong> : un « 8 » posé entre deux électrovannes serrées se lisait pour les deux ; il se pose maintenant sur la sienne. La liste du goutte-à-goutte tombait en bas de page, loin de son rail ; elle le suit.</p>
+<p><strong>Puis, tes deux remarques :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>« la vanne 3/4, c'est pas la marque Dura », puis le régulateur, le regard jumbo et le PEBD Ø16</td>
+<td>corrigé partout : la vanne, le régulateur, le regard jumbo (et ses 5 et 6 voies), le regard rectangle 12" et le PEBD rigide Ø16 s'écrivent sans marque, dans l'appli, le PDF et les planches. Le relevé Aqua Plus les donnait déjà sans Dura. Les coudes, mamelons, union, té et collecteurs gardent Dura : Aqua Plus les vend sous des références Dura</td>
+</tr>
+<tr>
+<td>« mettre les pièces, les numéroter pour qu'on les voie »</td>
+<td>sur chaque page de réseau, chaque ligne de « Ses pièces » montre sa pièce : le numéro, la photo, la quantité, le nom</td>
+</tr>
+<tr>
+<td>ce que ça coûte</td>
+<td>le plan en couleur des réseaux 1 et 2 rétrécit encore (332 à 287 points, 286 à 245) ; les réseaux 3 et 4 gardent presque toute la largeur</td>
+</tr>
+</tbody></table></div>
+<h3 id="le-22-novembre-dans-ton-appli">Le 22 novembre, dans ton appli</h3>
+<p>Ton « oui, lance la batterie ». Tout ce qui précède est sur <code>main</code>, donc dans ton appli au prochain allumage de ton espace. La batterie entière, jouée sur l'état exact livré (avec le travail des autres sessions poussé dans la journée) :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>suites de la base</td>
+<td>617 sur 617</td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td>218 sur 218</td>
+</tr>
+<tr>
+<td>connexion derrière un proxy</td>
+<td>réussie</td>
+</tr>
+</tbody></table></div>
+<p>Une planche de maquette (<code>verifier-maquette-arrosage-plan.mjs</code>) était déjà rouge sur <code>main</code> avant ce lot ; elle n'est pas dans la batterie, et elle est notée pour la session qui y touchera.</p>
 <h3 id="ce-qui-reste-et-qui-le-tranche">Ce qui reste, et qui le tranche</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -185,18 +356,6 @@
 <tr>
 <td>la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client</td>
 <td>toi, avec ton juriste</td>
-</tr>
-<tr>
-<td>le mot « nourrice » barré par la tranchée, le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le losange du té égal à moitié caché sous elle, sur le plan en couleur (écran et PDF). J'avais écrit « mord sur le losange » : c'est plus large</td>
-<td>toi : c'est l'appli, sur ton oui</td>
-</tr>
-<tr>
-<td>le plan revu signale une erreur en développement : un angle de la nourrice éclatée diffère à la 14ᵉ décimale entre le serveur et le téléphone. Rien ne se voit</td>
-<td>moi, sur ton oui</td>
-</tr>
-<tr>
-<td>« Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite</td>
-<td>à faire, si tu le veux</td>
 </tr>
 <tr>
 <td>le PDF ouvert sur ton iPhone</td>

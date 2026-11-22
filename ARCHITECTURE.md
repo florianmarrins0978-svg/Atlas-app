@@ -37968,6 +37968,23 @@ PDF se confronte à ces quatre-là avant la batterie.
 comme une fiche client effacée (`SupprimerCeClient.tsx`) : la flèche de « Mes
 dossiers » ramenait sinon sur le dossier supprimé.
 
+**La page d'un réseau dans le PDF (22 novembre 2026).** Sa demande :
+*« agrandis le plan d'arrosage où il n'y a pas la photo des pièces, et même sur
+celle où il n'y a pas vraiment la place »*. Le plan en couleur ne loge plus à
+côté du texte (200 points) : il prend la largeur de la page sous l'en-tête, et
+`disposerLeMilieu` (pure) partage avec le dessin des pièces ce qui reste entre
+l'en-tête et la tête du bas. Quand les deux tiennent, le plan est en pleine
+largeur ; sinon ils rétrécissent ensemble, le plan 1,3 fois moins vite
+(`PRIORITE_DU_PLAN`) : à parts égales il ne gagnait que deux tiers sur une
+pelouse carrée, et il a aussi demandé à voir les photos des pièces. **Le dessin
+des pièces se mesure sur ce qu'il montre** (`encombrementDesPieces`) : ses zones
+coupées au cadre, ses tuyaux, et ses vignettes, qui débordent du dessin quand
+une tête est sur un coin. Mesuré sur son cadre, il gardait 1,60 m de vide autour
+des têtes, et ignorait les vignettes qui touchaient alors le plan ou la tête du
+bas. **Le contrôle replace lui-même chaque vignette**, comme la page les pose :
+relire la boîte que la fonction rend la ferait vérifier par elle-même, et c'est
+ainsi qu'une vignette oubliée dans le compte est d'abord passée au vert.
+
 ## §600 : La nourrice en 3D est faite de pièces qui déclarent leurs bouts, et rien d'autre ne les pose
 
 *22 novembre 2026. Une maquette (`appli/arrosage-nourrice-3d.html`), rien dans `src/`.*
@@ -38092,3 +38109,156 @@ parties ensemble, sous `atlas_app`) et `scripts/test-papier-facture-e2e.ts`
 (les trois champs changés sans attendre, au navigateur). Les autres écrans qui
 enregistrent champ par champ n'ont pas été revus : à faire quand l'un d'eux
 montrera le même symptôme.
+
+## §603 : Le mot « nourrice » et les losanges se posent là où rien n'est dessiné
+
+**Sa lecture du PDF, le 21 novembre 2026, et son « oui » du 22.** Le mot
+« nourrice » se posait vers le centre de gravité du terrain, à 1,5 m du regard
+(`versLInterieur`, retirée) : une direction, sans regarder ce qui s'y trouvait.
+Le regard se pose presque toujours au bord d'une pelouse, souvent dans un
+passage de 2 m entre deux, et c'est justement là que passent la tranchée, la
+sortie de chaque réseau et les pointillés : le mot était barré sur chaque page
+du PDF. Le losange d'un té égal, lui, se posait sur la ligne qui sort du
+regard, parfois au point même où il l'a posé : caché, en tout ou en moitié.
+
+**Ce qui le remplace** (`plan-dessine.ts`) :
+
+| | |
+|---|---|
+| le mot | `placeDuMotNourrice` : une grille de 25 cm autour du regard, de la place la plus proche à la plus loin ; la première où aucun trait ne le barre (tranchée, tuyaux, antennes, pointillés, bords des zones, chacun avec son épaisseur) et où il ne couvre ni tête, ni losange, ni cote, ni le regard. À distance égale, dessous d'abord. Sans place libre à 6 m, la moins encombrée |
+| les losanges | `degagerLesLosanges` : un losange qui tomberait sous le regard sort au plus près, sans tomber sur une tête, un autre losange ou une cote. Le point vrai ne change pas, seul le dessin s'écarte (sa règle du 11 septembre) |
+| le cadre | il contient le mot, qui peut se poser hors du terrain |
+
+**Les mesures du dessin vivent dans la règle**, plus dans l'écran :
+`EPAISSEURS`, `REGARD`, `LOSANGE`, que `PlanDessine.tsx` lit pour tracer. Le mot
+s'écarte des traits avec les épaisseurs mêmes qui les dessinent ; deux copies
+auraient fini par diverger.
+
+**Au robinet**, la règle réserve quand même la place du rectangle et d'un mot de
+huit lettres : la croix et « robinet » y tiennent, et le dessin n'a pas à
+savoir le montage.
+
+**Un plan enregistré dans un dossier ne bouge pas** : il garde la place de ce
+jour-là (§599, « revoir ne recalcule jamais »). L'ancre `start` ou `end` ne se
+lit plus que là.
+
+**Le contrôle** (`test-plan-dessine.ts`) refait la géométrie à part, en
+échantillonnant chaque trait tous les 5 cm, sur huit nourrices dans trois
+jardins. Il a rougi partout sur l'ancien code, puis une seconde fois sur un
+losange sorti du regard et posé sur la cote « 14 m », vu à la capture
+(`capture-plan-arrosage.ts`) avant d'être vu par le test.
+
+**Et l'angle de la nourrice éclatée s'arrondit là où il naît**
+(`nourrice-eclatee.ts`) : `Math.atan2` et `Math.hypot` ne rendent pas le même
+dernier chiffre dans Node et dans Chrome, et React refuse une transformation qui
+diffère entre le serveur et le navigateur. Six décimales ; mesuré dans les deux
+moteurs, 5 rotations sur 140 différaient avant, aucune après.
+
+## §604 : Ce que l'IA avait lu voyage avec la zone, jusqu'au plan enregistré
+
+**Sa planche du 21 novembre 2026, validée par son « tout coder », et son « tu
+me codes aussi » du 22.** « Voir la saisie » d'un plan enregistré dit ce qu'il
+a corrigé de la lecture : « Massif, 20 m sur 2,4 m (lu 2 m, corrigé par
+vous) ». C'est la trace que §599 promettait : une cote fausse peut venir de la
+photo ou de lui, et seule la cote lue gardée à côté de la cote finale permet de
+le dire.
+
+**Le problème** : une zone du plan ne savait pas de quelle zone lue elle venait.
+L'éditeur les nommait `lu1`, `lu2`…, mais le serveur coupe une pelouse en
+morceaux autour d'un massif (`croquisDuDessin`) et écarte les zones sans cote
+(`planDuCroquis`) : aucun indice ne suivait.
+
+**Ce qui le résout** : la cote lue voyage AVEC la zone, champ `luSurLaPhoto`
+(`src/lib/arrosage/lu-sur-la-photo.ts`), de `ZoneDessinee` à `ZoneLue` puis à
+`ZoneParametre`. Une valeur plutôt qu'un renvoi vers la lecture : « Modifier »
+après le calcul, la discussion et « Reprendre dans l'outil » recopient la zone
+entière, et la note se lit sans rouvrir la lecture.
+
+| | |
+|---|---|
+| ne la portent pas | une zone ajoutée à la main ; un morceau coupé autour d'un massif (lui prêter la cote de la pelouse entière serait faux) ; une haie, en mètres linéaires |
+| une cote non lue | reste vide : la taille posée à l'estime par `plan-lu.ts` n'est pas une lecture |
+| une cote déduite | s'écrit « déduit », jamais « lu » |
+| une zone tournée | se compare dans le sens qui change le moins : un quart de tour n'est pas une correction |
+| relue | par `lireLeDessin` et `cotesDuPlanTiennentDebout`, au plafond des cotes du plan |
+
+Le calcul ne lit pas ce champ, et l'empreinte du plan non plus. Un plan
+enregistré avant le 22 novembre n'en a pas : il ne dit rien, faute de savoir.
+
+## §605 : La page de la nourrice du PDF montre l'éclaté 3D, photographié d'avance
+
+**Sa remarque du 22 novembre 2026 :** *« ton plan d'arrosage ne comprend pas la
+nourrice [...] prends la vue éclatée [...] tu utiliseras ça pour faire le plan de
+la nourrice »*. Le PDF n'avait pas de page pour elle.
+
+**Pourquoi une photo et pas la 3D.** Le PDF se compose sur le serveur
+(`plan-arrosage-pdf.ts`, pdf-lib), sans navigateur ni WebGL. La nourrice 3D
+(`appli/nourrice-3d/`, §600) ne peut donc s'y dessiner. Elle se photographie
+d'avance, une fois par nourrice possible : de 1 à 6 voies, de 0 à toutes en
+goutte-à-goutte, 27 photos (`scripts/rendre-nourrice-eclatee.mts`, qui ouvre la
+planche dans Chromium, l'éclate, la regarde du dessus et recadre sur les pièces).
+Elles vivent sous `public/arrosage-photos/nourrice-3d/`, où le PDF lit déjà les
+photos des pièces, et leur chemin ne s'écrit qu'une fois
+(`src/lib/arrosage/nourrice-en-photo.ts`).
+
+| | |
+|---|---|
+| la vue | **du dessus** : chaque pièce séparée, dans l'ordre du montage. De biais, les colonnes se cachent l'une l'autre |
+| la page | page 2, après la page de garde : tout part de la nourrice. Son nom, la phrase de l'écran sur l'ordre des voies (`phraseDeLaNourrice`), la photo, ses pièces |
+| la mise en page | photo et liste côte à côte, ou la liste sous la photo sur deux colonnes, selon ce qui donne la plus grande photo : une nourrice d'une voie est haute et étroite, une de six presque carrée |
+| sans page | au nez de robinet (pas de nourrice), et une nourrice supprimée en entier |
+| les pièces | celles que la liste compte (`groupeNourrice`), retouches comprises. **La photo, elle, ne les suit pas** : une pièce changée ou supprimée à la main y reste |
+
+**Les photos ne doivent pas vieillir en silence.** `empreinte.json` garde
+l'empreinte des fichiers qui DESSINENT les pièces (composition, formes,
+`pieces/`), pas celle des matières ni de la lumière : un reflet retouché ne
+change pas ce qu'on monte. `test-pdf-du-plan-arrosage.ts` compare, et son rouge
+dit la commande à jouer. Le même contrôle exige une photo pour chacune des 27
+nourrices.
+
+## §606 : Chaque page du PDF numérote ses pièces, sur la photo et dans la liste
+
+**Sa demande du 22 novembre 2026 :** *« c'est un peu compliqué de savoir quelle
+pièce il faut pour quel réseau [...] quand je suis sur la nourrice, la liste des
+pièces en dessous, tout de suite je sais à quoi ça correspond ; pareil pour le
+réseau 1, 2, 3 et 4 »*. La liste de fin était déjà rangée par réseau, mais loin
+des pages, et rien ne disait quelle photo était quelle ligne.
+
+**Le principe, celui d'une nomenclature** : chaque page porte la liste de SES
+pièces, numérotée, et le même numéro sur chaque photo de la page. La pastille
+est celle de la légende de l'écran (l'encre, le chiffre en blanc).
+
+| | la liste | les numéros posés |
+|---|---|---|
+| la nourrice | dans l'ordre de `composerNourrice` (celui de la légende de l'écran), puis « Avec la nourrice » sans numéro | sur la photo 3D, à côté de chaque pièce, à la place que le script relève (`places.json`) |
+| un réseau | son groupe de la liste de fin (`bloc`), dans le même ordre | le tuyau, chaque vignette (dessin ou rail), chaque maillon de la chaîne (`Maillon.refs`) |
+
+**Une pièce changée compte sous la référence qu'il a choisie** : la vignette et
+le maillon prennent le numéro de la ligne de la remplaçante. Une pièce de la
+nourrice supprimée garde son numéro, barrée : elle est encore sur la photo.
+
+**Le bout de tube sous chaque voie n'est pas numéroté**, alors que l'écran le
+numérote : le catalogue ne le connaît pas, l'écran l'appelle « PEHD Ø25 » de
+lui-même, ce qui est faux sur un réseau en Ø32, et il se compte avec son réseau.
+
+**Où se pose un numéro sur la photo** (`numeroterLaPhoto`) : à droite de la
+pièce, sinon à gauche, au-dessus, au-dessous ; seulement s'il est au moins deux
+fois plus près de sa pièce que de toute autre. Sinon il se pose dans le coin haut
+de la pièce, sur elle : vu sur la première page, un « 8 » entre deux électrovannes
+serrées se lisait pour l'une comme pour l'autre.
+
+**La liste d'un réseau suit son dessin** : sa place est réservée au-dessus de la
+chaîne, et elle se pose juste sous le dessin des pièces. Collée en bas, celle
+d'un goutte-à-goutte restait loin de son rail.
+
+**Sur une page de réseau, chaque ligne montre aussi sa pièce** (sa demande du
+même soir : *« il faudrait mettre les pièces, les numéroter pour qu'on les voie
+tout de suite »*) : le numéro, la photo (`photoDe`, celle de la liste de
+l'écran), la quantité, le nom. La photo d'une ligne se déclare par `photo`
+présent, même nul : la case reste, et la liste ne bouge pas d'une ligne à
+l'autre. La nourrice n'en porte pas : sa grande photo les montre déjà.
+
+**Le contrôle** (`test-pdf-du-plan-arrosage.ts`) exige les deux sens : toute
+pièce montrée a son numéro, tout numéro a sa pièce montrée sur la page. Il lit
+ce que la page montre dans les données qui la dessinent, pas dans le PDF : un
+numéro dessiné ne se distingue pas d'un chiffre d'un nom de pièce.

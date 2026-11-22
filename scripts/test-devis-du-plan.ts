@@ -35,7 +35,8 @@ test("par référence, sinon une ligne « pas dans le catalogue », jamais devin
 test("un tube lu « au m » ou « au ml » se compte en mètres, jamais en pièces", () => {
   // Sa demande du 20 novembre 2026 : « ml » s'ajoute à « m » dans les unités des
   // pièces. Un tube lu au ml ne doit pas devenir des pièces qu'on compte.
-  const r = reconnaitreLeDevis([lu("Dura PEBD rigide Ø16 (tube de reprise)", null, "50", "m"), lu("tube P.E.B.D. Ø 16mm 6,3 bars (12 x 16)", "UPE1116", "20", "ml")]);
+  // Le nom que Cause écrit au fournisseur, sans marque depuis sa réponse du 22 novembre 2026.
+  const r = reconnaitreLeDevis([lu("PEBD rigide Ø16 (tube de reprise)", null, "50", "m"), lu("tube P.E.B.D. Ø 16mm 6,3 bars (12 x 16)", "UPE1116", "20", "ml")]);
   assert.deepEqual(r.connues.map((c) => [c.cle, c.q, c.u]), [["pebd16", 50, "ml"], ["UPE1116", 20, "ml"]]);
 });
 

@@ -9,10 +9,15 @@
  *     phrase « Nous ne garantissons pas… » retirée aussi ;
  *   · *« supprime les petites phrases en gris »* : aucun pied de page.
  *
- * Page 1 : l'entreprise, le dossier, la date, le résumé, la légende. Puis un
- * réseau par page : son nom, son matériel, son tuyau et le réseau en couleur
- * en haut ; le dessin de ses pièces au milieu, aussi grand que la page le
- * permet ; une tête de bas en haut en bas. Puis la liste des pièces.
+ * Et le lendemain : *« agrandis le plan d'arrosage où il n'y a pas la photo des
+ * pièces »*, voir `disposerLeMilieu` ; et *« il manque la nourrice »*, voir
+ * `pageDeLaNourrice`.
+ *
+ * Page 1 : l'entreprise, le dossier, la date, le résumé, la légende. Page 2 :
+ * la nourrice, d'où tout part, son éclaté vu du dessus et ses pièces (pas de
+ * page au nez de robinet, qui n'en a pas). Puis un réseau par page : son nom, son matériel et son tuyau en haut ; le réseau en
+ * couleur sur la largeur de la page, puis le dessin de ses pièces, partageant
+ * ce qu'il reste ; une tête de bas en haut en bas. Puis la liste des pièces.
  *
  * **Archivé à l'enregistrement, jamais reconstruit** (comme la facture) : ce
  * fichier ne tourne qu'une fois par version. Il ne porte pas les prix d'achat
@@ -27,8 +32,12 @@ import type { LigneDuReseau } from "@/lib/arrosage/lignes-du-reseau";
 import type { Maillon, PlanDesPieces, Poste } from "@/lib/arrosage/postes";
 import { pourLePapier } from "@/lib/texte-pdf";
 import { couleurPourLePapier, tracerSvg, type NoeudSvg } from "./svg-vers-pdf";
+import { FICHIER_DES_PLACES, type PlaceSurLaPhoto } from "@/lib/arrosage/nourrice-en-photo";
 
 export type SegmentDeTexte = { gras: boolean; texte: string };
+
+/** Une ligne de pièces numérotée : son numéro est posé sur chaque photo de la même page. */
+export type LigneNumerotee = { numero: number; ref: string; quantite: string | null; nom: string; retiree?: boolean; photo?: string | null };
 
 export type ReseauDuPdf = {
   titre: string;
@@ -43,6 +52,9 @@ export type ReseauDuPdf = {
   rail: Poste[];
   ajoutees: Poste[];
   chaine: Maillon[] | null;
+  /** Ses pièces, numérotées comme son groupe de la liste ; `numeros` : la référence vers son numéro. */
+  liste: LigneNumerotee[];
+  numeros: Record<string, number>;
 };
 
 export type DonneesPdfDuPlan = {
@@ -52,6 +64,12 @@ export type DonneesPdfDuPlan = {
   date: string;
   resume: string;
   legende: { symbole: NoeudSvg; texte: SegmentDeTexte[] }[];
+  /**
+   * La page de la nourrice, ou `null` au nez de robinet. `photo` : son éclaté vu
+   * du dessus, sous `public/` ; `places` : sa clé dans `places.json`.
+   * `numerotees` : ce que la photo montre, numéroté ; `avec` : le reste.
+   */
+  nourrice: { titre: string; phrase: string; photo: string; places: string; numerotees: LigneNumerotee[]; avec: { quantite: string; nom: string }[] } | null;
   reseaux: ReseauDuPdf[];
   groupes: { titre: string; lignes: { quantite: string; nom: string }[] }[];
 };
@@ -185,14 +203,350 @@ async function pageDeGarde(doc: PDFDocument, d: DonneesPdfDuPlan, p: Polices) {
   }
 }
 
+/**
+ * LES NUMÉROS — sa demande du 22 novembre 2026 : *« quand je suis sur la
+ * nourrice, la liste des pièces en dessous, tout de suite je sais à quoi ça
+ * correspond ; pareil pour le réseau 1, 2, 3 et 4 »*. Chaque page porte la liste
+ * de SES pièces, numérotée, et le même numéro sur chaque photo de la page : la
+ * pastille d'encre, le chiffre en blanc, celle de la légende de l'écran.
+ */
+function pastille(page: PDFPage, numero: number, cx: number, cy: number, rayon: number, p: Polices): void {
+  page.drawCircle({ x: cx, y: cy, size: rayon, color: ENCRE });
+  const texte = String(numero), taille = rayon * (texte.length > 1 ? 1.05 : 1.2);
+  page.drawText(texte, { x: cx - p.gras.widthOfTextAtSize(texte, taille) / 2, y: cy - taille * 0.36, size: taille, font: p.gras, color: PAPIER });
+}
+
+/** Les numéros d'une photo, dans son coin haut droit, côte à côte, le premier à gauche. */
+function pastillesDuCoin(page: PDFPage, numeros: number[], xDroite: number, yHaut: number, taille: number, p: Polices): void {
+  const rayon = Math.max(4.2, Math.min(5.5, taille * 0.14));
+  numeros.forEach((n, k) => pastille(page, n, xDroite - rayon * 0.55 - (numeros.length - 1 - k) * (2 * rayon + 1), yHaut - rayon * 0.55, rayon, p));
+}
+
+/**
+ * Une ligne de liste : son numéro s'il en a un, sa photo si elle en porte une
+ * (`photo` présent, même nul : la case reste), sa quantité en or, ce qu'elle
+ * désigne. Sur une page de réseau, chaque ligne montre sa pièce : sa demande du
+ * 22 novembre 2026, *« il faudrait mettre les pièces, les numéroter pour qu'on
+ * les voie tout de suite »*.
+ */
+type LigneListe = { numero?: number; quantite: string | null; nom: string; retiree?: boolean; photo?: string | null };
+const RETRAIT = 15;
+const PHOTO_DE_LIGNE = 22;
+const QUANTITE = 34;
+const INTERLIGNE = 12.5;
+const ECART_COLONNES = 18;
+
+const retraitDe = (l: LigneListe) => (l.photo !== undefined ? RETRAIT + PHOTO_DE_LIGNE + 7 : RETRAIT);
+const hauteurDeLaLigne = (l: LigneListe, largeur: number, p: Polices) => {
+  const texte = couper(l.nom, p.texte, 9.5, largeur - retraitDe(l) - QUANTITE).length * INTERLIGNE + 2;
+  return l.photo !== undefined ? Math.max(texte, PHOTO_DE_LIGNE + 5) : texte;
+};
+function hauteurDeLaListe(lignes: LigneListe[], largeur: number, p: Polices): number {
+  return lignes.reduce((h, l) => h + hauteurDeLaLigne(l, largeur, p), 0);
+}
+async function ecrireLaListe(page: PDFPage, photos: Photos, lignes: LigneListe[], x: number, y: number, largeur: number, p: Polices): Promise<void> {
+  for (const l of lignes) {
+    const suivante = y - hauteurDeLaLigne(l, largeur, p);
+    const avecPhoto = l.photo !== undefined;
+    // Le numéro, et la photo, centrés sur la première ligne de texte.
+    const milieu = y + 3.2;
+    if (l.numero !== undefined) pastille(page, l.numero, x + 5, milieu, 5, p);
+    if (avecPhoto) await vignette(page, photos, { photo: l.photo ?? null, pied: null, retiree: l.retiree }, x + RETRAIT - 2, milieu + PHOTO_DE_LIGNE / 2, PHOTO_DE_LIGNE, null);
+    const xq = x + retraitDe(l);
+    if (l.quantite) page.drawText(papier(l.quantite), { x: xq, y, size: 9.5, font: p.gras, color: OR_TEXTE });
+    for (const morceau of couper(l.nom, p.texte, 9.5, largeur - retraitDe(l) - QUANTITE)) {
+      const xn = xq + QUANTITE;
+      page.drawText(morceau, { x: xn, y, size: 9.5, font: p.texte, color: l.retiree ? ETIQUETTE : ENCRE });
+      // Une pièce qu'il a supprimée reste, barrée, comme à l'écran : son numéro est encore sur la photo.
+      if (l.retiree) page.drawLine({ start: { x: xn, y: y + 3.2 }, end: { x: xn + p.texte.widthOfTextAtSize(morceau, 9.5), y: y + 3.2 }, thickness: 0.7, color: ETIQUETTE });
+      y -= INTERLIGNE;
+    }
+    y = suivante;
+  }
+}
+
+/** Des listes sous leur surtitre, chacune sur `colonnes` colonnes. */
+type Section = { titre: string; lignes: LigneListe[] };
+const enColonnes = (lignes: LigneListe[], n: number) => {
+  const parColonne = Math.ceil(lignes.length / n);
+  return Array.from({ length: n }, (_, k) => lignes.slice(k * parColonne, (k + 1) * parColonne));
+};
+function hauteurDesSections(sections: Section[], largeur: number, colonnes: number, p: Polices): number {
+  const large = (largeur - (colonnes - 1) * ECART_COLONNES) / colonnes;
+  return sections.reduce((h, s) => h + RUBRIQUE + (s.lignes.some((l) => l.photo !== undefined) ? 6 : 0) + Math.max(...enColonnes(s.lignes, colonnes).map((c) => hauteurDeLaListe(c, large, p))) + 8, 0);
+}
+async function ecrireLesSections(page: PDFPage, photos: Photos, sections: Section[], x: number, y: number, largeur: number, colonnes: number, p: Polices): Promise<void> {
+  const large = (largeur - (colonnes - 1) * ECART_COLONNES) / colonnes;
+  for (const s of sections) {
+    const yListe = rubrique(page, s.titre, x, y, p) - (s.lignes.some((l) => l.photo !== undefined) ? 6 : 0);
+    const parts = enColonnes(s.lignes, colonnes);
+    for (const [k, c] of parts.entries()) await ecrireLaListe(page, photos, c, x + k * (large + ECART_COLONNES), yListe, large, p);
+    y = yListe - Math.max(...parts.map((c) => hauteurDeLaListe(c, large, p))) - 8;
+  }
+}
+
+/** Les places des pièces sur les photos de la nourrice, relevées par le script qui les prend. */
+async function placesDeLaNourrice(cle: string): Promise<PlaceSurLaPhoto[]> {
+  const toutes = JSON.parse(await readFile(path.join(process.cwd(), "public", FICHIER_DES_PLACES), "utf8")) as Record<string, PlaceSurLaPhoto[]>;
+  const places = toutes[cle];
+  if (!places) throw new Error(`Aucune place relevée pour la nourrice ${cle} : rejouer scripts/rendre-nourrice-eclatee.mts`);
+  return places;
+}
+
+/**
+ * Le numéro de chaque pièce posé sur la photo, à côté d'elle : à droite, sinon à
+ * gauche, au-dessus, au-dessous, là où il ne couvre ni une autre pièce ni un
+ * autre numéro. Les pièces du haut se touchent presque ; une pastille posée à
+ * leur droite tomberait sur la voisine.
+ *
+ * **Et jamais à mi-chemin de deux pièces** : vu sur la première page, un « 8 »
+ * posé entre deux électrovannes serrées se lisait aussi bien pour l'une que pour
+ * l'autre. Une place n'est donc retenue que si la pastille est nettement plus
+ * près de SA pièce que de toute autre ; sinon elle se pose dans le coin haut de
+ * sa pièce, sur elle.
+ */
+function numeroterLaPhoto(page: PDFPage, places: PlaceSurLaPhoto[], numeros: Map<string, number>, cadre: { x: number; haut: number; largeur: number; hauteur: number }, p: Polices): void {
+  const rayon = 6, air = 1.5;
+  type Boite = { x0: number; x1: number; y0: number; y1: number };
+  const boites = places.map((q) => ({ q, x0: cadre.x + q.x0 * cadre.largeur, x1: cadre.x + q.x1 * cadre.largeur, y1: cadre.haut - q.y0 * cadre.hauteur, y0: cadre.haut - q.y1 * cadre.hauteur }));
+  const distance = (cx: number, cy: number, b: Boite) => Math.hypot(Math.max(b.x0 - cx, 0, cx - b.x1), Math.max(b.y0 - cy, 0, cy - b.y1));
+  const posees: { x: number; y: number }[] = [];
+  const dansLaPhoto = (cx: number, cy: number) => cx - rayon >= cadre.x && cx + rayon <= cadre.x + cadre.largeur && cy + rayon <= cadre.haut && cy - rayon >= cadre.haut - cadre.hauteur;
+  const loinDesAutres = (cx: number, cy: number) => posees.every((o) => Math.hypot(o.x - cx, o.y - cy) >= 2 * rayon + 1);
+  // À côté : hors de toute pièce, et au moins deux fois plus près de la sienne que de la plus proche des autres.
+  const aCote = (cx: number, cy: number, sienne: Boite) =>
+    dansLaPhoto(cx, cy) && loinDesAutres(cx, cy) &&
+    boites.every((b) => b === sienne || distance(cx, cy, b) >= Math.max(rayon + 2, 2 * distance(cx, cy, sienne) + rayon));
+  for (const b of boites) {
+    const n = numeros.get(b.q.ref);
+    if (n === undefined) continue;
+    const mx = (b.x0 + b.x1) / 2, my = (b.y0 + b.y1) / 2;
+    const essais = [[b.x1 + rayon + air, my], [b.x0 - rayon - air, my], [mx, b.y1 + rayon + air], [mx, b.y0 - rayon - air]];
+    const coin = [Math.max(b.x0 + rayon, b.x1 - rayon), Math.min(b.y1 - rayon, Math.max(b.y0 + rayon, my))];
+    const [cx, cy] = essais.find(([x, y]) => aCote(x, y, b)) ?? coin;
+    posees.push({ x: cx, y: cy });
+    pastille(page, n, cx, cy, rayon, p);
+  }
+}
+
+/**
+ * LA PAGE DE LA NOURRICE — sa demande du 22 novembre 2026 : *« ton plan
+ * d'arrosage ne comprend pas la nourrice [...] prends la vue éclatée »*.
+ *
+ * L'éclaté est celui de la nourrice en 3D (`appli/nourrice-3d/`), photographié
+ * du dessus pour chaque nourrice possible (`scripts/rendre-nourrice-eclatee.mts`) :
+ * le serveur n'a pas de quoi dessiner de la 3D. Du dessus, chaque pièce est
+ * séparée des autres, dans l'ordre du montage. Puis ses pièces, numérotées
+ * comme sur la photo, et ce qui l'accompagne sans y figurer.
+ *
+ * La photo et la liste se posent côte à côte, ou la liste sous la photo, selon
+ * ce qui donne la PLUS GRANDE photo : une nourrice d'une voie est haute et
+ * étroite, une de six est presque carrée.
+ */
+async function pageDeLaNourrice(doc: PDFDocument, n: NonNullable<DonneesPdfDuPlan["nourrice"]>, p: Polices, photos: Photos) {
+  const page = doc.addPage([A4.largeur, A4.hauteur]);
+  let y = rubrique(page, "La nourrice", MARGE, A4.hauteur - MARGE - 8, p);
+  page.drawText(papier(n.titre), { x: MARGE, y: y - 12, size: 20, font: p.titres, color: ENCRE });
+  y -= 30;
+  for (const l of couper(n.phrase, p.texte, 10, UTILE)) {
+    page.drawText(l, { x: MARGE, y, size: 10, font: p.texte, color: ETIQUETTE });
+    y -= 13;
+  }
+  y -= 10;
+
+  const image = await photos.lire(n.photo);
+  if (!image) throw new Error(`La photo de la nourrice n'est pas sous public/arrosage-photos : ${n.photo}`);
+  const sections: Section[] = [{ titre: "Ses pièces", lignes: n.numerotees }];
+  if (n.avec.length) sections.push({ titre: "Avec la nourrice", lignes: n.avec });
+  const haut = y, dispo = y - BAS, COLONNE = 200;
+  const echelle = (w: number, h: number) => Math.min(w / image.width, h / image.height);
+  // Côte à côte : la liste dans sa colonne, la photo dans le reste.
+  const cote = echelle(UTILE - COLONNE - ECART_COLONNES, dispo);
+  // L'une sous l'autre : la liste sur deux colonnes, sous la photo.
+  const dessous = echelle(UTILE, dispo - hauteurDesSections(sections, UTILE, 2, p) - ECART_COLONNES);
+
+  const s = Math.max(cote, dessous);
+  const w = image.width * s, h = image.height * s;
+  const x = cote >= dessous ? MARGE : MARGE + (UTILE - w) / 2;
+  page.drawImage(image, { x, y: haut - h, width: w, height: h });
+  numeroterLaPhoto(page, await placesDeLaNourrice(n.places), new Map(n.numerotees.map((l) => [l.ref, l.numero])), { x, haut, largeur: w, hauteur: h }, p);
+  if (cote >= dessous) await ecrireLesSections(page, photos, sections, MARGE + UTILE - COLONNE, haut - 8, COLONNE, 1, p);
+  else await ecrireLesSections(page, photos, sections, MARGE, haut - h - ECART_COLONNES, UTILE, 2, p);
+}
+
+/** Les vignettes du dessin des pièces gardent la proportion de l'écran : 32 points pour un dessin de 322. */
+const tailleDesVignettes = (largeur: number) => Math.max(16, Math.min(34, (32 / 322) * largeur));
+
+/**
+ * Ce que le dessin des pièces occupe à cette largeur, mesuré sur ce qu'il MONTRE :
+ * ses zones et ses tuyaux (coupés au cadre, comme le traceur les coupe) et ses
+ * vignettes. Posées sur un coin, les vignettes dépassent du dessin, et c'est ce
+ * dépassement qui toucherait le plan du dessus ou la tête du dessous quand la
+ * page se resserre. À l'inverse, le dessin garde 1,60 m de vide autour des têtes :
+ * le compter prenait au plan une place où rien ne se dessine.
+ *
+ * Les écarts rendus sont comptés depuis le cadre du dessin : positifs quand ce qui
+ * se voit en sort, négatifs quand il s'arrête avant.
+ */
+function encombrementDesPieces(pl: PlanDesPieces, largeur: number) {
+  const hauteur = largeur * (pl.hauteur / pl.largeur);
+  const taille = tailleDesVignettes(largeur);
+  const k = largeur / pl.largeur;
+  let gauche = Infinity, droite = -Infinity, dessus = Infinity, dessous = -Infinity;
+  const englober = (x0: number, x1: number, y0: number, y1: number) => {
+    gauche = Math.min(gauche, x0); droite = Math.max(droite, x1);
+    dessus = Math.min(dessus, y0); dessous = Math.max(dessous, y1);
+  };
+  const dansLeCadre = (x: number, y: number) => {
+    const cx = Math.min(largeur, Math.max(0, x * k)), cy = Math.min(hauteur, Math.max(0, y * k));
+    englober(cx, cx, cy, cy);
+  };
+  for (const c of pl.contours) {
+    for (const q of c.trim().split(/\s+/)) {
+      const [x, y] = q.split(",").map(Number);
+      dansLeCadre(x, y);
+    }
+  }
+  for (const t of [...pl.traits, ...pl.antennes]) {
+    dansLeCadre(t.x1, t.y1);
+    dansLeCadre(t.x2, t.y2);
+  }
+  // La buse posée au pied d'une tuyère sort un peu de sa case.
+  const pied = taille * 0.1;
+  for (const pose of pl.poses) {
+    const cx = (pose.gauche / 100) * largeur, cy = (pose.haut / 100) * hauteur;
+    if (pose.egal) englober(cx - taille / 2, cx + taille / 2 + pied, cy - taille / 2, cy + taille / 2 + pied);
+    if (pose.pieces.length) {
+      const rangee = pose.pieces.length * taille + (pose.pieces.length - 1) * 2;
+      const haut = cy - taille / 2 + (pose.egal ? taille * 1.12 : 0);
+      englober(cx - rangee / 2, cx + rangee / 2 + pied, haut, haut + taille + pied);
+    }
+  }
+  // Un dessin sans rien dedans garde son cadre.
+  if (gauche > droite) englober(0, largeur, 0, hauteur);
+  return { hauteur, taille, dessus: -dessus, dessous: dessous - hauteur, gauche: -gauche, droite: droite - largeur };
+}
+
+/** La plus grande largeur de dessin dont les vignettes tiennent entre les marges. */
+function largeurMaxDesPieces(pl: PlanDesPieces): number {
+  let bas = 0, haut = UTILE;
+  for (let i = 0; i < 40; i++) {
+    const w = (bas + haut) / 2;
+    const e = encombrementDesPieces(pl, w);
+    if (w + e.gauche + e.droite <= UTILE) bas = w;
+    else haut = w;
+  }
+  return bas;
+}
+
+export type Boite = { gauche: number; haut: number; largeur: number; hauteur: number };
+
+/** Le rail d'un goutte-à-goutte : des vignettes nommées, en rangées. */
+const RAIL = { taille: 46, pas: 18, rangee: 40 };
+const rangeesDuRail = (n: number) => Math.ceil(n / Math.max(1, Math.floor((UTILE - 20) / (RAIL.taille + RAIL.pas))));
+
+/** Sous le plan en couleur : la place du surtitre « Les pièces », et de l'air au-dessus. */
+const AVANT_LES_PIECES = 22;
+const RUBRIQUE = 14;
+/**
+ * Quand la page manque de place, le plan en couleur rétrécit moins vite que le
+ * dessin des pièces. À parts égales, il ne gagnait que deux tiers de sa taille
+ * sur une pelouse carrée ; à 1,3, il la double (200 points avant, 411 sur le
+ * jardin d'essai), et les photos des pièces gardent près de trente points.
+ */
+const PRIORITE_DU_PLAN = 1.3;
+
+/**
+ * LE MILIEU D'UNE PAGE DE RÉSEAU — sa demande du 22 novembre 2026 : *« les pages
+ * où tu as la place, agrandis le plan d'arrosage où il n'y a pas la photo des
+ * pièces. Et même sur celle où il n'y a pas vraiment la place, agrandis-le quand
+ * même, parce que là il est tout petit. »*
+ *
+ * Le plan en couleur ne loge plus dans un coin de 200 points à côté du texte :
+ * il prend la largeur de la page sous l'en-tête. Quand le dessin des pièces
+ * laisse la place (un couloir, un goutte-à-goutte), il la garde entière ; quand
+ * les deux ne tiennent pas, ils rétrécissent ensemble, le plan moins que les
+ * pièces (`PRIORITE_DU_PLAN`) : il a demandé aussi à voir les photos des pièces.
+ *
+ * Pure, et c'est ce que `test-pdf-du-plan-arrosage.ts` éprouve : aucune boîte ne
+ * sort de la zone, aucune ne touche la suivante. `occupe` est ce que le dessin
+ * des pièces couvre vraiment, vignettes comprises.
+ */
+export function disposerLeMilieu(d: {
+  /** Hauteur sur largeur du plan en couleur, lue sur sa `viewBox` ; `null` sans dessin. */
+  proportionDuPlan: number | null;
+  pieces: PlanDesPieces | null;
+  /** Nombre de vignettes du rail d'un goutte-à-goutte, quand il n'y a pas de dessin des pièces. */
+  rail: number;
+  haut: number;
+  bas: number;
+}): { plan: Boite | null; rubrique: number; pieces: (Boite & { taille: number; occupe: Boite }) | null; rail: Boite | null } {
+  const disponible = d.haut - d.bas - AVANT_LES_PIECES - RUBRIQUE;
+  const largeurPieces = d.pieces ? largeurMaxDesPieces(d.pieces) : 0;
+  const hauteurRail = !d.pieces && d.rail ? rangeesDuRail(d.rail) * (RAIL.taille + RAIL.rangee) : 0;
+  const facteurDuPlan = (f: number) => Math.min(1, f * PRIORITE_DU_PLAN);
+  const hauteurPlan = (f: number) => (d.proportionDuPlan === null ? 0 : facteurDuPlan(f) * UTILE * d.proportionDuPlan);
+  const hauteurPieces = (f: number) => {
+    if (!d.pieces) return hauteurRail;
+    const e = encombrementDesPieces(d.pieces, f * largeurPieces);
+    return e.dessus + e.hauteur + e.dessous;
+  };
+  // Le plus grand facteur qui loge les deux. Le rail ne rétrécit pas : ses
+  // vignettes portent leur nom dessous, et il reste de la place sur sa page.
+  let f = 1;
+  if (hauteurPlan(1) + hauteurPieces(1) > disponible) {
+    let bas = 0, haut = 1;
+    for (let i = 0; i < 40; i++) {
+      const m = (bas + haut) / 2;
+      if (hauteurPlan(m) + hauteurPieces(m) <= disponible) bas = m;
+      else haut = m;
+    }
+    f = bas;
+  }
+
+  let y = d.haut;
+  let plan: Boite | null = null;
+  if (d.proportionDuPlan !== null) {
+    const largeur = facteurDuPlan(f) * UTILE;
+    plan = { gauche: MARGE + (UTILE - largeur) / 2, haut: y, largeur, hauteur: hauteurPlan(f) };
+    y -= plan.hauteur;
+  }
+  const rubrique = y - AVANT_LES_PIECES;
+  y = rubrique - RUBRIQUE;
+
+  let pieces: (Boite & { taille: number; occupe: Boite }) | null = null;
+  let rail: Boite | null = null;
+  if (d.pieces) {
+    const largeur = f * largeurPieces;
+    const e = encombrementDesPieces(d.pieces, largeur);
+    const total = e.gauche + largeur + e.droite;
+    const occupe = { gauche: MARGE + (UTILE - total) / 2, haut: y, largeur: total, hauteur: e.dessus + e.hauteur + e.dessous };
+    pieces = { gauche: occupe.gauche + e.gauche, haut: y - e.dessus, largeur, hauteur: e.hauteur, taille: e.taille, occupe };
+  } else if (hauteurRail) {
+    rail = { gauche: MARGE, haut: y, largeur: UTILE, hauteur: hauteurRail };
+  }
+  return { plan, rubrique, pieces, rail };
+}
+
+/** Hauteur sur largeur d'un dessin, lue sur sa `viewBox`. */
+function proportionDe(n: NoeudSvg): number {
+  const [, , w, h] = String(n.props.viewBox ?? "0 0 100 100").split(/[\s,]+/).map(Number);
+  return h / w;
+}
+
+/** Le numéro de la ligne qu'une photo montre : celle de la pièce qu'il a mise à la place, s'il l'a changée. */
+function numerosDuPoste(r: ReseauDuPdf, poste: Poste): number[] {
+  const n = r.numeros[poste.changee?.ref ?? poste.ref];
+  return n === undefined ? [] : [n];
+}
+
 async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos: Photos) {
   const page = doc.addPage([A4.largeur, A4.hauteur]);
   const couleur = couleurPourLePapier(r.couleur)?.couleur ?? ENCRE;
   const haut = A4.hauteur - MARGE;
 
-  // En haut, à gauche : le nom, la zone, le matériel, le tuyau. À droite : le réseau dans le jardin.
-  const largeurPlan = r.plan ? 200 : 0;
-  const largeurTexte = UTILE - largeurPlan - (r.plan ? 16 : 0);
+  // En haut : le nom, la zone, le matériel, le tuyau, sur toute la largeur.
+  const largeurTexte = UTILE;
   let y = haut;
   page.drawRectangle({ x: MARGE, y: y - 15, width: 9, height: 9, color: couleur });
   page.drawText(papier(r.titre), { x: MARGE + 15, y: y - 17, size: 20, font: p.titres, color: ENCRE });
@@ -215,22 +569,19 @@ async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos
   }
   y -= 4;
   await vignette(page, photos, r.tuyau.poste, MARGE, y + 6, 22, null);
+  pastillesDuCoin(page, numerosDuPoste(r, r.tuyau.poste), MARGE + 22, y + 6, 22, p);
   page.drawText(papier(r.tuyau.texte), { x: MARGE + 28, y: y - 9, size: 9, font: p.texte, color: ETIQUETTE });
   y -= 22;
-  let basDuBandeau = y;
-  if (r.plan) {
-    const t = tracerSvg(page, r.plan, { gauche: A4.largeur - MARGE - largeurPlan, haut, largeur: largeurPlan, hauteur: 150 }, p);
-    basDuBandeau = Math.min(basDuBandeau, haut - (150 + t.hauteur) / 2);
-  }
-  y = basDuBandeau - 18;
-  y = rubrique(page, "Les pièces", MARGE, y, p);
 
-  // En bas : une tête, de bas en haut. Posée d'abord, pour savoir ce qu'il reste au dessin.
+  // En bas : une tête, de bas en haut. Posée d'abord, pour savoir ce qu'il reste au milieu.
   let basDesPieces = BAS;
   if (r.chaine) {
     const taille = 40;
     const pas = UTILE / r.chaine.length;
-    const hauteurChaine = 14 + taille + 5 * 7.5 * 1.25;
+    // La place des libellés qu'elle porte vraiment : en réserver cinq lignes
+    // prenait au plan trois lignes vides sur chaque page.
+    const lignes = Math.max(...r.chaine.map((m) => couper(m.libelle, p.texte, 7.5, pas - 8).length));
+    const hauteurChaine = 14 + taille + lignes * 7.5 * 1.25 + 4;
     const yChaine = BAS + hauteurChaine;
     rubrique(page, "Une tête, de bas en haut", MARGE, yChaine, p);
     // « + » là où ça se visse, la double flèche là où le PEBD s'emboîte (`PiecesDuReseau`).
@@ -238,6 +589,7 @@ async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos
     for (const [i, m] of r.chaine.entries()) {
       const centre = MARGE + pas * i + pas / 2;
       await vignette(page, photos, { photo: m.photo, pied: m.pied, retiree: m.etat === "retiree" }, centre - taille / 2, yChaine - 14, taille, null);
+      pastillesDuCoin(page, m.refs.map((ref) => r.numeros[ref]).filter((n): n is number => n !== undefined), centre + taille / 2, yChaine - 14, taille, p);
       legendeSous(page, m.libelle, centre, yChaine - 16 - taille, pas - 8, p);
       if (i < liens.length) {
         const xl = MARGE + pas * (i + 1);
@@ -249,14 +601,27 @@ async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos
     basDesPieces = yChaine + 18;
   }
 
-  // Au milieu : le dessin des pièces, ses photos posées à leur place.
-  const hauteurDispo = y - basDesPieces;
-  if (r.pieces) {
+  // SES pièces, numérotées comme sur les photos de la page : leur place est
+  // réservée au-dessus de la tête, et elles se posent juste sous le dessin des
+  // pièces. Collées en bas, elles restaient loin du rail d'un goutte-à-goutte.
+  const sections: Section[] = r.liste.length ? [{ titre: "Ses pièces", lignes: r.liste }] : [];
+  const hauteurDeLaListe = sections.length ? hauteurDesSections(sections, UTILE, 2, p) + 20 : 0;
+  const hautDeLaReserve = basDesPieces + hauteurDeLaListe;
+
+  // Au milieu : le réseau dans le jardin, puis le dessin de ses pièces, ses photos posées à leur place.
+  const pieces = [...r.rail, ...r.ajoutees];
+  const milieu = disposerLeMilieu({
+    proportionDuPlan: r.plan ? proportionDe(r.plan) : null,
+    pieces: r.pieces,
+    rail: pieces.length,
+    haut: y - 8,
+    bas: hautDeLaReserve,
+  });
+  if (r.plan && milieu.plan) tracerSvg(page, r.plan, milieu.plan, p);
+  rubrique(page, "Les pièces", MARGE, milieu.rubrique, p);
+  if (r.pieces && milieu.pieces) {
     const pl = r.pieces;
-    const echelle = Math.min(UTILE / pl.largeur, hauteurDispo / pl.hauteur) * 0.92;
-    const w = pl.largeur * echelle, h = pl.hauteur * echelle;
-    const ox = MARGE + (UTILE - w) / 2;
-    const oy = y - (hauteurDispo - h) / 2;
+    const { gauche: ox, haut: oy, largeur: w, hauteur: h, taille } = milieu.pieces;
     const dessin: NoeudSvg = {
       type: "svg",
       props: { viewBox: `0 0 ${pl.largeur} ${pl.hauteur}` },
@@ -268,31 +633,41 @@ async function pageDuReseau(doc: PDFDocument, r: ReseauDuPdf, p: Polices, photos
       ],
     };
     tracerSvg(page, dessin, { gauche: ox, haut: oy, largeur: w, hauteur: h }, p);
-    // Les vignettes gardent la proportion de l'écran : 32 points pour un dessin de 322.
-    const taille = Math.max(16, Math.min(34, (32 / 322) * w));
     for (const pose of pl.poses) {
       const cx = ox + (pose.gauche / 100) * w;
       const cy = oy - (pose.haut / 100) * h;
-      if (pose.egal) await vignette(page, photos, pose.egal, cx - taille / 2, cy + taille / 2, taille, OR);
+      if (pose.egal) {
+        await vignette(page, photos, pose.egal, cx - taille / 2, cy + taille / 2, taille, OR);
+        pastillesDuCoin(page, numerosDuPoste(r, pose.egal), cx + taille / 2, cy + taille / 2, taille, p);
+      }
       if (pose.pieces.length) {
         const rangee = pose.pieces.length * taille + (pose.pieces.length - 1) * 2;
         const yh = cy + taille / 2 - (pose.egal ? taille * 1.12 : 0);
-        for (const [k, x] of pose.pieces.entries()) await vignette(page, photos, x, cx - rangee / 2 + k * (taille + 2), yh, taille, null);
+        for (const [k, x] of pose.pieces.entries()) {
+          const gauche = cx - rangee / 2 + k * (taille + 2);
+          await vignette(page, photos, x, gauche, yh, taille, null);
+          pastillesDuCoin(page, numerosDuPoste(r, x), gauche + taille, yh, taille, p);
+        }
       }
     }
-  } else if (r.rail.length || r.ajoutees.length) {
+  } else if (milieu.rail) {
     // Le goutte-à-goutte : son rail, une barre à sa couleur et ses pièces, chacune nommée.
-    const taille = 46;
-    const pieces = [...r.rail, ...r.ajoutees];
-    const parRangee = Math.max(1, Math.floor((UTILE - 20) / (taille + 18)));
-    page.drawRectangle({ x: MARGE + 2, y: y - Math.ceil(pieces.length / parRangee) * (taille + 40), width: 4, height: Math.ceil(pieces.length / parRangee) * (taille + 40) - 6, color: couleur });
+    const { taille, pas, rangee } = RAIL;
+    const hautDuRail = milieu.rail.haut;
+    const parRangee = Math.max(1, Math.floor((UTILE - 20) / (taille + pas)));
+    page.drawRectangle({ x: MARGE + 2, y: hautDuRail - milieu.rail.hauteur, width: 4, height: milieu.rail.hauteur - 6, color: couleur });
     for (const [k, x] of pieces.entries()) {
       const col = k % parRangee, ran = Math.floor(k / parRangee);
-      const gx = MARGE + 20 + col * (taille + 18);
-      const gy = y - 4 - ran * (taille + 40);
+      const gx = MARGE + 20 + col * (taille + pas);
+      const gy = hautDuRail - 4 - ran * (taille + rangee);
       await vignette(page, photos, x, gx, gy, taille, null);
+      pastillesDuCoin(page, numerosDuPoste(r, x), gx + taille, gy, taille, p);
       legendeSous(page, x.detail || x.nom, gx + taille / 2, gy - taille - 2, taille + 14, p);
     }
+  }
+  if (sections.length) {
+    const finDuDessin = milieu.pieces ? milieu.pieces.occupe.haut - milieu.pieces.occupe.hauteur : milieu.rail ? milieu.rail.haut - milieu.rail.hauteur : milieu.rubrique - RUBRIQUE;
+    await ecrireLesSections(page, photos, sections, MARGE, Math.max(hautDeLaReserve - 16, finDuDessin - 18), UTILE, 2, p);
   }
 }
 
@@ -346,6 +721,7 @@ export async function composerLePdfDuPlan(d: DonneesPdfDuPlan): Promise<Uint8Arr
   const p = await polices(doc);
   const photos = new Photos(doc);
   await pageDeGarde(doc, d, p);
+  if (d.nourrice) await pageDeLaNourrice(doc, d.nourrice, p, photos);
   for (const r of d.reseaux) await pageDuReseau(doc, r, p, photos);
   pagesDeLaListe(doc, d, p);
   return doc.save();

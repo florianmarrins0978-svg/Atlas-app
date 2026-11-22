@@ -112,8 +112,10 @@ export default function PlanRevu({
                 </span>
                 <span className="min-w-0 flex-1" style={{ color: colors.ink }}>
                   {r.valeurs.map((v) => (
-                    <span key={v} className="block">
-                      {v}
+                    <span key={v.texte} className="block">
+                      {v.texte}
+                      {/* Ce qu'il a corrigé de la lecture de l'IA, à la suite, dans l'or du texte : sa planche du 21 novembre. */}
+                      {v.note && <span style={{ color: colors.orTexte }}> {v.note}</span>}
                     </span>
                   ))}
                 </span>

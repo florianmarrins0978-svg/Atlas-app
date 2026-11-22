@@ -46,6 +46,7 @@ import {
 } from "@/lib/arrosage/formes-du-dessin";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import { phraseDuManque, type AVerifier, type PlanLu } from "@/lib/arrosage/plan-lu";
+import { cotesLuesDe } from "@/lib/arrosage/lu-sur-la-photo";
 
 /**
  * DESSINER LE PLAN — sa planche B, choisie le 18 octobre 2026 (*« la B, parce
@@ -154,7 +155,9 @@ export default function DessinerLePlan({
   const cadre = T.L !== null && T.l !== null ? { L: T.L, l: T.l } : null;
   /** Ce que les deux doigts ajoutent à l'échelle choisie : 1, rien. */
   const [loupe, setLoupe] = useState(1);
-  const [zones, setZones] = useState<Zone[]>(() => (depart ? depart.dessin.zones.map((z, i) => ({ ...z, id: `lu${i + 1}` })) : []));
+  // Chaque zone lue garde ce que l'IA avait lu : « Voir la saisie » d'un plan
+  // enregistré dira ce qu'il en a corrigé (`lu-sur-la-photo.ts`).
+  const [zones, setZones] = useState<Zone[]>(() => (depart ? depart.dessin.zones.map((z, i) => ({ ...z, id: `lu${i + 1}`, luSurLaPhoto: cotesLuesDe(z) })) : []));
   const [arbres, setArbres] = useState<Arbre[]>([]);
   const [dalles, setDalles] = useState<Dalles[]>([]);
   const [nourrice, setNourrice] = useState<PointMetres | null>(depart?.dessin.nourrice ?? null);
@@ -461,6 +464,7 @@ export default function DessinerLePlan({
             ...(z.lignes !== undefined ? { lignes: z.lignes } : {}),
             ...(z.ecartLignes !== undefined ? { ecartLignes: z.ecartLignes } : {}),
             ...(z.courbes ? { courbes: z.courbes } : {}),
+            ...(z.luSurLaPhoto ? { luSurLaPhoto: z.luSurLaPhoto } : {}),
           })),
         maisons: zones.filter((z) => z.type === "maison").map((z) => ({ nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y })),
         // Les dalles qu'on arrose ne changent rien au plan : elles ne partent pas.

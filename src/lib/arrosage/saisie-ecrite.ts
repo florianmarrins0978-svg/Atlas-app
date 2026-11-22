@@ -1,5 +1,6 @@
 import type { SaisieDuPlan } from "./plan-enregistre";
 import { cotesEcrites } from "./lignes-du-reseau";
+import { noteDesCorrections } from "./lu-sur-la-photo";
 import { nomDeLaZone } from "./zones-du-plan";
 
 /**
@@ -12,8 +13,13 @@ import { nomDeLaZone } from "./zones-du-plan";
  * **Le débit est celui que le calcul a reçu.** La saisie le porte sous forme
  * de seau et de temps (`actions.ts`, une seule source du débit) : il se relit
  * en m³/h, ce qu'il a mesuré ou ce que le compteur donne.
+ *
+ * **Une zone lue sur la photo dit ce qu'il en a corrigé** : « (lu 2 m, corrigé
+ * par vous) », à la suite de ses cotes (`noteDesCorrections`).
  */
-export type RangeeDeLaSaisie = { cle: string; valeurs: string[] };
+export type RangeeDeLaSaisie = { cle: string; valeurs: { texte: string; note: string | null }[] };
+
+const seule = (texte: string) => ({ texte, note: null });
 
 const nombre = (x: number) => String(Math.round(x * 100) / 100).replace(".", ",");
 
@@ -47,8 +53,8 @@ export function saisieEcrite(saisie: SaisieDuPlan): RangeeDeLaSaisie[] {
   const phrase = [oui.length ? `${majuscule(enUneListe(oui))} : oui.` : null, non.length ? `${majuscule(enUneListe(non))} : non.` : null].filter(Boolean).join(" ");
 
   return [
-    { cle: "Le piquage", valeurs: [mesures.length ? `${lieu}, ${enUneListe(mesures)}` : lieu] },
-    { cle: "Les zones", valeurs: p.zones.map((z) => `${nomDeLaZone(z)}, ${cotesEcrites(z)}`) },
-    { cle: "Vos choix", valeurs: [diametres, phrase] },
+    { cle: "Le piquage", valeurs: [seule(mesures.length ? `${lieu}, ${enUneListe(mesures)}` : lieu)] },
+    { cle: "Les zones", valeurs: p.zones.map((z) => ({ texte: `${nomDeLaZone(z)}, ${cotesEcrites(z)}`, note: noteDesCorrections(z) })) },
+    { cle: "Vos choix", valeurs: [seule(diametres), seule(phrase)] },
   ];
 }
