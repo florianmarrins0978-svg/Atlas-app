@@ -10,7 +10,9 @@
   chose pour que ça soit joli ? Et je veux bien une planche d'abord. »
 
   CE QUI EST PROPOSÉ. Le numéro de la liste, accroché à chaque pièce, qui suit la pièce quand on tourne,
-  zoome ou éclate. Trois habillages (A, B, C) et deux moments (à l'éclaté seulement, ou toujours). Une
+  zoome ou éclate. Trois habillages (A, B, C) et deux moments (à l'éclaté seulement, ou toujours). Au bout des colonnes,
+  comme sur le dessin d'avant (sa demande du même soir) : la flèche « Arrivée d'eau », et R1, R2, R3 dans
+  la couleur du réseau, « goutte-à-goutte » sous la voie qui l'alimente. Une
   pièce posée plusieurs fois (les électrovannes) porte le même numéro sur chacune. Toucher une ligne de la
   liste allume ses numéros sur la 3D et éteint les autres ; un second toucher rend tout.
 
@@ -82,6 +84,11 @@
   .fil.cache{opacity:0}
   .fil.eteint{opacity:.12}
   .point{fill:rgba(28,28,26,.6)}
+  /* LE BAS DES COLONNES, comme sur le dessin d'avant : la flèche de l'arrivée d'eau, R1, R2… dans la
+     couleur du réseau sur le plan, et « goutte-à-goutte » sous la voie qui l'alimente. */
+  .mot{position:absolute;left:0;top:0;font-size:11px;font-weight:600;line-height:1.2;text-align:center;white-space:nowrap;translate:-50% 0;text-shadow:0 0 3px rgba(214,213,210,.9),0 0 6px rgba(214,213,210,.8)}
+  .fleche{stroke:#4a4a44;stroke-width:1.6;fill:none}
+  .pointe{fill:#4a4a44}
   /* La liste, comme dans l'appli : deux colonnes, la pastille de A, et une ligne se touche. */
   .liste{margin:14px 0 0;padding:14px;border-radius:6px;background:var(--atlas-card);list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
   .liste button{display:flex;align-items:flex-start;gap:8px;width:100%;min-height:40px;padding:4px 0;border:0;background:none;color:var(--atlas-ink);font:inherit;font-size:14px;line-height:1.35;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -174,11 +181,58 @@ function liste() {
   }).join("");
 }
 
+// LES COULEURS DES RÉSEAUX, celles du plan (src/lib/arrosage/calcul.js, COULEURS_RESEAU) : la voie 1 en
+// bleu, la 2 en vert, la 3 en jaune…
+var COULEURS_RESEAU = ["#2F6FB5", "#3E8F4E", "#D9A520", "#B5502F", "#7A4FA3", "#1F8A8A", "#B5417F", "#6B7A2F"];
+
+// LE BAS DE CHAQUE COLONNE. Le mot se pose dans le prolongement de la colonne, juste après son dernier
+// tuyau : il suit la colonne quand on tourne, comme le numéro suit sa pièce. La flèche de l'arrivée monte
+// vers le tuyau, comme l'eau.
+var mots = [], fleche = null;
+function placerLesMots() {
+  var cols = V.colonnes(), ecr = V.scene.ecran(), par = {}, W = couche.clientWidth, H = couche.clientHeight, pris = [];
+  // Un mot reste dans le cadre : sa largeur mesurée, il glisse vers l'intérieur plutôt que d'être coupé.
+  function poser(m, x, y) {
+    var w = m.offsetWidth, h = m.offsetHeight;
+    x = Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, x)); y = Math.max(6, Math.min(H - h - 6, y));
+    m.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)";
+    pris.push({ x: x, y: y + h / 2 });
+  }
+  ecr.forEach(function (e) { par[e.indice] = e; });
+  while (mots.length < cols.length) { var m = document.createElement("span"); m.className = "mot"; couche.appendChild(m); mots.push(m); }
+  if (!fleche) { fleche = document.createElementNS("http://www.w3.org/2000/svg", "g"); fleche.innerHTML = '<line class="fleche"/><path class="pointe"/>'; fils.appendChild(fleche); }
+  var voie = 0;
+  mots.forEach(function (m, i) {
+    var c = cols[i];
+    if (!c) { m.style.display = "none"; return; }
+    m.style.display = "";
+    var haut = par[c.pieces[0]], bas = par[c.pieces[c.pieces.length - 1]];
+    var dx = bas.x - haut.x, dy = bas.y - haut.y, l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+    // Le bout du tuyau : le centre du dernier, plus sa demi-longueur à l'écran.
+    var demi = Math.abs(dx) * (bas.droite - bas.gauche) / 2 + Math.abs(dy) * (bas.bas - bas.haut) / 2;
+    var bx = bas.x + dx * demi, by = bas.y + dy * demi;
+    if (c.arrivee) {
+      var x0 = bx + dx * 34, y0 = by + dy * 34, x1 = bx + dx * 7, y1 = by + dy * 7, nx = -dy, ny = dx;
+      fleche.firstChild.setAttribute("x1", x0); fleche.firstChild.setAttribute("y1", y0); fleche.firstChild.setAttribute("x2", x1 + dx * 5); fleche.firstChild.setAttribute("y2", y1 + dy * 5);
+      fleche.lastChild.setAttribute("d", "M" + x1 + " " + y1 + " L" + (x1 + dx * 8 + nx * 5) + " " + (y1 + dy * 8 + ny * 5) + " L" + (x1 + dx * 8 - nx * 5) + " " + (y1 + dy * 8 - ny * 5) + " Z");
+      m.style.color = "#4a4a44"; m.innerHTML = "Arrivée<br>d’eau";
+      poser(m, x0 + dx * 4, y0 + Math.max(dy, 0) * 4);
+    } else {
+      voie++;
+      m.style.color = COULEURS_RESEAU[(voie - 1) % COULEURS_RESEAU.length];
+      m.innerHTML = "R" + voie + (c.goutte ? "<br>goutte-à-goutte" : "");
+      poser(m, bx + dx * 12, by + dy * 12 - 4);
+    }
+  });
+  return pris;
+}
+
 // LES NUMÉROS SUR LA 3D, replacés à chaque image : à droite de la pièce, à sa mi-hauteur. Deux numéros ne se
 // chevauchent jamais.
 var couche = null, fils = null, pastilles = [], traits = [];
 function placer() {
   if (!V) return;
+  var mots = placerLesMots();
   var t = V.scene.etat().t, montrer = etat.quand === "toujours" || t > 0.55;
   var liste = V.numeros(), H = couche.clientHeight, W = couche.clientWidth, fil = etat.habit === "c";
   // A et B se posent sur le flanc de la pièce ; C s'en écarte, et son fil y ramène l'œil.
@@ -186,7 +240,8 @@ function placer() {
   var places = liste.map(function (e) { return { e: e, x: Math.min(W - 14, fil ? e.droite + 31 : e.x + 14), y: Math.max(14, Math.min(H - 14, e.y)) }; });
   // Une place prise : on essaie autour (dessous, dessus, de l'autre côté de la pièce, en biais), au plus
   // près d'abord ; ce n'est qu'à défaut qu'on descend jusqu'à trouver de la place.
-  var posees = [], AUTOUR = [[0, 0], [0, 1], [0, -1], [-2.2, 0], [1, 0], [-2.2, 1], [-2.2, -1], [1, 1], [1, -1], [0, 2], [0, -2]];
+  // Les mots du bas sont posés d'abord : un numéro ne se met jamais dessus.
+  var posees = mots.slice(), AUTOUR = [[0, 0], [0, 1], [0, -1], [-2.2, 0], [1, 0], [-2.2, 1], [-2.2, -1], [1, 1], [1, -1], [0, 2], [0, -2]];
   function libre(x, y) { return posees.every(function (q) { return Math.abs(q.x - x) >= ECART || Math.abs(q.y - y) >= ECART; }); }
   places.slice().sort(function (a, b) { return a.y - b.y; }).forEach(function (p) {
     var x0 = p.x, y0 = p.y, trouve = AUTOUR.some(function (d) {
