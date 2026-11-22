@@ -127,6 +127,27 @@ async function parcourirLaVisite(largeur, hauteur) {
   dire(cas, !(await p.evaluate(() => visite.plie())), "toucher la ligne ne déplie pas le guide");
   dire(cas, erreurs.length === 0, `erreurs dans la page : ${erreurs.join(" ; ")}`);
   await ctx.close();
+  // Quitter se fait à TOUTE étape, pas seulement à la dernière (sa remarque du
+  // 22 novembre : « il faut pouvoir quitter à n'importe quel moment »). Un appui
+  // demande d'abord ; « Rester » ramène à l'étape, « Quitter la visite » sort.
+  const sortie = await page({ viewport: { width: largeur, height: hauteur } });
+  const q = sortie.p;
+  for (const rang of [0, 5, 30]) {
+    await q.evaluate((r) => { while (visite.etape() < r) document.querySelector(".g-droite").click(); }, rang);
+    await q.waitForTimeout(400);
+    const avant = await q.evaluate(() => document.querySelector(".g h2").textContent);
+    // La croix qui se voit : celle de la bulle dépliée, ou celle de la bulle repliée.
+    const croix = await q.evaluate(() => { const b = [...document.querySelectorAll(".g-quitter")].find((x) => x.getBoundingClientRect().width > 0); if (b) b.click(); return !!b; });
+    dire(cas, croix, `étape ${rang + 1}, rien ne permet de quitter la visite`);
+    if (!croix) continue;
+    dire(cas, (await q.evaluate(() => document.querySelector(".g h2").textContent)) === "Quitter la visite ?", `étape ${rang + 1}, quitter ne demande pas`);
+    await q.click(".g-gauche");
+    dire(cas, (await q.evaluate(() => [visite.etape(), document.querySelector(".g h2").textContent])).join() === [rang, avant].join(), `étape ${rang + 1}, « Rester » ne ramène pas à l'étape`);
+  }
+  await q.evaluate(() => [...document.querySelectorAll(".g-quitter")].find((x) => x.getBoundingClientRect().width > 0)?.click());
+  await Promise.all([q.waitForURL((u) => !String(u).includes("visite-guidee"), { timeout: 8000 }).catch(() => {}), q.click(".g-droite").catch(() => {})]);
+  dire(cas, !q.url().includes("visite-guidee"), "« Quitter la visite » ne sort pas de la visite");
+  await sortie.ctx.close();
 }
 
 // Les boutons à essayer, enchaînés sans Retour, puis Suivant.
@@ -190,7 +211,8 @@ async function enchainerLesEssais(largeur, hauteur) {
       const g = document.querySelector(".g").getBoundingClientRect();
       const r = x.voir.map((sel) => document.querySelector(".visite-ecran:not([hidden]) " + sel)?.getBoundingClientRect());
       const vu = (b) => b && b.top >= 0 && b.bottom <= g.top;
-      const tiennent = r[0] && r.at(-1) && r.at(-1).bottom - r[0].top <= g.top - 12;
+      // Le guide garde 10 points autour de ce qu'il montre, et 6 contre le bord et contre lui (`caler`).
+      const tiennent = r[0] && r.at(-1) && r.at(-1).bottom - r[0].top + 20 <= g.top - 12;
       return x.voir.filter((sel, k) => (k === 0 || tiennent) && !vu(r[k])).join(" ");
     });
     dire(cas, !r, `${await essai()} : ${r} n'est pas à l'écran en arrivant`);

@@ -14,6 +14,7 @@ quatre premières étapes. Leurs retours : `docs/visite-guidee-le-debut.md` et
 
 Une bulle dit quoi regarder, et un doigt doré montre où toucher. S'il touche
 ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recule.
+Une croix, à toute étape, demande « Quitter la visite ? » (22 novembre).
 
 | | Étapes |
 |---|---|
