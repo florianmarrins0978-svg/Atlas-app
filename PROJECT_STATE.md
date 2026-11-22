@@ -1,8 +1,8 @@
 # État du projet
 
-## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR SA BRANCHE, BATTERIE À JOUER
+## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR `main`
 
-Sa demande du 22. `Nourrice3D.tsx` remplace le dessin dans « La nourrice » ; `appli/vente/outils.html` montre la même 3D à la place de la photo. Un seul module (`appli/nourrice-3d/vue.js`), `three` épinglé. Niveau 3 (`package.json`) : la batterie attend son oui. `ARCHITECTURE.md` §601.
+Sa demande du 22. `Nourrice3D.tsx` remplace le dessin dans « La nourrice » ; `appli/vente/outils.html` montre la même 3D à la place de la photo. Un seul module (`appli/nourrice-3d/vue.js`), `three` épinglé. Batterie complète verte le 22 au soir, jouée avec le lot du règlement reçu (617/617 suites base, 218/218 navigateur, connexion), et `appli/tests/e2e.js` (261 contrôles). Les films `outils-options` et `outils-nourrice` du site sont retournés sur la 3D. `ARCHITECTURE.md` §601.
 
 ## LA NOURRICE EN 3D, RÉALISTE, AVEC L'ÉCLATÉ AU TOUCHER : UNE PLANCHE (22 novembre 2026), PAS ENCORE VUE PAR LUI
 
