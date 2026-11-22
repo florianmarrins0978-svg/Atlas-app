@@ -94,6 +94,10 @@ function charger(){
    et entre deux têtes voisines un recouvrement (portée réglée ÷ écart) de
    80 à 100 % : pour une portée de 10 m, de 10 m à 12,5 m.
 
+   **Depuis le 22 novembre 2026, cette règle-ci ne vaut plus que pour les
+   TUYÈRES.** Une turbine se pose aux écartements de Rain Bird (`poseRainBird`,
+   ci-dessous) : sa décision, et son pourquoi, y sont écrits.
+
    **La portée se RÈGLE, sa réponse du 16 octobre 2026.** Une turbine se bride à
    la vis jusqu'à 40 % ; la tête bridée tient la même règle. Avant, une buse
    qui portait 10,1 m ne pouvait pas paver 20 m (écart 10 m, 10 cm sous la
@@ -115,8 +119,9 @@ function charger(){
    mienne »*. Les 40 % pour toutes les turbines disparaissent : 25 % pour la
    5000 Plus et la Mini 8, 35 % pour la 3504, rien pour celles dont le
    catalogue ne dit rien, et rien pour une tuyère (`bridageDe`). */
-function poseSelonSaRegle(L, l, portee, bridage, tolerant, tour){
+function poseSelonSaRegle(L, l, portee, bridage, tolerant, tour, turbine){
   if (!(L > 0) || !(l > 0) || !(portee > 0)) return null;
+  if (turbine) return poseRainBird(L, l, portee, bridage, tolerant, tour);
   var rMin = tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN;
   var rMax = tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
   var plancher = portee * (1 - (bridage || 0));
@@ -135,6 +140,79 @@ function poseSelonSaRegle(L, l, portee, bridage, tolerant, tour){
     if (ex >= ey) nx++; else ny++;
   }
   return null;
+}
+
+/* ══ UNE TURBINE SE POSE AUX ÉCARTEMENTS DE RAIN BIRD ═══════════════════════
+
+   **Sa décision du 22 novembre 2026** : *« Non prend les écartement de
+   rainbird »*, puis *« Oui, Rain Bird »* devant ce qu'ils coûtent (son carré de
+   12 × 12 passe de 1 à 2 réseaux, son 30 × 22 de 2 à 3) et *« Toujours sans
+   vent »*. Le manuel de conception Rain Bird, p. 41 à 43, relevé dans
+   `docs/arrosage-manuel-rain-bird.md`, donne sans vent :
+
+   | la pose | entre deux têtes voisines, au plus |
+   |---|---|
+   | carré | 55 % du diamètre arrosé, soit 1,1 × la portée |
+   | rectangle | 60 % sur un côté (1,2 ×), 50 % sur l'autre (1,0 ×) |
+
+   **Deux lignes du manuel, et rien entre elles.** Une grille de 1,15 × 1,05 n'est
+   ni l'une ni l'autre ; le manuel ne dit rien d'elle, et l'on ne lui invente pas
+   une règle (`CLAUDE.md` §4 ter, « aucune valeur ne se devine »).
+
+   **Ce qui ne bouge pas.** « Jamais moins que la portée » (sa règle du 17 août) :
+   la vis bride la tête jusqu'à l'écart le plus serré, dans la limite de SA vis
+   (`bridage`, la fraction d'Aqua Plus). Et `tolerant` garde ses 105 %, quand ils
+   gagnent un réseau ou une gamme. **Ce qui s'en va : ses 75 %**, qui espaçaient
+   jusqu'à 1,33 × la portée, bien au-delà de Rain Bird.
+
+   **Les tuyères n'y passent pas** (sa réponse du même soir, *« Mes 7 en
+   quinconce »*). Une tuyère ne se bride pas : sur son couloir de 10 × 2, aucune
+   pose Rain Bird ne tenait aussi « jamais moins que la portée », et la seule
+   possible doublait ses tuyères. Elles gardent ses 80 % et son damier.
+
+   **Pourquoi une recherche et non l'élargissement d'un côté à la fois**, comme
+   pour les tuyères : le rectangle tient parfois avec MOINS de têtes que le carré
+   (son 16 × 10 : six têtes à 8 m sur 10 m), et l'élargissement passerait à côté.
+   On prend donc, pour chaque nombre de colonnes, le moins de rangées qui tient,
+   et l'on garde la grille au plus petit nombre de têtes. */
+var RAIN_BIRD_CARRE = 1.1;
+var RAIN_BIRD_RECTANGLE_LONG = 1.2;
+var RAIN_BIRD_RECTANGLE_COURT = 1.0;
+
+function ecartRainBird(ex, ey, reglee){
+  var grand = Math.max(ex, ey), petit = Math.min(ex, ey);
+  return grand <= RAIN_BIRD_CARRE * reglee + 0.01 ||
+         (grand <= RAIN_BIRD_RECTANGLE_LONG * reglee + 0.01 &&
+          petit <= RAIN_BIRD_RECTANGLE_COURT * reglee + 0.01);
+}
+
+function poseRainBird(L, l, portee, bridage, tolerant, tour){
+  var rMax = tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
+  var plancher = portee * (1 - (bridage || 0));
+  // Au-delà, deux têtes seraient plus proches que la portée la plus bridée.
+  var colonnes = Math.max(2, Math.floor(L * rMax / plancher + 1e-9) + 1);
+  var rangees = Math.max(2, Math.floor(l * rMax / plancher + 1e-9) + 1);
+  var retenue = null;
+  for (var nx = 2; nx <= colonnes; nx++){
+    if (retenue && nx * 2 >= retenue.nx * retenue.ny) break;
+    for (var ny = 2; ny <= rangees; ny++){
+      if (retenue && nx * ny >= retenue.nx * retenue.ny) break;
+      var ex = L / (nx - 1), ey = l / (ny - 1);
+      var reglee = Math.min(portee, Math.min(ex, ey) * rMax);
+      // Une rangée de plus ne fait que resserrer : la suite serait pire.
+      if (reglee < plancher - 0.01) break;
+      if (!ecartRainBird(ex, ey, reglee)) continue;
+      // **Une buse qui ne fait pas le tour ne pave pas un intérieur.**
+      if (tour === false && nx > 2 && ny > 2) break;
+      retenue = { nx:nx, ny:ny, ecartX:ex, ecartY:ey, reglee:Math.round(reglee * 100) / 100 };
+      break;
+    }
+  }
+  return retenue;
+}
+
+function estTurbine(buse){
+  return Boolean(buse && buse.pourType === 'turbine');
 }
 
 /* ══ LE DÉBIT ET LA PORTÉE D'UNE BUSE À LA PRESSION DU CHANTIER ═════════════
@@ -276,7 +354,7 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
       // possible SANS enfreindre l'écart minimum.
       for (var i = 0; i < buses.length; i++){
-        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, bridageDe(buses[i]), false, faitLeTour(buses[i]))){
+        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, bridageDe(buses[i]), false, faitLeTour(buses[i]), estTurbine(buses[i]))){
           b = buses[i]; break;
         }
       }
@@ -303,8 +381,8 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
       candidates: (dims && dims.L > 0 && dims.l > 0)
         ? buses.filter(function(x){
-            return poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), false, faitLeTour(x)) ||
-                   poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), true, faitLeTour(x));
+            return poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), false, faitLeTour(x), estTurbine(x)) ||
+                   poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), true, faitLeTour(x), estTurbine(x));
           }).map(function(x){ return x.ref; })
         : [],
       // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
@@ -421,6 +499,8 @@ var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
 // **Ses chiffres du 16 octobre 2026.** Le 17 août il avait dit « 6 m max pour
 // une portée de 5 » (1,20) ; le 16 octobre : « 12,5, je me suis trompé dans mes
 // calculs ». C'est le second qui vaut : 80 % de recouvrement, 1,25 × la portée.
+// **Pour les tuyères seulement depuis le 22 novembre 2026** : une turbine se pose
+// aux écartements de Rain Bird (`poseRainBird`), et ses 75 % ne la concernent plus.
 var RECOUVREMENT_MIN = 0.80;          // portée réglée / écart
 var RECOUVREMENT_MAX = 1.00;
 var RECOUVREMENT_MIN_TOLERE = 0.75;   // seulement si cela gagne un réseau ou une gamme
@@ -963,11 +1043,11 @@ function poser(z, refImposee, tolerant){
     // le plan serait posable et faux, ce qui est le pire des deux.
     var repliPermis = Math.min(dims.L, dims.l) <= TUYERE_JUSQUA;
     if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
-        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, bridageDe(choix.m.buse), false, faitLeTour(choix.m.buse))){
+        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, bridageDe(choix.m.buse), false, faitLeTour(choix.m.buse), estTurbine(choix.m.buse))){
       var vers = cle === 'turbine' ? 'tuyere' : 'turbine';
       if (vers === 'turbine' || repliPermis){
         var autre = modelePour(vers, petitCote || null, dims);
-        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, bridageDe(autre.m.buse), false, faitLeTour(autre.m.buse))){
+        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, bridageDe(autre.m.buse), false, faitLeTour(autre.m.buse), estTurbine(autre.m.buse))){
           choix = autre; cle = vers;
         }
       }
@@ -982,8 +1062,10 @@ function poser(z, refImposee, tolerant){
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, nx:0, ny:0 });
     // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
     // d'arroseurs possible sans jamais descendre sous la portée RÉGLÉE.
-    var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant), faitLeTour(m.buse));
-    var ecartMax = m.portee / RECOUVREMENT_MIN;
+    var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant), faitLeTour(m.buse), estTurbine(m.buse));
+    // Sans pose qui tienne, l'écart le plus large que SA règle permette :
+    // Rain Bird pour une turbine, ses 80 % pour une tuyère.
+    var ecartMax = estTurbine(m.buse) ? m.portee * RAIN_BIRD_CARRE : m.portee / RECOUVREMENT_MIN;
     var nx = pose ? pose.nx : Math.max(2, Math.ceil(L / ecartMax) + 1);
     var ny = pose ? pose.ny : Math.max(2, Math.ceil(l / ecartMax) + 1);
     // Une buse imposée qui ne fait pas le tour, sur une zone à intérieur : on
