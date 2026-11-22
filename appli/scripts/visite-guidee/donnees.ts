@@ -67,6 +67,11 @@ async function main() {
   const e = ctx.entrepriseId;
 
   if (quoi === "avant") {
+    // L'entreprise de démonstration porte « 02 40 00 00 00 » et « contact@atelier-demo.fr »
+    // (le jeu de `seed.ts`) : un numéro et un domaine qui peuvent exister. Ceux de la
+    // visite d'origine sont fictifs (tranche de l'ARCEP, example.com). Les exemples de
+    // facture les imprimaient en PDF : vu le 22 novembre, en ligne.
+    await admin.query(`UPDATE entreprises SET telephone = '02 61 91 00 00', email = 'contact@example.com' WHERE id = $1`, [e]);
     // L'équipe : Paul, Kévin, Hugo.
     const equipe: Record<string, string> = {};
     for (const [rang, nom] of [[1, "Paul"], [2, "Kévin"], [3, "Hugo"]] as const) {
@@ -74,8 +79,10 @@ async function main() {
       equipe[nom] = x.id;
     }
     // M. Lefèvre et son chantier du mercredi 25 novembre, la journée.
+    // Le numéro sans espaces : tel que la fiche client dictée de la visite d'origine l'a
+    // enregistré, et tel que son devis l'imprime.
     const { rows: [client] } = await admin.query(
-      `INSERT INTO clients (entreprise_id, nom, civilite, telephone, email, adresse) VALUES ($1, 'Lefèvre', 'mr', '06 39 98 12 34', 'lefevre@example.com', '7 chemin du Verger, 44300 Nantes') RETURNING id`, [e]);
+      `INSERT INTO clients (entreprise_id, nom, civilite, telephone, email, adresse) VALUES ($1, 'Lefèvre', 'mr', '0639981234', 'lefevre@example.com', '7 chemin du Verger, 44300 Nantes') RETURNING id`, [e]);
     const { rows: [chantier] } = await admin.query(
       `INSERT INTO chantiers (entreprise_id, nom, client_id, adresse_chantier, date_planifiee, creneau_debut, duree_demi_journees)
        VALUES ($1, 'Lefèvre', $2, '7 chemin du Verger, 44300 Nantes', '2026-11-25', 'matin', 2) RETURNING id`, [e, client.id]);
@@ -83,12 +90,15 @@ async function main() {
       await admin.query(`INSERT INTO creneaux_chantier (entreprise_id, chantier_id, jour, demi) VALUES ($1, $2, '2026-11-25', $3)`, [e, chantier.id, demi]);
       for (const nom of ["Paul", "Kévin"]) await admin.query(`INSERT INTO equipes_du_chantier (entreprise_id, chantier_id, jour, demi, equipe_id) VALUES ($1, $2, '2026-11-25', $3, $4)`, [e, chantier.id, demi, equipe[nom]]);
     }
-    const { rows: [d] } = await admin.query(
-      `INSERT INTO devis (entreprise_id, chantier_id, numero_commercial, numero_version, entreprise_nom, date_emission, total_ht, total_tva, total_ttc)
-       VALUES ($1, $2, '2026-000004', 1, 'Atelier Démo', '2026-11-21', 770, 154, 924) RETURNING id`, [e, chantier.id]);
-    const lignes = [["Taille de la haie de thuyas le long du chemin", 25, 10, 250], ["Ramassage et évacuation des déchets verts", 1, 140, 140], ["Élagage du tilleul devant la maison", 1, 380, 380]] as const;
+    // Les prix du chantier, ceux de la visite d'origine : le DEVIS, c'est l'appli qui le
+    // fait en ouvrant sa page (`getOuCreerDevisBrouillon`), avec tout ce qu'elle y copie
+    // de l'entreprise et du client. Un devis écrit ici à la main n'en portait rien, et
+    // sa page ne montrait aucune ligne (22 novembre). Le compteur à 4 : « 2026-000004 ».
+    const lignes = [["Taille de la haie de thuyas le long du chemin", 25, "ml", 12, 300], ["Ramassage et évacuation des déchets verts", 1, "forfait", 90, 90], ["Élagage du tilleul devant la maison", 1, "u", 380, 380]] as const;
     let ordre = 0;
-    for (const [libelle, q, pu, m] of lignes) await admin.query(`INSERT INTO lignes_devis (entreprise_id, devis_id, libelle, quantite, prix_unitaire, montant, ordre) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [e, d.id, libelle, q, pu, m, ordre++]);
+    for (const [libelle, q, u, pu, m] of lignes) await admin.query(`INSERT INTO lignes_prix (entreprise_id, chantier_id, libelle, quantite, unite, prix_unitaire, montant, ordre) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [e, chantier.id, libelle, q, u, pu, m, ordre++]);
+    await admin.query(`UPDATE chantiers SET informations_verifiees_at = '2026-11-21T09:00:00Z', prix_valide_at = '2026-11-21T09:05:00Z' WHERE id = $1`, [chantier.id]);
+    await admin.query(`UPDATE entreprise_compteurs SET prochain_numero_devis = 4, prochain_numero_facture = 2 WHERE entreprise_id = $1`, [e]);
 
     // La fiche, remplie : tout ce que la loi demande, et le croquis.
     await ouvrirLaFiche(ctx, chantier.id);
@@ -125,6 +135,31 @@ async function main() {
       await mettreAJourVehicule(ctx, v.id, champs as never);
     }
     console.log(JSON.stringify({ chantier: chantier.id }));
+  }
+
+  // Ce que l'appli date « aujourd'hui » se recale sur la visite d'origine, faite le 21 novembre.
+  const chantierLefevre = async () => (await admin.query(`SELECT id FROM chantiers WHERE entreprise_id = $1 AND nom = 'Lefèvre' AND deleted_at IS NULL LIMIT 1`, [e])).rows[0].id as string;
+  // L'aperçu du PDF, comme au moment de la visite d'origine : le devis porte son titre,
+  // et le chantier n'a pas encore de durée (elle se choisit avec la date, à l'étape
+  // suivante) ; sans quoi le PDF imprimerait une « Durée estimée » que l'ancien n'avait pas.
+  if (quoi === "apercu") {
+    const id = await chantierLefevre();
+    await admin.query(`UPDATE devis SET titre = 'Entretien du jardin', date_emission = '2026-11-21', date_validite = '2026-12-21' WHERE chantier_id = $1`, [id]);
+    await admin.query(`UPDATE chantiers SET duree_demi_journees = NULL WHERE id = $1`, [id]);
+  }
+  if (quoi === "apres-apercu") {
+    await admin.query(`UPDATE chantiers SET duree_demi_journees = 2 WHERE id = $1`, [await chantierLefevre()]);
+  }
+  // Pour facturer : le devis envoyé (la facture reprend la dernière version ENVOYÉE),
+  // et le chantier passé au 18 novembre, comme la visite d'origine l'avait fait.
+  if (quoi === "facturer") {
+    const id = await chantierLefevre();
+    await admin.query(`UPDATE devis SET statut = 'envoye', envoye_le = '2026-11-21T10:00:00Z' WHERE chantier_id = $1`, [id]);
+    await admin.query(`UPDATE chantiers SET date_planifiee = '2026-11-18', devis_genere_at = '2026-11-21T09:30:00Z', devis_envoye_at = '2026-11-21T10:00:00Z' WHERE id = $1`, [id]);
+    for (const t of ["creneaux_chantier", "equipes_du_chantier"]) await admin.query(`UPDATE ${t} SET jour = '2026-11-18' WHERE chantier_id = $1`, [id]);
+  }
+  if (quoi === "dater-facture") {
+    await admin.query(`UPDATE factures SET date_emission = '2026-11-21', date_echeance = '2026-12-21' WHERE chantier_id = $1`, [await chantierLefevre()]);
   }
 
   if (quoi === "signer") {

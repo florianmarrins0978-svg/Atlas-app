@@ -19,11 +19,11 @@ ailleurs, la bulle tremble. « Passer » avance sans toucher, « Retour » recul
 |---|---|
 | La fiche d'un client | Vos clients, la fiche de Mme Costa : ses devis, ses factures (ouverte, due), son dernier devis repris, + 10 % sur les prix |
 | Le client | l'accueil, Créer un devis, Entreprise, Public, retour à Mr, les champs qui s'écrivent seuls |
-| Le devis | le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, **les boutons à essayer librement** (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, le retour au devis, Choisir la date |
+| Le devis | le micro, la dictée, « Avant de chiffrer » (25 m de haie), le devis rédigé, le micro en haut à droite pour corriger à la voix, **les boutons à essayer librement** (Remise, Main d'œuvre, Acompte, Ajouter une TVA, Ajouter une ligne : chacun ouvre sa vraie feuille et pose son résultat), l'aperçu PDF, **une nouvelle page avant le tilleul et un espace avant le ramassage** (22 novembre), le retour au devis, Choisir la date |
 | La date | deux dates proposées, le devis envoyé |
 | Chez le client | sa page, la date qu'il choisit, sa signature au doigt |
 | Le planning | le 25, la journée, Paul et Kévin ajoutés matin et après-midi, la fiche d'intervention, la fiche de sécurité (sa page s'ouvre sur le décret 2021-1833), les travaux à faire |
-| La facture | Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, **ses boutons à essayer** (Voir le PDF, Travaux en plus, Facture acquittée ; l'envoi par SMS reste hors d'atteinte), l'envoi, ce que reçoit le client |
+| La facture | Terminés, les retours d'intervention (celui de Mme Costa), la facture reprise du devis, **ses boutons à essayer** (Voir le PDF, Travaux en plus, Facture acquittée ; dans Travaux en plus, depuis le 22 : Ajouter un travail, Main d'œuvre, Ajouter une TVA, Règlement reçu ; l'envoi par SMS reste hors d'atteinte), l'envoi, ce que reçoit le client |
 | Le paiement | le virement vu par la banque sur l'accueil, « Oui », la facture payée |
 | Ma TVA | toute la page, un achat écrit à la main, le ticket de carburant scanné, les chiffres de gauche (collectée, déductible, par taux) |
 | Le comptable | Ma banque, le check up, les lignes justifiées, le relevé du mois, le dossier arrêté, le document du comptable |
@@ -97,7 +97,7 @@ sous l'onglet de la fiche client est replacé par la règle de l'appli.
 
 ## Ce qui reste ouvert, et c'est à toi de trancher
 
-1. **La longueur** : 85 étapes, une dizaine de minutes. On peut en retirer.
+1. **La longueur** : 89 étapes, une dizaine de minutes. On peut en retirer.
 2. **Les retours d'intervention sur la fiche du client** : aujourd'hui ils sont dans Terminés seulement.
 3. **Le bouton sur le site** : où le poser sur `appli/vente/`.
 4. **Dans l'appli elle-même**, trois champs montrent « 06 12 34 56 78 » comme exemple (envoi du devis, transmission, facture). Ce numéro peut appartenir à quelqu'un. Le passer en 06 39 98 00 00 serait plus sûr. C'est un changement de `src/`, il attend ton « oui ».
@@ -112,6 +112,6 @@ démonstration neuve, donc ton accord.
 `tout.sh`, ni `histoire.mjs`, ni `parcourir-visite.mjs` n'ont été commités ;
 ils sont restés dans la session qui a fait la planche. Seuls `figer.mjs`,
 `composer.mjs` et `parcourir.mjs` existent sous `scripts/planche-figee/`.
-Refaire la visite demande donc de réécrire son parcours. **Depuis le 21 au soir, les vingt écrans ajoutés** (fiche de sécurité jusqu'au PDF, véhicules, portes des Réglages) se refont, eux, par `appli/scripts/visite-guidee/` (son `LISEZ-MOI.md`).
+Refaire la visite demande donc de réécrire son parcours. **Depuis le 21 au soir, les écrans ajoutés** (fiche de sécurité jusqu'au PDF, véhicules, portes des Réglages, et depuis le 22 l'aperçu et ses coupures, les travaux en plus de la facture) se refont, eux, par `appli/scripts/visite-guidee/` (son `LISEZ-MOI.md`).
 
 **Vérifié ici :** le parcours entier touché doigt par doigt, à 390 px (téléphone) et à 1280 px (ordinateur). Les 74 doigts mènent tous à l'étape suivante, les 19 rubriques s'ouvrent et reviennent, aucune page ne déborde, aucune erreur.

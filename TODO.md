@@ -19,6 +19,24 @@
 - la longueur du régulateur (131 mm) et la cote sur plats de la vanne (32 mm) ne viennent d'aucune de ses photos : à relire sur une fiche ou au pied à coulisse ;
 - le dessous des électrovannes et l'intérieur de la bague Plasson sont estimés ;
 - le contrôle de la page (63 points) vit hors du dépôt : le jour où la nourrice 3D entre dans `src/`, il devient une suite.
+## ⚠️ UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE (vu le 22 novembre 2026, pas corrigé)
+
+Sur la facture, « Règlement reçu » : chaque champ (date, moyen, montant,
+libellé) s'enregistre seul, mais `corriger` (`src/app/chantiers/[id]/facture/ReglementsRecus.tsx`)
+renvoie **la ligne entière telle que l'écran l'a reçue du serveur**. Un second
+champ changé avant que le premier soit revenu renvoie donc l'ancienne valeur du
+premier, qui est écrasée, **sans rien dire**. Reproduit ici : moyen « Virement »,
+date du 21, montant 300 € enchaînés sans pause, puis la page relue : « Chèque »,
+la date du jour, 300 €. Les mêmes gestes à deux secondes d'intervalle : tout est
+gardé.
+
+À la main, sur un bon réseau, l'aller et retour est plus court que le geste
+suivant : le risque vit surtout **sur un chantier mal couvert**, où un moyen de
+paiement ou une date peut revenir en arrière sans qu'il le voie. Pas vérifié
+sur son téléphone. Racine à corriger : n'envoyer que le champ changé (ou
+enchaîner les enregistrements), avec un test rouge d'abord. Argent : niveau 3,
+donc une batterie, sur son « oui ». La visite (`figer-neufs.mjs`) le contourne
+en laissant chaque champ s'enregistrer avant le suivant.
 
 ## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
 

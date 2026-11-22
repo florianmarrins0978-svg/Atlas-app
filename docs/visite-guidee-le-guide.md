@@ -161,6 +161,100 @@ micro remplit les champs vides, il n'écrase rien et ne valide rien.
 
 La visite compte 85 étapes.
 
+## Ta demande du 22 : les sauts dans l'aperçu du PDF, et la facture qui s'essaie
+
+*« Expliquer aussi qu'on peut faire des sauts de ligne et des sauts de page avec
+l'aperçu du PDF du devis. Sur la facture, je peux pas ajouter un travail ou un
+règlement reçu. Faudrait le faire, ça. »*
+
+**L'aperçu du devis, quatre étapes de plus** (figées dans l'appli, sur le devis
+de M. Lefèvre) :
+
+| Étape | Ce qu'on voit |
+|---|---|
+| Touchez l'élagage du tilleul. | le PDF, et la phrase de l'appli : « Touchez une ligne pour commencer une nouvelle page à cet endroit. » |
+| Touchez Nouvelle page. | la ligne du tilleul encadrée d'or, et en bas « Nouvelle page » ou « Un espace ici » |
+| Touchez le ramassage. | le tilleul en haut de la page 2, et la pastille « Saut de page » entre les deux pages |
+| Touchez Un espace ici. | la ligne du ramassage encadrée |
+| Revenez au devis. | une ligne blanche avant le ramassage, la pastille « Espace », et « Tout remettre » en haut |
+
+**La facture : « Travaux en plus » et ses quatre boutons** s'essaient
+maintenant, à la suite, comme ceux du devis :
+
+| Bouton | Ce qu'il montre |
+|---|---|
+| Ajouter un travail | un dessouchage à 85 € : le total passe à 1 026 € |
+| Main d'œuvre | sa vraie feuille, puis la ligne posée : 280 €, le total à 1 260 € |
+| Ajouter une TVA | sa vraie feuille, puis une ligne à 10 % |
+| Règlement reçu | 300 € d'acompte par virement le 21 : il reste 624 € à payer |
+
+Annuler une feuille, ou retirer ce qu'un bouton a posé, ramène aux travaux en
+plus ; « Revenir à la facture » ramène à la facture ; Suivant continue la visite.
+
+**Trouvé en regardant les captures :** en arrivant sur « Travaux en plus », la
+page se calait tout en bas, sur Facture acquittée. Les quatre boutons, puis la
+ligne ajoutée, restaient au-dessus, hors de l'écran : tu aurais dû faire défiler
+pour voir ce que tu venais de faire. Chaque bouton montre maintenant ce qu'il a
+posé en arrivant.
+
+**Fait autrement que ta demande, et pourquoi :** tu as demandé le travail et le
+règlement. Main d'œuvre et Ajouter une TVA, sur le même écran, ne répondaient
+pas non plus : les laisser muets, c'était la même déception un bouton plus loin.
+
+**Ce qui s'est révélé faux de mon côté :** le contrôle des boutons muets
+(21 novembre, « 233 boutons touchés, aucun muet ») comptait un guide qui tremble
+comme une réponse. Ajouter un travail tremblait : il était donc « vert ». Le
+contrôle des essais touche maintenant ces quatre boutons et exige qu'ils
+s'ouvrent : rouge sur la visite d'avant (9 défauts), vert après.
+
+**Trouvé en route, dans l'appli elle-même, et pas corrigé :** sur un règlement
+reçu, changer le moyen, la date et le montant d'affilée ne garde que le dernier
+champ. Chaque champ renvoie la ligne entière telle que l'écran l'a reçue ; si le
+précédent n'est pas encore revenu du serveur, il est écrasé, sans message.
+Reproduit ici en enchaînant les trois gestes sans pause : « Chèque » et la date
+du jour sont revenus. À deux secondes d'écart, tout est gardé. Sur un bon
+réseau, ta main est plus lente que l'aller et retour ; **sur un chantier mal
+couvert, un « Virement » peut revenir à « Chèque » sans que tu le voies.** Pas
+vérifié sur ton téléphone. La correction touche l'argent, donc une batterie :
+elle attend ton « oui » (`TODO.md`).
+
+**Le poids de la page :** une même page de PDF (conditions générales, formulaire,
+attestation) revenait sur les cinq écrans de l'aperçu. Elle n'est écrite qu'une
+fois ; la visite passe de 6,6 à 7,3 Mo au lieu de 8,8.
+
+La visite compte 89 étapes.
+
+## Ta capture du 22 : l'anneau à côté du bouton
+
+*« Quand on arrive sur une page, en ayant cliqué sur passer, la zone qui nous
+montre où on doit cliquer est pas vraiment centrée par rapport au bouton. Et ça
+arrive assez souvent. »*
+
+**Ce qui se passait :** l'anneau doré était dessiné sur une couche fixée à
+l'écran, posée par-dessus la page ; le bouton, lui, est dans la page. Les deux ne
+tombent l'un sur l'autre que si Safari garde ses éléments fixes à leur place.
+Safari 26 les décale de quelques points quand sa barre d'adresse bouge (un défaut
+connu de WebKit, le 297779) : sur ta capture, l'anneau est remonté d'environ
+quatre points au-dessus de « Arrêter et ranger ».
+
+**Ce qui a été fait :** l'anneau vit maintenant dans la page avec son bouton, et
+défile avec lui. Seul l'anneau d'un bouton posé dans une feuille fixe (le
+calendrier de la date) reste sur la couche fixe, avec sa feuille : là, les deux
+bougent ensemble.
+
+**Ce qui s'est révélé faux de mon côté :** ma première version de cette
+correction cassait une étape, sur ordinateur. Posé dans la page, l'anneau de
+l'étape d'avant, éteint mais encore placé plus bas, rallongeait la page ; la
+visite calait alors « J'ai bien reçu » chez le client sur une page plus longue
+qu'elle n'est, et le bouton finissait sous le guide. Le contrôle complet l'a vu,
+deux fois de suite ; c'est corrigé (l'anneau ne peut plus rallonger la page).
+
+**Pas vérifiable ici :** ce poste n'a que Chromium, où l'anneau tombait déjà
+juste à chaque étape (mesuré). Le contrôle de la visite exige maintenant que
+l'anneau soit dans le même plan que son bouton : rouge sur la visite d'avant
+(53 étapes), vert sur la nouvelle. **À regarder sur ton iPhone** ; si un anneau
+tombe encore à côté, une capture me dira lequel.
+
 ## Des informations cachées, trouvées en route
 
 | Où | Ce qui était caché | Ce qui a été fait |
@@ -179,16 +273,19 @@ regarder sur ton espace.
 
 ## Vérifié ici
 
-- La visite entière jouée au doigt à 390 × 664 (ton écran), 375 × 667,
-  320 × 568, 1024 × 768 et 1280 × 800 : à chacune des 75 étapes, le doigt mène
-  à la suivante, la cible n'est jamais sous la barre ni hors de l'écran, aucune
-  page ne déborde.
-- Les huit boutons à essayer (devis et facture) : chacun ouvre sa feuille, se
-  pose, et Retour ramène.
-- Les 19 rubriques des Réglages libres s'ouvrent et reviennent.
-- Faire défiler replie la barre, la toucher la déplie, le chevron la replie.
-- Chaque étape regardée en image à 390 points, et des étapes choisies sur
-  ordinateur.
+*Mis à jour le 22 novembre, sur la visite de 89 étapes.*
+
+- La visite entière jouée au doigt à 320 × 568, 390 × 664 (ton écran),
+  1024 × 768 et 1280 × 800 : à chacune des 89 étapes, le doigt mène à la
+  suivante, la cible n'est jamais sous la barre ni hors de l'écran, aucune page
+  ne déborde, et l'anneau est dans le plan de son bouton.
+- Les boutons à essayer du devis et de la facture, dont les quatre des travaux
+  en plus : chacun s'ouvre, se pose, montre ce qu'il a posé, et ramène.
+- 304 boutons des écrans d'essai touchés un par un : aucun muet.
+- Les 19 rubriques et les 38 portes des Réglages libres s'ouvrent et reviennent.
+- Le guide paraît en moins d'une demi-seconde à chaque étape (482 ms au pire),
+  processeur ralenti quatre fois.
+- Les nouveaux écrans regardés en image à 390 points, avec le guide.
 
 **Pas vérifiable ici : Safari sur ton iPhone.** Ce poste n'a que Chromium.
 Safari n'envoie un appui que sur ce qui se touche : la visite pose
@@ -198,8 +295,12 @@ lequel.
 
 ## Ce qui reste ouvert
 
-1. **La longueur** : 75 étapes, environ huit minutes.
-2. **Le bouton sur le site** : où poser la visite sur `appli/vente/`.
-3. **Le script qui refait la visite** n'a jamais été enregistré
-   (`docs/visite-guidee.md`). Un écran de l'appli qui change ne se reporte
-   donc pas tout seul dans la visite.
+1. **La longueur** : 89 étapes, une dizaine de minutes.
+2. **Le règlement reçu qui perd un champ** (plus haut) : la correction touche
+   l'argent, donc une batterie, sur ton « oui ».
+3. **Le bouton sur le site** : où poser la visite sur `appli/vente/`.
+4. **Le script qui refait la visite** n'a jamais été enregistré pour ses
+   écrans d'origine (`docs/visite-guidee.md`). Ceux ajoutés depuis le 21 se
+   refont, eux, par `appli/scripts/visite-guidee/`.
+5. **L'anneau sur ton iPhone** : corrigé sans pouvoir le voir ici. Une capture
+   si un anneau tombe encore à côté de son bouton.
