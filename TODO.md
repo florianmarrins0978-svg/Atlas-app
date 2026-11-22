@@ -19,7 +19,7 @@
 - la longueur du régulateur (131 mm) et la cote sur plats de la vanne (32 mm) ne viennent d'aucune de ses photos : à relire sur une fiche ou au pied à coulisse ;
 - le dessous des électrovannes et l'intérieur de la bague Plasson sont estimés ;
 - le contrôle de la page (63 points) vit hors du dépôt : le jour où la nourrice 3D entre dans `src/`, il devient une suite.
-## ⚠️ UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE (vu le 22 novembre 2026, pas corrigé)
+## ~~UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE~~ (vu le 22 novembre 2026) **CORRIGÉ LE 22 NOVEMBRE 2026** (`ARCHITECTURE.md` §602)
 
 Sur la facture, « Règlement reçu » : chaque champ (date, moyen, montant,
 libellé) s'enregistre seul, mais `corriger` (`src/app/chantiers/[id]/facture/ReglementsRecus.tsx`)
@@ -37,6 +37,11 @@ sur son téléphone. Racine à corriger : n'envoyer que le champ changé (ou
 enchaîner les enregistrements), avec un test rouge d'abord. Argent : niveau 3,
 donc une batterie, sur son « oui ». La visite (`figer-neufs.mjs`) le contourne
 en laissant chaque champ s'enregistrer avant le suivant.
+
+**Corrigé le 22 novembre, sur son « oui »** : l'écran n'envoie que le champ
+changé, et le dépôt le pose sur la ligne lue en base, verrouillée. Vu rouge en
+base puis vert ; au navigateur dans la batterie. Reste : les autres écrans qui
+enregistrent champ par champ n'ont pas été revus.
 
 ## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
 
