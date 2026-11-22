@@ -2,9 +2,8 @@
 
 ## LA NOURRICE EN 3D DANS L'APPLI (22 novembre 2026) : CE QUI RESTE
 
-- **Livrer** : la batterie entière (le lot touche `package.json`), sur son oui, puis `main`. Avant, regarder l'écran du plan (`npm run voir -- /paysage/arrosage`) sur un plan de 3 voies dont 1 en goutte-à-goutte, et l'essayer sur un iPhone.
+- **L'essayer sur un iPhone**, dans l'écran du plan : la fluidité n'a été vue qu'en rendu logiciel.
 - **Une pièce supprimée ou changée ne se voit pas dans la 3D** : le dessin d'avant la grisait et la barrait (sa demande du 19 octobre 2026). La légende le dit encore. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer.
-- **Le film `outils-nourrice` du site** montre encore l'ancien dessin dans le téléphone : à retourner quand l'écran sera sur `main` (`node appli/scripts/film-outils.cjs appli/vente/images --film outils-nourrice`).
 - **Un glissé posé sur la 3D tourne la nourrice et ne fait pas défiler la page** : c'est le prix du geste qu'il a demandé. À surveiller sur son téléphone.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA NOURRICE EN 3D RÉALISTE (22 novembre 2026)

@@ -1,8 +1,8 @@
 # Reprendre le travail
 
-## LA NOURRICE EN 3D DANS L'APPLI ET SUR LE SITE (22 novembre 2026) : CODÉE, PAS ENCORE SUR `main`
+## LA NOURRICE EN 3D DANS L'APPLI ET SUR LE SITE (22 novembre 2026) : SUR `main`
 
-**Avant d'y toucher** : lire `ARCHITECTURE.md` §601. La 3D se retouche dans `appli/nourrice-3d/`, jamais ailleurs : la planche, le site et l'écran du plan l'importent. **`three` bouge partout à la fois** (`package.json` et `appli/vendor/three/`). L'écran du plan n'a pas pu être regardé ici sans son oui (serveur de développement) : la planche et le site, si, dans Chromium sans écran. Le lot est de niveau 3 à cause de `package.json`.
+**Avant d'y toucher** : lire `ARCHITECTURE.md` §601. La 3D se retouche dans `appli/nourrice-3d/`, jamais ailleurs : la planche, le site et l'écran du plan l'importent. **`three` bouge partout à la fois** (`package.json` et `appli/vendor/three/`). Les films du site filment la démonstration des outils : après toute retouche de l'écran du plan, `npx tsx appli/scripts/demo-outils/construire.ts`, puis retourner les films concernés (`node appli/scripts/film-outils.cjs appli/vente/images --film <nom>`). La démonstration vise l'éclairage de la 3D par son chemin publié (`PHOTOS` dans `construire.ts`).
 
 ## LA NOURRICE EN 3D RÉALISTE (22 novembre 2026) : UNE PLANCHE, PAS ENCORE VUE PAR LUI
 

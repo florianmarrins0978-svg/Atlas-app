@@ -33,14 +33,13 @@
 | types, lint, construction de l'appli | verts ; la 3D et son éclairage partent bien avec l'appli |
 | contrôles rapides (couches, code mort, tirets, couleurs, flèches, nom Cause, pansements, chartes) | verts |
 | la planche et le site, dans Chromium sans écran | éclaté et remontée au toucher, 0 erreur de composition, 0 erreur de page, au téléphone et à l'ordinateur |
-| **l'écran du plan dans l'appli** | **pas regardé ici** : il faut un serveur de développement, donc son oui |
-| **la batterie** | **pas jouée** : le lot touche `package.json` (niveau 3), elle attend son oui |
+| **la batterie entière** | **verte**, jouée le 22 au soir avec le lot du règlement reçu : 617/617 suites base, 218/218 navigateur, connexion derrière un proxy. Un seul rouge en route, de ce lot : les boutons de la 3D étaient carrés (sa règle du 12 août), arrondis et rejoués au vert |
+| les pages du site (`appli/tests/e2e.js`) | 261 contrôles, 0 échec |
+| les films du site | retournés sur la 3D, regardés à leur adresse publique |
 | un iPhone | pas éprouvé (rendu logiciel ici) |
 
 ## Ce qui reste ouvert
 
 | | Qui |
 |---|---|
-| lancer la batterie, puis pousser sur `main` | lui, un oui |
 | griser les pièces supprimées dans la 3D | lui, à décider |
-| retourner le film `outils-nourrice` du site, qui montre l'ancien dessin dans le téléphone | une session, une fois sur `main` |
