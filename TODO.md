@@ -1,5 +1,11 @@
 # Prochaines tâches
 
+## LA NOURRICE EN 3D DANS L'APPLI (22 novembre 2026) : CE QUI RESTE
+
+- **L'essayer sur un iPhone**, dans l'écran du plan : la fluidité n'a été vue qu'en rendu logiciel.
+- **Une pièce supprimée ou changée ne se voit pas dans la 3D** : le dessin d'avant la grisait et la barrait (sa demande du 19 octobre 2026). La légende le dit encore. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer.
+- **Un glissé posé sur la 3D tourne la nourrice et ne fait pas défiler la page** : c'est le prix du geste qu'il a demandé. À surveiller sur son téléphone.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA NOURRICE EN 3D RÉALISTE (22 novembre 2026)
 
 `appli/arrosage-nourrice-3d.html`, rien dans `src/`. Le retour : `docs/nourrice-3d-realiste.md`.
@@ -19,7 +25,7 @@
 - la longueur du régulateur (131 mm) et la cote sur plats de la vanne (32 mm) ne viennent d'aucune de ses photos : à relire sur une fiche ou au pied à coulisse ;
 - le dessous des électrovannes et l'intérieur de la bague Plasson sont estimés ;
 - le contrôle de la page (63 points) vit hors du dépôt : le jour où la nourrice 3D entre dans `src/`, il devient une suite.
-## ⚠️ UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE (vu le 22 novembre 2026, pas corrigé)
+## ~~UN RÈGLEMENT REÇU PERD UN CHAMP CHANGÉ JUSTE AVANT UN AUTRE~~ (vu le 22 novembre 2026) **CORRIGÉ LE 22 NOVEMBRE 2026** (`ARCHITECTURE.md` §602)
 
 Sur la facture, « Règlement reçu » : chaque champ (date, moyen, montant,
 libellé) s'enregistre seul, mais `corriger` (`src/app/chantiers/[id]/facture/ReglementsRecus.tsx`)
@@ -37,6 +43,11 @@ sur son téléphone. Racine à corriger : n'envoyer que le champ changé (ou
 enchaîner les enregistrements), avec un test rouge d'abord. Argent : niveau 3,
 donc une batterie, sur son « oui ». La visite (`figer-neufs.mjs`) le contourne
 en laissant chaque champ s'enregistrer avant le suivant.
+
+**Corrigé le 22 novembre, sur son « oui »** : l'écran n'envoie que le champ
+changé, et le dépôt le pose sur la ligne lue en base, verrouillée. Vu rouge en
+base puis vert ; au navigateur dans la batterie. Reste : les autres écrans qui
+enregistrent champ par champ n'ont pas été revus.
 
 ## ⚠️ GITHUB SIGNALE CINQ ALERTES SUR LES DÉPENDANCES, DONT UNE GRAVE (vu le 21 novembre 2026, non lu)
 
@@ -1017,9 +1028,8 @@ maintenant juste avant le film où l'on en change une pièce.
 (`film-outils.cjs --images`) : la carte des deux réseaux est montrée en deux
 cartes, la même image deux fois (chaque carte de l'appli y fait 1170 px de
 haut, 45 px les séparent : `.reseau`, et `CIBLE_COTE`, la place de « 20 m »
-dans la première) ; la nourrice est montrée sans la marge ni le filet de sa
-carte (`.nourrice-fig` : 948 px sur 1320, à 45 px du bord gauche et 51 px du
-haut). Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
+dans la première) . (La nourrice n'est plus une découpe depuis le 22 novembre : c'est la 3D.)
+Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
 à côté.
 
 **Pas regardé sur Safari**, comme le site : sur son iPhone, regarder d'abord

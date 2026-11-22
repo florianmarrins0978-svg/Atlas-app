@@ -307,9 +307,15 @@ lequel.
 ## Ce qui reste ouvert
 
 1. **La longueur** : 89 étapes, une dizaine de minutes.
-2. **Le règlement reçu qui perd un champ** (plus haut) : la correction touche
-   l'argent, donc une batterie, sur ton « oui ».
-3. **Le bouton sur le site** : où poser la visite sur `appli/vente/`.
+2. ~~**Le règlement reçu qui perd un champ**~~ **corrigé le 22 au soir**, sur
+   ton « oui » : l'écran n'envoie que le champ changé, et l'appli le pose sur la
+   ligne telle qu'elle est en base. Vu rouge avant (en base, et au navigateur
+   avec les trois champs changés sans attendre), vert après ; batterie complète
+   au vert, avec la nourrice 3D de l'autre session, et c'est sur `main`.
+3. **Le bouton sur le site** : une planche sur la vraie page Cause 2, trois
+   places à essayer (`appli/vente/cause-2-visite.html`). Ma recommandation : une
+   bande à elle juste avant les prix, plus le lien dans la barre du haut. Rien
+   n'est posé tant que tu n'as pas choisi.
 4. **Le script qui refait la visite** n'a jamais été enregistré pour ses
    écrans d'origine (`docs/visite-guidee.md`). Ceux ajoutés depuis le 21 se
    refont, eux, par `appli/scripts/visite-guidee/`.
