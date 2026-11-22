@@ -223,30 +223,64 @@ export function coude(o) {
   return geometrie(new Float32Array(pos), new Float32Array(nor), new Float32Array(uv), index);
 }
 
-// L'ÉCROU UNION CANNELÉ des pièces Dura, relevé sur ses photos (coudes, té, clarinettes, manchon) : un
-// canon, ses nervures en long aux bouts arrondis, une jupe lisse côté bouche, et le taraudage 1" dedans.
-// Le collet (côté corps de la pièce) est en z = 0, la bouche en z = longueur : la pièce le tourne.
-// Options : longueur ; rCanon ; rJupe ; jupe (longueur de la jupe lisse) ; nervures (8), largeur et
-// saillie d'une nervure ; rCollet (le trou du collet, où passe le corps) ; gaz ; prise (profondeur
-// du taraudage). Rend la géométrie, déjà fusionnée.
+// L'ÉCROU UNION CANNELÉ des pièces Dura (l'écrou tournant de chaque bout femelle), relevé sur ses
+// photos. Le collet (côté corps de la pièce) est en z = 0, la bouche en z = longueur : la pièce le tourne.
+//
+// SES COTES, ET D'OÙ ELLES VIENNENT. La jupe fait 40 mm de diamètre : 1,184 fois le filetage 1" sur la
+// photo du raccord union mâle (dura-union-1-mf.jpg, prise de loin, donc sans perspective), corrigé de
+// 1,5 % pour le filetage, plus près de l'objectif. Les autres photos donnent de 37 à 43,6 mm : la cote
+// est tenue à 2 mm près, pas mieux. La longueur vaut 0,75 fois ce diamètre (té, coude FF, manchon).
+// Le canon fait 0,875 fois la jupe (son coude FF photographié de trois quarts). Les huit nervures
+// (comptées sur quatre photos) font 5,2 mm de large, partent du bord du collet et finissent sur la
+// jupe, qu'elles dépassent de 0,7 mm (1,035 fois la jupe sur le raccord union mâle).
+//
+// LE DEDANS n'est sur aucune photo : il est déduit. Le taraudage tient dans la jupe, seule assez
+// épaisse pour le porter (six filets) ; derrière lui un dégagement lisse laisse passer le mâle jusqu'à
+// `prise`, où il bute sur le joint plat que la pièce pose (le canon, plus étroit que le filetage,
+// loge la collerette du corps).
+//
+// Options : longueur (30) ; rCanon (17,5) ; rJupe (20) ; jupe (longueur de la jupe, 15,7) ; nervures
+// (8), largeur (5,2) et saillie d'une nervure hors du canon (3,2) ; decalage (angle de la première
+// nervure) ; rCollet (le trou du collet, où passe le col du corps : 14,7) ; gaz ; prise (la profondeur
+// où le mâle bute : 19). Rend la géométrie, déjà fusionnée.
 export function ecrouUnion(o) {
   o = o || {};
-  var L = o.longueur || 36, rc = o.rCanon || 21.6, rj = o.rJupe || 24, jupe = o.jupe != null ? o.jupe : 12, n = o.nervures || 8;
-  var larg = o.largeur || 6.4, saillie = o.saillie != null ? o.saillie : rj - rc, rCollet = o.rCollet || 17.2, g = o.gaz || "1";
-  var fond = rayonDuFond({ gaz: g }) + 0.15, prise = Math.min(o.prise || 17, L - 4), zj = L - jupe, morceaux = [];
-  // Le dehors : le collet, le canon, l'épaule de la jupe, la jupe, son bord arrondi, puis la bouche.
-  morceaux.push(tourne([[rCollet, 0], [rc - 1.2, 0, { a: 1 }], [rc, 1.6, { a: 1.2 }], [rc, zj - 1.4, { a: 1 }], [rj, zj, { a: 1 }], [rj, L - 0.2, { a: 1.3 }], [fond + 0.9, L, { c: 0.5 }], [fond, L - 0.9]], { segments: 72 }));
-  // Le dedans : le taraudage, puis le fond de l'écrou jusqu'au trou du collet.
-  morceaux.push(taraudage({ gaz: g, z0: L - 0.9 - prise, z1: L - 0.9, segments: 36 }));
-  morceaux.push(tourne([[fond, L - 0.9 - prise], [rCollet, L - 0.9 - prise], [rCollet, 0]], { segments: 36 }));
-  // Les nervures : une barre ronde à demi noyée dans le canon, son bout arrondi côté collet, l'autre
-  // bout fondu dans la jupe.
-  var rb = larg / 2, zb0 = 3 + rb, zb1 = zj + 1.5, centre = rc + saillie - rb;
-  for (var i = 0; i < n; i++) {
-    var a = TAU * i / n + (o.decalage || 0), barre = new THREE.CapsuleGeometry(rb, zb1 - zb0, 5, 14);
-    barre.rotateX(Math.PI / 2); barre.translate(centre, 0, (zb0 + zb1) / 2); barre.rotateZ(a); uvCube(barre);
-    morceaux.push(aIndexer(barre));
-  }
+  var L = o.longueur || 30, rc = o.rCanon || 17.5, rj = o.rJupe || 20, jupe = o.jupe != null ? o.jupe : 15.7, n = o.nervures || 8;
+  var larg = o.largeur || 5.2, saillie = o.saillie != null ? o.saillie : rj - rc + 0.7, rCollet = o.rCollet || 14.7, g = o.gaz || "1";
+  var fond = rayonDuFond({ gaz: g }) + 0.15, grand = GAZ[g].d / 2 + 0.15, prise = Math.min(o.prise || 19, L - 8), zj = L - jupe, morceaux = [];
+  // Le dehors, du trou du collet à la bouche : le siège conique où se loge le joint torique, le bord
+  // arrondi du canon (un arc écrit point par point : entre deux points si proches, un arrondi demandé
+  // au profil serait rogné de moitié), le canon, l'épaule conique, la jupe, sa lèvre, le bord arrondi
+  // de la bouche, sa face (deux cercles posés sur le plan z = L, que la scène mesure) et le chanfrein
+  // d'entrée du taraudage.
+  var bord = 1, siege = rc - bord - rCollet, dehors = [[rCollet, siege]];
+  for (var k = 0; k <= 5; k++) dehors.push([rc - bord + bord * Math.sin(Math.PI / 2 * k / 5), bord - bord * Math.cos(Math.PI / 2 * k / 5)]);
+  dehors.push([rc, zj - 3.2, { a: 0.9 }], [rj, zj, { a: 0.8 }], [rj, L - 3.1, { a: 0.3 }], [rj + 0.3, L - 2.7, { a: 0.3 }],
+    [rj + 0.3, L, { a: 1.4 }], [grand + 0.65, L], [fond, L - 1.2]);
+  morceaux.push(tourne(dehors, { segments: 64 }));
+  // Le dedans : le taraudage, sa sortie, le dégagement, la face où s'appuie le joint plat, l'alésage du
+  // canon, puis le fond de l'écrou et le trou du collet.
+  var zt = Math.max(zj + 0.5, L - prise + 0.6), appui = L - prise - 0.2;
+  morceaux.push(taraudage({ gaz: g, z0: zt, z1: L - 1.2, segments: 36 }));
+  morceaux.push(tourne([[fond, zt], [grand, zt - 0.6], [grand, appui], [rc - 1.9, appui], [rc - 1.9, 3], [rCollet, 3], [rCollet, siege]], { segments: 36 }));
+  // Une nervure : une barre au dos plat et aux arêtes arrondies, dont le contour est un stade (deux
+  // demi-cercles, deux côtés droits). Ses anneaux sont ce contour, de plus en plus rentré : le pied
+  // noyé dans le canon, le flanc, l'arrondi de l'arête, puis le dos jusqu'à sa ligne de milieu. Le dos
+  // garde le même rayon tout du long : passé l'épaule il n'affleure plus que de 0,7 mm sur la jupe.
+  var rb = larg / 2, re = Math.min(1.5, rb - 0.4), dos = rc + saillie, z0 = 0.9 + rb, z1 = zj + 0.9 - rb, rm = rc + saillie / 2, ns = 8, np = 2 * ns + 2;
+  var anneaux = [[0, rc - 0.6], [0, dos - re]];
+  for (k = 1; k <= 4; k++) anneaux.push([re * (1 - Math.cos(Math.PI / 8 * k)), dos - re + re * Math.sin(Math.PI / 8 * k)]);
+  anneaux.push([rb, dos]);
+  var pos = [], index = [];
+  anneaux.forEach(function (an, ia) {
+    for (var j = 0; j < np; j++) {
+      var loin = j <= ns, t = Math.PI * (loin ? j : j - 1) / ns, rs = rb - an[0], th = rs * Math.cos(t) / rm;
+      pos.push(an[1] * Math.cos(th), an[1] * Math.sin(th), (loin ? z1 : z0) + rs * Math.sin(t));
+      if (ia) { var A = (ia - 1) * np + j, B = (ia - 1) * np + (j + 1) % np; index.push(A, B, A + np, B, B + np, A + np); }
+    }
+  });
+  var barre = new THREE.BufferGeometry(); barre.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); barre.setIndex(index); barre.computeVertexNormals();
+  for (var i = 0; i < n; i++) morceaux.push(aIndexer(uvCube(barre.clone().rotateZ(TAU * i / n + (o.decalage || 0)))));
   return mergeGeometries(morceaux.map(nettoyer));
 }
 
@@ -367,7 +401,7 @@ Lot.prototype.couches = function () {
 };
 
 // MESURER UN BOUT DANS LA GÉOMÉTRIE ELLE-MÊME : le centre des sommets posés sur la face de ce bout
-// (à 0,05 mm près de son plan, autour de son axe). Une face de bout est faite de cercles : leur centre
+// (à 0,02 mm près de son plan, autour de son axe). Une face de bout est faite de cercles : leur centre
 // est celui du bout. C'est ce qui permet de vérifier qu'une pièce est sur son axe sans croire sur
 // parole les cotes qu'elle annonce.
 // `axe` est "x" ou "z" ; `place` la cote du bout sur cet axe ; `rayon` celui de son filetage.
@@ -377,7 +411,7 @@ export function centreDuBout(couches, axe, place, rayon, centre) {
     var p = co.geometrie.getAttribute("position");
     for (var i = 0; i < p.count; i++) {
       var x = p.getX(i), y = p.getY(i), z = p.getZ(i), le = axe === "x" ? x : z;
-      if (Math.abs(le - place) > 0.05) continue;
+      if (Math.abs(le - place) > 0.02) continue;
       var d = axe === "x" ? Math.hypot(y - c[1], z - c[2]) : Math.hypot(x - c[0], y - c[1]);
       if (d < rayon * 0.25 || d > rayon * 1.6) continue;
       // Un sommet répété (la couture d'un tour, deux formes qui se touchent) ne compte qu'une fois :

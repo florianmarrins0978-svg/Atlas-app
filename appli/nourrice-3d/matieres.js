@@ -45,9 +45,9 @@ export function creerMatieres() {
     // Le joint qu'on voit entre un écrou union et son corps.
     joint: plastique(0x18191a, 0.75, 0.3),
     // Le plastique noir mat chargé de verre des électrovannes et du régulateur : un grain plus marqué.
-    noir: plastique(0x1d1e20, 0.62, 1.1, moyen),
+    noir: plastique(0x2b2c2e, 0.55, 1.1, moyen),
     // Le corps noir du raccord Plasson : un polypropylène plus lisse.
-    noirLisse: plastique(0x17181a, 0.42, 0.4),
+    noirLisse: plastique(0x222325, 0.4, 0.4),
     // Sa bague, d'un blanc cassé.
     blanc: plastique(0xdcdcd8, 0.5, 0.5),
     laiton: metal(0xc8a55a, 0.34),
@@ -65,7 +65,7 @@ export function creerMatieres() {
     filNoir: plastique(0x121212, 0.45, 0.15),
     cuivre: metal(0xc87a50, 0.4),
     // Le PEHD : un noir mat, ses bandes bleues.
-    pehd: plastique(0x191a1c, 0.58, 0.6, moyen),
+    pehd: plastique(0x242527, 0.5, 0.6, moyen),
     bleu: plastique(0x1565c0, 0.5, 0.4),
     // Le fond d'une empreinte, d'un trou : un noir qui ne renvoie rien.
     creux: new THREE.MeshPhysicalMaterial({ color: 0x08080a, roughness: 0.95, metalness: 0 })

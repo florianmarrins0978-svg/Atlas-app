@@ -27,7 +27,7 @@ import { place } from "./composition.js";
 import { centreDuBout, GAZ } from "./formes.js";
 
 // Les points de vue : d'où l'on regarde le centre de la nourrice.
-var VUES = { biais: [-0.42, 0.86, 0.82], dessus: [0, 1, 0.0006], face: [0, 0.34, 1] };
+var VUES = { biais: [-0.38, 1, 0.74], dessus: [0, 1, 0.0006], face: [0, 0.34, 1] };
 var DUREE = 0.6;   // l'éclaté : environ 0,6 s
 
 function douceur(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }   // départ et arrivée en douceur
@@ -57,7 +57,7 @@ export function creerScene(toile, o) {
       // L'image est tendue dans une boule, tournée pour que sa grande source éclaire la nourrice par
       // le haut et l'avant gauche, puis filtrée pour les reflets. `forceAmbiance` règle sa puissance.
       var boule = new THREE.Mesh(new THREE.SphereGeometry(500, 64, 32), new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide, toneMapped: false }));
-      boule.material.color.setScalar(o.forceAmbiance != null ? o.forceAmbiance : 0.12); boule.rotation.y = o.rotationAmbiance || 0;
+      boule.material.color.setScalar(o.forceAmbiance != null ? o.forceAmbiance : 0.2); boule.rotation.y = o.rotationAmbiance != null ? o.rotationAmbiance : -1.8;
       var studio = new THREE.Scene(); studio.add(boule);
       var ancienne = scene.environment; scene.environment = pmrem.fromScene(studio, 0, 1, 2000).texture;
       ancienne.dispose(); texture.dispose(); boule.geometry.dispose(); boule.material.dispose(); ambiance = "hdri"; demander(); ok(ambiance);
@@ -65,7 +65,7 @@ export function creerScene(toile, o) {
   });
 
   // LA LAMPE : elle donne le sens de la lumière et porte les ombres.
-  var lampe = new THREE.DirectionalLight(0xfff4e6, o.lampe != null ? o.lampe : 1);
+  var lampe = new THREE.DirectionalLight(0xfff4e6, o.lampe != null ? o.lampe : 0.5);
   lampe.castShadow = true; lampe.shadow.mapSize.set(2048, 2048); lampe.shadow.bias = -0.0002; lampe.shadow.normalBias = 0.6;
   scene.add(lampe); scene.add(lampe.target);
   var contre = new THREE.DirectionalLight(0xfff1e0, o.contre != null ? o.contre : 0.25); scene.add(contre); scene.add(contre.target);
@@ -130,6 +130,9 @@ export function creerScene(toile, o) {
   function poser(compo) {
     etat.lots.forEach(function (l) { racine.remove(l.maille); l.maille.dispose(); });
     etat.lots = []; etat.compo = compo;
+    // La fiche change en plein éclaté : les pièces finissent leur trajet, mais le cadre visé était celui
+    // de l'ancienne fiche. On le lâche, celui qui pose la nouvelle fiche recadre.
+    if (mouvement && mouvement.pieces) mouvement.libre = true;
     var parCle = {};
     compo.pieces.forEach(function (p) { (parCle[p.cle] = parCle[p.cle] || []).push(p); });
     Object.keys(parCle).forEach(function (cle) {
@@ -192,16 +195,28 @@ export function creerScene(toile, o) {
   }
 
   // CADRER : toute la nourrice dans l'image, le plus grand possible, depuis une direction donnée.
-  var cadre = { cible: new THREE.Vector3(), distance: 1 };
   function cadrage(direction, t, sortie) {
     var b = boiteA(t, new THREE.Box3()), c = b.getCenter(new THREE.Vector3()), d = b.getSize(new THREE.Vector3()).length() * 1.6;
-    var coins = [], essai = camera.clone();
-    [b.min.x, b.max.x].forEach(function (x) { [b.min.y, b.max.y].forEach(function (y) { [b.min.z, b.max.z].forEach(function (z) { coins.push(new THREE.Vector3(x, y, z)); }); }); });
-    // La perspective rapproche ce qui est devant : la distance se corrige jusqu'à ce que les huit coins tiennent.
-    for (var k = 0; k < 6; k++) {
+    // Les coins de la boîte de chaque pièce, pas ceux de la boîte d'ensemble : une nourrice vue de
+    // biais laisse de grands coins vides, et l'ensemble paraîtrait deux fois trop petit.
+    var coins = [], essai = camera.clone(), q = new THREE.Vector3(), droite = new THREE.Vector3(), haut = new THREE.Vector3();
+    etat.compo.pieces.forEach(function (p) {
+      matrice(p, t, T);
+      definitions[p.cle].couches.forEach(function (co) {
+        var bb = co.geometrie.boundingBox;
+        [bb.min.x, bb.max.x].forEach(function (x) { [bb.min.y, bb.max.y].forEach(function (y) { [bb.min.z, bb.max.z].forEach(function (z) { coins.push(new THREE.Vector3(x, y, z).applyMatrix4(T)); }); }); });
+      });
+    });
+    var demi = Math.tan(camera.fov * Math.PI / 360);
+    // La perspective rapproche ce qui est devant : on recentre et on corrige la distance jusqu'à ce
+    // que tout tienne, au plus grand, avec une marge.
+    for (var k = 0; k < 8; k++) {
       essai.position.copy(c).addScaledVector(direction, d); essai.up.set(0, 1, 0); essai.lookAt(c); essai.updateMatrixWorld(); essai.updateProjectionMatrix();
-      var m = 0; coins.forEach(function (p) { var q = p.clone().project(essai); m = Math.max(m, Math.abs(q.x), Math.abs(q.y)); });
-      d *= m / 0.88;
+      var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      coins.forEach(function (p) { q.copy(p).project(essai); x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); });
+      droite.setFromMatrixColumn(essai.matrixWorld, 0); haut.setFromMatrixColumn(essai.matrixWorld, 1);
+      c.addScaledVector(droite, (x0 + x1) / 2 * d * demi * essai.aspect).addScaledVector(haut, (y0 + y1) / 2 * d * demi);
+      d *= Math.max((x1 - x0) / 2, (y1 - y0) / 2) / 0.9;
     }
     sortie.cible.copy(c); sortie.distance = d;
     return sortie;
@@ -215,14 +230,15 @@ export function creerScene(toile, o) {
 
   // LES MOUVEMENTS. Un seul à la fois : l'éclaté (les pièces et le cadre ensemble) ou un changement de
   // point de vue. Chacun part de ce qu'on voit, et se laisse interrompre par le suivant.
-  var mouvement = null, horloge = 0;
-  function lancer(duree, pas, fin, pieces) {
-    if (mouvement && mouvement.fin) mouvement.fin(false);
-    mouvement = { debut: performance.now(), duree: duree * 1000, pas: pas, fin: fin, pieces: !!pieces, libre: false };
-    if (reduit || duree <= 0) { var m = mouvement; mouvement = null; m.pas(1, m); if (fin) fin(true); }
+  var mouvement = null;
+  function lancer(duree, pas, pieces) {
+    mouvement = { debut: performance.now(), duree: duree * 1000, pas: pas, pieces: !!pieces, libre: false };
+    if (pieces) etat.dureeEclate = mouvement.duree;
+    // Mouvements réduits demandés au système : on arrive tout de suite, sans trajet.
+    if (reduit || duree <= 0) { var m = mouvement; mouvement = null; m.pas(1, m); }
     demander();
   }
-  function eclater(cible, apres) {
+  function eclater(cible) {
     var t0 = etat.t, dir = directionActuelle(), c0 = { cible: commandes.target.clone(), distance: camera.position.distanceTo(commandes.target) };
     var c1 = cadrage(dir, cible, { cible: new THREE.Vector3(), distance: 1 }), c = { cible: new THREE.Vector3(), distance: 1 };
     etat.cibleT = cible;
@@ -231,7 +247,7 @@ export function creerScene(toile, o) {
       var k = douceur(u); regler(t0 + (cible - t0) * k);
       if (m.libre) return;
       c.cible.lerpVectors(c0.cible, c1.cible, k); c.distance = c0.distance + (c1.distance - c0.distance) * k; placerCamera(dir, c);
-    }, apres, true);
+    }, true);
   }
   function regarder(vue, anime) {
     etat.vue = vue;
@@ -248,7 +264,7 @@ export function creerScene(toile, o) {
 
   // LA QUALITÉ. Niveau 0 : tout. Si un mouvement rame, le niveau monte pour la durée des mouvements
   // (moins de pixels, puis l'occlusion ambiante coupée) ; l'image posée revient toujours au niveau 0.
-  var qualite = { niveau: 0, enCours: -1, lent: 0, vite: 0 }, largeur = 0, hauteur = 0, densite = 1;
+  var qualite = { niveau: 0, enCours: -1, lent: 0 }, largeur = 0, hauteur = 0, densite = 1;
   function appliquerQualite(niveau) {
     if (niveau === qualite.enCours) return;
     qualite.enCours = niveau;
@@ -273,7 +289,7 @@ export function creerScene(toile, o) {
   }
 
   // LA BOUCLE : on ne redessine que s'il y a quelque chose de neuf.
-  var aDessiner = true, bouge = false, dernier = 0, images = 0, arret = false, ecoutes = { vue: [], image: [] }, calme = 0;
+  var aDessiner = true, bouge = false, dernier = 0, images = 0, arret = false, ecoutes = { vue: [], image: [] }, calme = 0, suite = false;
   function demander() { aDessiner = true; }
   commandes.addEventListener("change", function () { aDessiner = true; bouge = true; calme = 0; });
   // Tourner à la main défait le point de vue choisi : son bouton ne reste pas allumé à tort. Un simple
@@ -293,18 +309,21 @@ export function creerScene(toile, o) {
     requestAnimationFrame(boucle);
     var enMouvement = false;
     if (mouvement) {
-      var u = Math.min(1, (maintenant - mouvement.debut) / mouvement.duree), m = mouvement;
+      var u = Math.max(0, Math.min(1, (maintenant - mouvement.debut) / mouvement.duree)), m = mouvement;
       m.pas(u, m); enMouvement = true; aDessiner = true;
       if (m.libre) commandes.update();
-      if (u >= 1 && mouvement === m) { mouvement = null; if (m.fin) m.fin(true); }
+      if (u >= 1 && mouvement === m) mouvement = null;
     } else commandes.update();
     if (bouge) { enMouvement = true; calme++; if (calme > 12) bouge = false; }
     if (!aDessiner) { if (!enMouvement && qualite.enCours !== 0) { appliquerQualite(0); aDessiner = true; } else return; }
     var dt = maintenant - dernier; dernier = maintenant;
-    if (enMouvement && dt < 400) {
-      if (dt > 42) { qualite.lent++; qualite.vite = 0; } else if (dt < 22) { qualite.vite++; qualite.lent = Math.max(0, qualite.lent - 1); }
+    // Le temps d'une image ne se juge qu'entre deux images d'un même mouvement : la première suit un
+    // repos, et son délai ne dit rien de l'appareil.
+    if (enMouvement && suite) {
+      if (dt > 42) qualite.lent++; else if (dt < 22) qualite.lent = Math.max(0, qualite.lent - 1);
       if (qualite.lent >= 5 && qualite.niveau < 3) { qualite.niveau++; qualite.lent = 0; }
     }
+    suite = enMouvement;
     appliquerQualite(enMouvement ? qualite.niveau : 0);
     aDessiner = false;
     if (etat.contactPerime) ombreDeContact();
@@ -312,24 +331,42 @@ export function creerScene(toile, o) {
     ecoutes.image.forEach(function (f) { f(); });
   }
 
-  // TOUCHER LA NOURRICE : le point touché est-il sur une pièce, à un doigt près ?
-  var sphere = new THREE.Sphere(), centre = new THREE.Vector3(), bord = new THREE.Vector3();
+  // TOUCHER LA NOURRICE : le point touché est-il sur une pièce, à un doigt près ? Chaque pièce est prise
+  // dans sa boîte, vue de l'appareil photo : huit coins projetés, leur contour, et la distance du doigt
+  // à ce contour. Une boule autour de la pièce aurait compté un collecteur d'un demi-mètre pour toute la vue.
+  var DOIGT = 18, coin = new THREE.Vector3();
+  function contour(pts) {   // l'enveloppe convexe de quelques points de l'écran, dans le sens direct
+    pts.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    function vire(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+    var bas = [], haut = [], i;
+    for (i = 0; i < pts.length; i++) { while (bas.length >= 2 && vire(bas[bas.length - 2], bas[bas.length - 1], pts[i]) <= 0) bas.pop(); bas.push(pts[i]); }
+    for (i = pts.length - 1; i >= 0; i--) { while (haut.length >= 2 && vire(haut[haut.length - 2], haut[haut.length - 1], pts[i]) <= 0) haut.pop(); haut.push(pts[i]); }
+    return bas.slice(0, -1).concat(haut.slice(0, -1));
+  }
+  function distanceAuContour(px, py, c) {   // 0 dedans, sinon la distance au bord le plus proche
+    var dehors = false, mini = Infinity;
+    for (var i = 0; i < c.length; i++) {
+      var a = c[i], b = c[(i + 1) % c.length], ex = b[0] - a[0], ey = b[1] - a[1];
+      if (ex * (py - a[1]) - ey * (px - a[0]) < 0) dehors = true;
+      var l = ex * ex + ey * ey, k = l ? Math.max(0, Math.min(1, ((px - a[0]) * ex + (py - a[1]) * ey) / l)) : 0;
+      mini = Math.min(mini, Math.hypot(px - a[0] - ex * k, py - a[1] - ey * k));
+    }
+    return dehors ? mini : 0;
+  }
   function touche(x, y) {
-    var rect = toile.getBoundingClientRect(), px = x - rect.left, py = y - rect.top, dessus = false;
+    var rect = toile.getBoundingClientRect(), px = x - rect.left, py = y - rect.top;
     camera.updateMatrixWorld();
-    etat.compo.pieces.forEach(function (p) {
-      if (dessus) return;
+    return etat.compo.pieces.some(function (p) {
       matrice(p, etat.t, T);
-      definitions[p.cle].couches.forEach(function (c) {
-        if (dessus) return;
-        sphere.copy(c.geometrie.boundingSphere).applyMatrix4(T); centre.copy(sphere.center).project(camera);
-        var cx = (centre.x + 1) / 2 * rect.width, cy = (1 - centre.y) / 2 * rect.height;
-        bord.copy(sphere.center).addScaledVector(new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0), sphere.radius).project(camera);
-        var r = Math.abs((bord.x + 1) / 2 * rect.width - cx);
-        if (Math.hypot(px - cx, py - cy) <= r + 22) dessus = true;
+      return definitions[p.cle].couches.some(function (c) {
+        var bb = c.geometrie.boundingBox, pts = [];
+        for (var i = 0; i < 8; i++) {
+          coin.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(T).project(camera);
+          pts.push([(coin.x + 1) / 2 * rect.width, (1 - coin.y) / 2 * rect.height]);
+        }
+        return distanceAuContour(px, py, contour(pts)) <= DOIGT;
       });
     });
-    return dessus;
   }
 
   // MESURER DANS LA SCÈNE : chaque bout de chaque pièce, relu dans la géométrie qu'on dessine et dans la
@@ -363,7 +400,7 @@ export function creerScene(toile, o) {
             var cols = etat.compo.colonnes.filter(function (c) { return c.parent === p.indice; }), cb = cols[b.branche], axb = cb.xMonte + (cb.xEclate - cb.xMonte) * etat.t;
             ecart = Math.hypot(v.x - axb, v.y);
           }
-          lignes.push({ piece: p.cle, bout: b.nom, colonne: p.colonne, ecart: ecart });
+          lignes.push({ piece: p.cle, indice: p.indice, bout: b.nom, colonne: p.colonne, ecart: ecart, x: v.x, z: v.z });
           if (ecart > pire) { pire = ecart; ou = p.cle + " " + b.nom; }
         });
       });
@@ -375,11 +412,11 @@ export function creerScene(toile, o) {
   taille(); requestAnimationFrame(boucle);
 
   return {
-    pret: pret, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, mesurer: mesurer, demander: demander,
+    pret: pret, poser: poser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, mesurer: mesurer, demander: demander,
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
-      return { t: etat.t, vue: etat.vue, ambiance: ambiance, images: images, niveau: qualite.enCours, densite: densite, triangles: tri, lots: etat.lots.length, pieces: etat.compo ? etat.compo.pieces.length : 0, enMouvement: !!mouvement, appels: rendu.info.render.calls };
+      return { t: etat.t, vue: etat.vue, ambiance: ambiance, images: images, niveau: qualite.enCours, densite: densite, triangles: tri, lots: etat.lots.length, pieces: etat.compo ? etat.compo.pieces.length : 0, enMouvement: !!mouvement, dureeEclate: etat.dureeEclate, appels: rendu.info.render.calls };
     },
     // Pour le banc de rendu et les contrôles : la scène, l'appareil photo, le rendu.
     interne: { scene: scene, camera: camera, rendu: rendu, commandes: commandes, ao: ao, lampe: lampe, sol: sol, planContact: planContact, composition: composition, etat: etat, cadrage: cadrage, placerCamera: placerCamera },
