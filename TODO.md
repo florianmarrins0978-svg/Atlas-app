@@ -1,5 +1,9 @@
 # Prochaines tâches
 
+## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
+
+Proposé : poser une vraie question avant le plan quand le piquage est sur un robinet (« Garder une sortie libre pour un tuyau d'arrosage ? »), au lieu de l'interrupteur « Double sortie sous le robinet », éteint d'office (`LePlanDuJardin.tsx`). Sa réponse : *« Non »*. Ne pas le reproposer.
+
 ## ⏳ UNE PLANCHE À REGARDER : LES NUMÉROS DE LA NOURRICE EN 3D (22 novembre 2026)
 
 `appli/arrosage-nourrice-3d-numeros.html`. Sa demande : remettre sur la 3D le numéro de la liste, comme sur le dessin d'avant, *« une pastille noire ou autre chose pour que ça soit joli ? »*. Trois habillages (A noire, B or, C au fil), deux moments (à l'éclaté, toujours), une ligne touchée allume ses numéros, et (sa demande du même soir) ses pièces restent en couleur pendant que les autres passent sous un voile gris pâle ; la planche n'a plus d'ombres (sa demande du même soir), l'appli garde les siennes ; au bout des colonnes, la flèche « Arrivée d'eau » et R1, R2, R3 dans la couleur du réseau (sa demande du même soir, devant l'ancien dessin). **Ce qui attend SA réponse** : A, B ou C, et quand. **Ce qui est su** : les numéros sortent de `vue.numeros()` (premier de chaque modèle dans l'ordre de la composition), identiques à `composerNourrice().ordre` sur 1, 2, 3, 4 et 6 voies ; de face sur 6 voies, les colonnes se cachent l'une l'autre et les numéros se serrent, de biais ils se lisent. **À coder s'il choisit** : la même surcouche dans `Nourrice3D.tsx`, et un contrôle qui confronte `numeros()` à `ordre` ; le voile descend dans `appli/nourrice-3d/vue.js` (un `choisir(cle)`), la planche passant par `scene.interne` faute de mieux ; et lui demander si les ombres partent aussi de l'appli et de la page des outils (une option de `creerScene`, pas une recherche dans la scène).
