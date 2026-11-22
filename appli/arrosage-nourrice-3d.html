@@ -119,14 +119,14 @@ if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElemen
 window.addEventListener("error", function () { refuser(REFUS.charge); }, true);
 window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge); });
 </script>
-<script src="arrosage-schema-calcul.js"></script>
+<script src="arrosage-catalogue.js"></script>
 <script type="module">
 import { creerScene } from "./nourrice-3d/scene.js";
 import { creerMatieres } from "./nourrice-3d/matieres.js";
 import { creerPieces } from "./nourrice-3d/pieces/index.js";
 import { composer } from "./nourrice-3d/composition.js";
 
-var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CALCUL.CATALOGUE;
+var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CATALOGUE;
 var etat = { voies: 3, goutte: 0, eclatee: false, vue: "biais" }, S = null, definitions = null;
 
 function composition() { return composer(CAT.ficheNourrice(etat.voies, etat.goutte), etat.voies, etat.goutte, definitions); }
