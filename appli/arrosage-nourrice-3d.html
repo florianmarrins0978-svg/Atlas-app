@@ -34,6 +34,7 @@
 <!-- La carte des imports passe AVANT tout chargement de module : posée après, le navigateur l'ignore. -->
 <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
 <link rel="modulepreload" href="vendor/three/three.module.min.js">
+<link rel="modulepreload" href="nourrice-3d/vue.js">
 <link rel="modulepreload" href="nourrice-3d/scene.js">
 <link rel="modulepreload" href="nourrice-3d/formes.js">
 <link rel="modulepreload" href="nourrice-3d/pieces/index.js">
@@ -121,26 +122,11 @@ window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge
 </script>
 <script src="arrosage-catalogue.js"></script>
 <script type="module">
-import { creerScene } from "./nourrice-3d/scene.js";
-import { creerMatieres } from "./nourrice-3d/matieres.js";
-import { creerPieces } from "./nourrice-3d/pieces/index.js";
-import { composer } from "./nourrice-3d/composition.js";
+import { ouvrirNourrice } from "./nourrice-3d/vue.js";
 
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CATALOGUE;
-var etat = { voies: 3, goutte: 0, eclatee: false, vue: "biais" }, S = null;
+var etat = { voies: 3, goutte: 0, eclatee: false, vue: "biais" }, V = null;
 
-// LES PIÈCES, À DEUX FINESSES. La fine sert tant que la nourrice reste sous le plafond de triangles ;
-// au-delà (quatre voies et plus, à peu près), chaque pièce est plus petite à l'écran et se construit plus
-// légère. Le second jeu ne se fabrique que le jour où une grande nourrice est demandée.
-var PLAFOND = 400000, LEGER = 0.6, jeux = {};
-function pieces(k) { return jeux[k] || (jeux[k] = creerPieces(k)); }
-function triangles(compo, defs) {
-  return compo.pieces.reduce(function (somme, p) { return somme + defs[p.cle].couches.reduce(function (s, c) { return s + c.geometrie.index.count / 3; }, 0); }, 0);
-}
-function composition() {
-  var fiche = CAT.ficheNourrice(etat.voies, etat.goutte), compo = composer(fiche, etat.voies, etat.goutte, pieces(1));
-  return { compo: compo, pieces: triangles(compo, pieces(1)) > PLAFOND ? pieces(LEGER) : pieces(1) };
-}
 function boutons() {
   document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === etat.voies)); });
   document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
@@ -152,64 +138,30 @@ function boutons() {
   $("titre").textContent = fiche.nom;
   $("sous-titre").textContent = etat.goutte ? "Dont " + etat.goutte + " en goutte-à-goutte." : "";
 }
-// La fiche change : les pièces se reposent, montées ou éclatées comme elles l'étaient, et le cadre suit.
-function reposer() {
-  var c = composition();
-  S.poser(c.compo, c.pieces);
-  if (etat.vue) S.regarder(etat.vue, false); else S.recadrer();
-  boutons();
-}
-// L'éclaté : les boutons disent tout de suite où l'on va, le mouvement suit.
-function eclater(oui) {
-  if (oui === etat.eclatee) return;
-  etat.eclatee = oui; boutons(); S.eclater(oui ? 1 : 0);
-}
+function reposer() { V.montrer(etat.voies, etat.goutte); boutons(); }
 
 document.addEventListener("click", function (e) {
-  if (!S) return;
+  if (!V) return;
   var b = e.target.closest("button"); if (!b) return;
   if (b.dataset.voies) { etat.voies = Number(b.dataset.voies); etat.goutte = Math.min(etat.goutte, etat.voies); reposer(); }
   else if (b.dataset.goutte) { etat.goutte = Number(b.dataset.goutte); reposer(); }
-  else if (b.dataset.montage) eclater(b.dataset.montage === "eclatee");
-  else if (b.dataset.vue) { etat.vue = b.dataset.vue; boutons(); S.regarder(etat.vue, true); }
+  else if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
+  else if (b.dataset.vue) V.regarder(b.dataset.vue);
 });
-
-// LE TOUCHER. Un doigt posé puis levé sans bouger (moins de 6 px, moins de 300 ms), sur la nourrice :
-// elle s'éclate, ou se remonte. Tout le reste (glisser, pincer, appuyer longtemps) appartient à la vue.
-var doigt = null, doigts = 0;
-toile.addEventListener("pointerdown", function (e) {
-  doigts++;
-  doigt = doigts === 1 && e.isPrimary ? { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() } : null;
-});
-toile.addEventListener("pointermove", function (e) {
-  if (doigt && e.pointerId === doigt.id && Math.hypot(e.clientX - doigt.x, e.clientY - doigt.y) >= 6) doigt = null;
-});
-function lever(e) {
-  doigts = Math.max(0, doigts - 1);
-  var d = doigt; if (!d || e.pointerId !== d.id) return;
-  doigt = null;
-  if (e.type !== "pointerup" || !S) return;
-  if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6 && performance.now() - d.t < 300 && S.touche(e.clientX, e.clientY)) eclater(!etat.eclatee);
-}
-toile.addEventListener("pointerup", lever); toile.addEventListener("pointercancel", lever);
-// Au clavier : Entrée ou Espace sur la vue font le même geste.
-toile.addEventListener("keydown", function (e) { if (S && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); eclater(!etat.eclatee); } });
 
 try {
-  var essai = document.createElement("canvas").getContext("webgl2");
-  if (!essai) throw new Error("WebGL 2 absent");
-  S = creerScene(toile, { matieres: creerMatieres(), hdri: "vendor/hdri/studio.exr" });
-  // Tourner la vue à la main défait le point de vue choisi : son bouton s'éteint.
-  S.surVue(function (vue) { etat.vue = vue; boutons(); });
+  V = ouvrirNourrice(toile, { ficheNourrice: CAT.ficheNourrice, hdri: "vendor/hdri/studio.exr" });
+  // Les boutons suivent l'état : un toucher sur la nourrice, ou la vue tournée à la main.
+  V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
   reposer();
   // La scène tourne : une phrase de refus posée par excès de prudence (un navigateur qui sait lire la
   // carte des imports sans savoir le dire) s'efface.
   NOURRICE_3D.prete = true; toile.style.visibility = "";
   var attente = $("attente"), premiere = false;
   attente.className = "attente"; attente.textContent = "Chargement";
-  S.surImage(function () { if (premiere) return; premiere = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
+  V.scene.surImage(function () { if (premiere) return; premiere = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
   // Pour les contrôles : l'état de la page, la mesure des axes dans la scène, la composition en cours.
-  window.__nourrice3d = { etat: etat, scene: S, erreurs: function () { return composition().compo.erreurs; } };
+  window.__nourrice3d = { etat: etat, scene: V.scene, erreurs: V.erreurs };
 } catch (erreur) {
   refuser(/WebGL/.test(String(erreur && erreur.message)) ? REFUS.webgl : REFUS.charge);
   throw erreur;

@@ -473,7 +473,6 @@ const RECITS = {
       await p.page.screenshot({ path: path.join(dossier, 'outils-plan-reseau.jpg'), type: 'jpeg', quality: 88, clip: { x: cadre.x, y: cadre.y, width: cadre.width, height: cadre.height } });
       console.log('outils-plan-reseau.jpg : ' + Math.round(cadre.width) + ' × ' + Math.round(cadre.height));
       console.log('CIBLE_COTE = ' + JSON.stringify(cadre.cible));
-      await p.photographier('outils-nourrice.jpg', '[data-atlas="nourrice-eclatee"] > div', { jusqua: ':scope > div', marge: 14 });
     },
     // La pièce supprimée, vue de près : l'image fixe posée sous le film du
     // réseau entier. Dans le téléphone de ce film, une pièce du plan fait

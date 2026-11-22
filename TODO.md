@@ -1,5 +1,12 @@
 # Prochaines tâches
 
+## LA NOURRICE EN 3D DANS L'APPLI (22 novembre 2026) : CE QUI RESTE
+
+- **Livrer** : la batterie entière (le lot touche `package.json`), sur son oui, puis `main`. Avant, regarder l'écran du plan (`npm run voir -- /paysage/arrosage`) sur un plan de 3 voies dont 1 en goutte-à-goutte, et l'essayer sur un iPhone.
+- **Une pièce supprimée ou changée ne se voit pas dans la 3D** : le dessin d'avant la grisait et la barrait (sa demande du 19 octobre 2026). La légende le dit encore. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer.
+- **Le film `outils-nourrice` du site** montre encore l'ancien dessin dans le téléphone : à retourner quand l'écran sera sur `main` (`node appli/scripts/film-outils.cjs appli/vente/images --film outils-nourrice`).
+- **Un glissé posé sur la 3D tourne la nourrice et ne fait pas défiler la page** : c'est le prix du geste qu'il a demandé. À surveiller sur son téléphone.
+
 ## ⏳ UNE PLANCHE À REGARDER : LA NOURRICE EN 3D RÉALISTE (22 novembre 2026)
 
 `appli/arrosage-nourrice-3d.html`, rien dans `src/`. Le retour : `docs/nourrice-3d-realiste.md`.
@@ -1017,9 +1024,8 @@ maintenant juste avant le film où l'on en change une pièce.
 (`film-outils.cjs --images`) : la carte des deux réseaux est montrée en deux
 cartes, la même image deux fois (chaque carte de l'appli y fait 1170 px de
 haut, 45 px les séparent : `.reseau`, et `CIBLE_COTE`, la place de « 20 m »
-dans la première) ; la nourrice est montrée sans la marge ni le filet de sa
-carte (`.nourrice-fig` : 948 px sur 1320, à 45 px du bord gauche et 51 px du
-haut). Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
+dans la première) . (La nourrice n'est plus une découpe depuis le 22 novembre : c'est la 3D.)
+Une découpe fausse se voit : un filet au bord, ou « 20 m » qui se pose
 à côté.
 
 **Pas regardé sur Safari**, comme le site : sur son iPhone, regarder d'abord
