@@ -273,16 +273,19 @@ regarder sur ton espace.
 
 ## Vérifié ici
 
-- La visite entière jouée au doigt à 390 × 664 (ton écran), 375 × 667,
-  320 × 568, 1024 × 768 et 1280 × 800 : à chacune des 75 étapes, le doigt mène
-  à la suivante, la cible n'est jamais sous la barre ni hors de l'écran, aucune
-  page ne déborde.
-- Les huit boutons à essayer (devis et facture) : chacun ouvre sa feuille, se
-  pose, et Retour ramène.
-- Les 19 rubriques des Réglages libres s'ouvrent et reviennent.
-- Faire défiler replie la barre, la toucher la déplie, le chevron la replie.
-- Chaque étape regardée en image à 390 points, et des étapes choisies sur
-  ordinateur.
+*Mis à jour le 22 novembre, sur la visite de 89 étapes.*
+
+- La visite entière jouée au doigt à 320 × 568, 390 × 664 (ton écran),
+  1024 × 768 et 1280 × 800 : à chacune des 89 étapes, le doigt mène à la
+  suivante, la cible n'est jamais sous la barre ni hors de l'écran, aucune page
+  ne déborde, et l'anneau est dans le plan de son bouton.
+- Les boutons à essayer du devis et de la facture, dont les quatre des travaux
+  en plus : chacun s'ouvre, se pose, montre ce qu'il a posé, et ramène.
+- 304 boutons des écrans d'essai touchés un par un : aucun muet.
+- Les 19 rubriques et les 38 portes des Réglages libres s'ouvrent et reviennent.
+- Le guide paraît en moins d'une demi-seconde à chaque étape (482 ms au pire),
+  processeur ralenti quatre fois.
+- Les nouveaux écrans regardés en image à 390 points, avec le guide.
 
 **Pas vérifiable ici : Safari sur ton iPhone.** Ce poste n'a que Chromium.
 Safari n'envoie un appui que sur ce qui se touche : la visite pose
@@ -292,8 +295,12 @@ lequel.
 
 ## Ce qui reste ouvert
 
-1. **La longueur** : 75 étapes, environ huit minutes.
-2. **Le bouton sur le site** : où poser la visite sur `appli/vente/`.
-3. **Le script qui refait la visite** n'a jamais été enregistré
-   (`docs/visite-guidee.md`). Un écran de l'appli qui change ne se reporte
-   donc pas tout seul dans la visite.
+1. **La longueur** : 89 étapes, une dizaine de minutes.
+2. **Le règlement reçu qui perd un champ** (plus haut) : la correction touche
+   l'argent, donc une batterie, sur ton « oui ».
+3. **Le bouton sur le site** : où poser la visite sur `appli/vente/`.
+4. **Le script qui refait la visite** n'a jamais été enregistré pour ses
+   écrans d'origine (`docs/visite-guidee.md`). Ceux ajoutés depuis le 21 se
+   refont, eux, par `appli/scripts/visite-guidee/`.
+5. **L'anneau sur ton iPhone** : corrigé sans pouvoir le voir ici. Une capture
+   si un anneau tombe encore à côté de son bouton.
