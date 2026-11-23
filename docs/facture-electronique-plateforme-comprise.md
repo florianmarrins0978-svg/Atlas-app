@@ -70,28 +70,45 @@ officielle des impôts.*
 
 ### Le message pour Super PDP
 
+*Réécrit le 23 novembre, à sa demande : l'objet, et la question de
+l'agrément de Cause en marque blanche (`docs/faire-agreer-cause.md`).*
+
+> **Objet : Intégration de SUPER PDP dans un logiciel pour artisans (marque grise)**
+>
 > Bonjour,
 >
-> Je développe Cause, un logiciel de gestion pour artisans (devis, chantiers,
-> factures). Je souhaite intégrer SUPER PDP en marque grise : chaque artisan
+> Je suis artisan et je développe Cause, un logiciel de gestion pour artisans
+> (devis, chantiers, factures). Je souhaite proposer à mes utilisateurs la
+> facture électronique avec SUPER PDP, en marque grise : chaque artisan
 > ouvrirait son compte SUPER PDP depuis Cause par votre flux OAuth, et Cause
 > paierait le service au tarif de gros.
 >
-> Cause fabrique déjà des Factur-X EN 16931 et parle l'API AFNOR XP Z12-013
-> Flow 1.3.0.
+> Côté technique, Cause fabrique déjà des Factur-X au profil EN 16931 et parle
+> l'API AFNOR XP Z12-013 Flow 1.3.0, que j'ai vue dans votre documentation.
+>
+> J'aurais quelques questions :
 >
 > 1. Pouvez-vous m'ouvrir un accès sandbox et enregistrer une application
->    OAuth ?
-> 2. Le tarif de gros est-il celui de votre page Tarifs ? La vérification à
->    2 € HT est-elle facturée à Cause ou à l'artisan ?
-> 3. Quel contrat signons-nous, et qu'accepte l'artisan de son côté ?
-> 4. Les factures aux particuliers déposées par l'API alimentent-elles bien
->    l'e-reporting de l'artisan ?
+>    OAuth pour Cause ?
+> 2. Le tarif de gros est-il celui de votre page Tarifs (0,01 € HT par facture
+>    jusqu'à 10 000 par mois) ? La vérification KYC/KYB à 2 € HT est-elle
+>    facturée à Cause ou à l'artisan ?
+> 3. Quel contrat signons-nous ensemble, et quelles conditions l'artisan
+>    accepte-t-il de son côté ?
+> 4. Les factures aux particuliers déposées par l'API (processingRule B2C)
+>    alimentent-elles bien l'e-reporting de l'artisan ?
 > 5. L'artisan reçoit-il ses factures fournisseurs sur ce même compte, et
->    Cause peut-il les lire ?
-> 6. À quelles conditions proposez-vous la marque blanche ?
+>    Cause peut-il les lire par l'API ?
+> 6. À quelles conditions proposez-vous la marque blanche ? Et accompagnez-vous
+>    un éditeur qui voudrait, plus tard, demander sa propre immatriculation en
+>    s'appuyant sur votre plateforme ?
 >
-> Merci.
+> Je suis disponible pour un appel si c'est plus simple.
+>
+> Merci d'avance,
+>
+> [Prénom Nom]
+> [Téléphone]
 
 ### Le message pour Iopole
 
