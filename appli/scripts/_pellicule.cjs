@@ -3,7 +3,7 @@
 
    Une composition est une page dont tout l'état est une fonction du temps :
    window.poser(t). On la photographie image par image, et l'on en tire les
-   quatre fichiers qu'une scène de vente/cause-2.html attend (sa fonction
+   quatre fichiers qu'une scène de vente/cause-2-visite.html attend (sa fonction
    bobine()) : le film en .mp4 et en .webm, sa première image (-debut.jpg),
    montrée dessous avant qu'il parte, et sa dernière (-fin.jpg), qui reste
    quand il a fini.

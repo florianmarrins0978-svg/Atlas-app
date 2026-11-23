@@ -675,7 +675,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // pour cette marge : la page est servie ici avec 34 px, la valeur d'un
   // iPhone, sans quoi le contrôle ne verrait jamais le défaut.
   //
-  // `cause-2.html` (17 novembre 2026) reprend ce bouton et ces films dans une
+  // `cause-2-visite.html` (17 novembre 2026) reprend ce bouton et ces films dans une
   // page au mouvement refait : elle passe les deux mêmes contrôles, sans quoi
   // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
   // Chaque page nomme ses films : celui de l'équipe a été remonté pour la
@@ -695,7 +695,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   const FILMS_EN_MOUVEMENT = ['micro', 'envoi-signe', 'mois', 'equipe-fluide', 'fiche'];
   const PAGES_DE_VENTE = [
     ['chapitres-6.html', 'vente', FILMS, false],
-    ['cause-2.html', 'vente, en mouvement', FILMS_EN_MOUVEMENT, true],
+    ['cause-2-visite.html', 'vente, en mouvement', FILMS_EN_MOUVEMENT, true],
   ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -723,7 +723,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // Sa demande du 20 novembre 2026 : « qu'on puisse cliquer sur l'abonnement
   // de 6 € pour les outils, et que ça soit une porte » vers une page qui les
   // montre. La carte « Les outils de paysage », sous les trois formules de
-  // cause-2.html, s'ouvre donc d'un doigt posé n'importe où sur elle, pas
+  // cause-2-visite.html, s'ouvre donc d'un doigt posé n'importe où sur elle, pas
   // seulement sur son bouton : on la touche au milieu de sa liste. Puis la
   // page derrière la porte : chacune de ses images est là (leurs noms ne se
   // composent pas, mais une image absente laisserait un téléphone vide), et
@@ -736,7 +736,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
     });
     const page = await cPo.newPage();
-    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${B}/vente/cause-2-visite.html`, { waitUntil: 'domcontentloaded' });
     const carte = page.locator('.option-outils');
     await carte.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1600);
@@ -941,7 +941,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   {
     const cOu = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
     const page = await cOu.newPage();
-    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${B}/vente/cause-2-visite.html`, { waitUntil: 'networkidle' });
     const film = await page.evaluate(async () => {
       const source = document.querySelector('#scene-creer video').currentSrc;
       if (!source) return { erreur: 'le film de l\'ouverture n\'a pas de source lisible' };
@@ -1002,7 +1002,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     // de pixels. Défiler trop tôt mettait la figure hors de l'écran, et le
     // film ne partait pas : c'est ce qui a fait échouer la publication du
     // 19 novembre 2026, sur une machine où elles arrivaient plus tard qu'ici.
-    await page.goto(`${B}/vente/cause-2.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${B}/vente/cause-2-visite.html`, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     const pageFiche = await page.evaluate(() => {
       const r = document.getElementById('scene-fiche').getBoundingClientRect();
@@ -1036,7 +1036,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cFe.close();
   }
 
-  // ── Le site, c'est cause-2.html : il ne renvoie vers aucune version passée ─
+  // ── Le site, c'est cause-2-visite.html : il ne renvoie vers aucune version passée ─
   //
   // Sa décision du 22 novembre 2026, à « quelle page devient le site ? » :
   // « c'est la dernière page qu'on a faite en date, celle que tu as ». Ce
@@ -1049,7 +1049,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   {
     const PASSEE = /^(\.\/|index\.html|cause\.html|chapitres(-\d+)?\.html|defilement\.html)([#?].*)?$/;
     const cSi = await browser.newContext({ viewport: { width: 390, height: 664 }, hasTouch: true });
-    for (const fichier of ['cause-2.html', 'outils.html', 'mentions-legales-cause.html']) {
+    for (const fichier of ['cause-2-visite.html', 'outils.html', 'mentions-legales-cause.html']) {
       const page = await cSi.newPage();
       await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
       const liens = await page.evaluate(() => [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href')));

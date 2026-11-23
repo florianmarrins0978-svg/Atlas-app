@@ -1164,18 +1164,104 @@ seulement de la première. **À faire, à part, sur son « oui »** (outillage,
 niveau 2) : que le flux attende de voir son artefact avant de déployer, ou
 redéploie une fois de lui-même.
 
-## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2.html` (sa décision du 22 novembre 2026) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
+## ✅ LA VISITE GUIDÉE EST SUR LE SITE, À SES TROIS PLACES (posée le 23 novembre 2026)
+
+Sa phrase du 23, devant l'adresse du site : *« C'est pas le bon. On est censé
+avoir la visite guidée installée sur le site à 3 endroits. »* Lue comme son
+oui à la planche du 22 : la carte (le petit téléphone qui gigote « 1, 2, 3,
+il s'arrête ») sous l'ouverture **et** sous l'option des outils à 6 €, et la
+bande « Voyez l'appli en vrai. » avant les prix.
+
+**Puis, le même matin, l'adresse du site** : *« Le lien que je t'ai envoyé est
+le site final. Le seul qu'on garde »*, et le lien était
+`vente/cause-2-visite.html`. Le site vit donc dans
+**`appli/vente/cause-2-visite.html`**, et une retouche se fait là, nulle part
+ailleurs. `cause-2.html` n'est plus qu'un renvoi vers lui (l'ancre suit) : son
+iPhone et les pages d'avant y menaient. Le script de la planche est effacé.
+Payé en chemin : la planche avait d'abord été effacée après report, et son lien
+serait tombé en erreur au déploiement suivant.
+
+**Reste une question, posée le 23** : la bande sert-elle encore, avec deux
+cartes ? Sans réponse, elle reste.
+
+## ⏳ CHOISIR SA FORMULE SUR LE SITE : la planche attend son « oui » (23 novembre 2026)
+
+Sa demande du 23 : *« il faudrait qu'il sélectionne. Il sélectionne la formule
+artisan, par exemple, plus il choisit la formule à 6 euros. Et ensuite, il a un
+prélèvement de 0 euros, il fait ses 15 jours d'essai. Et à la fin, s'il ne
+décide pas de quitter l'appli, l'abonnement démarre. »*
+
+`appli/vente/cause-2-formules.html`, fabriquée depuis le vrai site par
+`python3 appli/scripts/planche-formules-site.py appli/vente/cause-2-visite.html appli/vente/cause-2-formules.html` :
+les cartes se choisissent, les outils s'ajoutent d'un interrupteur, « Votre
+choix » donne le total et 0 € aujourd'hui, et une feuille montre les 15 jours,
+la place de Stripe (aucun champ : une page publique ne recueille aucun numéro),
+puis le départ. Les phrases « Sans carte bancaire » et la réponse « Que se
+passe-t-il après les 15 jours ? » changent de mots, pas de place. Pendant
+l'essai, tout reste ouvert (lu ainsi par moi : c'est l'article 14.2 et
+`FORMULE_DE_LESSAI`).
+
+**Tranché le 23 novembre : l'essai reste à 15 jours.** Il avait proposé 7,
+puis : *« Ok on garde 15 jours »*. Raison donnée : un artisan doit voir un devis
+accepté puis une facture, ce qui tient rarement en 7 jours, et avec la carte
+enregistrée dès l'inscription, un essai court se lit comme un piège.
+
+**Pas encore tranché : A ou B.** A, la carte à l'inscription et l'abonnement qui
+démarre seul (la planche) ; B, la lecture seule à la fin et le paiement pour
+débloquer (ce que disent l'appli et l'article 14.2 aujourd'hui).
+
+**Ce que disent les chiffres, cherchés le 23 novembre à sa demande** (*« va
+chercher des stats, je t'autorise n'importe quel site »*). Les pages elles-mêmes
+sont refusées par le réseau de ce poste : ce qui suit vient des résumés de
+recherche, pas des rapports lus en entier.
+
+| pour 1 000 visiteurs | A, carte demandée | B, sans carte |
+|---|---|---|
+| essais commencés | 35 | environ 47 (déduit par moi de la moyenne, 45) |
+| payants à 6 mois | 10,5 (30 %) | environ 2 (4 à 6 %, « très bien » à 10 à 15 %) |
+| encore là après 120 jours (Totango, étude ancienne) | 60 % des payants | 80 % des payants |
+
+Source principale : le rapport ChartMogul de janvier 2026, 200 logiciels
+vendus aux entreprises, avec ProductLed et Growth Unhinged ; il prévient
+lui-même que la carte peut faire baisser le total des payants. Même après la
+perte de rétention, A garde environ quatre fois plus de payants par visiteur.
+Limites : des logiciels surtout américains et technophiles, aucune donnée sur
+des artisans peu à l'aise avec le téléphone, et une corrélation (ceux qui
+demandent la carte ne sont pas tirés au hasard).
+
+**Mes avis successifs, écrits pour ne pas les perdre** : A (pour la commission
+d'Apple, raison qui ne jouait pas), puis B (son public, les appels, rien à
+réécrire), puis **A de nouveau sur les chiffres** : l'écart est trop grand pour
+que la frilosité de son public le comble, et la version 4 des conditions
+générales est due de toute façon pour l'option à 6 €, donc l'article 14.2 s'y
+réécrit sans coût de plus. Le rappel d'avant la fin peut partir de Stripe, sans
+le nom de domaine (à vérifier dans ses réglages, confiance moyenne).
+
+**Ce que son oui déclenchera, et qui n'est pas qu'un report de planche :**
+
+| | |
+|---|---|
+| les conditions générales | l'article 14.2 en vigueur dit l'inverse : essai *« sans saisie de moyen de paiement »*, et à son terme *« aucune reconduction n'intervient d'elle-même »*. Une version nouvelle, acceptée de nouveau par chaque compte, et relue par le juriste (`docs/A-FAIRE.md` §2) |
+| l'appli | l'essai naît aujourd'hui hors de Stripe (`src/lib/abonnements.ts`, `FORMULE_DE_LESSAI`) : il faudra un abonnement Stripe avec essai et moyen de paiement dès l'inscription, et l'option à 6 €, toujours pas codée (planche du 19 novembre) |
+| le message d'avant la fin | la frise promet « Un message vous prévient » : à tenir par Stripe ou par un e-mail d'Atlas, qui attend le nom de domaine (`docs/A-FAIRE.md` §16) |
+| le reste du site | `outils.html` et la fiche du mode d'emploi (`src/lib/fiches-mode-emploi/fonctionnement.ts`) disent encore « sans carte bancaire » |
+
+À son oui sur la planche : reporter dans `cause-2-visite.html`, effacer la
+planche et son script. Le code de l'appli et les conditions générales sont
+des lots à part.
+
+## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2-visite.html` (sa décision du 22 novembre 2026, son adresse du 23) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 
 **Sa décision du 22 novembre 2026.** À ma question « quelle page devient le
 site ? » : *« Bah c'est la dernière page qu'on a faite en date là. Bah c'est
 celle que tu as. »* Il venait de la regarder sur son iPhone : *« Oui, l'adresse
 marche sur mon iPhone. Ça va jusqu'à Le Maire, le retour. Tout est bon. »* Le
 même jour, dans une autre session, il l'appelle lui-même « le site Cause 2 »
-(la visite guidée à y poser, `appli/vente/cause-2-visite.html`).
+(la visite guidée, posée dessus le 23 novembre à trois places).
 
 | | |
 |---|---|
-| la référence du site | `appli/vente/cause-2.html`, et elle seule : une retouche du site se fait là |
+| la référence du site | `appli/vente/cause-2-visite.html` depuis le 23 novembre (*« le seul qu'on garde »*), et elle seule : une retouche du site se fait là. `cause-2.html` y renvoie |
 | `cause.html`, `chapitres-6.html` | s'arrêtent là, plus rien ne s'y reporte (ni l'ordre des métiers, ni les films). **Conséquence tirée par moi**, il n'a parlé que de la page qui reste. `cause.html` reste en ligne telle quelle : c'est la maquette faite pour la demande de l'Afnic, et son en-tête (« chapitres-6 reste la référence ») n'est plus vrai |
 | les pages que le site ouvre | `outils.html` et `mentions-legales-cause.html` y ramènent. « Retour au site », dans les mentions, menait encore à `cause.html` : corrigé le 22, et `appli/tests/e2e.js` (« le site retenu ») refuse tout lien du site vers une version passée |
 | son iPhone | vu par lui le 22 novembre, la fiche jusqu'au retour : « Tout est bon. » C'était le contrôle Safari qui manquait. Il n'a pas dit quelles autres scènes il a regardées |

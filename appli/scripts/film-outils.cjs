@@ -23,7 +23,7 @@
    retours le refusent). Un geste est un vrai appui de la souris, enfoncé
    puis relâché : c'est l'appli qui répond, comme sous le doigt.
 
-   LA CAMÉRA, comme dans les films de cause-2.html. Sa remarque du
+   LA CAMÉRA, comme dans les films de cause-2-visite.html. Sa remarque du
    20 novembre au soir, devant des films qui montraient l'écran entier en
    petit : « on voit rien […] sur le site internet, regarde comment c'est
    fait. C'est fluide, c'est léger. Toi, tu fonces. » Chaque film s'approche
@@ -64,7 +64,7 @@ const { ouvrirBobine } = require('./_pellicule.cjs');
 
 // L'écran des démonstrations sur le site (390 × 664), photographié à trois
 // pixels pour un : les images fixes font 1170 × 1992, comme celles des
-// téléphones de cause-2.html, et le film 780 × 1328, comme son film de
+// téléphones de cause-2-visite.html, et le film 780 × 1328, comme son film de
 // l'envoi signé.
 const ECRAN = { l: 390, h: 664 }, ECHELLE = 3, LOUPE = 2;
 const FILM = { l: 780, h: 1328 };
@@ -426,7 +426,7 @@ const RACCORD_DE_LA_VOISINE = PLAN_DES_PIECES + ' [data-cle="r0:t4:raccord"]';
 // Le rapprochement de la caméra. Les cartes de l'appli prennent toute la
 // largeur de l'écran, à 22 pixels des bords : au-delà de 1,12, un mot sur
 // deux se coupait au bord du cadre. C'est aussi ce que font les films de
-// cause-2.html, qui ne s'approchent que d'un dixième.
+// cause-2-visite.html, qui ne s'approchent que d'un dixième.
 const ZOOM = 1.12;
 // La fiche de diagnostic soignée, sur sa planche : l'écran de l'appli seul,
 // sans le titre ni les notes de la planche.

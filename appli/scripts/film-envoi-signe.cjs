@@ -1,6 +1,6 @@
 /* =======================================================================
    Le film « le client signe son devis » du site de vente (chapitre Envoyez
-   de vente/cause-2.html).
+   de vente/cause-2-visite.html).
 
    Sa demande du 18 novembre 2026 : « quand il clique sur accepter le devis,
    il y a le petit truc pour signer électroniquement qui apparaît. Il signe

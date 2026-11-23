@@ -1,6 +1,6 @@
 /* =======================================================================
    LE MONTAGE DU FILM DE LA FICHE D'INTERVENTION (site de vente, planche
-   vente/cause-2.html, chapitre Planifiez) : du trajet au retour du soir.
+   vente/cause-2-visite.html, chapitre Planifiez) : du trajet au retour du soir.
 
    Ce script ne se charge pas seul : film-fiche.cjs l'injecte dans
    rushes/fiche/etats.html, puis photographie le résultat image par image.

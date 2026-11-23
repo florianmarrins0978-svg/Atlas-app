@@ -339,10 +339,9 @@ lequel.
    ligne telle qu'elle est en base. Vu rouge avant (en base, et au navigateur
    avec les trois champs changés sans attendre), vert après ; batterie complète
    au vert, avec la nourrice 3D de l'autre session, et c'est sur `main`.
-3. **Le bouton sur le site** : la planche porte tes choix
-   (`appli/vente/cause-2-visite.html`) : la carte dans l'ouverture et sous
-   l'option des outils, son téléphone qui gigote, et la bande avant les prix.
-   Rien n'est posé sur le vrai site tant que tu n'as pas dit oui.
+3. ~~**Le bouton sur le site**~~ : posé sur le vrai site le 23 novembre
+   (`appli/vente/cause-2-visite.html`) : la carte dans l'ouverture et sous l'option
+   des outils, son téléphone qui gigote, et la bande avant les prix.
 4. **Le script qui refait la visite** n'a jamais été enregistré pour ses
    écrans d'origine (`docs/visite-guidee.md`). Ceux ajoutés depuis le 21 se
    refont, eux, par `appli/scripts/visite-guidee/`.
