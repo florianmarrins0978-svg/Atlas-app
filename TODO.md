@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D (23 novembre 2026)
+
+Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
+en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
+`appli/arrosage-nourrice-3d-gag.html`, la vraie nourrice, « Aujourd'hui » et « Proposé ». Le mot
+entier sous la première voie, GAG sous les suivantes ; un mot qui en couvrirait un autre se décale sur
+le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd'hui, aucune proposée.
+**À lui de choisir**, puis porter les deux changements dans `appli/nourrice-3d/reperes.js` (la
+planche en garde la copie, prête à recopier), que l'écran du plan emploie.
+
 ## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
 
 Sa capture, sur « Changer de formule » : *« Passer à Entreprise flottant, il
@@ -3058,6 +3068,51 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      sur son espace une fois l'adresse connue, puis un premier dépôt réel sur
      le compte d'essai, jamais sur son vrai compte (une facture transmise ne
      s'efface pas) ;
+   - **appris le 23 novembre 2026, et cela change la ligne du dessus** :
+     poser les deux variables ne suffira PAS. Notre connecteur
+     (`api-commune.ts`) parle l'API commune AFNOR (`/v1/healthcheck`,
+     `/v1/flows`) ; aucune source trouvée ne dit que Pennylane l'expose.
+     Ce que Pennylane documente, c'est SA propre API v2 :
+     `POST https://app.pennylane.com/api/external/v2/customer_invoices/e_invoices/imports`
+     (Factur-X en multipart, champ `file`, `invoice_options` facultatif,
+     portée `customer_invoices:all`), ouverte le 13 mars 2026 ; l'ancienne
+     `/e_invoices/imports` est dépréciée. Il faut donc un connecteur
+     Pennylane à côté de l'API commune, branché dans `catalogue.ts`
+     (niveau 3). **Inconnu à lever sur le compte d'essai** : une discussion
+     de leur forum dit qu'une facture importée ainsi peut rester
+     « informative », sans partir par la plateforme agréée. Sources
+     tierces et changelog lus par recherche web ; les pages de Pennylane
+     elles-mêmes sont refusées par le réseau d'ici ;
+   - **côté lui, vu sur sa capture du 23 novembre** : « Connectivité » porte
+     un cadenas dans ses Paramètres Pennylane, donc sa formule n'ouvre pas
+     l'API aujourd'hui. **Confirmé sur sa capture de Gestion d'abonnement** :
+     « API et intégrations avec vos outils du quotidien » figure dans la
+     formule **Essentiel** (Starter, une deuxième, Essentiel, Premium ; toutes
+     « sans engagement » ; prix non visibles sur la capture). Essentiel pris sur
+     sa vraie entreprise ne donne pas pour autant où éprouver : un dépôt y
+     part pour de bon, d'où l'environnement d'essai demandé à Pennylane.
+     **Sa réaction, même soir** : *« les utilisateurs vont devoir payer 24 €
+     par mois plus mon abonnement »*. Vrai pour un artisan sur Pennylane avec
+     le jeton collé (2 A). Trois voies posées, **rien de tranché** : garder
+     2 A ; l'application partenaire (2 B, à demander à Pennylane si elle
+     marche sur Starter, l'onglet Intégrations y étant visible) ; une
+     plateforme agréée en marque blanche dans Cause, payée par Cause et
+     comprise dans son prix (revient en partie sur la décision du
+     26 septembre, devis à demander). **Ne pas coder le connecteur par jeton
+     avant ses réponses** : il ferait payer Essentiel à chaque artisan ;
+   - **TRANCHÉ LE SOIR MÊME : C** (*« il faut faire C »*). `ARCHITECTURE.md`
+     §610, `docs/facture-electronique-plateforme-comprise.md`. Retenue sous
+     réserve de leur réponse : **Super PDP** (norme AFNOR 1.3.0, prix
+     publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
+     et à Iopole (messages prêts dans le document). **À nous, à son « go »
+     avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ; Seconde capture, même soir : la
+     page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
+     accès accordés aux applications tierces », vide) et **aucun onglet
+     Développeurs**, donc pas de jeton possible sur sa formule. Cette page
+     d'accès accordés prouve que Pennylane relie des applications tierces
+     par autorisation (le choix 2 B) : à garder en tête, puisque le jeton
+     collé (2 A) exige de CHAQUE artisan une formule qui ouvre Développeurs ;
    - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
      particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
      joué à la main le 5 novembre).
