@@ -1749,6 +1749,11 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu { padding-bottom: 0px; }
 </style><style>
 html,body{overflow-x:clip}
 .visite-ecran[hidden]{display:none!important}
+/* Un champ figé ne prend jamais la main : touché sur l'iPhone, un texte de moins
+   de 16 points fait zoomer la page, qui se balade ensuite de droite à gauche
+   (sa remarque du 22 novembre, sur les Réglages). Le doigt touche alors ce qui
+   l'entoure, et c'est cela que le guide reconnaît (`el.contains(c)`). */
+.visite-ecran :is(input,textarea,select,[contenteditable]){pointer-events:none}
 :root{--v-encre:#1c1c1a;--v-creme:#f5f3ee;--v-or:#B98B47}
 /* Le guide de la visite. Le cadre doré qui bat veut dire « touchez ici » ; la
    lumière sans cadre veut dire « regardez ici ». Le guide ne cache jamais rien
@@ -1995,6 +2000,8 @@ html,body{overflow-x:clip}
   // visite, et aucun champ n'ouvre le clavier du téléphone sous le guide.
   document.addEventListener("submit", (e) => e.preventDefault(), true);
   document.querySelectorAll(".visite-ecran input, .visite-ecran textarea").forEach((c) => { c.readOnly = true; });
+  document.querySelectorAll(".visite-ecran :is(input, textarea, select, [contenteditable])").forEach((c) => { c.tabIndex = -1; });
+  document.querySelectorAll('.visite-ecran [contenteditable="true"]').forEach((c) => { c.contentEditable = "false"; });
   // Une même page de PDF, figée sur plusieurs écrans de l'aperçu, n'est écrite
   // qu'une fois dans le fichier (`composer-neufs.mjs`) : les autres la reprennent ici.
   document.querySelectorAll("img[data-visite-meme]").forEach((i) => { i.src = document.querySelector(`img[data-visite-image="${i.dataset.visiteMeme}"]`).src; });

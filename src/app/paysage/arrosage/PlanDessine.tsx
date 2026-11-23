@@ -1,5 +1,5 @@
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
-import type { Dessin } from "@/lib/arrosage/plan-dessine";
+import { EPAISSEURS, LOSANGE, REGARD, type Dessin } from "@/lib/arrosage/plan-dessine";
 
 type Segment = Dessin["liaisons"][number];
 
@@ -38,14 +38,6 @@ type Segment = Dessin["liaisons"][number];
 
 /** La tranchée : un voile d'encre, jamais une terre écrite en clair. Elle ne peut se confondre avec aucune couleur de réseau. */
 const TRANCHEE = voile(colors.ink, 0.22);
-
-const traits = {
-  contour: 0.26,
-  ligne: 0.26,
-  /** L'antenne Ø16 : plus fine que la ligne Ø25, comme sur le chantier. */
-  antenne: 0.13,
-  tranchee: 0.95,
-};
 
 export default function PlanDessine({
   dessin,
@@ -100,14 +92,14 @@ export default function PlanDessine({
           la terre, large ; les tuyaux qui y passent sont des traits fins.
           La dessiner par-dessus masquerait les lignes qu'elle porte. */}
       {dessin.tranchee.map((s, i) => (
-        <line key={`s${i}`} x1={s.de.x} y1={s.de.y} x2={s.a.x} y2={s.a.y} stroke={TRANCHEE} strokeWidth={traits.tranchee} strokeLinecap="round" data-atlas="tranchee" />
+        <line key={`s${i}`} x1={s.de.x} y1={s.de.y} x2={s.a.x} y2={s.a.y} stroke={TRANCHEE} strokeWidth={EPAISSEURS.tranchee} strokeLinecap="round" data-atlas="tranchee" />
       ))}
 
       {dessin.contours.map((c, i) => (
-        <polygon key={`b${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={traits.contour} />
+        <polygon key={`b${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={EPAISSEURS.contour} />
       ))}
       {dessin.trous.map((c, i) => (
-        <polygon key={`bt${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={traits.contour} />
+        <polygon key={`bt${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={EPAISSEURS.contour} />
       ))}
 
       {/* Les cotes, mesurées sur le trait — jamais recopiées de la saisie. */}
@@ -120,7 +112,7 @@ export default function PlanDessine({
       {/* Le cheminement hors pelouse : en pointillé, parce qu'il n'est PAS
           mesuré. Un trait plein ferait croire à un métré. */}
       {pointilles.map((s, i) => (
-        <line key={`l${i}`} x1={s.de.x} y1={s.de.y} x2={s.a.x} y2={s.a.y} stroke={colors.ink} strokeWidth={0.2} strokeDasharray="0.5 0.4" data-atlas="liaison" />
+        <line key={`l${i}`} x1={s.de.x} y1={s.de.y} x2={s.a.x} y2={s.a.y} stroke={colors.ink} strokeWidth={EPAISSEURS.liaison} strokeDasharray="0.5 0.4" data-atlas="liaison" />
       ))}
 
       {/* Les autres réseaux, en pâle : on voit par où ils passent, sans les confondre. */}
@@ -169,18 +161,18 @@ export default function PlanDessine({
         .map((r) => (
           <g key={`r${r.numero}`} data-atlas="reseau" data-reseau={r.numero}>
             {r.traits.map((t, i) => (
-              <line key={i} x1={arrondi(t.de.x)} y1={arrondi(t.de.y)} x2={arrondi(t.a.x)} y2={arrondi(t.a.y)} stroke={r.couleur} strokeWidth={traits.ligne} strokeLinecap="round" />
+              <line key={i} x1={arrondi(t.de.x)} y1={arrondi(t.de.y)} x2={arrondi(t.a.x)} y2={arrondi(t.a.y)} stroke={r.couleur} strokeWidth={EPAISSEURS.ligne} strokeLinecap="round" />
             ))}
             {/* **L'antenne Ø16, du pied sur la ligne à la tête** — sa règle du
                 11 septembre : le Ø25 passe, l'antenne va chercher l'arroseur.
                 Plus fine que la ligne, pour qu'on voie laquelle se creuse. */}
             {r.antennes.map((a, i) => (
-              <line key={`a${i}`} x1={arrondi(a.de.x)} y1={arrondi(a.de.y)} x2={arrondi(a.a.x)} y2={arrondi(a.a.y)} stroke={r.couleur} strokeWidth={traits.antenne} strokeLinecap="round" data-atlas="antenne" />
+              <line key={`a${i}`} x1={arrondi(a.de.x)} y1={arrondi(a.de.y)} x2={arrondi(a.a.x)} y2={arrondi(a.a.y)} stroke={r.couleur} strokeWidth={EPAISSEURS.antenne} strokeLinecap="round" data-atlas="antenne" />
             ))}
             {/* Le losange n'arrose rien : la ligne s'y sépare en deux. À côté
                 d'un arroseur, c'est le té égal qui s'ajoute à son té taraudé. */}
             {r.jonctions.map((p, i) => (
-              <rect key={`j${i}`} x={p.x - 0.38} y={p.y - 0.38} width={0.76} height={0.76} transform={`rotate(45 ${p.x} ${p.y})`} fill={colors.card} stroke={r.couleur} strokeWidth={0.26} data-piece="jonction" />
+              <rect key={`j${i}`} x={p.x - LOSANGE.demi} y={p.y - LOSANGE.demi} width={2 * LOSANGE.demi} height={2 * LOSANGE.demi} transform={`rotate(45 ${p.x} ${p.y})`} fill={colors.card} stroke={r.couleur} strokeWidth={LOSANGE.trait} data-piece="jonction" />
             ))}
             {/* **Deux têtes au même point se dessinent côte à côte** — sa règle
                 du 11 septembre : le point vrai est `x, y`, le symbole s'écarte
@@ -231,7 +223,7 @@ export default function PlanDessine({
             <path d={croix(dessin.nourrice.x, dessin.nourrice.y)} stroke={colors.card} strokeWidth={0.16} strokeLinecap="round" fill="none" />
           </>
         ) : (
-          <rect x={dessin.nourrice.x - 0.75} y={dessin.nourrice.y - 1.4} width={1.5} height={2.8} rx={0.3} fill={colors.card} stroke={colors.ink} strokeWidth={0.22} />
+          <rect x={dessin.nourrice.x - REGARD.demiLargeur} y={dessin.nourrice.y - REGARD.demiHauteur} width={2 * REGARD.demiLargeur} height={2 * REGARD.demiHauteur} rx={0.3} fill={colors.card} stroke={colors.ink} strokeWidth={REGARD.trait} />
         )}
         <text x={dessin.etiquetteNourrice.x} y={dessin.etiquetteNourrice.y} textAnchor={dessin.etiquetteNourrice.ancre} fontSize={0.95} fontFamily={font.display} fill={colors.ink}>
           {piquage === "robinet" ? "robinet" : "nourrice"}

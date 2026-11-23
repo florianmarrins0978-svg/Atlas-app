@@ -4,7 +4,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Les numéros de la nourrice</title>
 <!--
-  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 22 novembre 2026, devant la nourrice en 3D de
+  PLANCHE CODÉE LE 22 NOVEMBRE 2026, sur son choix du soir : « Tu peux coder la A noire à l'éclaté
+  seulement », la flèche et R1, R2, R3 avec. Les repères vivent dans nourrice-3d/reperes.js, que l'écran du
+  plan emploie aussi (Nourrice3D.tsx) ; B, C et « Toujours » restent ici, à titre de comparaison. Dans
+  l'appli, une ligne de la liste ouvre déjà Changer et Supprimer : on y voit les pièces d'une ligne par
+  « Voir », le geste qu'il a demandé d'ajouter à cette feuille. Les ombres sont retirées partout (sa
+  réponse : « oui, partout »).
+
+  Sa demande du 22 novembre 2026, devant la nourrice en 3D de
   l'écran du plan : « il y a encore les numéros pour montrer à quoi ça correspond, comme il y avait avant,
   pour les pièces juste en dessous ? », puis « remets-les. Est-ce qu'on met une pastille noire ou autre
   chose pour que ça soit joli ? Et je veux bien une planche d'abord. »
@@ -25,12 +32,13 @@
   de la composition (nourrice-3d/vue.js, `numeros`), le même que le dessin d'avant
   (src/lib/arrosage/nourrice-eclatee.ts), vérifié sur 1, 2, 3, 4 et 6 voies.
 
-  La 3D est celle de l'appli (nourrice-3d/vue.js) ; seuls les numéros sont neufs.
+  La 3D est celle de l'appli (nourrice-3d/vue.js), les repères aussi (nourrice-3d/reperes.js).
 -->
 <!-- La carte des imports passe AVANT tout chargement de module : posée après, le navigateur l'ignore. -->
 <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
 <link rel="modulepreload" href="vendor/three/three.module.min.js">
 <link rel="modulepreload" href="nourrice-3d/vue.js">
+<link rel="modulepreload" href="nourrice-3d/reperes.js">
 <link rel="modulepreload" href="nourrice-3d/scene.js">
 <link rel="modulepreload" href="nourrice-3d/formes.js">
 <link rel="modulepreload" href="nourrice-3d/pieces/index.js">
@@ -66,48 +74,30 @@
   .voies.montage{margin-top:12px}
   @media (prefers-reduced-motion:reduce){.voies button,.attente{transition:none}}
 
-  /* LES NUMÉROS. Une couche posée sur la vue, qui ne prend aucun toucher : la 3D reste à la main. */
-  .numeros{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-  .numeros svg{position:absolute;inset:0;width:100%;height:100%}
-  .num{position:absolute;left:0;top:0;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;transition:opacity .25s ease-out,scale .2s ease-out;will-change:transform}
-  .num.cache{opacity:0}
-  .num.eteint{opacity:.18}
-  .num.allume{scale:1.18}
-  /* A : la pastille noire, celle de la liste. */
-  [data-habit="a"] .num{width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);box-shadow:0 1px 3px rgba(28,28,26,.35)}
+  /* LES NUMÉROS : la A est celle du module (nourrice-3d/reperes.js) ; B et C, écartées, restent pour comparer. */
   /* B : l'encre cerclée d'or, le chiffre en or. */
-  [data-habit="b"] .num{width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--atlas-ink);color:#d9b57a;box-shadow:inset 0 0 0 1.5px var(--atlas-or),0 1px 4px rgba(28,28,26,.35)}
+  [data-habit="b"] .n3d-num{width:24px;height:24px;margin:-12px 0 0 -12px;color:#d9b57a;box-shadow:inset 0 0 0 1.5px var(--atlas-or),0 1px 4px rgba(28,28,26,.35)}
   /* C : l'étiquette au fil, comme sur un éclaté de fabricant. */
-  [data-habit="c"] .num{width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px rgba(28,28,26,.55)}
-  [data-habit="c"] .num.allume{background:var(--atlas-ink);color:var(--atlas-card)}
-  .fil{stroke:rgba(28,28,26,.5);stroke-width:1;transition:opacity .25s ease-out}
-  .fil.cache{opacity:0}
-  .fil.eteint{opacity:.12}
-  .point{fill:rgba(28,28,26,.6)}
-  /* LE BAS DES COLONNES, comme sur le dessin d'avant : la flèche de l'arrivée d'eau, R1, R2… dans la
-     couleur du réseau sur le plan, et « goutte-à-goutte » sous la voie qui l'alimente. */
-  .mot{position:absolute;left:0;top:0;font-size:11px;font-weight:600;line-height:1.2;text-align:center;white-space:nowrap;translate:-50% 0;text-shadow:0 0 3px rgba(214,213,210,.9),0 0 6px rgba(214,213,210,.8)}
-  .fleche{stroke:#4a4a44;stroke-width:1.6;fill:none}
-  .pointe{fill:#4a4a44}
+  [data-habit="c"] .n3d-num{width:20px;height:20px;margin:-10px 0 0 -10px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px rgba(28,28,26,.55)}
+  [data-habit="c"] .n3d-num.allume{background:var(--atlas-ink);color:var(--atlas-card)}
   /* La liste, comme dans l'appli : deux colonnes, la pastille de A, et une ligne se touche. */
   .liste{margin:14px 0 0;padding:14px;border-radius:6px;background:var(--atlas-card);list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
   .liste button{display:flex;align-items:flex-start;gap:8px;width:100%;min-height:40px;padding:4px 0;border:0;background:none;color:var(--atlas-ink);font:inherit;font-size:14px;line-height:1.35;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .liste b{flex:none;display:flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:-1px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:12px}
   .liste button[aria-pressed="true"] span{color:var(--atlas-orTexte,#8b6835);font-weight:600}
   .liste button[aria-pressed="true"] b{background:var(--atlas-or)}
-  @media (prefers-reduced-motion:reduce){.num,.fil{transition:none}}
 </style>
 <body data-charte="origine">
 <div class="entete">
   <h1>Les numéros de la nourrice</h1>
-  <p>Choisissez A, B ou C, éclatez la nourrice, touchez une ligne de la liste. Rien n’est codé.</p>
+  <p>Codée le 22 novembre dans le plan d’arrosage : la A, à l’éclaté seulement. B, C et « Toujours » restent pour comparer.</p>
 </div>
 <main class="ecran">
   <h2 id="titre">Nourrice</h2>
   <p class="sous" id="sous-titre"></p>
   <div class="vue">
     <canvas id="scene" tabindex="0" role="img" aria-label="La nourrice en 3D. Un toucher l’éclate, un second la remonte."></canvas>
-    <div class="numeros" id="numeros" data-habit="a" aria-hidden="true"><svg id="fils"></svg></div>
+    <div id="numeros" data-habit="a" aria-hidden="true"></div>
     <div class="attente" id="attente" role="status">Chargement</div>
   </div>
   <span class="caps" id="l-habit">Les numéros</span>
@@ -158,8 +148,8 @@ window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge
 </script>
 <script src="arrosage-catalogue.js"></script>
 <script type="module">
-import * as THREE from "three";
 import { ouvrirNourrice } from "./nourrice-3d/vue.js";
+import { poserReperes } from "./nourrice-3d/reperes.js";
 
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CATALOGUE;
 var etat = { voies: 3, goutte: 1, eclatee: false, vue: "biais", habit: "a", quand: "eclatee", choisi: 0 }, V = null;
@@ -185,117 +175,11 @@ function liste() {
 // bleu, la 2 en vert, la 3 en jaune…
 var COULEURS_RESEAU = ["#2F6FB5", "#3E8F4E", "#D9A520", "#B5502F", "#7A4FA3", "#1F8A8A", "#B5417F", "#6B7A2F"];
 
-// LE BAS DE CHAQUE COLONNE. Le mot se pose dans le prolongement de la colonne, juste après son dernier
-// tuyau : il suit la colonne quand on tourne, comme le numéro suit sa pièce. La flèche de l'arrivée monte
-// vers le tuyau, comme l'eau.
-var mots = [], fleche = null;
-function placerLesMots() {
-  var cols = V.colonnes(), ecr = V.scene.ecran(), par = {}, W = couche.clientWidth, H = couche.clientHeight, pris = [];
-  // Un mot reste dans le cadre : sa largeur mesurée, il glisse vers l'intérieur plutôt que d'être coupé.
-  function poser(m, x, y) {
-    var w = m.offsetWidth, h = m.offsetHeight;
-    x = Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, x)); y = Math.max(6, Math.min(H - h - 6, y));
-    m.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)";
-    pris.push({ x: x, y: y + h / 2 });
-  }
-  ecr.forEach(function (e) { par[e.indice] = e; });
-  while (mots.length < cols.length) { var m = document.createElement("span"); m.className = "mot"; couche.appendChild(m); mots.push(m); }
-  if (!fleche) { fleche = document.createElementNS("http://www.w3.org/2000/svg", "g"); fleche.innerHTML = '<line class="fleche"/><path class="pointe"/>'; fils.appendChild(fleche); }
-  var voie = 0;
-  mots.forEach(function (m, i) {
-    var c = cols[i];
-    if (!c) { m.style.display = "none"; return; }
-    m.style.display = "";
-    var haut = par[c.pieces[0]], bas = par[c.pieces[c.pieces.length - 1]];
-    var dx = bas.x - haut.x, dy = bas.y - haut.y, l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
-    // Le bout du tuyau : le centre du dernier, plus sa demi-longueur à l'écran.
-    var demi = Math.abs(dx) * (bas.droite - bas.gauche) / 2 + Math.abs(dy) * (bas.bas - bas.haut) / 2;
-    var bx = bas.x + dx * demi, by = bas.y + dy * demi;
-    if (c.arrivee) {
-      var x0 = bx + dx * 34, y0 = by + dy * 34, x1 = bx + dx * 7, y1 = by + dy * 7, nx = -dy, ny = dx;
-      fleche.firstChild.setAttribute("x1", x0); fleche.firstChild.setAttribute("y1", y0); fleche.firstChild.setAttribute("x2", x1 + dx * 5); fleche.firstChild.setAttribute("y2", y1 + dy * 5);
-      fleche.lastChild.setAttribute("d", "M" + x1 + " " + y1 + " L" + (x1 + dx * 8 + nx * 5) + " " + (y1 + dy * 8 + ny * 5) + " L" + (x1 + dx * 8 - nx * 5) + " " + (y1 + dy * 8 - ny * 5) + " Z");
-      m.style.color = "#4a4a44"; m.innerHTML = "Arrivée<br>d’eau";
-      poser(m, x0 + dx * 4, y0 + Math.max(dy, 0) * 4);
-    } else {
-      voie++;
-      m.style.color = COULEURS_RESEAU[(voie - 1) % COULEURS_RESEAU.length];
-      m.innerHTML = "R" + voie + (c.goutte ? "<br>goutte-à-goutte" : "");
-      poser(m, bx + dx * 12, by + dy * 12 - 4);
-    }
-  });
-  return pris;
-}
-
-// LES NUMÉROS SUR LA 3D, replacés à chaque image : à droite de la pièce, à sa mi-hauteur. Deux numéros ne se
-// chevauchent jamais.
-var couche = null, fils = null, pastilles = [], traits = [];
-function placer() {
-  if (!V) return;
-  var mots = placerLesMots();
-  var t = V.scene.etat().t, montrer = etat.quand === "toujours" || t > 0.55;
-  var liste = V.numeros(), H = couche.clientHeight, W = couche.clientWidth, fil = etat.habit === "c";
-  // A et B se posent sur le flanc de la pièce ; C s'en écarte, et son fil y ramène l'œil.
-  var ECART = fil ? 22 : 23;
-  var places = liste.map(function (e) { return { e: e, x: Math.min(W - 14, fil ? e.droite + 31 : e.x + 14), y: Math.max(14, Math.min(H - 14, e.y)) }; });
-  // Une place prise : on essaie autour (dessous, dessus, de l'autre côté de la pièce, en biais), au plus
-  // près d'abord ; ce n'est qu'à défaut qu'on descend jusqu'à trouver de la place.
-  // Les mots du bas sont posés d'abord : un numéro ne se met jamais dessus.
-  var posees = mots.slice(), AUTOUR = [[0, 0], [0, 1], [0, -1], [-2.2, 0], [1, 0], [-2.2, 1], [-2.2, -1], [1, 1], [1, -1], [0, 2], [0, -2]];
-  function libre(x, y) { return posees.every(function (q) { return Math.abs(q.x - x) >= ECART || Math.abs(q.y - y) >= ECART; }); }
-  places.slice().sort(function (a, b) { return a.y - b.y; }).forEach(function (p) {
-    var x0 = p.x, y0 = p.y, trouve = AUTOUR.some(function (d) {
-      var x = x0 + d[0] * ECART, y = y0 + d[1] * ECART;
-      if (x < 12 || x > W - 12 || y < 12 || y > H - 12 || !libre(x, y)) return false;
-      p.x = x; p.y = y; return true;
-    });
-    if (!trouve) while (!libre(p.x, p.y) && p.y < H) p.y += ECART;
-    posees.push(p);
-  });
-  while (pastilles.length < places.length) { var d = document.createElement("span"); d.className = "num"; couche.appendChild(d); pastilles.push(d); }
-  while (traits.length < places.length) { var g = document.createElementNS("http://www.w3.org/2000/svg", "g"); g.innerHTML = '<line class="fil"/><circle class="point" r="1.6"/>'; fils.appendChild(g); traits.push(g); }
-  pastilles.forEach(function (d, i) {
-    var p = places[i], g = traits[i];
-    if (!p) { d.className = "num cache"; g.style.display = "none"; return; }
-    var etatNum = !montrer ? " cache" : etat.choisi ? (p.e.numero === etat.choisi ? " allume" : " eteint") : "";
-    d.textContent = p.e.numero; d.className = "num" + etatNum;
-    d.style.transform = "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px)";
-    g.style.display = fil ? "" : "none";
-    if (fil) {
-      var l = g.firstChild, c = g.lastChild;
-      l.setAttribute("x1", p.e.x); l.setAttribute("y1", p.e.y); l.setAttribute("x2", p.x - 10); l.setAttribute("y2", p.y);
-      l.setAttribute("class", "fil" + etatNum); c.setAttribute("cx", p.e.x); c.setAttribute("cy", p.e.y); c.style.opacity = etatNum === " cache" ? 0 : etatNum === " eteint" ? 0.15 : 1;
-    }
-  });
-}
-
-// LA LIGNE CHOISIE : ses pièces gardent leur matière, les autres passent sous un voile. Un voile et pas un
-// gris plein : le PVC des pièces Dura est déjà gris, et un gris plein ne le distinguait plus d'une pièce
-// éteinte (essayé). Le voile écrit sa profondeur, sans quoi l'occlusion ambiante le salissait de taches.
-// La planche passe par `scene.interne` parce qu'elle n'est qu'une planche ; retenu, ce geste descendra
-// dans nourrice-3d/vue.js, qui le donnera à l'appli comme à la page des outils.
-var VOILE = new THREE.MeshStandardMaterial({ color: 0xbdbbb6, roughness: 0.95, metalness: 0, envMapIntensity: 0.6, transparent: true, opacity: 0.35 });
-function griser() {
+// LA LIGNE CHOISIE : ses pièces gardent leur couleur et leurs numéros s'allument, les autres se voilent.
+var R = null, couche = null;
+function choisir() {
   var cle = etat.choisi ? cles[etat.choisi - 1] : null;
-  V.scene.interne.etat.lots.forEach(function (l) {
-    var m = l.maille;
-    if (!m.userData.matiere) m.userData.matiere = m.material;
-    m.material = cle && l.cle !== cle ? VOILE : m.userData.matiere;
-  });
-  V.scene.demander();
-}
-
-// PLUS D'OMBRES. Sa demande du 22 au soir : « Tu peux retirer les ombres ». La lampe n'en porte plus (ni
-// au sol, ni d'une pièce sur l'autre), et l'ombre de contact sous la nourrice s'éteint. Elles se cherchent
-// dans la scène parce que nourrice-3d/scene.js est celui de l'appli, qui garde les siennes tant qu'il n'a
-// pas choisi. Ce sont les matières qui s'éteignent : la scène rallume le sol et l'ombre de contact après
-// chaque calcul de cette ombre, elle ne touche jamais à leurs matières.
-function sansOmbres() {
-  V.scene.interne.etat.lots[0].maille.parent.parent.traverse(function (o) {
-    if (o.isDirectionalLight) o.castShadow = false;
-    else if (o.material && (o.material.isShadowMaterial || (o.material.map && o.material.map.isRenderTargetTexture))) o.material.visible = false;
-  });
-  V.scene.demander();
+  V.choisir(cle); R.choisir(cle);
 }
 
 function boutons() {
@@ -311,10 +195,10 @@ function boutons() {
   document.querySelectorAll("[data-habit]").forEach(function (b) { if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", String(b.dataset.habit === etat.habit)); });
   document.querySelectorAll("[data-quand]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.quand === etat.quand)); });
   document.querySelectorAll("[data-numero]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.numero) === etat.choisi)); });
-  if (couche) { couche.dataset.habit = etat.habit; placer(); }
+  if (R) { couche.dataset.habit = etat.habit; R.regler({ quand: etat.quand, fil: etat.habit === "c" }); }
 }
-// Les pièces se refont à chaque fiche : le voile se repose sur les neuves.
-function reposer() { V.montrer(etat.voies, etat.goutte); liste(); boutons(); griser(); }
+// Une autre fiche peut donner un autre modèle au même numéro : le choix se refait.
+function reposer() { V.montrer(etat.voies, etat.goutte); liste(); boutons(); choisir(); }
 
 document.addEventListener("click", function (e) {
   if (!V) return;
@@ -325,19 +209,19 @@ document.addEventListener("click", function (e) {
   else if (b.dataset.vue) V.regarder(b.dataset.vue);
   // Une ligne touchée allume ses numéros, grise les autres pièces, et éclate la nourrice si ses numéros
   // ne se voyaient pas encore.
-  else if (b.dataset.numero) { var n = Number(b.dataset.numero); etat.choisi = etat.choisi === n ? 0 : n; if (etat.choisi && etat.quand === "eclatee") V.eclater(true); boutons(); griser(); }
+  else if (b.dataset.numero) { var n = Number(b.dataset.numero); etat.choisi = etat.choisi === n ? 0 : n; if (etat.choisi && etat.quand === "eclatee") V.eclater(true); boutons(); choisir(); }
   else if (b.dataset.habit) { etat.habit = b.dataset.habit; boutons(); }
   else if (b.dataset.quand) { etat.quand = b.dataset.quand; boutons(); }
 });
 
 try {
   V = ouvrirNourrice(toile, { ficheNourrice: CAT.ficheNourrice, hdri: "vendor/hdri/studio.exr" });
-  couche = $("numeros"); fils = $("fils");
-  V.scene.surImage(placer);
+  couche = $("numeros");
+  R = poserReperes(couche, V, { voie: function (k) { return { nom: "R" + (k + 1), couleur: COULEURS_RESEAU[k % COULEURS_RESEAU.length] }; } });
+  V.scene.surImage(R.placer);
   // Les boutons suivent l'état : un toucher sur la nourrice, ou la vue tournée à la main.
   V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
   reposer();
-  sansOmbres();
   // La scène tourne : une phrase de refus posée par excès de prudence (un navigateur qui sait lire la
   // carte des imports sans savoir le dire) s'efface.
   NOURRICE_3D.prete = true; toile.style.visibility = "";

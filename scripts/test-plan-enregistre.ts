@@ -164,16 +164,49 @@ cas("« Voir la saisie » dit ce qu'il a saisi, sans rien ajouter", () => {
     diametres: { amenee: 32 as const, reseaux: { 1: 32 as const } },
   } as unknown as ParametresPlan;
   const lignes = saisieEcrite({ parametres: p, retouches: { ...RETOUCHES_VIERGES, sonde: true }, reservesDuCroquis: [], sansDessin: null, lecture: null });
-  assert.deepEqual(lignes, [
+  const texte = (r: { cle: string; valeurs: { texte: string }[] }) => ({ cle: r.cle, valeurs: r.valeurs.map((v) => v.texte) });
+  assert.deepEqual(lignes.map(texte), [
     { cle: "Le piquage", valeurs: ["Juste après le compteur d’eau, 3\u00a0bar et 2\u00a0m³/h"] },
     { cle: "Les zones", valeurs: ["Pelouse arrière, 12 m sur 12 m", "Massif, 20 m sur 2,4 m", "Haie du fond, 15,5 m"] },
     { cle: "Vos choix", valeurs: ["Ø32 sur l’amenée et sur le réseau 2.", "Sonde de pluie : oui. Grillage et téflon : non."] },
   ]);
+  // Un plan sans photo n'a rien à dire de la lecture.
+  assert.ok(lignes.every((r) => r.valeurs.every((v) => v.note === null)));
   // Au robinet, sans pression relevée ni diamètre choisi : rien d'inventé.
   // Le débit est celui que le calcul a reçu (seau et temps le portent, `actions.ts`).
   const robinet = saisieEcrite({ parametres: { ...p, compteur: "non", pression: 0, diametres: undefined }, retouches: RETOUCHES_VIERGES, reservesDuCroquis: [], sansDessin: null, lecture: null });
-  assert.deepEqual(robinet[0], { cle: "Le piquage", valeurs: ["Robinet de jardin, 2\u00a0m³/h"] });
-  assert.deepEqual(robinet[2], { cle: "Vos choix", valeurs: ["Les diamètres que l’outil propose.", "Sonde de pluie, grillage et téflon : non."] });
+  assert.deepEqual(texte(robinet[0]), { cle: "Le piquage", valeurs: ["Robinet de jardin, 2\u00a0m³/h"] });
+  assert.deepEqual(texte(robinet[2]), { cle: "Vos choix", valeurs: ["Les diamètres que l’outil propose.", "Sonde de pluie, grillage et téflon : non."] });
+});
+
+cas("« Voir la saisie » dit ce qu'il a corrigé de la lecture de l'IA, comme sa planche (« lu 2 m, corrigé par vous »)", () => {
+  const lu = (L: number | null, l: number | null, deduites: ("L" | "l")[] = []) => ({ L, l, deduites });
+  const zones = [
+    { id: 1, type: "gazon", nom: "Pelouse arrière", L: 12, l: 12, luSurLaPhoto: lu(12, 12) },
+    { id: 2, type: "massif", nom: "Massif", L: 20, l: 2.4, luSurLaPhoto: lu(20, 2) },
+    // Tournée d'un quart de tour sans rien changer : rien n'est corrigé.
+    { id: 3, type: "gazon", nom: "Couloir", L: 2, l: 10, luSurLaPhoto: lu(10, 2) },
+    // Tournée ET corrigée : la cote corrigée est celle qui a changé.
+    { id: 4, type: "massif", nom: "Bordure", L: 2.4, l: 20, luSurLaPhoto: lu(20, 2) },
+    { id: 5, type: "gazon", nom: "Allée", L: 3, l: 1.5, luSurLaPhoto: lu(3.5, 1, ["l"]) },
+    { id: 6, type: "gazon", nom: "Fond", L: 11, l: 3, luSurLaPhoto: lu(10, 2) },
+    // Ajoutée à la main : la photo n'en disait rien.
+    { id: 7, type: "gazon", nom: "Ajoutée", L: 4, l: 4 },
+    // Une cote que l'IA n'a PAS lue, tapée par lui : « lu » serait faux.
+    { id: 8, type: "gazon", nom: "Sans cote lue", L: 5, l: 6, luSurLaPhoto: lu(null, 6) },
+  ];
+  const r = saisieEcrite({ parametres: { ...JARDIN, zones } as ParametresPlan, retouches: RETOUCHES_VIERGES, reservesDuCroquis: [], sansDessin: null, lecture: null });
+  assert.deepEqual(r[1].valeurs.map((v) => v.note), [
+    null,
+    "(lu 2 m, corrigé par vous)",
+    null,
+    "(lu 2 m, corrigé par vous)",
+    "(lu 3,5 m, déduit 1 m, corrigé par vous)",
+    "(lu 10 m sur 2 m, corrigé par vous)",
+    null,
+    null,
+  ]);
+  assert.equal(r[1].valeurs[1].texte, "Massif, 20 m sur 2,4 m");
 });
 
 console.log(echecs ? `\n❌ ${echecs} échec(s)` : "\n✅ Un plan enregistré se fige, se relit et se compte juste.");

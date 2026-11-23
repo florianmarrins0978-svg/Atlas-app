@@ -1,5 +1,5 @@
-// LA SCÈNE DE LA PILE DU ROBINET : celle de la nourrice (nourrice-3d/scene.js), la pile DEBOUT, et sans
-// ombres.
+// LA SCÈNE DE LA PILE DU ROBINET : celle de la nourrice (nourrice-3d/scene.js), la pile DEBOUT. Sans
+// ombres, comme la nourrice depuis le 23 novembre 2026.
 //
 // POURQUOI UNE SCÈNE À ELLE. La nourrice est couchée dans son regard : sa scène pose chaque pièce dans le
 // plan du sol, et le doigt tourne autour de la verticale. Une pile qui pend d'un robinet, couchée là, se
@@ -11,8 +11,8 @@
 // CE QUI EST REPRIS TEL QUEL : l'HDRI (et la pièce calculée qui l'attend), l'occlusion ambiante, la
 // courbe ACES, l'anticrénelage, le cadrage par les coins des pièces, les mouvements qui s'interrompent,
 // la qualité qui baisse le temps d'un mouvement, le toucher à un doigt près. CE QUI CHANGE : chaque pièce
-// est redressée (son axe Z descend), l'éclaté court sur la verticale, les deux points de vue sont ceux
-// d'une pile, et il n'y a pas d'ombres (sa demande du 22 novembre 2026 : « l'éclaté sans ombre »).
+// est redressée (son axe Z descend), l'éclaté court sur la verticale, et les deux points de vue sont ceux
+// d'une pile.
 //
 // Retenue, la pile debout deviendra une option de nourrice-3d/scene.js, et ce fichier disparaîtra.
 

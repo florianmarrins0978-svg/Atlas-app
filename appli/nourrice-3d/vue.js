@@ -9,6 +9,7 @@
 //   v.montrer(3, 1);          // 3 voies dont 1 en goutte-à-goutte
 //   v.eclater(true);          // ou un toucher sur la nourrice
 //   v.regarder("dessus");     // "biais", "dessus", "face"
+//   v.choisir("mamelon");     // ses pièces gardent leur couleur, les autres se voilent ; null rend tout
 //   v.surEtat(function (e) { e.eclatee, e.vue });
 //   v.detruire();
 //
@@ -97,7 +98,7 @@ export function ouvrirNourrice(toile, o) {
   }
 
   return {
-    scene: S, montrer: montrer, eclater: eclater, regarder: regarder, detruire: detruire,
+    scene: S, montrer: montrer, eclater: eclater, regarder: regarder, detruire: detruire, choisir: S.choisir,
     surEtat: function (f) { ecoutes.push(f); },
     // LES NUMÉROS : celui de la légende, donné à la première pièce de chaque modèle dans l'ordre de la
     // composition (la rangée du haut, l'arrivée, puis les voies, le goutte-à-goutte en dernier). C'est

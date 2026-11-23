@@ -54,6 +54,12 @@ export type Maillon = {
   type: "raccord" | "sbeb" | "pebd" | "sbeh" | "corps";
   /** Les clés de cette pièce sur chaque tête du réseau : toucher la chaîne les vise toutes. */
   cles: string[];
+  /**
+   * Les références de la liste que ce maillon montre : « té ou coude taraudé »
+   * en montre deux, une tuyère et sa buse aussi. Le PDF y pose le numéro de
+   * leur ligne (sa demande du 22 novembre 2026).
+   */
+  refs: string[];
   libelle: string;
   photo: string | null;
   pied: string | null;
@@ -363,14 +369,20 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
       if (c.length && r.remplacees[c[0]]) return "changee";
       return "";
     };
+    // La pièce qu'il a mise à la place compte sous SA référence dans la liste : c'est elle que le maillon désigne.
+    const refsDe = (t: Maillon["type"], refs: (string | null | undefined)[]): string[] => {
+      const c = cles[t];
+      const changee = c.length ? r.remplacees[c[0]] : undefined;
+      return changee ? [changee.ref] : refs.filter((x): x is string => !!x);
+    };
     const p = premiere as { corps: { ref: string; nom: string } | null; buse: { ref: string; nom: string } | null; sbeHaut: { ref: string; filetage: string } | null } | null;
     const chaine: Maillon[] | null = p
       ? [
-          { type: "raccord", cles: cles.raccord, libelle: "Té ou coude taraudé", photo: montre("raccord", TE_LIGNE), pied: null, etat: etatDe("raccord") },
-          { type: "sbeb", cles: cles.sbeb, libelle: "SBE 3/4\" vissé sur le té ou le coude", photo: montre("sbeb", sbeBas?.ref ?? null), pied: null, etat: etatDe("sbeb") },
-          { type: "pebd", cles: cles.pebd, libelle: "PEBD Ø16, 2 m, emboîté", photo: montre("pebd", PEBD16), pied: null, etat: etatDe("pebd") },
-          { type: "sbeh", cles: cles.sbeh, libelle: `SBE ${p.sbeHaut?.filetage ?? ""}" vissé sous l’arroseur`, photo: p.sbeHaut ? montre("sbeh", p.sbeHaut.ref) : null, pied: null, etat: etatDe("sbeh") },
-          { type: "corps", cles: cles.corps, libelle: p.corps ? p.corps.nom + (p.buse ? ` et sa buse ${p.buse.nom}` : "") : "", photo: p.corps ? montre("corps", p.corps.ref) : null, pied: p.buse ? photoDe(p.buse.ref) : null, etat: etatDe("corps") },
+          { type: "raccord", cles: cles.raccord, refs: refsDe("raccord", [TE_LIGNE, COUDE_LIGNE]), libelle: "Té ou coude taraudé", photo: montre("raccord", TE_LIGNE), pied: null, etat: etatDe("raccord") },
+          { type: "sbeb", cles: cles.sbeb, refs: refsDe("sbeb", [sbeBas?.ref]), libelle: "SBE 3/4\" vissé sur le té ou le coude", photo: montre("sbeb", sbeBas?.ref ?? null), pied: null, etat: etatDe("sbeb") },
+          { type: "pebd", cles: cles.pebd, refs: refsDe("pebd", [PEBD16]), libelle: "PEBD Ø16, 2 m, emboîté", photo: montre("pebd", PEBD16), pied: null, etat: etatDe("pebd") },
+          { type: "sbeh", cles: cles.sbeh, refs: refsDe("sbeh", [p.sbeHaut?.ref]), libelle: `SBE ${p.sbeHaut?.filetage ?? ""}" vissé sous l’arroseur`, photo: p.sbeHaut ? montre("sbeh", p.sbeHaut.ref) : null, pied: null, etat: etatDe("sbeh") },
+          { type: "corps", cles: cles.corps, refs: refsDe("corps", [p.corps?.ref, p.buse?.ref]), libelle: p.corps ? p.corps.nom + (p.buse ? ` et sa buse ${p.buse.nom}` : "") : "", photo: p.corps ? montre("corps", p.corps.ref) : null, pied: p.buse ? photoDe(p.buse.ref) : null, etat: etatDe("corps") },
         ]
       : null;
     return {
@@ -430,10 +442,20 @@ export function voiesVivantes(plan: Pick<LePlan, "secteurs">, r: Retouches): num
   return plan.secteurs.map((_, i) => i).filter((i) => !r.blocsRetires[String(i)]);
 }
 
+/** Combien de ces voies de la nourrice partent en goutte-à-goutte : elles se posent à droite. */
+export function voiesEnGoutte(plan: Pick<LePlan, "secteurs">, voies: number[]): number {
+  return voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+}
+
+/** Comment lire la nourrice, à l'écran comme sur le papier. */
+export function phraseDeLaNourrice(nbGoutte: number): string {
+  return `Une voie par réseau, numérotées de gauche à droite après l’arrivée.${nbGoutte ? " Le goutte-à-goutte est à droite." : ""}`;
+}
+
 /** La nourrice se compte sur SA fiche, comme le dessin du regard. */
 export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { nom: string; lignes: Record<string, Ligne>; barrees: Record<string, Ligne>; nombre: Record<string, number>; voies: number[] } {
   const voies = voiesVivantes(plan, r);
-  const nbGoutte = voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+  const nbGoutte = voiesEnGoutte(plan, voies);
   // La fiche des voies vivantes : un réseau de moins, c'est le collecteur de la gamme du dessous et une électrovanne de moins.
   const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};

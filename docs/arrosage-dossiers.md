@@ -101,14 +101,117 @@ Deux batteries entières, le 21 novembre au soir.
 La suite des dossiers, qui fait ton geste du dessin au dossier supprimé :
 8 cas sur 8.
 
+### Le 22 novembre : le plan en couleur agrandi dans le PDF
+
+Ta demande : *« agrandis le plan d'arrosage où il n'y a pas la photo des
+pièces, et même sur celle où il n'y a pas vraiment la place »*.
+
+| La page | Avant | Maintenant |
+|---|---|---|
+| réseau 1, pelouse carrée | 200 points de large | 411 ; le dessin des pièces passe de 441 à 317, ses photos de 34 à 32 points |
+| réseau 2, deux pelouses | 200 | 360 ; les pièces de 380 à 277, leurs photos de 34 à 28 points |
+| réseau 3, le couloir | 200 | toute la largeur, 511 ; les pièces aussi (470 avant) |
+| réseau 4, le goutte-à-goutte | 200 | toute la largeur, 511 |
+
+Le plan est sous l'en-tête, sur la largeur de la page. Quand la page manque de
+place, le dessin des pièces rétrécit un peu plus que lui, pour que les photos
+restent lisibles. Le vide gardé autour du dessin des pièces et trois lignes
+vides sous la tête du bas ont été rendus au plan.
+
+### Le 22 novembre, ensuite : le mot « nourrice », le losange et l'angle
+
+Ton « oui, corrige d'abord le mot nourrice et l'écart d'angle ».
+
+| | Ce qui est fait | Comment je le sais |
+|---|---|---|
+| le mot « nourrice » | il se pose à la place libre la plus proche du regard : plus aucun trait ne le barre, il ne couvre ni tête, ni losange, ni cote. Le regard est souvent dans un passage de 2 m, plus étroit que le mot : il se pose alors à côté, dans la pelouse | `test-plan-dessine.ts`, sur huit places de nourrice dans trois jardins : rouge partout avant, vert après. Regardé sur les quatre réseaux du PDF, sur quatre jardins et au robinet |
+| le losange sous le regard | il sort, à côté, sans tomber sur une tête ni sur une cote | le même contrôle. **Trouvé en regardant** : dans un jardin d'essai, le losange sorti se posait sur la cote « 14 m ». Corrigé, et ajouté au contrôle |
+| l'écart d'angle | l'angle et l'échelle s'arrondissent à six décimales | la même nourrice calculée dans Node et dans Chromium : 5 rotations sur 140 différaient avant, aucune après |
+
+Un plan déjà enregistré dans un dossier garde son dessin de ce jour-là.
+
+### Le 22 novembre, enfin : « lu 2 m, corrigé par vous »
+
+Ton « tu me codes aussi ». Dans « Voir la saisie » d'un plan fait depuis une
+photo, à la suite de la zone, dans l'or du texte : « Massif, 20 m sur 2,4 m
+(lu 2 m, corrigé par vous) ».
+
+| | Ce qui s'écrit |
+|---|---|
+| une cote lue, que tu as changée | « (lu 2 m, corrigé par vous) » |
+| les deux cotes changées | « (lu 10 m sur 2 m, corrigé par vous) » |
+| une cote que l'IA a déduite, que tu as changée | « déduit » au lieu de « lu » |
+| une cote que l'IA n'a pas lue, tapée par toi | rien : écrire « lu » serait faux |
+| une zone tournée, sans autre changement | rien |
+| une zone ajoutée à la main, un morceau de pelouse coupée autour d'un massif, une haie | rien : la photo n'en disait rien de comparable |
+
+Éprouvé par trois suites, rouges avant. **Pas regardé à l'écran** : il faut un
+serveur, et tu as dit pas de batterie. Un plan enregistré avant n'a pas de
+quoi le dire.
+
+
+### Le 22 novembre, encore : la page de la nourrice
+
+Ta remarque : *« il manque la nourrice »*. Le PDF a maintenant sa page, juste
+après la page de garde : son nom, la phrase qui dit l'ordre des voies, l'éclaté
+de la nourrice 3D **vu du dessus**, en grand, puis ses pièces.
+
+| | |
+|---|---|
+| la photo | celle de la 3D de l'autre session, prise d'avance pour chacune des 27 nourrices possibles (1 à 6 voies, de 0 à toutes en goutte-à-goutte) |
+| du dessus | chaque pièce y est séparée, dans l'ordre du montage ; de biais, les colonnes se cachent |
+| au nez de robinet | pas de nourrice, pas de page |
+| ce que la photo ne montre pas | une pièce de la nourrice que tu as changée ou supprimée à la main : la liste dessous, si |
+
+Si la session 3D change une pièce, un contrôle rougit et dit la commande qui
+refait les photos.
+
+### Le 22 novembre, au soir : chaque pièce a son numéro
+
+Ta demande : *« quand je suis sur la nourrice, la liste des pièces en dessous,
+tout de suite je sais à quoi ça correspond ; pareil pour les réseaux »*.
+
+| | |
+|---|---|
+| sur chaque page | la liste de SES pièces, numérotée, et le même numéro sur chaque photo de la page |
+| la nourrice | les numéros de l'écran, posés sur la photo 3D à côté de chaque pièce ; regard, programmateur, pile et connexions à part, sous « Avec la nourrice » |
+| un réseau | ses pièces, dans l'ordre de la liste de fin ; le numéro est sur le tuyau, sur chaque vignette et sur chaque pièce de « Une tête, de bas en haut » |
+| ce que ça coûte | le plan en couleur des réseaux 1 et 2 du jardin d'essai rétrécit un peu (411 à 332 points, 360 à 286) pour faire place à la liste |
+
+**Trouvé en regardant** : un « 8 » posé entre deux électrovannes serrées se
+lisait pour les deux ; il se pose maintenant sur la sienne. La liste du
+goutte-à-goutte tombait en bas de page, loin de son rail ; elle le suit.
+
+**Puis, tes deux remarques :**
+
+| | |
+|---|---|
+| « la vanne 3/4, c'est pas la marque Dura », puis le régulateur, le regard jumbo et le PEBD Ø16 | corrigé partout : la vanne, le régulateur, le regard jumbo (et ses 5 et 6 voies), le regard rectangle 12" et le PEBD rigide Ø16 s'écrivent sans marque, dans l'appli, le PDF et les planches. Le relevé Aqua Plus les donnait déjà sans Dura. Les coudes, mamelons, union, té et collecteurs gardent Dura : Aqua Plus les vend sous des références Dura |
+| « mettre les pièces, les numéroter pour qu'on les voie » | sur chaque page de réseau, chaque ligne de « Ses pièces » montre sa pièce : le numéro, la photo, la quantité, le nom |
+| ce que ça coûte | le plan en couleur des réseaux 1 et 2 rétrécit encore (332 à 287 points, 286 à 245) ; les réseaux 3 et 4 gardent presque toute la largeur |
+
+### Le 22 novembre, dans ton appli
+
+Ton « oui, lance la batterie ». Tout ce qui précède est sur `main`, donc dans
+ton appli au prochain allumage de ton espace. La batterie entière, jouée sur
+l'état exact livré (avec le travail des autres sessions poussé dans la
+journée) :
+
+| | |
+|---|---|
+| suites de la base | 617 sur 617 |
+| suites navigateur | 218 sur 218 |
+| connexion derrière un proxy | réussie |
+
+Une planche de maquette (`verifier-maquette-arrosage-plan.mjs`) était déjà
+rouge sur `main` avant ce lot ; elle n'est pas dans la batterie, et elle est
+notée pour la session qui y touchera.
+
 ### Ce qui reste, et qui le tranche
 
 | | qui |
 |---|---|
 | la clause des conditions générales : le calcul d'un dossier supprimé gardé 5 ans, sans rien qui désigne le client | toi, avec ton juriste |
-| le mot « nourrice » barré par la tranchée, le tuyau ou les pointillés qui partent de la nourrice, et sur le réseau 2 le losange du té égal à moitié caché sous elle, sur le plan en couleur (écran et PDF). J'avais écrit « mord sur le losange » : c'est plus large | toi : c'est l'appli, sur ton oui |
-| le plan revu signale une erreur en développement : un angle de la nourrice éclatée diffère à la 14ᵉ décimale entre le serveur et le téléphone. Rien ne se voit | moi, sur ton oui |
-| « Voir la saisie » ne dit pas ce que tu as corrigé de la lecture de l'IA (« lu 2 m, corrigé par vous » sur la planche) : la lecture est gardée, la comparaison n'est pas écrite | à faire, si tu le veux |
 | le PDF ouvert sur ton iPhone | toi |
 
 ---
