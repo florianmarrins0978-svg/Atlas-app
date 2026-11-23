@@ -1,8 +1,10 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gt, sql } from "drizzle-orm";
 import type { AttestationLue } from "@/lib/attestation-lue";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
+import { abonnements, entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
+import { siretBienForme, sirenDeLEssai } from "@/lib/siren";
+import { prendreLEssaiDuSiren } from "./essais-par-siren";
 import type { Ctx } from "./context";
 import { remettreLeModeleDans } from "./prestations-entretien";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
@@ -104,6 +106,18 @@ export async function poserLEntrepriseNeuve(tx: DbOrTx, entrepriseId: string, ut
 }
 
 /** L'entreprise active, telle que ses écrans de réglages la lisent. */
+/**
+ * Un SIRET qui ne peut pas exister (la clé de Luhn, `siretBienForme`) ne
+ * s'écrit pas : sa question du 23 novembre 2026, la triche par un numéro au
+ * hasard. Levée ici, rendue en valeur par les actions qui écrivent l'identité.
+ */
+export class SiretMalFormeError extends Error {
+  constructor() {
+    super("Ce SIRET n'existe pas. Vérifiez les 14 chiffres.");
+    this.name = "SiretMalFormeError";
+  }
+}
+
 export async function getEntreprise(ctx: Ctx) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [e] = await tx.select().from(entreprises).where(eq(entreprises.id, ctx.entrepriseId)).limit(1);
@@ -412,11 +426,49 @@ export async function mettreAJourEntreprise(
     if (data.periodiciteTva === "mensuelle" || data.periodiciteTva === "trimestrielle") {
       valeurs.periodiciteTva = data.periodiciteTva;
     }
+    // **Le SIRET se vérifie avant de s'écrire, ici et pas dans chaque écran** :
+    // Réglages et l'en-tête du devis passent tous deux par cette fonction.
+    // **Seulement quand il CHANGE** : un artisan inscrit avant le 23 novembre
+    // 2026 avec un chiffre de travers enregistre toute sa fiche d'un coup, et
+    // il ne doit pas se voir refuser son téléphone pour un SIRET qu'il n'a pas
+    // touché. Le numéro inchangé ne reprend pas non plus l'essai de son SIREN.
+    // Comparé en chiffres seuls : « 123 456 782 00010 » et « 12345678200010 »
+    // sont le même numéro.
+    let siretTape: string | null = null;
+    if (typeof valeurs.siret === "string") {
+      const [avant] = await tx
+        .select({ siret: entreprises.siret })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      const chiffres = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
+      if (chiffres(valeurs.siret) !== chiffres(avant?.siret)) siretTape = valeurs.siret;
+    }
+    if (siretTape !== null && !siretBienForme(siretTape)) throw new SiretMalFormeError();
     const [e] = await tx
       .update(entreprises)
       .set(valeurs)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .returning();
+    // **Un essai par entreprise, reconnue à son SIREN** (migration 0195, sa
+    // décision du 23 novembre 2026). Le SIRET tapé plus tard, dans Réglages ou
+    // sur un devis, ferme le chemin de « Passer » à la création : si une AUTRE
+    // entreprise a déjà eu l'essai de ce SIREN, l'essai en cours s'arrête là.
+    // Un abonnement payé n'est pas touché : seul un essai encore ouvert l'est.
+    const siren = sirenDeLEssai(siretTape);
+    if (siren !== null && !(await prendreLEssaiDuSiren(tx, siren, ctx.entrepriseId))) {
+      const maintenant = new Date();
+      await tx
+        .update(abonnements)
+        .set({ periodeFin: maintenant, essaiDejaPris: true })
+        .where(
+          and(
+            eq(abonnements.entrepriseId, ctx.entrepriseId),
+            eq(abonnements.statut, "essai"),
+            gt(abonnements.periodeFin, maintenant)
+          )
+        );
+    }
     return e ?? null;
   });
 }

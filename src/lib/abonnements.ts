@@ -101,9 +101,9 @@ export const FORMULE_DE_LESSAI: FormuleCode = "illimite";
 
 export type EtatEssai =
   | { statut: "en-cours"; joursRestants: number; alerte: boolean; fin: Date }
-  | { statut: "termine"; fin: Date };
+  | { statut: "termine"; fin: Date; dejaPris?: boolean };
 
-type AbonnementLu = { statut: StatutAbonnement; periodeFin: Date | null } | null | undefined;
+type AbonnementLu = { statut: StatutAbonnement; periodeFin: Date | null; essaiDejaPris?: boolean } | null | undefined;
 
 /**
  * OÙ EN EST L'ESSAI — `null` quand il n'y en a pas.
@@ -119,7 +119,10 @@ type AbonnementLu = { statut: StatutAbonnement; periodeFin: Date | null } | null
 export function etatDeLEssai(abonnement: AbonnementLu, maintenant: Date): EtatEssai | null {
   if (!abonnement || abonnement.statut !== "essai" || !abonnement.periodeFin) return null;
   const fin = abonnement.periodeFin;
-  if (maintenant.getTime() >= fin.getTime()) return { statut: "termine", fin };
+  if (maintenant.getTime() >= fin.getTime()) {
+    // Fini dès la création : son entreprise avait déjà eu son essai (0195).
+    return abonnement.essaiDejaPris ? { statut: "termine", fin, dejaPris: true } : { statut: "termine", fin };
+  }
   const joursRestants = Math.ceil((fin.getTime() - maintenant.getTime()) / UN_JOUR_MS);
   return { statut: "en-cours", joursRestants, alerte: joursRestants <= JOURS_AVANT_ALERTE, fin };
 }
@@ -167,6 +170,7 @@ export function enLectureSeule(abonnement: AbonnementLu, maintenant: Date): bool
 
 /** Ce que dit l'écran quand il appuie quand même sur un bouton qui écrit ; `null` quand tout est ouvert. */
 export function phraseLectureSeule(acces: EtatAcces | null): string | null {
+  if (acces?.statut === "termine" && acces.dejaPris) return "Votre entreprise a déjà eu son essai. Choisissez une formule pour créer.";
   if (acces?.statut === "termine") return "Votre essai est terminé. Choisissez une formule pour créer de nouveau.";
   if (acces?.statut === "resilie") return "Votre abonnement est terminé. Choisissez une formule pour créer de nouveau.";
   if (acces?.statut === "ferme") return "Votre compte est fermé. Rouvrez-le dans Mes données pour créer de nouveau.";
@@ -177,6 +181,7 @@ export function phraseLectureSeule(acces: EtatAcces | null): string | null {
 export function texteDuRuban(etat: EtatAcces): string {
   if (etat.statut === "ferme") return "Compte fermé, lecture seule";
   if (etat.statut === "resilie") return "Abonnement terminé, lecture seule";
+  if (etat.statut === "termine" && etat.dejaPris) return "Essai déjà utilisé par votre entreprise";
   if (etat.statut === "termine") return "Essai terminé, lecture seule";
   return etat.joursRestants > 1
     ? `Essai gratuit, ${etat.joursRestants} jours restants`

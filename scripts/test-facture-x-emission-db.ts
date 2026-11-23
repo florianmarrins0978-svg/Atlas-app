@@ -119,7 +119,7 @@ async function main() {
     assert.equal(chiffre, false, "une Factur-X ne peut pas être chiffrée");
     assert.ok(xml, "aucun factur-x.xml dans la pièce archivée");
     assert.ok(xml!.includes(`<ram:ID>${numero}</ram:ID>`), "le XML ne porte pas le numéro de la facture");
-    assert.ok(xml!.includes('<ram:ID schemeID="0002">123456789</ram:ID>'), "le SIREN du vendeur manque");
+    assert.ok(xml!.includes('<ram:ID schemeID="0002">123456782</ram:ID>'), "le SIREN du vendeur manque");
     assert.ok(xml!.includes('<ram:ID schemeID="0002">987654321</ram:ID>'), "le SIREN du client manque");
     assert.ok(xml!.includes("<ram:GrandTotalAmount>2880.00</ram:GrandTotalAmount>"), "le total TTC n'est pas celui de la facture");
   });

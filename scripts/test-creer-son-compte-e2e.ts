@@ -53,7 +53,8 @@ const REPONSES: Record<string, string> = {
   "Nom de l’entreprise": "Perret Paysage",
   "1 000": "1000",
   "Versailles": "Versailles",
-  "14 chiffres": "12345678901234",
+  // Une clé de Luhn juste : la porte refuse un SIRET qui ne peut pas exister.
+  "14 chiffres": "12345678200127",
   "Adresse du siège": "3 rue des Tilleuls, 78000 Versailles",
   "FR…": "FR12345678901",
   "FR76 …": "FR7630001007941234567890185",

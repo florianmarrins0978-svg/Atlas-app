@@ -3,7 +3,7 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
-import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { SiretMalFormeError, mettreAJourEntreprise } from "@/server/repositories/entreprises";
 
 /**
  * L'identité de l'entreprise, écrite depuis les réglages.
@@ -80,6 +80,7 @@ export async function majIdentiteAction(data: {
     await mettreAJourEntreprise(ctx, data);
     return { ok: true };
   } catch (erreur) {
+    if (erreur instanceof SiretMalFormeError) return { ok: false, raison: erreur.message };
     if (erreur instanceof PreuveRecenteExigeeError) {
       return { ok: false, raison: erreur.message, preuveExigee: true };
     }

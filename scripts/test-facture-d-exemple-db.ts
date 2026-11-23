@@ -76,7 +76,7 @@ async function main() {
     { email: `exemple-${Math.random().toString(36).slice(2)}@essai.local`, nom: "Patron" }
   );
   const ctx: Ctx = { utilisateurId, entrepriseId: entreprise.id };
-  await entreprisesRepo.mettreAJourEntreprise(ctx, { regimeTva: "assujettie", siret: "12345678900012" });
+  await entreprisesRepo.mettreAJourEntreprise(ctx, { regimeTva: "assujettie", siret: "12345678200010" });
 
   let texte = "";
   await essai("le PDF porte son nom, le client « Mr. Exemple », EXEMPLE et les trois taux", async () => {

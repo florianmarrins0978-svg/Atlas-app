@@ -45,6 +45,7 @@ export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | nu
         periodicite: abonnements.periodicite,
         statut: abonnements.statut,
         periodeFin: abonnements.periodeFin,
+        essaiDejaPris: abonnements.essaiDejaPris,
         annulationDemandee: abonnements.annulationDemandee,
         clientPrestataire: abonnements.clientPrestataire,
         abonnementPrestataire: abonnements.abonnementPrestataire,

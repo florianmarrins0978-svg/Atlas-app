@@ -54,6 +54,10 @@ const TABLES = [
   // porte des PORTES d'accès ne doit pas dépendre d'un effet de bord pour être
   // vidée entre deux suites.
   "cles_appareil",
+  // Ne descend d'aucune entreprise, et c'est voulu (migration 0195 : la ligne
+  // survit à l'entreprise effacée). Sans elle ici, le SIREN pris par une suite
+  // retirerait l'essai du compte de la suivante.
+  "essais_par_siren",
 ];
 
 // Connexion courte et dédiée : les suites terminent par pool.end() sur le pool

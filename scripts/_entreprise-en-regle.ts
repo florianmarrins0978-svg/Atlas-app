@@ -13,7 +13,9 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
  */
 export const IDENTITE_EN_REGLE = {
   adresse: "10 rue des Artisans, Nantes",
-  siret: "123 456 789 00012",
+  // Un SIRET qui peut exister (clé de Luhn, `siretBienForme`) : depuis le
+  // 23 novembre 2026, un numéro sans clé juste ne s'écrit plus.
+  siret: "123 456 782 00010",
   formeJuridique: "EI",
   numeroTva: "FR12123456789",
   mediateurNom: "Médiateur d'essai",

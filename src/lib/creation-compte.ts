@@ -45,6 +45,7 @@ import { FORMES_JURIDIQUES, formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { MOYENS_ACCEPTES, MOYENS_PROPOSES } from "@/lib/modalites-paiement";
 import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
+import { siretBienForme } from "@/lib/siren";
 
 /** Le chapitre est ce qui s'affiche en haut ; un segment de jauge chacun. */
 export type Chapitre =
@@ -526,6 +527,13 @@ export function refusDe(question: Question, reponses: Record<string, string>): s
   // pour une case facultative.
   if (question.id === "capitalRcs" && (reponses.capital ?? "").trim() && capitalEnBase(reponses.capital) === undefined) {
     return "Un montant, en chiffres.";
+  }
+
+  // **Un SIRET qui ne peut pas exister se refuse ICI** (sa question du
+  // 23 novembre 2026, la triche par un numéro au hasard) : la clé de Luhn du
+  // SIREN et du SIRET. Laissé vide, il se passe, comme avant.
+  if (question.id === "siret" && (reponses.siret ?? "").trim() && !siretBienForme(reponses.siret)) {
+    return "Ce SIRET n'existe pas. Vérifiez les 14 chiffres.";
   }
 
   if (question.formes && !(reponses.forme ?? "").trim()) return "Choisissez une forme juridique.";

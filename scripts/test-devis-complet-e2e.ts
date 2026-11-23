@@ -178,7 +178,7 @@ async function main() {
   await motDePasse.waitFor({ state: "hidden", timeout: 10000 });
 
   const siret = page.getByLabel("SIREN / SIRET");
-  await siret.fill("123 456 789 00012");
+  await siret.fill("123 456 782 00010");
   await siret.blur();
   await page.waitForTimeout(800);
 
@@ -196,7 +196,7 @@ async function main() {
     entreprise = await lireEntreprise();
   }
   assert.equal(entreprise.rows[0].iban, "FR76 3000 1000 0100 0000 0000 123", "L'IBAN n'a pas été enregistré.");
-  assert.equal(entreprise.rows[0].siret, "123 456 789 00012", "Le SIRET n'a pas été enregistré.");
+  assert.equal(entreprise.rows[0].siret, "123 456 782 00010", "Le SIRET n'a pas été enregistré.");
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
 
   // Une ligne complète : description, quantité, prix unitaire.

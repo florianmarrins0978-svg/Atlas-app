@@ -1298,7 +1298,12 @@ pour que « Quitter » ramène à Chantiers (`ARCHITECTURE.md` §611). Niveau 3
 pansements, tirets, nom, couches, code mort, accès par rôle.
 
 **⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : tranché le 23 novembre,
-le SIREN seul, à coder.** Ses mots : *« on part sur le SIREN comme tu as dit »*,
+le SIREN seul ; en cours de codage, sur son « tu peux coder ça, pas de
+batterie ».** Fait le 23 novembre, pas encore éprouvé par la batterie : la clé
+du SIRET, et un essai par SIREN (migration 0195, `ARCHITECTURE.md` §612). Les
+comptes d'avant 0195 ne sont pas inscrits (aucun rattrapage, l'appli n'est pas
+vendue). Reste : le message sous la case du SIRET avant la création du compte,
+le registre des entreprises, l'identité attachée au SIRET. Ses mots : *« on part sur le SIREN comme tu as dit »*,
 et sur la carte de paiement : *« pas une bonne idée, parce que si un patron
 décide de payer l'abonnement à quelqu'un d'autre, il va être bloqué ; il faut
 que ça soit simplement le numéro de SIREN qui bloque »*. **Aucune empreinte de

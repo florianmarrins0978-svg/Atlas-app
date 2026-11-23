@@ -5,7 +5,7 @@ import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
-import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { SiretMalFormeError, mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
 import { exigerProprietaire } from "@/server/autorisation";
 import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
@@ -64,7 +64,7 @@ export async function majEmetteurAction(data: {
   telephone?: string;
   email?: string;
   iban?: string;
-}): Promise<{ ok: true } | { ok: false; raison: string; preuveExigee: true }> {
+}): Promise<{ ok: true } | { ok: false; raison: string; preuveExigee?: true }> {
   const ctx = await getCurrentCtx();
   // **L'en-tête du devis EST l'identité de l'entreprise** (audit E2) : chaque
   // champ écrit la ligne `entreprises`, celle que Réglages, Identité réserve au
@@ -83,6 +83,7 @@ export async function majEmetteurAction(data: {
     return { ok: true };
   } catch (erreur) {
     if (erreur instanceof PreuveRecenteExigeeError) return { ok: false, raison: erreur.message, preuveExigee: true };
+    if (erreur instanceof SiretMalFormeError) return { ok: false, raison: erreur.message };
     throw erreur;
   }
 }

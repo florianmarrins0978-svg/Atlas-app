@@ -27,7 +27,8 @@ import { texteDuPdf } from "./_lecteur-pdf-protege";
 // rempli : celui-là serait vert même si rien ne le recopiait (`CLAUDE.md`
 // §5 quater). Sous `atlas_app`, comme chez lui.
 
-const SIRET = "12345678900012";
+// Une clé de Luhn juste : un SIRET qui ne peut pas exister ne s'écrit plus.
+const SIRET = "12345678200010";
 const RM = "RM 33";
 const AUTRE = "RM 40";
 

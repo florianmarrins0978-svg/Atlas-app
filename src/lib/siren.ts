@@ -25,3 +25,53 @@ export function siretLu(saisi: string | null | undefined): string | null {
   if (chiffres.length !== 14) return null;
   return chiffres.replace(/(\d{3})(\d{3})(\d{3})(\d{5})/, "$1 $2 $3 $4");
 }
+
+/** La clé de Luhn : chaque chiffre de rang pair depuis la droite est doublé. */
+function cleDeLuhnJuste(chiffres: string): boolean {
+  let somme = 0;
+  for (let i = 0; i < chiffres.length; i++) {
+    let c = Number(chiffres[chiffres.length - 1 - i]);
+    if (i % 2 === 1) {
+      c *= 2;
+      if (c > 9) c -= 9;
+    }
+    somme += c;
+  }
+  return somme % 10 === 0;
+}
+
+/** Le SIREN de La Poste : ses établissements suivent une autre clé (Insee). */
+const SIREN_DE_LA_POSTE = "356000000";
+
+/**
+ * UN SIRET QUI PEUT EXISTER — sa question du 23 novembre 2026 : *« il n'y a pas
+ * moyen de tricher, de taper un numéro au pif ? »*. Quatorze chiffres ne
+ * suffisent pas : le SIREN (les neuf premiers) et le SIRET entier portent
+ * chacun une clé de Luhn, et un numéro tapé au hasard la rate neuf fois sur
+ * dix. Ce n'est pas encore « il existe » (le registre le dira) ; c'est « il
+ * pourrait exister ».
+ *
+ * La Poste fait exception, et l'Insee le documente : ses établissements autres
+ * que le siège ont une somme de chiffres multiple de 5, sans clé de Luhn.
+ */
+export function siretBienForme(saisi: string | null | undefined): boolean {
+  const chiffres = (saisi ?? "").replace(/\D/g, "");
+  if (chiffres.length !== 14) return false;
+  const siren = chiffres.slice(0, 9);
+  if (siren === SIREN_DE_LA_POSTE) {
+    // Son siège garde la clé de Luhn ; ses autres établissements, la somme.
+    return cleDeLuhnJuste(chiffres) || [...chiffres].reduce((t, c) => t + Number(c), 0) % 5 === 0;
+  }
+  return cleDeLuhnJuste(siren) && cleDeLuhnJuste(chiffres);
+}
+
+/**
+ * Les neuf chiffres du SIREN, sans espace : la clé qui reconnaît l'entreprise
+ * d'un essai à l'autre. Un déménagement change le SIRET, jamais le SIREN.
+ * `null` si le SIRET n'est pas bien formé : rien ne se reconnaît sur un numéro
+ * qui ne peut pas exister.
+ */
+export function sirenDeLEssai(saisi: string | null | undefined): string | null {
+  if (!siretBienForme(saisi)) return null;
+  return (saisi ?? "").replace(/\D/g, "").slice(0, 9);
+}

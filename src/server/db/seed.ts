@@ -308,7 +308,8 @@ async function main() {
 
     console.log("Nettoyage des données de démonstration existantes...");
     // **`tentatives_connexion` ne descend d'aucune entreprise : CASCADE ne
-    // l'emporte pas**, il faut la nommer.
+    // l'emporte pas**, il faut la nommer. `essais_par_siren` non plus (0195) :
+    // gardé, le SIREN d'un compte d'essai effacé retirerait l'essai du suivant.
     //
     // Trouvé le 23 août 2026 par `npm run verifier:connexion`, et par lui seul :
     // le jeu de démonstration venait d'être refait, le compte recréé — et
@@ -325,7 +326,7 @@ async function main() {
         lignes_facture, factures, lignes_devis, devis, lignes_prix, photos, notes_vocales,
         materiel, prestations, chantiers, clients, tarifs,
         entreprise_compteurs, membres_entreprise, entreprises, users,
-        tentatives_connexion, cles_appareil
+        tentatives_connexion, cles_appareil, essais_par_siren
       RESTART IDENTITY CASCADE
     `);
 

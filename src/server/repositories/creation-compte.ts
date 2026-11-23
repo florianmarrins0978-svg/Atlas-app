@@ -9,6 +9,8 @@ import { formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { estUnMoyenAccepte } from "@/lib/modalites-paiement";
 import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
+import { siretBienForme, sirenDeLEssai } from "@/lib/siren";
+import { prendreLEssaiDuSiren } from "@/server/repositories/essais-par-siren";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
@@ -146,6 +148,11 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
     return { ok: false, refus: "Choisissez un moyen de paiement dans la liste." };
   }
   if (vide(saisie.entreprise)) return { ok: false, refus: "Le nom de l’entreprise est nécessaire." };
+  // La même règle que l'écran (`refusDe`, la clé de Luhn) : un SIRET qui ne
+  // peut pas exister ne passe pas plus ici qu'à la porte.
+  if (!vide(saisie.siret) && !siretBienForme(saisie.siret)) {
+    return { ok: false, refus: "Ce SIRET n'existe pas. Vérifiez les 14 chiffres." };
+  }
 
   // Les deux réglages de TVA ne se lisent que dans LEUR liste, et n'ont de sens
   // que pour qui la facture : une franchise garde la valeur d'office, qu'elle
@@ -229,12 +236,23 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
     // seul qui en reçoive un ; les entreprises déjà en place n'ont pas de
     // ligne d'abonnement, et l'on ne leur en invente pas. Aucune carte n'est
     // demandée : Stripe ne connaît pas cette ligne, c'est Atlas qui compte.
+    //
+    // **Un essai par entreprise, reconnue à son SIREN** (sa décision du
+    // 23 novembre 2026, migration 0195). Le SIREN déjà essayé ne bloque pas le
+    // compte, qui se crée : l'essai, lui, est fini dès maintenant, et le ruban
+    // dira pourquoi (`essaiDejaPris`). Sans SIRET, l'essai démarre ; il
+    // s'arrêtera quand le SIRET sera tapé, puisqu'aucun devis ni aucune facture
+    // ne part sans lui.
+    const siren = sirenDeLEssai(saisie.siret);
+    const accorde = siren === null || (await prendreLEssaiDuSiren(tx, siren, entreprise.id));
+    const maintenant = new Date();
     await tx.insert(abonnements).values({
       entrepriseId: entreprise.id,
       formule: FORMULE_DE_LESSAI,
       periodicite: "mensuelle",
       statut: "essai",
-      periodeFin: finDeLEssai(new Date()),
+      periodeFin: accorde ? finDeLEssai(maintenant) : maintenant,
+      essaiDejaPris: !accorde,
     });
 
     logger.info("Compte créé depuis la porte", {

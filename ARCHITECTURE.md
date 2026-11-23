@@ -38426,3 +38426,52 @@ reçoit `/visite-guidee` (`acces-roles.ts`), puisque la carte s'affiche sur son 
 ne montre que des données d'essai. Et la porte « Créer un devis » se mesure sans la carte
 (`test-accueil-vide-porte-e2e.ts`, `mesurer-porte-accueil-vide.mts`) : la carte la fait descendre
 tant qu'elle est là, comme sur la planche qu'il a validée, puis la porte revient au tiers.
+
+## §612 : Un essai par entreprise, reconnue à son SIREN, et que l'appli ne lit jamais
+
+**Le 23 novembre 2026**, il tranche : *« on part sur le SIREN »*, et contre la carte bancaire :
+*« si un patron décide de payer l'abonnement à quelqu'un d'autre, il va être bloqué ; il faut que
+ça soit simplement le numéro de SIREN qui bloque »*. Puis : *« il ne faut pas le bloquer ; il ne
+faut pas non plus qu'il puisse créer des comptes gratuits à tire-larigot »*.
+
+**Le SIREN, pas le SIRET.** Les neuf premiers chiffres désignent l'entreprise ; les cinq derniers,
+l'établissement. Un déménagement change le SIRET, jamais le SIREN : retenir le SIRET rouvrirait un
+essai à chaque adresse.
+
+**On ne bloque jamais le compte, on termine l'essai.** Un SIRET est public, il est sur chaque
+devis : bloquer l'inscription laisserait n'importe qui priver un concurrent de son compte. Le
+compte se crée donc toujours ; son abonnement naît avec `periode_fin` à l'instant même et
+`essai_deja_pris`, ce qui le met en lecture seule par le seul chemin qui existe déjà
+(`enLectureSeule`, dans `withEntreprise`) et laisse ouverte la sortie de l'essai
+(`pourSortirDeLEssai`). Accepter les conditions ne passe pas par `withEntreprise` : il n'est donc
+pas coincé avant le choix d'une formule.
+
+**L'appli ne lit jamais la table.** `essais_par_siren` tient les SIREN de tous les clients de
+Cause : une injection qui la lirait en tirerait la liste. `atlas_app` n'y a aucun droit (et la
+migration le lui retire NOMMÉMENT : les droits par défaut de la base lui donnaient la lecture de
+toute table neuve, vu sur la base d'essai) ; il pose une question à deux fonctions
+`SECURITY DEFINER` qui ne rendent qu'un oui ou un non, sur le modèle de 0064. Et la table est sous
+FORCE RLS avec une seule politique, pour son propriétaire : un droit donné par erreur demain ne
+lui ouvrirait encore aucune ligne. Prendre l'essai et savoir s'il était libre se font dans la même
+instruction (`INSERT … ON CONFLICT DO NOTHING`, puis le titulaire relu) : deux inscriptions
+simultanées du même SIREN ne peuvent pas l'avoir toutes les deux.
+
+**Pas de clé étrangère vers `entreprises`**, et c'est voulu : effacer son compte ne doit pas rendre
+l'essai. Garder le SIREN d'un entrepreneur individuel après l'effacement est une donnée
+personnelle : sa durée et sa mention attendent le juriste (`TODO.md`). Conséquence pour les
+essais : `nettoyerBase()` et le jeu de démonstration la nomment dans leur `TRUNCATE`, sans quoi le
+SIREN pris par une suite retirerait l'essai de la suivante.
+
+**Le SIRET se vérifie là où il s'écrit, et seulement quand il change.** `mettreAJourEntreprise`
+est le passage commun de Réglages et de l'en-tête du devis : la clé de Luhn s'y contrôle
+(`siretBienForme`, `src/lib/siren.ts`, La Poste comprise : son siège garde Luhn, ses autres
+établissements font une somme multiple de 5). Comparé en chiffres seuls à ce qui est en base : un
+artisan inscrit avant ce jour avec un chiffre de travers enregistre toute sa fiche d'un coup, et
+ne doit pas se voir refuser son téléphone pour un SIRET qu'il n'a pas touché. Le refus se lève
+(`SiretMalFormeError`) et les actions le rendent en valeur : un message levé par une action
+serveur n'arrive jamais jusqu'à lui (`HANDOVER.md`, piège 0 ter).
+
+**Ce qui n'est pas fait, et qu'il ne faut pas croire fait.** Les comptes d'avant 0195 ne sont pas
+inscrits dans la table (aucun rattrapage : l'appli n'est pas encore vendue) ; le message avant la
+création du compte, le registre des entreprises et l'identité attachée au SIRET sont les tranches
+suivantes (`TODO.md`).

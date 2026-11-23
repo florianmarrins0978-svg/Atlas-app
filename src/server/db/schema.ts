@@ -4155,6 +4155,12 @@ export const abonnements = pgTable(
     // « essai » depuis la migration 0089 — quinze jours sans carte, puis lecture seule.
     statut: text("statut", { enum: ["essai", "actif", "impaye", "resilie"] }).notNull(),
     periodeFin: timestamp("periode_fin", { withTimezone: true }),
+    /**
+     * L'essai est fini parce que son entreprise l'avait déjà eu, reconnue à son
+     * SIREN (migration 0195, sa décision du 23 novembre 2026) : le ruban dit
+     * « Essai déjà utilisé par votre entreprise », pas « Essai terminé ».
+     */
+    essaiDejaPris: boolean("essai_deja_pris").notNull().default(false),
     annulationDemandee: boolean("annulation_demandee").notNull().default(false),
     clientPrestataire: text("client_prestataire"),
     abonnementPrestataire: text("abonnement_prestataire"),
