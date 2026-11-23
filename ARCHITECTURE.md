@@ -38293,3 +38293,45 @@ Remonter la nourrice rend tout : le choix ne survit pas au montage, comme les nu
 contact (sa caméra, ses deux tampons, son flou) sont partis, avec la passe qui les refaisait. L'occlusion
 ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site, les
 deux planches et les photos de l'éclaté du PDF (§605), reprises sans ombres le même soir.
+
+## §608 : La pile du robinet est en 3D, debout, dans la scène de la nourrice
+
+**Sa demande du 22 novembre 2026, puis son « Parfait, code ça » du 23.** Une planche d'abord
+(`appli/arrosage-robinet-3d.html`) : une combinaison, puis les neuf (trois programmateurs en nez de
+robinet fois trois départs), chaque pièce relevée sur ses photos (`docs/robinet-3d-photos/`). Puis
+l'écran du plan au robinet : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste
+de ses pièces, qui reste ce qu'on touche ; la pile en photos d'avant n'est plus que le repli d'un
+appareil sans WebGL 2, et porte alors elle-même ses pièces à toucher.
+
+**Une seule 3D, comme la nourrice (§601).** `appli/robinet-3d/` porte les pièces de la pile, leurs
+matières propres et leur composition ; la scène, les formes, les matières de base, le PEHD et le toucher
+sont ceux de la nourrice. La planche et l'écran appellent le même `ouvrirRobinet`.
+
+**Pourquoi une option `debout` de la scène, et pas une scène à elle.** Couchée dans la scène de la
+nourrice, la pile tournait comme une aiguille de montre sous le doigt et son dos ne se voyait jamais :
+l'éclaté ne sait courir que dans le plan du sol, et le doigt tourne autour de la verticale. La planche a
+d'abord eu sa propre scène, recopiée ; en entrant dans l'appli, elle est devenue une option de
+`nourrice-3d/scene.js` (pièces redressées, éclaté vertical, doigt qui passe dessous, vues « face » et
+« biais »), et le toucher est sorti dans `nourrice-3d/toucher.js` pour les deux. Sans l'option, la
+nourrice est inchangée : sa planche rendue avant et après diffère de 5 à 18 pixels sur 150 000 quand elle
+diffère de 9 à 23 d'elle-même d'un rendu à l'autre, et ses axes mesurent toujours 0,000 mm.
+
+**Ce que l'écran montre, et ce qu'il ne montre pas.** Le plan dit le montage : le Solem BL-NR au nez de
+robinet (le seul programmateur que le plan connaît), rien quand la nourrice reste ; la double sortie
+selon son interrupteur ; le départ (`departEn3D` : le Ø25 et le Ø32 sont le même à l'oeil, sa règle). Une
+pièce changée ou supprimée dans la liste reste dessinée telle qu'elle était proposée, comme sur la
+nourrice (`TODO.md`).
+
+**Le Rain Bird prend la sortie droite de la double sortie.** Son boîtier part d'un seul côté de l'eau ;
+sur la sortie gauche, il passait sous la sortie du client, et le tourner mettait son écran contre le mur.
+Le Solem (pareil sur ses deux flancs) et le Buddy (18 mm de marge) restent sur la gauche, celle du plan.
+
+**Ce qui le tient.** `scripts/test-robinet-3d.ts` : chaque bout de vissage déclaré est là où ses sommets
+le mettent (huit pièces relevées par huit agents s'y retrouvent), chaque pile de la planche et de l'écran
+se compose, l'écran montre le départ que la liste compte, aucun programmateur ne bouche la sortie du
+client. Chaque contrôle a été vu rouge (une sortie décalée de 0,2 mm, un tube vissé sans raccord, le Rain
+Bird remis à gauche).
+
+**Les teintes se règlent sur le rendu.** Prises telles quelles sur ses photos, elles sortaient deux à
+trois fois trop sombres sous l'éclairage de la scène ; elles sont réglées en comparant le rendu à la photo
+(l'anthracite de l'embout Palaplast : 47, 49, 54 sur la photo, 46, 49, 53 au rendu).

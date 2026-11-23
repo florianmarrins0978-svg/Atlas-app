@@ -117,6 +117,16 @@ export function libelleDepart(d: Depart): string {
   return d === 16 ? "Ø16 rigide" : d === "16s" ? "Ø16 souple" : `Ø${d}`;
 }
 
+/**
+ * Le départ tel que la pile en 3D le montre (`appli/robinet-3d/composition.js`,
+ * `DEPARTS`) : le raccord et le tuyau de ce départ. Le Ø25 et le Ø32 n'y font
+ * qu'un, sa règle du 22 novembre 2026 : *« que le PEHD soit en 25 ou 32 tu
+ * prends le même »* ; la liste, elle, garde le raccord et le tuyau du Ø32.
+ */
+export function departEn3D(d: Depart): "r16" | "s16" | "pe25" {
+  return d === 16 ? "r16" : d === "16s" ? "s16" : "pe25";
+}
+
 /** Le nom du tuyau qui part, tel que la liste l'écrit. */
 export function nomDuTuyau(d: Depart): string {
   return d === 16 ? "PEBD rigide Ø16" : d === "16s" ? "Ø16 souple" : `PEHD Ø${d}`;

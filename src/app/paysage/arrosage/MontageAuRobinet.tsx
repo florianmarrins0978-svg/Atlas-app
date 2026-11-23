@@ -1,6 +1,8 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { colors } from "@/lib/design-tokens";
+import Robinet3D from "./Robinet3D";
 import type { Poste } from "@/lib/arrosage/postes";
 import { DOSSIER_PHOTOS_ROBINET, ROBINET, type Depart, type PieceDuRobinet } from "@/lib/arrosage/robinet";
 
@@ -22,6 +24,12 @@ import { DOSSIER_PHOTOS_ROBINET, ROBINET, type Depart, type PieceDuRobinet } fro
  *
  * Le fond de la pile reste blanc quelle que soit la charte, comme celui de la
  * nourrice : les photos sont détourées sur blanc et fondues en `multiply`.
+ *
+ * **Depuis le 23 novembre 2026, la pile se montre en 3D** (`Robinet3D`, sa
+ * planche `appli/arrosage-robinet-3d.html`, son « Parfait, code ça »), et la
+ * liste dessous, sans photos, reste ce qu'on touche. La pile en photos ne sert
+ * plus que de repli, sur l'appareil qui ne sait pas afficher la 3D : elle porte
+ * alors elle-même ses pièces à toucher, comme avant.
  */
 export default function MontageAuRobinet({
   postes,
@@ -38,58 +46,97 @@ export default function MontageAuRobinet({
   manque: string | null;
   onPiece: (p: Poste) => void;
 }) {
-  const seize = depart === 16 || depart === "16s";
+  const [repli, setRepli] = useState(false);
+  const surPrete = useCallback((oui: boolean) => setRepli(!oui), []);
+  const double = postes.some((p) => p.cle === "am:double");
+  const etages = (photos: boolean) => postes.map((p, i) => <Etage key={p.cle} p={p} premier={i === 0} photos={photos} depart={depart} nez={nez} manque={manque} onPiece={onPiece} />);
   return (
-    <div className="mt-[10px] rounded-[16px] px-3 py-[14px]" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }} data-atlas="montage-robinet">
-      {postes.map((p, i) => {
-        const fiche = ficheDe(p.cle, depart);
-        const hauteur = p.changee ? 60 : fiche?.hauteur ?? 60;
-        const axe = p.changee ? 0.5 : fiche?.axe ?? 0.5;
-        const photo = p.changee ? p.photo : fiche ? `${DOSSIER_PHOTOS_ROBINET}${fiche.photo}` : p.photo;
-        const sousTitre = p.changee
-          ? "changée"
-          : p.cle === "am:pe"
-            ? nez ? "jusqu’au réseau, à mesurer" : p.q ? `jusqu’à la nourrice, ${p.q} m` : "jusqu’à la nourrice, à mesurer"
-            : fiche?.sansReference ? "Réf. du fournisseur" : `Réf. ${p.ref}`;
-        return (
-          <button
-            key={p.cle}
-            type="button"
-            onClick={() => onPiece(p)}
-            data-atlas="etage-robinet"
-            data-cle={p.cle}
-            data-etat={p.retiree ? "retiree" : p.changee ? "changee" : "proposee"}
-            className="grid w-full items-center gap-[10px] border-0 bg-transparent p-0 text-left"
-            style={{ gridTemplateColumns: "150px 1fr", marginTop: i ? 8 : 0, font: "inherit", color: "inherit", cursor: "pointer" }}
-            aria-label={p.nom}
-          >
-            <span className="relative block" style={{ height: hauteur, opacity: p.retiree ? 0.35 : 1, filter: p.retiree ? "grayscale(1)" : undefined }}>
-              <span className="absolute top-0 block h-full" style={{ left: 60, transform: `translateX(${-axe * 100}%)` }}>
-                {p.cle === "am:pe" && !p.changee ? (
-                  <Tube seize={seize} />
-                ) : photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
-                  <img src={photo} alt="" className="block h-full w-auto" style={{ mixBlendMode: "multiply" }} />
-                ) : (
-                  <span className="block whitespace-nowrap text-[11px]" style={{ color: colors.muted }}>photo à venir</span>
-                )}
-              </span>
-            </span>
-            <span className="text-[13px] leading-[1.35]" style={{ color: colors.inkSoft }}>
-              <b className="block font-semibold" style={{ color: p.retiree ? colors.alert : colors.ink, textDecoration: p.retiree ? "line-through" : undefined }}>
-                {p.nom}
-              </b>
-              {sousTitre}
-              {p.cle === "am:prog" && manque && (
-                <span className="mt-1 block font-semibold" style={{ color: colors.alert }} data-atlas="manque-de-voies">
-                  {manque}
-                </span>
-              )}
-            </span>
-          </button>
-        );
-      })}
+    <div data-atlas="montage-robinet">
+      <Robinet3D
+        nez={nez}
+        double={double}
+        depart={depart}
+        onPrete={surPrete}
+        repli={
+          <div className="mt-[10px] rounded-[16px] px-3 py-[14px]" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+            {etages(true)}
+          </div>
+        }
+      />
+      {!repli && <div className="mt-3">{etages(false)}</div>}
     </div>
+  );
+}
+
+/**
+ * Un étage de la pile, qui se touche : sa photo posée sur l'axe de vissage (la
+ * pile en photos), ou son seul nom sous la 3D. Le nom, la référence et le manque
+ * de voies sont les mêmes dans les deux.
+ */
+function Etage({
+  p,
+  premier,
+  photos,
+  depart,
+  nez,
+  manque,
+  onPiece,
+}: {
+  p: Poste;
+  premier: boolean;
+  photos: boolean;
+  depart: Depart;
+  nez: boolean;
+  manque: string | null;
+  onPiece: (p: Poste) => void;
+}) {
+  const seize = depart === 16 || depart === "16s";
+  const fiche = ficheDe(p.cle, depart);
+  const hauteur = p.changee ? 60 : fiche?.hauteur ?? 60;
+  const axe = p.changee ? 0.5 : fiche?.axe ?? 0.5;
+  const photo = p.changee ? p.photo : fiche ? `${DOSSIER_PHOTOS_ROBINET}${fiche.photo}` : p.photo;
+  const sousTitre = p.changee
+    ? "changée"
+    : p.cle === "am:pe"
+      ? nez ? "jusqu’au réseau, à mesurer" : p.q ? `jusqu’à la nourrice, ${p.q} m` : "jusqu’à la nourrice, à mesurer"
+      : fiche?.sansReference ? "Réf. du fournisseur" : `Réf. ${p.ref}`;
+  return (
+    <button
+      type="button"
+      onClick={() => onPiece(p)}
+      data-atlas="etage-robinet"
+      data-cle={p.cle}
+      data-etat={p.retiree ? "retiree" : p.changee ? "changee" : "proposee"}
+      className="grid min-h-[44px] w-full items-center gap-[10px] border-0 bg-transparent p-0 text-left"
+      style={{ gridTemplateColumns: photos ? "150px 1fr" : "1fr", marginTop: premier ? 0 : 8, font: "inherit", color: "inherit", cursor: "pointer" }}
+      aria-label={p.nom}
+    >
+      {photos && (
+        <span className="relative block" style={{ height: hauteur, opacity: p.retiree ? 0.35 : 1, filter: p.retiree ? "grayscale(1)" : undefined }}>
+          <span className="absolute top-0 block h-full" style={{ left: 60, transform: `translateX(${-axe * 100}%)` }}>
+            {p.cle === "am:pe" && !p.changee ? (
+              <Tube seize={seize} />
+            ) : photo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
+              <img src={photo} alt="" className="block h-full w-auto" style={{ mixBlendMode: "multiply" }} />
+            ) : (
+              <span className="block whitespace-nowrap text-[11px]" style={{ color: colors.muted }}>photo à venir</span>
+            )}
+          </span>
+        </span>
+      )}
+      <span className="text-[13px] leading-[1.35]" style={{ color: colors.inkSoft }}>
+        <b className="block font-semibold" style={{ color: p.retiree ? colors.alert : colors.ink, textDecoration: p.retiree ? "line-through" : undefined }}>
+          {p.nom}
+        </b>
+        {sousTitre}
+        {p.cle === "am:prog" && manque && (
+          <span className="mt-1 block font-semibold" style={{ color: colors.alert }} data-atlas="manque-de-voies">
+            {manque}
+          </span>
+        )}
+      </span>
+    </button>
   );
 }
 

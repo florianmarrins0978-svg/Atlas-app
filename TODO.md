@@ -4,17 +4,19 @@
 
 Proposé : poser une vraie question avant le plan quand le piquage est sur un robinet (« Garder une sortie libre pour un tuyau d'arrosage ? »), au lieu de l'interrupteur « Double sortie sous le robinet », éteint d'office (`LePlanDuJardin.tsx`). Sa réponse : *« Non »*. Ne pas le reproposer.
 
-## ⏳ UNE PLANCHE À REGARDER : LE ROBINET EN 3D, SES NEUF COMBINAISONS (22 et 23 novembre 2026)
+## LE ROBINET EN 3D : SES NEUF COMBINAISONS, ET L'ÉCRAN DU PLAN AU ROBINET (22 et 23 novembre 2026)
 
 `appli/arrosage-robinet-3d.html` et `appli/robinet-3d/`, rien dans `src/`. Sa demande : *« fais-moi qu'une seule des 9 combinaisons possibles pour l'instant pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans l'appli en 3D ; on touche et on a l'éclaté, sans ombre »*, puis devant la première (Solem et Ø25) : *« Parfait, tu peux faire toutes les autres combinaisons exactement comme tu viens de faire là »*. Ses neuf photos : `docs/robinet-3d-photos/`.
 
 - **Les neuf** : trois programmateurs (Solem BL-NR SP1151, Rain Bird, Buddy AEV11401) fois trois départs (Ø16 rigide par le raccord Plasson taraudé, Ø16 souple par l'embout Palaplast MID6362, PEHD Ø25 ou Ø32 par le raccord femelle 25 OPL70302520 et le PEHD de la nourrice). Toutes partent de son robinet et de la double sortie BRO3493. Deux rangées de boutons sur la page.
-- **Ce qui attend SA réponse** : les neuf lui plaisent-elles ? Puis, s'il le veut, les mettre dans l'écran du plan au robinet (`MontageAuRobinet.tsx`), à la place des photos de la pile.
+- **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Reste** : la batterie (niveau 3 : `src/lib/arrosage/robinet.ts` atteint 160 points d'entrée), qui attend SON oui ; puis regarder l'écran sur son espace, et l'essayer sur un iPhone (la fluidité n'a été vue qu'en rendu logiciel).
+- **Une pièce changée ou supprimée ne se voit pas dans la 3D du robinet**, comme sur la nourrice : la liste dessous le dit. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer, pour les deux à la fois.
+- **Le Rain Bird et le Buddy ne sont que sur la planche** : le plan ne connaît que le Solem BL-NR (`src/lib/arrosage/robinet.ts`, `ROBINET.programmateur`). Les proposer dans le plan, c'est un choix de programmateur dans le plan, et leurs pièces dans la liste : à lui demander.
 - **Le Rain Bird prend la sortie DROITE** (décidé sans lui, et dit) : son boîtier part d'un seul côté de l'eau ; sur la sortie gauche il passait sous la sortie du client, et le tourner mettait son écran contre le mur. Le Solem et le Buddy restent sur la gauche (le Buddy s'arrête à 18 mm de la sortie droite, mesuré). Le Rain Bird n'est pas au catalogue Aqua Plus : il garde son nom de marque, sans référence.
 - **Ce qui est estimé faute de photo, et la photo qui le rendrait exact** (il les a proposées le 23, puis « fais avec ce que tu as ») : le robinet de profil (le relief en V du corps, le départ vers le mur), le Solem de face (son épaisseur), le Buddy et le Rain Bird de côté (leur épaisseur, le dos du Rain Bird), la double sortie de dessus (l'épaisseur du corps).
 - **Ses photos sont des photos de studio, peut-être retouchées** (celle du Rain Bird porte « WATEHRING », et son filetage y est au pas américain : le modèle garde le 3/4" gaz du contrat) : les proportions sont tenues à 5 ou 10 % près, l'étalon est le filetage 3/4".
 - **Les teintes sont réglées sur le RENDU comparé aux photos**, pas sur les photos seules : prises telles quelles, elles sortaient deux à trois fois trop sombres sous l'éclairage de la scène (`robinet-3d/matieres.js`).
-- **Une scène à part, et pourquoi** : couchée dans la scène de la nourrice, la pile tournait comme une aiguille sous le doigt et son dos ne se voyait jamais. `robinet-3d/scene.js` la met debout. **Si elle est retenue dans l'appli** : la pile debout devient une option de `nourrice-3d/scene.js` (qui est celle de l'écran du plan, donc avec ses contrôles), `robinet-3d/scene.js` disparaît, et le toucher recopié dans `robinet-3d/vue.js` aussi.
+- **La pile debout est une option de `nourrice-3d/scene.js`** (`debout`), et le toucher vit dans `nourrice-3d/toucher.js` pour les deux : la scène à part de la planche et son toucher recopié ont disparu en entrant dans l'appli, comme promis ici.
 
 ## LES NUMÉROS DE LA NOURRICE EN 3D : SUR `main` (23 novembre 2026), CE QUI RESTE
 
@@ -1418,7 +1420,7 @@ pellicules sont dans `.impeccable/review/motion/` (dossier ignoré de git, à
 refaire). `impeccable motion-capture` ne sait ni défiler ni suivre des scènes
 enchaînées par minuteries : il n'a servi que pour la bascule des prix et les
 questions. La direction retenue est dans
-`.impeccable/surfaces/appli-vente-cause-2-html.md`.
+`.impeccable/surfaces/appli-vente-cause-2-visite-html.md`.
 
 ## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
