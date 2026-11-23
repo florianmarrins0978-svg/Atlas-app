@@ -38398,52 +38398,67 @@ de robinet).
 reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
 (`TODO.md`).
 
-## §610 : Le tuyau passe au plus court en PE, et une parcelle sur deux vannes se partage en parts égales
+## §610 : Le tuyau au plus court en PE, les parts égales, la pression au bout, deux nourrices
 
-**Ses deux corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé
-(`appli/arrosage-rainbird-et-darcy.html`) : *« il faut pouvoir dépenser le moins de mètres linéaires
-possible de PE »*, et *« ça sert à rien de faire un réseau à 6 arroseurs et un réseau à 4. Autant
-faire deux réseaux à 5. C'est plus safe. »* Les deux sont des règles du plan ; le détail, mot pour
-mot, est dans `.claude/rules/arrosage.md`.
+**Ses corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé,
+puis question par question le même soir. Le détail, mot pour mot, est dans
+`.claude/rules/arrosage.md` ; ici, ce qui fait tenir le code.
 
-**Le tracé (`tracerReseaux`, `trace.ts`).** Un segment déjà creusé par un autre réseau ne coûtait
-rien : le second réseau suivait la tranchée du premier même en doublant son tuyau (son réseau vert,
-42 m de PE ; son tracé à lui, 18 m, pour la même tranchée de 72 m). Il coûte désormais son PE, moins
-un millième (`DEPARTAGE`) : la tranchée ouverte départage à PE égal, et ne décide plus. La pénalité
-de la traversée (`PENALITE_TRAVERSEE`) ne s'applique qu'au segment neuf : un segment déjà creusé ne
-fait rien creuser de plus au milieu du jardin.
+**Le tracé (`tracerReseaux`, `trace.ts`).** *« Il faut pouvoir dépenser le moins de mètres linéaires
+possible de PE »*. Un segment déjà creusé par un autre réseau ne coûtait rien : le second réseau
+suivait la tranchée du premier même en doublant son tuyau (son réseau vert, 42 m ; son tracé, 18 m,
+pour la même tranchée de 72 m). Il coûte désormais son PE moins un millième (`DEPARTAGE`) : la
+tranchée ouverte départage à PE égal, et ne décide plus. La pénalité de la traversée ne s'applique
+qu'au segment neuf.
 
-**Le partage (`partsEgales`, `calcul.js`, les deux copies).** Le remplissage (`couperEnVannes`)
-vise l'équilibre du GROUPE (toutes les pelouses d'un même matériel) : le reste tombait sur la
-dernière vanne, 8 + 1 sur 20 × 15 et 12 × 12. Après lui, deux partages s'essaient dans cet ordre :
-chaque parcelle à part en parts égales, puis le groupe entier quand le remplissage a mêlé deux
-parcelles pour économiser une vanne. `egaliser` coupe en vannes d'un seul tenant au plus près de
-la moyenne, au carré des écarts (le plus gros paquet seul ne distingue pas 3 + 3 + 3 + 1 de
-3 + 2 + 3 + 2). Un partage n'est gardé qu'à quatre conditions : le même nombre de vannes, aucune
-plus chargée que la plus chargée du remplissage, pas plus de vannes mêlées, et aucune perte pire
-que la pire du remplissage (`pirePerteDesPaquets`, par `perteDuReseau`).
+**Deux modèles de turbine ne partagent jamais une vanne** (*« Non, jamais ensemble »*) : le modèle
+(`modeleDe`, la 3504, la 5004 Plus) entre dans la clé de groupe des turbines. Les buses d'un même
+modèle partagent toujours une vanne.
 
-**Pourquoi le partage ne sert qu'au plan RETENU, et jamais à la recherche.** La première version
-partageait pendant `chercherUnPlan` : une coupe plus égale perd moins, et la recherche, qui prend le
-moins de vannes d'abord, y trouvait des plans à une vanne de moins (son 16 × 15 et 12 × 12 tombait de
-4 vannes à 3). Moins de marge, donc l'inverse de « plus safe », et de sa réponse du même jour :
-*« pour être le plus safe possible, vaut mieux qu'il y ait 3 réseaux que 2 »*. Le partage se fait
-donc une fois le plan choisi (`decouperUneFois(true)`), et le plan partagé doit encore tenir aux
-épreuves de `evaluer` ; sinon le remplissage reste. Le choix des buses compte toujours les vannes
-par le remplissage, qui donne le même nombre.
+**Au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche** (`MARGE_LEVEE`, `seLeve`) : 2,0
+pour la 3504 et la 5000 Plus, sa réponse à *« comment ça lève ? »*. Une marge plutôt qu'un seuil fixe,
+pour ne pas condamner les buses VAN, dont la fiche s'arrête à 2,1 bar.
 
-**Ce que le balayage de 1 800 jardins a appris** (deux pelouses, quatre pressions, ancien contre
-nouveau). Sans la condition de perte, 24 jardins perdaient jusqu'à 0,17 bar au dernier arroseur :
-une vanne moins chargée peut courir plus loin. Avec elle : parcelles à deux arroseurs d'écart ou
-plus, de 302 à 14 ; aucun nombre de vannes changé ; aucune pression en baisse ; aucune alerte de
-pression nouvelle. Les 14 qui restent sont des jardins où mêler deux parcelles économise une vanne.
+**Les parts égales (`partsEgales`, `egaliser`).** Le remplissage (`couperEnVannes`) vise l'équilibre
+du GROUPE, et le reste tombait sur la dernière vanne (8 + 1). Deux partages s'essaient après lui :
+chaque parcelle sur ses vannes à elle, dès que le nombre de vannes ne change pas et qu'aucune ne
+dépasse la limite ; puis le groupe entier, d'un seul modèle, quand mêler deux parcelles économise
+une vanne, et seulement s'il ne charge ni ne perd plus que le remplissage. `egaliser` coupe au plus
+près de la moyenne, au carré des écarts.
 
-**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : deux règles datées du 23 novembre (ses
-18 m et ses 72 m ; ses trois jardins), vues rouges sur l'ancien code, chacune pour sa raison ; la
-règle du té égal au départ garde son fond, son compte barré se relit dans les lignes de chaque
-réseau (le vert part d'un seul côté). `scripts/test-arrosage-calcul.ts` : la grande pelouse de la
-bascule de la pluviométrie passe de 20 × 7 à 18 × 7, où mêler deux pelouses économise encore une
-vanne.
+**La recherche juge le plan tel qu'il se pose (`chercherUnPlan`).** Chaque pression est essayée deux
+fois, remplie et partagée. Parmi les plans partagés qui tiennent, ceux où chaque pelouse partagée
+l'est à un arroseur près (`partageEgal`) passent devant ; entre eux, `avecLaPression` : le moins de
+vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur (`GAIN_PAR_VANNE`, sa règle
+*« dès 0,1 bar gagné »*, devant son 16 × 10 et 8 × 8 qu'il voulait en 3 vannes de 3504 plutôt qu'en 2 de
+5000 Plus). Sans plan égal qui tienne, l'ancien choix reste.
 
-**Ce qui n'est pas fait.** Les instantanés des planches d'arrosage ne portent ni le tracé ni le
-partage (`TODO.md`).
+**Ce qui a été essayé et retiré le même soir, pour qu'on ne le refasse pas.**
+
+| | pourquoi c'est parti |
+|---|---|
+| partager seulement le plan retenu, à sa pression | le plan partagé perdait parfois plus, ses portées ne tenaient plus, et le 5 + 1 restait |
+| bloquer le nombre de vannes sur celui du remplissage | voulu pour la marge ; la marge est désormais tenue par ses deux règles de pression |
+| un seul modèle sur tout le jardin quand c'est possible | il avait dit oui, puis *« j'ai pas compris ta question »* ; sa raison était la pression |
+| la condition « aucune vanne plus chargée » pour chaque parcelle à part | elle refusait de rendre une pelouse à sa propre vanne ; la marge de pression la remplace |
+
+**Au-delà de six voies, deux nourrices (`fichesNourrices`, catalogue).** Ses fiches s'arrêtent à six :
+sept vannes faisaient perdre la nourrice et les électrovannes à la liste. Moitié-moitié, deux regards,
+chaque nourrice sa fiche, un té sur l'amenée et le tuyau jusqu'au second regard à mesurer
+(`piecesDuPlan`, `groupeNourrice`). **`ficheNourrice` reste la fiche d'une seule nourrice** : la 3D et la
+vue éclatée la dessinent pièce par pièce, et deux fiches fondues y dessineraient une nourrice de sept
+voies qui n'existe pas.
+
+**Ce que le balayage de 1 800 jardins dit de l'ensemble** (deux pelouses, quatre pressions) : à 2 bar
+au compteur, tous en alerte de pression (rien n'arrive à 2,0) ; à 2,5, 3 et 3,5 bar, aucune alerte,
+470 vannes de plus, 33 de moins, la pression moyenne au bout en hausse (1,89 → 2,07 à 2,5 bar). Les
+vannes à deux modèles passent de 362 à 0 ; les pelouses déséquilibrées, de 302 à 4. Un plan se
+calcule en 0,2 à 0,3 s, comme avant.
+
+**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : sept règles datées du 23 novembre, chacune vue
+rouge sur le code d'avant ; la règle du té égal au départ garde son fond, son compte barré se relit
+dans les lignes de chaque réseau. `scripts/test-arrosage-calcul.ts` et `appli/tests/essai-arrosage-detaille.cjs` :
+leurs jardins d'essai suivent le plan nouveau, chacun avec sa raison.
+
+**Ce qui n'est pas fait.** La nourrice en 3D et la vue éclatée avec deux nourrices (une planche
+d'abord) ; les instantanés des planches d'arrosage (`TODO.md`).

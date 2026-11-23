@@ -1,8 +1,8 @@
 # État du projet
 
-## LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES : CODÉS (23 novembre 2026), LA BATTERIE À JOUER
+## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
-Ses deux corrections du 23 : le tracé prend le moins de mètres de PE, la tranchée ouverte ne départage qu'à PE égal (`trace.ts`) ; une parcelle sur deux vannes se partage en parts égales, sans vanne de plus ni de moins et sans perte de plus (`partsEgales`, `calcul.js` et sa copie). `ARCHITECTURE.md` §610. Sa décision du même jour notée dans `.claude/rules/arrosage.md` : le coefficient du PE reste à 150, Darcy et le 140 n'entrent pas.
+Le tuyau au plus court en PE (`trace.ts`), les parts égales (`partsEgales`), un modèle de turbine par vanne, 2,0 bar au dernier arroseur (`MARGE_LEVEE`), une vanne de plus dès qu'elle y donne 0,1 bar (`avecLaPression`), deux nourrices au-delà de six voies (`fichesNourrices`). `ARCHITECTURE.md` §610. Ses décisions notées dans `.claude/rules/arrosage.md` : le PE reste à 150, Darcy et le 140 n'entrent pas ; la 3504 d'office. La 3D et la vue éclatée avec deux nourrices restent à faire, par une planche.
 
 ## ✅ LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD : SUR `main` (23 novembre 2026)
 

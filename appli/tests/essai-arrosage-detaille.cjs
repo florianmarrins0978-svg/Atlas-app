@@ -82,7 +82,11 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // plus : quand il ne couvre pas à cet écart-là, on garde la grille alignée,
   // qui pose une tête de plus ici, mais honnêtement. Six est la pose qui tient
   // sans tricher.
-  cas('le jardin de départ donne 6 secteurs', secteurs === 6, 'lu : ' + secteurs);
+  // 7 depuis le 23 novembre 2026 : ses règles du jour, 2,0 bar au dernier
+  // arroseur et une vanne de plus dès qu'elle y donne 0,1 bar. Au-delà de six
+  // voies, deux nourrices (4 + 3) dans deux regards : la liste et le mail
+  // gardent leurs électrovannes (`CATALOGUE.fichesNourrices`).
+  cas('le jardin de départ donne 7 secteurs', secteurs === 7, 'lu : ' + secteurs);
 
   // **UN SECTEUR, UN MATÉRIEL** — et ce contrôle a CHANGÉ DE RÈGLE le 23 août
   // 2026, parce que le patron a changé la sienne.

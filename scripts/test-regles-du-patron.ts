@@ -543,6 +543,23 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
+regle("23 novembre 2026", "« faire une deuxième nourrice avec une nouvelle voie, et donc prévoir un Té de plus pour faire arriver l'eau dans la nouvelle nourrice », « moitié-moitié », « deux regards » : au-delà de six voies, deux nourrices", () => {
+  // 30 × 22, 15 × 12 et 12 × 12 à 3 bar : 7 vannes, donc 4 + 3.
+  const p = plan([
+    { id: 1, type: "gazon", nom: "P1", x: 0, y: 0, L: 30, l: 22 },
+    { id: 2, type: "gazon", nom: "P2", x: 32, y: 0, L: 15, l: 12 },
+    { id: 3, type: "gazon", nom: "P3", x: 49, y: 0, L: 12, l: 12 },
+  ]);
+  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte, voies: p.secteurs.length });
+  const q = (motif: RegExp, ou: string) => pieces.filter((x) => x.ou === ou && motif.test(x.ref ?? "")).reduce((s, x) => s + (x.q ?? 0), 0);
+  exige(p.secteurs.length === 7, `${p.secteurs.length} vannes sur ce jardin, l'exemple en demande 7`);
+  exige(q(/^electrovanne/, "regard") === 7 && q(/^regard-/, "regard") === 2, `${q(/^electrovanne/, "regard")} électrovannes et ${q(/^regard-/, "regard")} regards : il en faut 7 et 2`);
+  const te = pieces.filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25" && /deux nourrices/.test(x.detail ?? ""));
+  const tuyau = pieces.find((x) => x.ref === "pe-second-regard");
+  exige(te.length === 1 && te[0].q === 1 && tuyau && tuyau.q === null, `le té de l'amenée et le tuyau jusqu'au second regard, à mesurer : ${te.length} té, tuyau ${tuyau ? tuyau.q : "absent"}`);
+  exige(p.manquants.some((m: string) => /Deux nourrices de 4 et 3 voies/.test(m)), "le plan doit dire : deux nourrices de 4 et 3 voies");
+});
+
 regle("23 novembre 2026", "« comment ça lève ? J'ai l'impression qu'il faut une pression énorme », puis « 2,0 bar » : au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche, 2,0 pour la 3504 et la 5000 Plus", () => {
   // Son exemple : 10 × 6 et 8 × 8 à 2 bar, une vanne à 1,72 bar pour un minimum de 1,70. À 2 bar au compteur, rien n'arrive à 2,0 : l'outil le dit.
   const juste = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 10, l: 6 }, { id: 2, type: "gazon", nom: "B", x: 12, y: 0, L: 8, l: 8 }], 2);

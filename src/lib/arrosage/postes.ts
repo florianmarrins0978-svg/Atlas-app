@@ -129,6 +129,7 @@ type Cat = {
   materiel: { ref: string; nom: string; regle?: string }[];
   referenceDe(ref: string): string | null;
   ficheNourrice(n: number, goutte: number): { nom: string; pieces: { ref: string; q: number }[] } | null;
+  fichesNourrices(n: number, goutte: number): { nom: string; voies: number[]; pieces: { ref: string; q: number }[] } | null;
 };
 const CAT = CATALOGUE as unknown as Cat;
 
@@ -457,13 +458,15 @@ export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { no
   const voies = voiesVivantes(plan, r);
   const nbGoutte = voiesEnGoutte(plan, voies);
   // La fiche des voies vivantes : un réseau de moins, c'est le collecteur de la gamme du dessous et une électrovanne de moins.
-  const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
+  // Au-delà de six voies, deux nourrices, chacune sa fiche (sa règle du 23 novembre 2026, `fichesNourrices`).
+  const fiche = CAT.fichesNourrices(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};
   for (const x of fiche?.pieces ?? []) (g[x.ref] = g[x.ref] ?? { nom: nomDe(x.ref, []), q: 0, u: "u" }).q += x.q;
   // **Un tuyau en Ø32 se visse par un raccord mâle 32 x 1"**, à la place du
   // 25 x 1" de la fiche (sa réponse du 20 octobre 2026) : un par voie vivante
   // en Ø32, et l'entrée quand l'amenée est en Ø32.
-  const en32 = voies.filter((i) => plan.diametres[i] === 32).length + (plan.tuyau.diametre === 32 ? 1 : 0);
+  // L'entrée de CHAQUE nourrice : deux au-delà de six voies.
+  const en32 = voies.filter((i) => plan.diametres[i] === 32).length + (plan.tuyau.diametre === 32 ? (fiche?.voies.length ?? 1) : 0);
   const q25 = g["raccord-male25"]?.q ?? 0;
   if (en32 > 0 && q25 > 0) {
     const n = Math.min(en32, q25);

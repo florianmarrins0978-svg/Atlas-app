@@ -1627,6 +1627,44 @@ CATALOGUE.ficheNourrice = function (n, combienGoutte) {
   return { nom: base.nom, source: base.source, pieces: piecesFusionnees };
 };
 
+/* ══ AU-DELÀ DE SIX VOIES, DEUX NOURRICES — sa règle du 23 novembre 2026 ═════
+
+   Ses fiches s'arrêtent à six voies. Quand un jardin en demande plus, sa
+   réponse : *« faire une deuxième nourrice avec une nouvelle voie, et donc
+   prévoir un Té de plus pour faire arriver l'eau dans la nouvelle nourrice »*,
+   puis *« moitié-moitié »* (4 + 3 pour 7 voies, 4 + 4 pour 8) et *« deux
+   regards »*. Chaque nourrice garde donc SA fiche, regard compris ; le
+   goutte-à-goutte, numéroté en dernier, va sur la seconde. Le té et le tuyau
+   jusqu'au second regard sont sur l'amenée (`piecesDuPlan`).
+
+   **`ficheNourrice` reste la fiche d'UNE nourrice** : la 3D et la vue éclatée
+   la dessinent pièce par pièce, et deux fiches fondues en une y dessineraient
+   une nourrice de 7 voies qui n'existe pas. Seules les listes lisent celle-ci.
+   Au-delà de douze voies, aucune composition : `null`, et le plan le dit. */
+CATALOGUE.voiesDesNourrices = function (n) {
+  if (!(n > 0)) return [];
+  if (n <= 6) return [n];
+  if (n > 12) return null;
+  var a = Math.ceil(n / 2);
+  return [a, n - a];
+};
+CATALOGUE.fichesNourrices = function (n, combienGoutte) {
+  var voies = CATALOGUE.voiesDesNourrices(n);
+  if (!voies || !voies.length) return null;
+  var reste = Math.max(0, Math.min(combienGoutte || 0, n));
+  var goutte = voies.slice().reverse().map(function (v) { var x = Math.min(v, reste); reste -= x; return x; }).reverse();
+  var fiches = voies.map(function (v, i) { return CATALOGUE.ficheNourrice(v, goutte[i]); });
+  if (fiches.some(function (f) { return !f; })) return null;
+  var fusion = {};
+  fiches.forEach(function (f) { f.pieces.forEach(function (p) { fusion[p.ref] = (fusion[p.ref] || 0) + p.q; }); });
+  return {
+    nom: fiches.length > 1 ? 'Deux nourrices, ' + voies.join(' et ') + ' voies' : fiches[0].nom,
+    voies: voies,
+    fiches: fiches,
+    pieces: Object.keys(fusion).map(function (ref) { return { ref: ref, q: fusion[ref] }; })
+  };
+};
+
 /* ══ LE DÉBIT D'UNE TURBINE NE DÉPEND PAS DE L'ARC — sa réponse du 17 août ══
 
    « Les débits, portées qui sont dans le tableau sont donnés pour les

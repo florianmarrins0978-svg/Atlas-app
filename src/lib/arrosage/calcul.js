@@ -2125,8 +2125,12 @@ function manquants(d){
   if (sg.zones.length){
     phrases.push('Goutte-à-goutte : la pression au bout des lignes n’est pas vérifiée, la fiche du tube Toro manque.');
   }
-  if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]){
+  var nourrices = d.secteurs.length ? CATALOGUE.voiesDesNourrices(d.secteurs.length) : [];
+  if (!nourrices){
     phrases.push('Nourrice de ' + d.secteurs.length + ' voies : aucune fiche, ses pièces ne sont pas comptées.');
+  } else if (nourrices.length > 1){
+    // Sa règle du 23 novembre 2026 : deux nourrices, deux regards, un té sur l'amenée.
+    phrases.push('Deux nourrices de ' + nourrices.join(' et ') + ' voies, chacune dans son regard : le tuyau du té au second regard est à mesurer.');
   }
   return phrases;
 }
@@ -2321,7 +2325,8 @@ function listeMateriel(d){
     // références. Au-delà de ses six fiches, les lignes génériques qui
     // tenaient la place sont retirées (16 octobre 2026) : le plan dit qu'il
     // manque la fiche (`manquants`), il ne la compose pas.
-    var fiche = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
+    // Une nourrice, ou deux au-delà de six voies (`fichesNourrices`, 23 novembre 2026).
+    var fiche = CATALOGUE.fichesNourrices(d.secteurs.length, combienGoutteAGoutte(d));
     if (fiche){
       fiche.pieces.forEach(function(x){
         var p = CATALOGUE.piece(x.ref);

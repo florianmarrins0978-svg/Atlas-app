@@ -214,6 +214,7 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
       amenee: parametres.amenee > 0 ? parametres.amenee : null,
       diametres,
       diametreAmenee: plan.amenee.diametre,
+      voies: plan.secteurs.length,
     }),
     materiel: plan.materiel,
     dessinDuCalcul: plan.dessin,

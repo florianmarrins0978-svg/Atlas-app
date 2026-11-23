@@ -1,12 +1,15 @@
 # Reprendre le travail
 
-## LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES (23 novembre 2026)
+## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE
 
-Deux règles du plan d'arrosage, `ARCHITECTURE.md` §610. Ce qu'il faut savoir avant d'y toucher :
+`ARCHITECTURE.md` §610. Ce qu'il faut savoir avant d'y toucher :
 
-- **le partage égal ne sert qu'au plan retenu** (`decouperUneFois(true)`), jamais pendant `chercherUnPlan` : partager pendant la recherche lui fait trouver des plans à une vanne de moins, donc moins de marge, ce qu'il a refusé le même jour ;
-- **un partage qui perd plus que le remplissage est refusé** (`pirePerteDesPaquets`) : sans cette condition, 24 jardins sur 1 800 perdaient jusqu'à 0,17 bar ;
-- **le tracé** : un segment déjà creusé coûte son PE moins un millième (`DEPARTAGE`), jamais zéro. Remettre zéro, c'est revenir à 42 m de PE pour son réseau vert.
+- **la recherche (`chercherUnPlan`) juge chaque pression deux fois**, remplie et partagée en parts égales, et retient le plan partagé : c'est lui qui se pose. Le tableau « essayé et retiré » de §610 dit ce qui a déjà échoué ;
+- **`avecLaPression`** : le moins de vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur. Le retirer remet son 16 × 10 et 8 × 8 en 2 vannes de 5000 Plus, qu'il a refusées ;
+- **`seLeve` exige 0,3 bar au-dessus du minimum de la fiche** : à 2 bar au compteur, tout plan de turbines est en alerte, et c'est voulu ;
+- **`ficheNourrice` est la fiche d'UNE nourrice**, lue par la 3D et la vue éclatée ; les listes lisent `fichesNourrices`, qui en compose deux au-delà de six voies ;
+- **le tracé** : un segment déjà creusé coûte son PE moins un millième (`DEPARTAGE`), jamais zéro ;
+- **on ne fusionne pas la branche d'une autre session**, même quand elle a l'air d'attendre sa batterie : la session Rain Bird attendait sur un « Non, attends » du patron, et sa fusion ici a cassé la publication des planches jusqu'à `e1225b7`.
 
 ## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026)
 

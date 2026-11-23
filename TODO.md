@@ -1,12 +1,14 @@
 # Prochaines tâches
 
-## ⏳ LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES : CODÉS, LA BATTERIE À JOUER (23 novembre 2026)
+## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
-Ses deux corrections du 23 (`ARCHITECTURE.md` §610, `.claude/rules/arrosage.md`) : le moins de mètres de PE, la tranchée ouverte ne départage qu'à PE égal ; une parcelle sur deux vannes en parts égales, sans vanne de plus ni de moins. Sa réponse à la batterie : *« Et jouer la batterie »*.
+Le tuyau au plus court en PE, les parts égales, un modèle par vanne, 2,0 bar au dernier arroseur, une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §610, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
 
-- **Reste** : la batterie (niveau 3, `calcul.js` atteint plus de dix points d'entrée), puis `main`.
-- **Les instantanés des planches d'arrosage** ne portent ni ce tracé ni ce partage (même ligne que Rain Bird, plus bas).
-- **Les 14 jardins sur 1 800 qui restent inégaux** : mêler deux pelouses sur une vanne y économise une vanne, ou l'égalité y ferait perdre plus. Les rendre égaux coûterait une vanne : à lui de le dire s'il le veut.
+- **Reste** : la batterie (niveau 3), puis `main`.
+- **La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : elles n'en montrent qu'une, et rien au-delà de six voies. Une planche d'abord (§3 bis), à lui proposer.
+- **Le second regard se place par lui**, comme le premier : le croquis ne le porte pas encore, et le tuyau du té au second regard reste « à mesurer ».
+- **À 2 bar au compteur, tout jardin de turbines porte l'alerte de pression** (rien n'arrive à 2,0 au bout). C'est la conséquence directe de sa règle ; à lui dire s'il la trouve trop dure.
+- **Les instantanés des planches d'arrosage** ne portent aucune de ces règles (ligne Rain Bird, plus bas).
 
 ## ✅ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, SUR `main` (23 novembre 2026)
 

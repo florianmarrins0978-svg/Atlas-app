@@ -104,6 +104,20 @@ lui seul sait — un point d'eau existant, un passage de voiture, un massif qu'o
 ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
 au mauvais endroit, et une tranchée ne se déplace pas.
 
+**AU-DELÀ DE SIX VOIES, DEUX NOURRICES DANS DEUX REGARDS — sa règle du
+23 novembre 2026.** Ses fiches de nourrice s'arrêtent à six voies, et un jardin
+de sept vannes perdait sa nourrice et ses électrovannes dans la liste. Sa
+réponse : *« faire une deuxième nourrice avec une nouvelle voie, et donc prévoir
+un Té de plus pour faire arriver l'eau dans la nouvelle nourrice »*, puis
+*« moitié-moitié »* (4 + 3 pour 7, 4 + 4 pour 8) et *« deux regards »*. Chaque
+nourrice garde sa fiche, regard et programmateur compris ; le goutte-à-goutte,
+numéroté en dernier, va sur la seconde ; le té est du diamètre de l'amenée, et
+le tuyau jusqu'au second regard se mesure (`fichesNourrices`, `piecesDuPlan`).
+Au-delà de douze voies, rien n'est composé, et le plan le dit. **Ce qui n'est
+pas fait** : la nourrice en 3D et la vue éclatée du PDF ne montrent pas les deux
+nourrices (une planche d'abord, `TODO.md`). Le second regard se place par lui,
+comme le premier.
+
 **Informer n'est pas proposer.** S'il demande ce que change tel ou tel
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
@@ -427,16 +441,30 @@ règle pour les 3 exemples que tu as donnés »*.
 | 20 × 15 et 12 × 12 | A 10 + 10, B 8 + 1 | A 10 + 10, B 5 + 4 |
 | 16 × 10 et 8 × 8 | A 7 + 5, B 4 | A 6 + 6, B 4 |
 
-**Le nombre de vannes ne bouge pas**, et c'est délibéré : le partage ne sert
-qu'au plan retenu, jamais à sa recherche. Une coupe plus égale perd moins ; la
-recherche y aurait trouvé des plans à une vanne de moins, donc moins de marge
-(son 16 × 15 tombait à 3 vannes), l'inverse de ce qu'il a demandé. Le partage
-n'est gardé que s'il ne charge aucune vanne davantage, ne mêle pas plus de
-parcelles, et **ne perd pas plus** que le remplissage (`partsEgales`,
-`calcul.js`). Sur 1 800 jardins : les parcelles à deux arroseurs d'écart ou
-plus passent de 302 à 14, aucun nombre de vannes ne change, aucune pression ne
-baisse. Les 14 qui restent : quand mêler deux parcelles sur une vanne en
-économise une, ou quand l'égalité ferait perdre plus.
+**Comment c'est tenu** (`partsEgales`, `chercherUnPlan`, `calcul.js`). Chaque
+pression essayée l'est aussi en parts égales, et c'est ce plan-là qui se juge,
+puisque c'est lui qui se pose. Un plan où chaque pelouse partagée l'est à un
+arroseur près passe devant tout autre ; il refuse aussi le 5 + 1 qu'un
+remplissage faisait pour gagner une vanne en mêlant deux pelouses. Chaque
+pelouse sur ses vannes à elle passe d'abord quand le nombre de vannes ne change
+pas. **Le nombre de vannes, lui, PEUT bouger** : une première version le
+bloquait, pour que la recherche ne trouve pas des plans à une vanne de moins,
+donc moins de marge. Depuis ses deux règles de pression du même soir (2,0 bar au
+bout, et une vanne de plus dès qu'elle y donne 0,1 bar), la marge est tenue
+autrement, et le verrou est tombé.
+
+**Ce que ses règles du 23 novembre changent ensemble, sur 1 800 jardins** (deux
+pelouses, quatre pressions au compteur, l'outil d'avant contre celui-ci) :
+
+| au compteur | vannes en plus | en moins | pression moyenne au bout | alerte de pression |
+|---|---|---|---|---|
+| 2 bar | | | | **les 450 jardins** (aucun n'arrive à 2,0) |
+| 2,5 bar | 217 | 18 | 1,89 → 2,07 | aucune |
+| 3 bar | 159 | 4 | 2,09 → 2,25 | aucune |
+| 3,5 bar | 94 | 11 | 2,61 → 2,70 | aucune |
+
+Les vannes qui mêlaient deux modèles passent de 362 à 0 ; les pelouses à deux
+arroseurs d'écart ou plus entre leurs vannes, de 302 à 4.
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
