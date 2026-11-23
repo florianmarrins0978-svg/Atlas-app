@@ -72,6 +72,10 @@ export function creerMatieres() {
     pehd: plastique(0x1c1d1f, 0.6, 0.6, moyen, 1.8),
     bleu: plastique(0x1565c0, 0.5, 0.4, fin, 1.2),
     // Le fond d'une empreinte, d'un trou : un noir qui ne renvoie rien.
-    creux: new THREE.MeshPhysicalMaterial({ color: 0x08080a, roughness: 0.95, metalness: 0 })
+    creux: new THREE.MeshPhysicalMaterial({ color: 0x08080a, roughness: 0.95, metalness: 0 }),
+    // LE VOILE des pièces qu'on n'a pas choisies : un gris pâle, transparent. Pas un gris plein : le PVC des
+    // pièces Dura est déjà gris, et un mamelon choisi ne se distinguait plus de ses voisins (essayé le
+    // 22 novembre 2026). Il écrit sa profondeur, sans quoi l'occlusion ambiante le tachait.
+    voile: new THREE.MeshStandardMaterial({ color: 0xbdbbb6, roughness: 0.95, metalness: 0, envMapIntensity: 0.6, transparent: true, opacity: 0.35 })
   };
 }

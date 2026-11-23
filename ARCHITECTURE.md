@@ -38262,3 +38262,34 @@ l'autre. La nourrice n'en porte pas : sa grande photo les montre déjà.
 pièce montrée a son numéro, tout numéro a sa pièce montrée sur la page. Il lit
 ce que la page montre dans les données qui la dessinent, pas dans le PDF : un
 numéro dessiné ne se distingue pas d'un chiffre d'un nom de pièce.
+
+## §607 : Les repères de la nourrice en 3D vivent avec elle, et « Voir » passe par sa feuille
+
+*22 novembre 2026. Son choix sur la planche `appli/arrosage-nourrice-3d-numeros.html` : « la A noire, à
+l'éclaté seulement », puis « rajouter voir à changer supprimer », et pour les ombres : « oui, partout ».*
+
+**Un module de plus, pour la même raison que §601.** `appli/nourrice-3d/reperes.js` (`poserReperes`) pose
+sur la vue le numéro de la légende de chaque pièce, la flèche de l'arrivée d'eau et R1, R2… au bout des
+colonnes, et les replace à chaque image. L'écran du plan (`Nourrice3D.tsx`) et la planche l'emploient ;
+B, C et « Toujours », écartées, ne vivent plus que dans la planche (une feuille de style et un réglage).
+Les couleurs y sont écrites : la scène peint son propre fond gris clair quelle que soit la charte, et une
+pastille aux couleurs d'une charte sombre y serait claire sur clair. C'est la pastille du dessin d'avant.
+
+**Les numéros de la 3D sont ceux de la légende, et un contrôle le tient.** La légende numérote par
+`composerNourrice().ordre`, la 3D par la première pièce de chaque modèle dans l'ordre de sa composition
+(`vue.numeros`). `scripts/test-numeros-nourrice-3d.ts` les confronte sur les 27 nourrices du catalogue
+(vu rouge sur une composition faussée). « Voir » s'appuie sur la même égalité : la référence de la ligne
+touchée EST la clé des pièces à montrer.
+
+**« Voir » passe par la feuille, pas par la ligne.** Une ligne de la légende ouvrait déjà Changer et
+Supprimer ; la planche, qui n'avait pas de feuille, grisait au toucher. Sa réponse : un geste de plus dans
+la feuille, en dernier, pour que Changer et Supprimer gardent leur place. `NourriceEclatee` ne le passe
+que pour une pièce de la 3D (pas le bac « Avec la nourrice ») et que si la 3D s'affiche. La nourrice
+s'éclate, `scene.choisir(cle)` voile les autres modèles (`matieres.voile`, un gris transparent : un gris
+plein ne distinguait plus le PVC choisi), les numéros du modèle s'allument, la vue revient sous les yeux.
+Remonter la nourrice rend tout : le choix ne survit pas au montage, comme les numéros.
+
+**Plus aucune ombre portée dans la scène.** La lampe ne porte plus d'ombre, le sol d'ombres et l'ombre de
+contact (sa caméra, ses deux tampons, son flou) sont partis, avec la passe qui les refaisait. L'occlusion
+ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site, les
+deux planches et les photos de l'éclaté du PDF (§605), reprises sans ombres le même soir.

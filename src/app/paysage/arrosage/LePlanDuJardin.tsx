@@ -193,7 +193,9 @@ export default function LePlanDuJardin({
       ],
     });
   }
-  function menuDeLaNourrice(ref: string, nom: string) {
+  function menuDeLaNourrice(ref: string, nom: string, voir?: () => void) {
+    // « Voir », en dernier : Changer et Supprimer gardent leur place (sa réponse du 22 novembre 2026).
+    const montrer = voir ? [{ libelle: "Voir", agir: voir }] : [];
     const n0 = nourrice.nombre[ref] ?? 1;
     const cle = `nr:${ref}`;
     const restant = n0 - (retouches.nrUne[ref] ?? 0);
@@ -209,6 +211,7 @@ export default function LePlanDuJardin({
               ]
             : []),
           ...(retouches.nrUne[ref] ? [{ libelle: `Remettre les ${n0}`, agir: () => r((s) => nourriceRemettre(s, ref)) }] : []),
+          ...montrer,
         ],
       });
       return;
@@ -222,6 +225,7 @@ export default function LePlanDuJardin({
           ? { libelle: "Remettre la pièce", agir: () => r((s) => remettre(s, cle)) }
           : { libelle: "Supprimer la pièce", danger: true, agir: () => r((s) => supprimer(s, cle)) },
         ...(changee ? [{ libelle: "Revenir à la pièce proposée", agir: () => r((s) => revenir(s, cle)) }] : []),
+        ...montrer,
       ],
     });
   }
