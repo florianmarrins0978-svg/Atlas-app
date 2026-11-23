@@ -112,7 +112,7 @@ export default function NourriceEclatee({
           <div className="flex flex-col gap-2">
             {parts.map((p, i) => (
               <div key={i} className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                <Dessin n={p.n} couleurs={couleurs} etats={etatsDesPoses(p.n.poses, retouches)} reseauDeVoie={voiesDe(i)} />
+                <Dessin n={p.n} couleurs={couleurs} etats={etatsDesPoses(p.n.poses, retouches)} reseauDeVoie={voiesDe(i)} motEntier={i === parts.findIndex((x) => x.goutte > 0)} />
               </div>
             ))}
           </div>
@@ -199,7 +199,12 @@ function nomCatalogue(ref: string): string {
  * pièce changée porte un numéro doré (sa demande du 19 octobre 2026) : les mêmes
  * signes que sur les vignettes des réseaux.
  */
-export function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[] }) {
+/**
+ * `motEntier` : cette nourrice porte « goutte-à-goutte » en entier sous sa première voie de goutte-à-goutte,
+ * GAG sous les suivantes. Sur deux nourrices, seule la première qui en a un l'écrit en entier, comme la 3D
+ * (`appli/nourrice-3d/reperes.js`, sa planche du 23 novembre 2026).
+ */
+export function Dessin({ n, couleurs, etats, reseauDeVoie, motEntier = true }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[]; motEntier?: boolean }) {
   const encre = "#4a4a44";
   const grise = (etat: EtatPose) => (etat === "retiree" || etat === "absente" ? { opacity: 0.35, filter: "grayscale(1)" } : undefined);
   const teinte = (etat: EtatPose) => (etat === "changee" ? colors.or : undefined);
@@ -274,7 +279,7 @@ export function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceCompos
             </text>
             {goutte && (
               <text x={e.x} y={e.y + 18 + dy} textAnchor="middle" dominantBaseline="hanging" fontSize={10} fontWeight={600} fontFamily={font.body} fill={couleur}>
-                goutte-à-goutte
+                {e.goutte === 0 && motEntier ? "goutte-à-goutte" : "GAG"}
               </text>
             )}
           </g>

@@ -47,6 +47,9 @@
   .voies button:active{transform:scale(.97)}
   .voies button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
   .voies button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  /* Jusqu'à douze en goutte-à-goutte : deux rangées de sept cases, « Aucune » en prend deux. */
+  #goutte{display:grid;grid-template-columns:repeat(7,1fr)}
+  #goutte button:first-child{grid-column:span 2}
   @media (prefers-reduced-motion:reduce){.voies button,.attente{transition:none}}
 
   /* L'AMENÉE : du compteur au té, puis un tuyau par regard. Le second se mesure. */
@@ -216,7 +219,9 @@ function choisir() { var cle = etat.choisi ? cles[etat.choisi - 1] : null; V.cho
 function boutons() {
   document.querySelectorAll("[data-reseaux]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.reseaux) === etat.reseaux)); });
   var gg = "";
-  for (var j = 0; j <= 4; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === etat.goutte) + '">' + (j ? j : "Aucune") + "</button>";
+  // Le goutte-à-goutte jusqu'à toutes les voies (sa remarque du 23 novembre 2026 : « pourquoi on peut pas
+  // avoir 12 réseaux de goutte à goutte ? ça doit être possible ») : la planche s'arrêtait à quatre.
+  for (var j = 0; j <= etat.reseaux; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === etat.goutte) + '">' + (j ? j : "Aucune") + "</button>";
   $("goutte").innerHTML = gg;
   document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
   document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === etat.vue)); });
@@ -226,7 +231,7 @@ function boutons() {
 
 document.addEventListener("click", function (e) {
   var b = e.target.closest("button"); if (!b || !V) return;
-  if (b.dataset.reseaux) { etat.reseaux = Number(b.dataset.reseaux); reposer(); }
+  if (b.dataset.reseaux) { etat.reseaux = Number(b.dataset.reseaux); etat.goutte = Math.min(etat.goutte, etat.reseaux); reposer(); }
   else if (b.dataset.goutte) { etat.goutte = Number(b.dataset.goutte); reposer(); }
   else if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
   else if (b.dataset.vue) V.regarder(b.dataset.vue);
