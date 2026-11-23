@@ -3105,7 +3105,16 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
      et à Iopole (messages prêts dans le document). **À nous, à son « go »
      avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
-     (catalogue, OAuth, « vérification en cours »), niveau 3 ; Seconde capture, même soir : la
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ;
+   - **sa suite, même soir** : *« on va commencer avec Super PDP et ensuite
+     on va essayer de faire agréer Cause »*. Exigences relevées sur la fiche
+     officielle de la DGFiP (`fiche-pdp.pdf`, septembre 2025) : dossier fiscal
+     et technique, **ISO 27001 ou SecNumCloud**, double authentification
+     dont un facteur dynamique (Cause a déjà le code TOTP), données dans
+     l'Union européenne, interconnexion aux autres plateformes, tests avec
+     le portail public, audit de conformité par un organisme indépendant,
+     agrément de 3 ans renouvelable. Rien n'est lancé ; le travail fait
+     pour Super PDP (Factur-X, norme commune) resservira ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
