@@ -94,7 +94,13 @@ regle("23 août 2026", "« cinq réseaux pour ça ??????? » — son carré de 1
   const p = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]);
   exige(p.dessin[0].cle === "turbine", "un 12 × 12 prend des turbines");
   exige(p.dessin[0].points.length === 9, `${p.dessin[0].points.length} turbines — il en a dessiné 9`);
-  exige(p.secteurs.length === 1, `${p.secteurs.length} réseaux — il en veut 1`);
+  // ~~1 VANNE~~ BARRÉ le 22 novembre 2026, sur sa décision : *« Non prend les
+  // écartement de rainbird »*, puis *« Oui, Rain Bird »* devant ce coût précis.
+  // Aux écartements de Rain Bird, son carré garde ses 9 turbines et passe à
+  // 2 réseaux. La règle datée du 22 novembre, sous le repère, tient ce qui la
+  // remplace. Le 1 reste, comme la trace de son « cinq réseaux pour ça ».
+  const vannesLe23Aout = 1;
+  exige(p.secteurs.length === vannesLe23Aout + 1, `${p.secteurs.length} réseaux — 1 le 23 août, 2 aux écartements de Rain Bird`);
 });
 
 // ── L'antenne Ø16 : 2 m au plus, et le Ø25 en un seul passage ──────────────
@@ -511,10 +517,47 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
   const d = dessine(p, { x: 13, y: 6 });
   const n = (nom: string) => d.reseaux.filter((r) => r.numero === p.secteurs.findIndex((s: { nom: string }) => s.nom === nom))[0]?.tesEgaux;
   exige(n("Pelouse avant") === 1, `Pelouse avant : ${n("Pelouse avant")} té égal, il en faut 1`);
-  exige(n("Pelouse arrière") === 2, `Pelouse arrière : ${n("Pelouse arrière")} tés égaux, il en faut 2`);
+  // ~~2 TÉS ÉGAUX SUR SON RÉSEAU UNIQUE~~ BARRÉ le 22 novembre 2026 : aux
+  // écartements de Rain Bird (sa décision), la pelouse arrière de 12 × 12 passe
+  // sur deux réseaux, et chacun porte son té égal. La règle ne bouge pas ; le
+  // compte se lit réseau par réseau. Le 2 reste.
+  const arriere = d.reseaux.filter((r) => p.secteurs[r.numero]?.nom === "Pelouse arrière").map((r) => r.tesEgaux);
+  exige(arriere.length === 2 && arriere.every((t) => t === 1), `Pelouse arrière : ${arriere.join(" et ")} tés égaux sur ${arriere.length} réseaux, il en faut 2 d'un té chacun`);
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
+
+// ── Les écartements de Rain Bird, pour les turbines ────────────────────────
+// Ses réponses du 22 novembre 2026, devant le manuel de conception Rain Bird
+// (p. 41 à 43) et le coût chiffré sur ses jardins (`docs/arrosage-manuel-rain-bird.md`).
+const ecartsDeLaGrille = (points: { x: number; y: number }[]) => {
+  const pas = (v: number[]) => { const u = [...new Set(v.map((a) => a.toFixed(2)))].map(Number).sort((a, b) => a - b); return u.length > 1 ? u[1] - u[0] : 0; };
+  return { ex: pas(points.map((q) => q.x)), ey: pas(points.map((q) => q.y)) };
+};
+regle("22 novembre 2026", "« Non prend les écartement de rainbird », « Oui, Rain Bird », « Toujours sans vent » : une turbine alignée s'écarte au plus de 1,1 × sa portée, ou de 1,2 × et 1,0 × en rectangle", () => {
+  let vues = 0;
+  for (const [L, l, pression] of [[12, 12, 3], [20, 12, 3.7], [18, 12, 3], [16, 10, 3], [30, 22, 3], [22, 12, 3], [20, 15, 2.5], [28, 26, 2]]) {
+    const p = calculerPlan({ seau: 10, temps: 20, pression, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L, l }] } as never) as Plan;
+    for (const z of p.dessin as ZoneDessinee[]) {
+      if (z.cle !== "turbine") continue;
+      vues++;
+      const { ex, ey } = ecartsDeLaGrille(z.points);
+      const grand = Math.max(ex, ey), petit = Math.min(ex, ey);
+      exige(grand <= 1.1 * z.portee + 0.01 || (grand <= 1.2 * z.portee + 0.01 && petit <= 1.0 * z.portee + 0.01), `${L} × ${l} à ${pression} bar : ${z.buse} à ${ex.toFixed(2)} × ${ey.toFixed(2)} m pour une portée réglée de ${z.portee} m`);
+    }
+  }
+  exige(vues > 0, "aucune turbine mesurée");
+  const carre = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]);
+  exige(carre.dessin[0].points.length === 9 && carre.secteurs.length === 2, `son carré de 12 × 12 : ${carre.dessin[0].points.length} turbines sur ${carre.secteurs.length} réseaux, il a lu 9 sur 2 avant de dire oui`);
+});
+
+regle("22 novembre 2026", "« Mes 7 en quinconce » : les tuyères gardent ses 80 %, Rain Bird ne vaut que pour les turbines", () => {
+  const z = plan([{ id: 1, type: "gazon", nom: "Couloir", x: 0, y: 0, L: 10, l: 2 }]).dessin[0];
+  exige(z.cle === "tuyere" && z.points.length === 7, `son couloir de 10 × 2 : ${z.points.length} ${z.cle}, il garde ses 7 tuyères`);
+  let plusPres = Infinity;
+  for (let i = 0; i < z.points.length; i++) for (let j = i + 1; j < z.points.length; j++) plusPres = Math.min(plusPres, Math.hypot(z.points[i].x - z.points[j].x, z.points[i].y - z.points[j].y));
+  exige(plusPres > 1.2 * z.portee, `deux tuyères voisines à ${plusPres.toFixed(2)} m pour une portée de ${z.portee} m : c'est sa règle des 80 %, pas Rain Bird`);
+});
 
 regle("18 octobre 2026", "« les MP Rotator sont pour les tuyères », et « oui » pour les entrer avec la page 10 d'Aqua Plus : neuf références, des tuyères, le débit lu par angle, aucune choisie seule", () => {
   type Buse = { ref: string; nom: string; serie?: string; pourType: string; marqueCle: string; rayon: number; pression: number; releve?: string; debit: Record<string, number | undefined> };
@@ -557,7 +600,11 @@ regle("18 octobre 2026", "« dès qu'il y a des arroseurs, ça sera forcément d
   const goutte = { secteurs: massifSeul.secteurs, tuyau: { diametre: massifSeul.amenee.diametre as 25 | 32 } };
   exige(departDeLOutil(goutte) === 16 && departsPossibles(goutte).length === 4, "tout en goutte-à-goutte : le Ø16 rigide d'office, et les quatre départs au choix");
   // Quatre réseaux, une voie : on garde le nez de robinet, et la phrase dit le manque.
-  exige(ROBINET.programmateur.voies === 1 && voiesManquantes(pourLeDepart, "nez") === 3, `le Solem BL-NR a ${ROBINET.programmateur.voies} voie, il en manque ${voiesManquantes(pourLeDepart, "nez")} sur 4 réseaux`);
+  // ~~3 VOIES MANQUANTES SUR 4 RÉSEAUX~~ BARRÉ le 22 novembre 2026 : aux
+  // écartements de Rain Bird (sa décision), la pelouse arrière prend un réseau
+  // de plus. La règle ne bouge pas : il manque autant de voies que de réseaux
+  // au-delà de la sienne, et la phrase le dit. Le 3 et le 4 restent.
+  exige(ROBINET.programmateur.voies === 1 && voiesManquantes(pourLeDepart, "nez") === jardin.secteurs.length - 1, `le Solem BL-NR a ${ROBINET.programmateur.voies} voie, il en manque ${voiesManquantes(pourLeDepart, "nez")} sur ${jardin.secteurs.length} réseaux (3 sur 4 le 18 octobre)`);
   exige(voiesManquantes(pourLeDepart, "nourrice") === 0, "avec la nourrice, aucune voie ne manque");
 });
 

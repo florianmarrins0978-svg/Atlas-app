@@ -1,8 +1,19 @@
 # État du projet
 
+## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD
+
+Sa demande : réunir les lots qui attendent une batterie, puis une seule batterie. Darcy et Moody en est sorti sur sa décision (*« Prends avec Rain Bird »*, devant `appli/arrosage-rainbird-et-darcy.html`) : réuni, il faisait passer son jardin de 3 réseaux à 2. `TODO.md` dit ce que coûte de le laisser de côté.
+
+## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR SA BRANCHE, PAS SUR `main`
+
+Sa planche `appli/arrosage-robinet-3d.html` (les neuf combinaisons, ses photos dans `docs/robinet-3d-photos/`), puis son « Parfait, code ça ». `MontageAuRobinet` montre la pile en 3D (`Robinet3D.tsx`, module `appli/robinet-3d/vue.js`) au-dessus de la liste de ses pièces ; les photos ne sont plus que le repli. La scène de la nourrice a l'option `debout`, le toucher est commun (`nourrice-3d/toucher.js`). `scripts/test-robinet-3d.ts`. Niveau 3 (`robinet.ts`, 160 points d'entrée) ; sa réponse à la batterie : *« Pas de batterie »*. Le lot attend sur `claude/laughing-wright-xxntzg`. `ARCHITECTURE.md` §608.
+
 ## LES NUMÉROS DE LA NOURRICE EN 3D, « VOIR », PLUS D'OMBRES : SUR `main` (23 novembre 2026)
 
 Son choix sur `appli/arrosage-nourrice-3d-numeros.html` : la A noire, à l'éclaté seulement ; R1, R2… et la flèche de l'arrivée d'eau au bout des colonnes ; « Voir » ajouté à la feuille Changer / Supprimer d'une pièce de la légende (grise les autres modèles, allume ses numéros) ; plus d'ombres portées, partout. `appli/nourrice-3d/reperes.js` sert la planche et `Nourrice3D.tsx` (`ARCHITECTURE.md` §607). Contrôle pur : `scripts/test-numeros-nourrice-3d.ts`. Regardé dans la démonstration des outils. Batterie complète verte (618/618 suites base, 218/218 navigateur, connexion), jouée deux fois : la première avait un seul rouge, `test-tva-virement-de-la-banque-e2e`, rouge aussi sur `main` sans ce lot ; la seconde, après les photos du PDF reprises sans ombres, est toute verte.
+## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026) : CODÉ, EN ATTENTE DE SA BATTERIE
+
+Sa décision du 22, sans vent, pour les turbines seulement ; les tuyères gardent ses 80 % (`poseRainBird`, `ARCHITECTURE.md` §609). Son 12 × 12 passe à 2 réseaux, son 30 × 22 à 3. Le relevé du manuel : `docs/arrosage-manuel-rain-bird.md`. Restent à lui demander : le dénivelé, le coefficient du PE, le réseau alimenté par le milieu (`TODO.md`).
 
 ## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR `main`
 

@@ -19,6 +19,7 @@ import { creerScene } from "./scene.js";
 import { creerMatieres } from "./matieres.js";
 import { creerPieces } from "./pieces/index.js";
 import { composer } from "./composition.js";
+import { brancherToucher } from "./toucher.js";
 
 // LES PIÈCES, À DEUX FINESSES. La fine sert tant que la nourrice reste sous le plafond de triangles ;
 // au-delà (quatre voies et plus, à peu près), chaque pièce est plus petite à l'écran et se construit plus
@@ -58,37 +59,11 @@ export function ouvrirNourrice(toile, o) {
   }
   function regarder(vue) { etat.vue = vue; dire(); S.regarder(vue, true); }
 
-  // LE TOUCHER. Un doigt posé puis levé sans bouger (moins de 6 px, moins de 300 ms), sur la nourrice :
-  // elle s'éclate, ou se remonte. Tout le reste (glisser, pincer, appuyer longtemps) appartient à la vue.
-  var doigt = null, doigts = 0;
-  function poser(e) {
-    doigts++;
-    doigt = doigts === 1 && e.isPrimary ? { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() } : null;
-  }
-  function glisser(e) {
-    if (doigt && e.pointerId === doigt.id && Math.hypot(e.clientX - doigt.x, e.clientY - doigt.y) >= 6) doigt = null;
-  }
-  function lever(e) {
-    doigts = Math.max(0, doigts - 1);
-    var d = doigt; if (!d || e.pointerId !== d.id) return;
-    doigt = null;
-    if (e.type !== "pointerup") return;
-    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6 && performance.now() - d.t < 300 && S.touche(e.clientX, e.clientY)) eclater(!etat.eclatee);
-  }
-  // Au clavier : Entrée ou Espace sur la vue font le même geste.
-  function clavier(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); eclater(!etat.eclatee); } }
-  toile.addEventListener("pointerdown", poser);
-  toile.addEventListener("pointermove", glisser);
-  toile.addEventListener("pointerup", lever);
-  toile.addEventListener("pointercancel", lever);
-  toile.addEventListener("keydown", clavier);
+  // LE TOUCHER : sur la nourrice, il l'éclate ou la remonte (nourrice-3d/toucher.js, commun avec la pile du robinet).
+  var debrancher = brancherToucher(toile, S, function () { eclater(!etat.eclatee); });
 
   function detruire() {
-    toile.removeEventListener("pointerdown", poser);
-    toile.removeEventListener("pointermove", glisser);
-    toile.removeEventListener("pointerup", lever);
-    toile.removeEventListener("pointercancel", lever);
-    toile.removeEventListener("keydown", clavier);
+    debrancher();
     S.detruire();
     Object.keys(jeux).forEach(function (k) {
       Object.keys(jeux[k]).forEach(function (cle) { jeux[k][cle].couches.forEach(function (c) { c.geometrie.dispose(); }); });

@@ -38294,6 +38294,110 @@ contact (sa caméra, ses deux tampons, son flou) sont partis, avec la passe qui 
 ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site, les
 deux planches et les photos de l'éclaté du PDF (§605), reprises sans ombres le même soir.
 
+## §608 : La pile du robinet est en 3D, debout, dans la scène de la nourrice
+
+**Sa demande du 22 novembre 2026, puis son « Parfait, code ça » du 23.** Une planche d'abord
+(`appli/arrosage-robinet-3d.html`) : une combinaison, puis les neuf (trois programmateurs en nez de
+robinet fois trois départs), chaque pièce relevée sur ses photos (`docs/robinet-3d-photos/`). Puis
+l'écran du plan au robinet : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste
+de ses pièces, qui reste ce qu'on touche ; la pile en photos d'avant n'est plus que le repli d'un
+appareil sans WebGL 2, et porte alors elle-même ses pièces à toucher.
+
+**Une seule 3D, comme la nourrice (§601).** `appli/robinet-3d/` porte les pièces de la pile, leurs
+matières propres et leur composition ; la scène, les formes, les matières de base, le PEHD et le toucher
+sont ceux de la nourrice. La planche et l'écran appellent le même `ouvrirRobinet`.
+
+**Pourquoi une option `debout` de la scène, et pas une scène à elle.** Couchée dans la scène de la
+nourrice, la pile tournait comme une aiguille de montre sous le doigt et son dos ne se voyait jamais :
+l'éclaté ne sait courir que dans le plan du sol, et le doigt tourne autour de la verticale. La planche a
+d'abord eu sa propre scène, recopiée ; en entrant dans l'appli, elle est devenue une option de
+`nourrice-3d/scene.js` (pièces redressées, éclaté vertical, doigt qui passe dessous, vues « face » et
+« biais »), et le toucher est sorti dans `nourrice-3d/toucher.js` pour les deux. Sans l'option, la
+nourrice est inchangée : sa planche rendue avant et après diffère de 5 à 18 pixels sur 150 000 quand elle
+diffère de 9 à 23 d'elle-même d'un rendu à l'autre, et ses axes mesurent toujours 0,000 mm.
+
+**Ce que l'écran montre, et ce qu'il ne montre pas.** Le plan dit le montage : le Solem BL-NR au nez de
+robinet (le seul programmateur que le plan connaît), rien quand la nourrice reste ; la double sortie
+selon son interrupteur ; le départ (`departEn3D` : le Ø25 et le Ø32 sont le même à l'oeil, sa règle). Une
+pièce changée ou supprimée dans la liste reste dessinée telle qu'elle était proposée, comme sur la
+nourrice (`TODO.md`).
+
+**Le Rain Bird prend la sortie droite de la double sortie.** Son boîtier part d'un seul côté de l'eau ;
+sur la sortie gauche, il passait sous la sortie du client, et le tourner mettait son écran contre le mur.
+Le Solem (pareil sur ses deux flancs) et le Buddy (18 mm de marge) restent sur la gauche, celle du plan.
+
+**Ce qui le tient.** `scripts/test-robinet-3d.ts` : chaque bout de vissage déclaré est là où ses sommets
+le mettent (huit pièces relevées par huit agents s'y retrouvent), chaque pile de la planche et de l'écran
+se compose, l'écran montre le départ que la liste compte, aucun programmateur ne bouche la sortie du
+client. Chaque contrôle a été vu rouge (une sortie décalée de 0,2 mm, un tube vissé sans raccord, le Rain
+Bird remis à gauche).
+
+**Les teintes se règlent sur le rendu.** Prises telles quelles sur ses photos, elles sortaient deux à
+trois fois trop sombres sous l'éclairage de la scène ; elles sont réglées en comparant le rendu à la photo
+(l'anthracite de l'embout Palaplast : 47, 49, 54 sur la photo, 46, 49, 53 au rendu).
+
+## §609 : Une turbine se pose aux écartements de Rain Bird, une tuyère garde ses 80 %
+
+**Sa décision du 22 novembre 2026**, devant le manuel de conception Rain Bird
+qu'il a envoyé (p. 41 à 43, `docs/arrosage-manuel-rain-bird.md`) : *« Non prend
+les écartement de rainbird »*, puis, devant le coût chiffré sur ses jardins,
+*« Oui, Rain Bird »* et *« Toujours sans vent »*. Sans vent, le manuel donne
+entre deux têtes voisines : 1,1 × la portée en carré, ou 1,2 × sur un côté et
+1,0 × sur l'autre en rectangle. Sa règle allait jusqu'à 1,25 × (80 %), et
+1,33 × (75 %) quand cela gagnait un réseau.
+
+**Deux fonctions, une par famille, et l'aiguillage au seul endroit qui pose.**
+`poseSelonSaRegle` reçoit le type de la tête (`estTurbine`) : une turbine part
+dans `poseRainBird`, une tuyère reste dans l'ancienne recherche. Une seule
+fonction qui mêlerait les deux règles aurait caché la seconde sous un `if` au
+milieu de la première ; et un second calcul de pose, à côté, aurait divergé
+(`CLAUDE.md` §3).
+
+**Le carré et le rectangle, rien entre eux.** Le manuel donne deux lignes ; une
+grille de 1,15 × 1,05 n'est dans aucune, et l'on ne lui invente pas de règle
+(§4 ter, « aucune valeur ne se devine »). `ecartRainBird` dit oui à l'une ou à
+l'autre.
+
+**Une recherche, pas l'élargissement d'un côté à la fois.** L'ancienne pose
+ajoutait une rangée du côté le plus lâche jusqu'à ce que la règle tienne : avec
+une seule règle, c'était le moins de têtes. Avec deux, le rectangle tient
+parfois avec MOINS de têtes que le carré (son 16 × 10 : six têtes à 8 m sur
+10 m), et l'élargissement passait à côté. `poseRainBird` essaie chaque nombre
+de colonnes et garde la grille au plus petit nombre de têtes ; elle s'arrête
+dès qu'une rangée de plus resserrerait sous la portée la plus bridée, ce qui
+borne la recherche.
+
+**Ce qui ne bouge pas pour les turbines.** « Jamais moins que la portée » (sa
+règle du 17 août), tenu par la vis dans la limite d'Aqua Plus (`bridageDe`), et
+ses 105 % quand ils gagnent un réseau ou une gamme (`tolerant`). **Ce qui s'en
+va** : ses 75 %, qui espaçaient au-delà de Rain Bird.
+
+**Pourquoi les tuyères n'y passent pas.** Une tuyère ne se bride pas (sa
+réponse du 16 octobre). Sur son couloir de 10 × 2 en 6-VAN (1,8 m), deux rangées
+à 2 m l'une de l'autre demandent, en rectangle Rain Bird, un écart de 1,8 m au
+plus le long du couloir, et sa règle un écart d'au moins 1,8 m : aucun nombre de
+têtes ne tombe dans cette fenêtre. Seule une pose plus serrée que la portée
+tenait, et elle doublait ses tuyères (14 au lieu de 7). Mis devant les deux, il
+a gardé les siennes (*« Mes 7 en quinconce »*).
+
+**Ce que ça coûte, et qu'il a lu avant de trancher.** Son carré de 12 × 12 garde
+ses 9 turbines, en buse 1,0 au lieu de 0,75, et passe de 1 à 2 réseaux ; son
+30 × 22 passe de 12 turbines sur 2 réseaux à 20 sur 3. Le 16 × 10 lui a d'abord
+été annoncé à 12 turbines sur 2 réseaux, d'après un premier essai qui ne
+connaissait que le carré : faux, il garde 6 turbines sur 1 réseau.
+
+**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : deux règles datées
+du 22 novembre (chaque grille de turbines dans l'une des deux poses, sur huit
+jardins et quatre pressions ; son couloir garde 7 tuyères plus écartées que
+1,2 × leur portée), vues rouges sur l'ancien calcul ; trois règles barrées, leurs
+chiffres gardés comme trace (le 12 × 12 sur 1 vanne, et deux exemples qui en
+dépendaient : les tés égaux de sa pelouse arrière, les voies qui manquent au nez
+de robinet).
+
+**Ce qui n'est pas fait.** Les instantanés des planches d'arrosage ne sont pas
+reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
+(`TODO.md`).
+
 ## §611 : La visite guidée est servie par l'appli elle-même, depuis le fichier du site
 
 **Le 23 novembre 2026**, deux phrases de lui fixent le comportement : *« une seule fois au premier

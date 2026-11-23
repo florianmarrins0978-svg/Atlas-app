@@ -230,12 +230,16 @@ dire(
   );
   // Et une tête à sa portée ne se dit jamais bridée : un mot qui parle à tort
   // s'apprend à être ignoré.
-  const libre = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 12, l: 12 }] });
+  //
+  // **Le 22 × 12 depuis le 22 novembre 2026.** Le 12 × 12 en était l'exemple ;
+  // aux écartements de Rain Bird (sa décision), ses neuf têtes passent en buse
+  // 1,0 bridée à 6 m. Le 22 × 12 pose ses 3504 buse 1,0 à leur portée.
+  const libre = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 22, l: 12 }] });
   const sansDessin = dessinerPlan(libre.dessin, { x: 0, y: 6 }, libre.couleurs);
   const sansBride = sansDessin.ok ? sansDessin.dessin.reseaux.flatMap((x) => x.materiels) : [];
   dire(
     sansBride.length > 0 && sansBride.every((m) => m.bridee === false),
-    `12 × 12 à 3 bar : aucune tête dite bridée (${sansBride.map((m) => `${m.libelle} portée ${m.portee}`).join(", ")})`,
+    `22 × 12 à 3 bar : aucune tête dite bridée (${sansBride.map((m) => `${m.libelle} portée ${m.portee}`).join(", ")})`,
   );
 }
 
