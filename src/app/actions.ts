@@ -19,6 +19,7 @@ import { retirerContratDeLaListe } from "@/server/repositories/contrats-entretie
 import { retirerChantierDeLaListe } from "@/server/repositories/chantiers";
 import { estGenreVu } from "@/lib/rappels";
 import { jourIso } from "@/lib/jour";
+import { marquerCarteVisiteVue } from "@/server/repositories/visite-guidee";
 
 /**
  * Le patron a pris connaissance d'une réponse du client.
@@ -244,4 +245,14 @@ export async function retirerChantierDeLaListeAction(
     });
     return { succes: false, erreur: "Le chantier n'a pas pu être retiré." };
   }
+}
+
+/**
+ * La carte de la visite guidée a été suivie ou refusée : elle ne revient plus
+ * pour ce compte (sa décision du 23 novembre 2026, migration 0194). La
+ * personne vient de la session, jamais de l'écran.
+ */
+export async function carteVisiteVueAction(): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await marquerCarteVisiteVue(ctx.utilisateurId);
 }

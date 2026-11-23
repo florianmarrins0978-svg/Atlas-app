@@ -100,6 +100,11 @@ async function main() {
   // avec lui, c'est mesurer un écran que le patron n'a pas. On retire donc
   // l'abonnement que la porte pose à tout compte neuf.
   await pool.query(`DELETE FROM abonnements WHERE entreprise_id = $1`, [compte.entrepriseId]);
+  // **La carte de la visite guidée part aussi** (migration 0194) : elle se pose
+  // au-dessus de la porte et la fait descendre tant qu'elle est là, puis
+  // disparaît au premier geste. La porte se mesure à sa place de tous les
+  // jours, celle qu'il a réglée au tiers.
+  await pool.query(`UPDATE users SET visite_guidee_vue_le = now() WHERE id = $1`, [compte.utilisateurId]);
 
   const aAccepter = await documentsAAccepter(compte.utilisateurId);
   if (aAccepter.length > 0) {

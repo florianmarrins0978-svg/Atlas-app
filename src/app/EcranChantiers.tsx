@@ -9,6 +9,7 @@ import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier, { type FermetureDeLaFeuille } from "./chantiers/nouveau/FormulaireNouveauChantier";
+import CarteVisite from "./CarteVisite";
 import { supprimerChantierAction } from "./planning/actions";
 import { retirerChantierDeLaListeAction, retirerContratDeLaListeAction } from "./actions";
 import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
@@ -70,6 +71,7 @@ export default function EcranChantiers({
   bandeaux,
   ruban = null,
   lectureSeule = null,
+  carteVisite = false,
 }: {
   chantiers: BrinChantier[];
   /** Notifications et annonces, rendues par le serveur et posées sous le titre. */
@@ -83,6 +85,8 @@ export default function EcranChantiers({
    * panne — il rappuierait, puis il appellerait.
    */
   lectureSeule?: string | null;
+  /** La carte de la visite guidée se propose (une fois par personne, 0194). */
+  carteVisite?: boolean;
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
@@ -465,6 +469,15 @@ export default function EcranChantiers({
             de l'anneau à 33,4 % de SON téléphone. La suite mesure la PLACE,
             jamais le rapport — le jour où l'en-tête change de hauteur, c'est
             elle qui le dira. */}
+        {/* **La visite guidée, proposée une seule fois** — sa planche du
+            23 novembre 2026 (`appli/vente/cause-2-inscription.html`, l'étape
+            « L'appli ») et son oui : *« une seule fois au premier accueil ; et
+            qu'il puisse, s'il ne veut pas la faire, enlever le bouton »*. Elle
+            se pose AVANT le ressort de la porte, comme sur la planche : tant
+            qu'elle est là, « Créer un devis » descend d'autant, et revient au
+            tiers dès qu'elle part (`test-accueil-vide-porte-e2e.ts` mesure la
+            porte sans elle). */}
+        {carteVisite && <CarteVisite />}
         {vide && <div aria-hidden className="flex-[2]" />}
         <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[12px]">
           <Link

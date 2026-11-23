@@ -83,6 +83,13 @@ export const users = pgTable("users", {
    * 4 novembre 2026 : « ensuite la fenêtre ne revient plus jamais ».
    */
   aideNoteDevisVueLe: timestamp("aide_note_devis_vue_le", { withTimezone: true }),
+  /**
+   * Quand la carte « La visite guidée » de l'accueil a été suivie ou refusée
+   * (migration 0194) ; NULL : jamais. Une seule fois par compte, sa décision du
+   * 23 novembre 2026 : « une seule fois au premier accueil, et qu'il puisse
+   * enlever le bouton ».
+   */
+  visiteGuideeVueLe: timestamp("visite_guidee_vue_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

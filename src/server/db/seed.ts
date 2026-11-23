@@ -391,6 +391,10 @@ async function main() {
         // distincte en production ; ce seed n'est de toute façon jamais
         // exécuté contre une base de production).
         passwordHash: hashSync(MOT_DE_PASSE_DEMO, 10),
+        // La carte de la visite guidée (migration 0194) est déjà passée : le
+        // compte de démonstration sert aux suites et aux planches figées, qui
+        // regardent son accueil de tous les jours. Un compte neuf, lui, la voit.
+        visiteGuideeVueLe: new Date(),
       })
       .returning();
 

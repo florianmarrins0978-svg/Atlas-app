@@ -43,6 +43,7 @@ import EcranChantiers from "./EcranChantiers";
 import VeilleDesNouvelles from "@/components/atlas/VeilleDesNouvelles";
 import type { BrinChantier } from "./ListeChantiers";
 import { garderLaPage } from "@/server/garde-page";
+import { carteVisiteAMontrer } from "@/server/repositories/visite-guidee";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -85,7 +86,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, fermeture, retoursManques, vehicules, virements, liaison, attestations, retours] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, fermeture, retoursManques, vehicules, virements, liaison, attestations, retours, carteVisite] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -117,6 +118,9 @@ export default async function ChantiersPage() {
     role !== null && cheminAutorise(role, "/termines/comptable") ? attestationsAMontrer(ctx) : [],
     // Et la correction qu'il demande, comme le client d'un devis (même jour).
     role !== null && cheminAutorise(role, "/termines/comptable") ? retoursAMontrer(ctx) : [],
+    // La carte de la visite guidée, une fois par personne (sa décision du
+    // 23 novembre 2026, migration 0194).
+    carteVisiteAMontrer(ctx.utilisateurId),
   ]);
 
   // **La banque se lit APRÈS l'affichage** : l'accueil ne doit pas attendre
@@ -241,6 +245,7 @@ export default async function ChantiersPage() {
       chantiers={dansLOrdreDuFil([...brinsDeContrat, ...brinsDeChantier]).map((l) => l.brin)}
       ruban={acces ? <RubanEssai etat={acces} /> : null}
       lectureSeule={phraseLectureSeule(acces)}
+      carteVisite={carteVisite}
       bandeaux={
         <>
           {/* **L'accueil se relit tout seul** : une réponse de client arrive

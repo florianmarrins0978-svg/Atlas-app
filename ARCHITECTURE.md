@@ -38293,3 +38293,32 @@ Remonter la nourrice rend tout : le choix ne survit pas au montage, comme les nu
 contact (sa caméra, ses deux tampons, son flou) sont partis, avec la passe qui les refaisait. L'occlusion
 ambiante reste : elle creuse les filetages, elle ne pose rien au sol. Cela vaut pour l'appli, le site, les
 deux planches et les photos de l'éclaté du PDF (§605), reprises sans ombres le même soir.
+
+## §611 : La visite guidée est servie par l'appli elle-même, depuis le fichier du site
+
+**Le 23 novembre 2026**, deux phrases de lui fixent le comportement : *« une seule fois au premier
+accueil ; et qu'il puisse, s'il ne veut pas la faire, enlever le bouton »*, puis *« pour les
+personnes déjà dans l'application, s'ils quittent la visite, ils reviennent à la page Chantiers »*,
+et, depuis le site, au site.
+
+**Pourquoi l'appli la sert, et pas le site.** « Quitter la visite » rouvre la page d'où l'on vient
+(`quitter`, dans `appli/visite-guidee.html`), à condition qu'elle soit de la même origine. Servie
+par le site, la visite ne reviendrait jamais dans l'appli ; pire, sur un téléphone, une appli
+installée ouvre la page d'un autre site dans un navigateur à part, d'où rien ne la ramène.
+`src/app/visite-guidee/route.ts` lit donc le fichier du site et le rend tel quel : même origine,
+même retour, et aucune copie à tenir pareille (une copie dans `public/` aurait divergé à la
+première retouche de la visite).
+
+**La carte se retient par personne, en base** (`users.visite_guidee_vue_le`, migration 0194), comme
+l'aide de la note du devis (0163) : gardée dans le navigateur, elle reviendrait sur son PC. Les
+deux gestes l'éteignent, « Faire la visite » parce qu'elle est faite, « Non merci » parce qu'elle
+est refusée ; montrée sans geste, elle reste. La marque part AVANT la page de la visite : une
+navigation lancée tout de suite couperait l'action en route.
+
+**Deux conséquences, faites dans le même lot.** La politique de sécurité admet `data:` pour les
+polices (`next.config.ts`) : les écrans figés de la visite portent les polices de l'appli en ligne,
+et refusées ils se liraient dans la police du système ; une police ne s'exécute pas. La facturation
+reçoit `/visite-guidee` (`acces-roles.ts`), puisque la carte s'affiche sur son accueil ; la visite
+ne montre que des données d'essai. Et la porte « Créer un devis » se mesure sans la carte
+(`test-accueil-vide-porte-e2e.ts`, `mesurer-porte-accueil-vide.mts`) : la carte la fait descendre
+tant qu'elle est là, comme sur la planche qu'il a validée, puis la porte revient au tiers.

@@ -294,6 +294,10 @@ const OUVERT_A_LA_FACTURATION = [
   "/reglages",
   "/documents-legaux",
   "/verifier-email",
+  // **La visite guidée** (23 novembre 2026) : sa carte s'affiche sur l'accueil
+  // de chacun, la facturation comprise. Elle ne montre que des données
+  // d'essai, figées dans le fichier du site : rien de l'entreprise n'y passe.
+  "/visite-guidee",
   // La visionneuse, où s'ouvre la facture qu'elle émet (« Voir la facture en
   // PDF ») et, depuis le 24 septembre 2026, celle d'une ligne de Ma TVA. Elle
   // ne montre rien par elle-même : le fichier qu'on lui passe reste gardé par

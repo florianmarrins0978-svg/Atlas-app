@@ -52,6 +52,10 @@ if (!compte.ok) {
     await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [compte.entrepriseId]);
     const r = await client.query(`DELETE FROM abonnements WHERE entreprise_id = $1`, [compte.entrepriseId]);
     if (r.rowCount === 0) console.warn("⚠ aucun abonnement retiré : le ruban d'essai va fausser la mesure.");
+    // La carte de la visite guidée (migration 0194) descend la porte tant
+    // qu'elle est là : on mesure sa place de tous les jours, sans elle.
+    const v = await client.query(`UPDATE users SET visite_guidee_vue_le = now() WHERE id = $1`, [compte.utilisateurId]);
+    if (v.rowCount === 0) console.warn("⚠ la carte de la visite n'a pas été retirée : elle va fausser la mesure.");
     await client.query("COMMIT");
   } finally {
     client.release();

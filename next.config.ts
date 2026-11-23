@@ -27,7 +27,11 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "media-src 'self' blob:",
-  "font-src 'self'",
+  // `data:` pour la visite guidée servie par l'appli (`/visite-guidee`, 23
+  // novembre 2026) : ses écrans figés portent les polices de l'appli en ligne,
+  // et refusées ils se liraient dans la police du système. Une police ne
+  // s'exécute pas ; `img-src` admet déjà `data:` pour la même raison.
+  "font-src 'self' data:",
   "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io",
   "frame-ancestors 'none'",
   "base-uri 'self'",

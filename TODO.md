@@ -1262,10 +1262,11 @@ la coder dans l'accueil (un drapeau par compte, « vue ou refusée »), la visit
 
 **Le oui du 23 novembre pour la carte de la visite** : *« oui, une seule
 fois au premier accueil, et qu'il puisse, s'il ne veut pas, enlever le
-bouton »*. À coder : la carte sur l'accueil, retenue par personne (une colonne
-sur `users`, donc une migration, donc la batterie entière et son oui). Point
-à trancher en codant : la visite vit sur le site, l'appli ailleurs, et
-« Quitter la visite » doit ramener dans l'appli.
+bouton »*. **Codée le 23 novembre, pas encore éprouvée** : la carte sur
+l'accueil, retenue par personne (migration 0194), la visite servie par l'appli
+pour que « Quitter » ramène à Chantiers (`ARCHITECTURE.md` §611). Niveau 3
+(migration) : la batterie entière attend son oui. Déjà vert : types, style,
+pansements, tirets, nom, couches, code mort, accès par rôle.
 
 **⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : sa question du
 23 novembre, non codée.** *« Quelqu'un crée un compte pour les 15 jours,
