@@ -1,5 +1,13 @@
 # Reprendre le travail
 
+## LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES (23 novembre 2026)
+
+Deux règles du plan d'arrosage, `ARCHITECTURE.md` §610. Ce qu'il faut savoir avant d'y toucher :
+
+- **le partage égal ne sert qu'au plan retenu** (`decouperUneFois(true)`), jamais pendant `chercherUnPlan` : partager pendant la recherche lui fait trouver des plans à une vanne de moins, donc moins de marge, ce qu'il a refusé le même jour ;
+- **un partage qui perd plus que le remplissage est refusé** (`pirePerteDesPaquets`) : sans cette condition, 24 jardins sur 1 800 perdaient jusqu'à 0,17 bar ;
+- **le tracé** : un segment déjà creusé coûte son PE moins un millième (`DEPARTAGE`), jamais zéro. Remettre zéro, c'est revenir à 42 m de PE pour son réseau vert.
+
 ## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026)
 
 **Avant de toucher à la pose d'une zone** : lire `ARCHITECTURE.md` §609. Une turbine passe par `poseRainBird` (carré 1,1 × la portée, ou rectangle 1,2 × et 1,0 ×, sans vent), une tuyère par l'ancienne recherche à 80 %. Ne pas remettre les tuyères sous Rain Bird : il l'a refusé (« Mes 7 en quinconce »). Les instantanés `appli/arrosage-*-calcul.js` des planches ne sont pas reconstruits.

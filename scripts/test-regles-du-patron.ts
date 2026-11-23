@@ -521,11 +521,57 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
   // écartements de Rain Bird (sa décision), la pelouse arrière de 12 × 12 passe
   // sur deux réseaux, et chacun porte son té égal. La règle ne bouge pas ; le
   // compte se lit réseau par réseau. Le 2 reste.
-  const arriere = d.reseaux.filter((r) => p.secteurs[r.numero]?.nom === "Pelouse arrière").map((r) => r.tesEgaux);
-  exige(arriere.length === 2 && arriere.every((t) => t === 1), `Pelouse arrière : ${arriere.join(" et ")} tés égaux sur ${arriere.length} réseaux, il en faut 2 d'un té chacun`);
+  //
+  // ~~2 RÉSEAUX D'UN TÉ CHACUN~~ BARRÉ le 23 novembre 2026 : sa règle du tracé,
+  // *« il faut pouvoir dépenser le moins de mètres linéaires possible de PE »*,
+  // donnée sur ce jardin même, son réseau vert dessiné de sa main : *« je serais
+  // parti de la nourrice, je serais parti à gauche pour faire les 1, 2, 3, 4
+  // arroseurs »*. Ce réseau part d'un seul côté, et n'a plus de té au départ. La
+  // règle ne bouge pas : le té se pose là où la ligne part dans deux sens,
+  // l'arrivée comprise, et le compte se relit dans les lignes de chaque réseau.
+  const demande = (lignes: { x: number; y: number }[][]) => {
+    const k = (q: { x: number; y: number }) => `${q.x},${q.y}`, voisins = new Map<string, Set<string>>();
+    const relier = (a: string, b: string) => voisins.set(a, (voisins.get(a) ?? new Set<string>()).add(b));
+    for (const l of lignes) for (let i = 0; i + 1 < l.length; i++) { relier(k(l[i]), k(l[i + 1])); relier(k(l[i + 1]), k(l[i])); }
+    const entree = lignes[0]?.[0] ? k(lignes[0][0]) : "";
+    return [...voisins].reduce((t, [c, v]) => t + Math.max(0, v.size + (c === entree ? 1 : 0) - 2), 0);
+  };
+  const arriere = d.reseaux.filter((r) => p.secteurs[r.numero]?.nom === "Pelouse arrière");
+  const tes = arriere.map((r) => r.tesEgaux), demandes = arriere.map((r) => demande(r.lignes));
+  exige(arriere.length === 2 && tes.join(" et ") === demandes.join(" et ") && demandes.join(" et ") === "1 et 0", `Pelouse arrière : ${tes.join(" et ")} tés égaux sur ${arriere.length} réseaux, le tracé en demande ${demandes.join(" et ")} ; il en faut 2 réseaux, 1 té sur le bleu, qui part dans les deux sens, 0 sur le vert, qui part d'un seul côté`);
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
+
+// ── Le tuyau au plus court, et les parts égales ─────────────────────────────
+// Ses deux corrections du 23 novembre 2026, données devant son jardin de
+// 12 × 12 et 8 × 8 recalculé (`appli/arrosage-rainbird-et-darcy.html`).
+regle("23 novembre 2026", "« il faut pouvoir dépenser le moins de mètres linéaires possible de PE » : son réseau vert passe de 42 à 18 m, la tranchée reste à 72 m", () => {
+  const p = plan([
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+  ]);
+  const d = dessine(p, { x: 13, y: 6 });
+  const tuyaux = d.reseaux.map((r) => r.metresTuyau);
+  exige(d.reseaux.length === 3, `${d.reseaux.length} réseaux sur son jardin, il en a validé 3`);
+  exige(tuyaux.join(" ; ") === "30 ; 18 ; 24", `${tuyaux.join(" ; ")} m de PE par réseau, son tracé en donne 30 ; 18 ; 24 (le vert passait par la tranchée du bleu, 42 m)`);
+  exige(d.metresTranchee === 72, `${d.metresTranchee} m de tranchée, son tracé en creuse 72 : moins de PE, pas plus de tranchée`);
+});
+
+regle("23 novembre 2026", "« ça sert à rien de faire un réseau à 6 arroseurs et un réseau à 4. Autant faire deux réseaux à 5 » : ses trois jardins, la même parcelle sur deux vannes se partage à un arroseur près, sans vanne de plus ni de moins", () => {
+  // Sa réponse devant ces trois-là : « Oui il faut ma règle pour les 3 exemples que tu as donnés ».
+  const CAS: [number, number, number, string, number][] = [
+    [16, 15, 12, "A 8 + 8, B 5 + 4", 4],
+    [20, 15, 12, "A 10 + 10, B 5 + 4", 4],
+    [16, 10, 8, "A 6 + 6, B 4", 3],
+  ];
+  for (const [L, l, L2, attendu, vannes] of CAS) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: L2 }]);
+    const s = p.secteurs as unknown as { nom: string; points: unknown[] }[];
+    const lu = ["A", "B"].map((z) => `${z} ${s.filter((x) => x.nom === z).map((x) => x.points.length).join(" + ")}`).join(", ");
+    exige(lu === attendu && s.length === vannes, `${L} × ${l} et ${L2} × ${L2} à 3 bar : ${lu} sur ${s.length} vannes, il en faut ${attendu} sur ${vannes}`);
+  }
+});
 
 // ── Les écartements de Rain Bird, pour les turbines ────────────────────────
 // Ses réponses du 22 novembre 2026, devant le manuel de conception Rain Bird

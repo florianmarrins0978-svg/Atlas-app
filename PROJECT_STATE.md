@@ -1,10 +1,18 @@
 # État du projet
 
-## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD
+## LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES : CODÉS (23 novembre 2026), LA BATTERIE À JOUER
+
+Ses deux corrections du 23 : le tracé prend le moins de mètres de PE, la tranchée ouverte ne départage qu'à PE égal (`trace.ts`) ; une parcelle sur deux vannes se partage en parts égales, sans vanne de plus ni de moins et sans perte de plus (`partsEgales`, `calcul.js` et sa copie). `ARCHITECTURE.md` §610. Sa décision du même jour notée dans `.claude/rules/arrosage.md` : le coefficient du PE reste à 150, Darcy et le 140 n'entrent pas.
+
+## ✅ LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD : SUR `main` (23 novembre 2026)
+
+Batterie complète au vert, complément d'après-fusion au vert. L'écran du plan au robinet n'a pas encore été regardé.
+
+## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, DEPUIS SUR `main`
 
 Sa demande : réunir les lots qui attendent une batterie, puis une seule batterie. Darcy et Moody en est sorti sur sa décision (*« Prends avec Rain Bird »*, devant `appli/arrosage-rainbird-et-darcy.html`) : réuni, il faisait passer son jardin de 3 réseaux à 2. `TODO.md` dit ce que coûte de le laisser de côté.
 
-## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR SA BRANCHE, PAS SUR `main`
+## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR `main` LE MÊME JOUR
 
 Sa planche `appli/arrosage-robinet-3d.html` (les neuf combinaisons, ses photos dans `docs/robinet-3d-photos/`), puis son « Parfait, code ça ». `MontageAuRobinet` montre la pile en 3D (`Robinet3D.tsx`, module `appli/robinet-3d/vue.js`) au-dessus de la liste de ses pièces ; les photos ne sont plus que le repli. La scène de la nourrice a l'option `debout`, le toucher est commun (`nourrice-3d/toucher.js`). `scripts/test-robinet-3d.ts`. Niveau 3 (`robinet.ts`, 160 points d'entrée) ; sa réponse à la batterie : *« Pas de batterie »*. Le lot attend sur `claude/laughing-wright-xxntzg`. `ARCHITECTURE.md` §608.
 

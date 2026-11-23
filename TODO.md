@@ -1,6 +1,16 @@
 # Prochaines tâches
 
-## ⏳ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD (23 novembre 2026)
+## ⏳ LE TUYAU AU PLUS COURT EN PE ET LES PARTS ÉGALES : CODÉS, LA BATTERIE À JOUER (23 novembre 2026)
+
+Ses deux corrections du 23 (`ARCHITECTURE.md` §610, `.claude/rules/arrosage.md`) : le moins de mètres de PE, la tranchée ouverte ne départage qu'à PE égal ; une parcelle sur deux vannes en parts égales, sans vanne de plus ni de moins. Sa réponse à la batterie : *« Et jouer la batterie »*.
+
+- **Reste** : la batterie (niveau 3, `calcul.js` atteint plus de dix points d'entrée), puis `main`.
+- **Les instantanés des planches d'arrosage** ne portent ni ce tracé ni ce partage (même ligne que Rain Bird, plus bas).
+- **Les 14 jardins sur 1 800 qui restent inégaux** : mêler deux pelouses sur une vanne y économise une vanne, ou l'égalité y ferait perdre plus. Les rendre égaux coûterait une vanne : à lui de le dire s'il le veut.
+
+## ✅ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, SUR `main` (23 novembre 2026)
+
+Batterie complète au vert, puis le complément d'après-fusion (types, lint), puis `main`.
 
 Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fusionne avec elles »*. Sur `claude/laughing-wright-xxntzg` : la pile du robinet en 3D (§608) et les turbines aux écartements de Rain Bird (`claude/wonderful-goldberg-q0uoee`, §609 ; il portait §603, déjà pris sur `main`). Puis sa réponse : *« Oui, une batterie »*, une seule pour les deux.
 
@@ -17,7 +27,7 @@ Le relevé : `docs/arrosage-manuel-rain-bird.md`. **Codé** : les turbines aux
 | ce qui reste | qui |
 |---|---|
 | **compter le dénivelé** (0,1 bar par mètre, rien dans le calcul aujourd'hui) : une saisie de la hauteur du dernier arroseur par rapport à la nourrice ; tant qu'il n'est pas compté, une réserve sous le plan. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
-| **le coefficient du PE à 140** (Rain Bird) au lieu de 150 (sans source) : 12 % de perte de ligne en plus. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| ~~**le coefficient du PE à 140**~~ TRANCHÉ le 23 novembre 2026 : il reste à 150, avec les 3 réseaux de son jardin (*« Moi je pense qu'il faut l'actuel à 150 3 réseau »*). Darcy écarté aussi. Ne pas le reproposer | |
 | **un réseau alimenté par le milieu** se calcule comme une seule file (`perteDuReseau`) : perte surestimée, un réseau de trop possible. Demandé le 22 novembre, sans réponse | lui, puis nous |
 | **la vitesse de 1,5 m/s** : son plafond retiré le 16 octobre était la règle écrite du fabricant ; le commentaire de `calcul.js` qui le dit « le nôtre » est faux. Une réserve qui n'ajoute aucune vanne serait l'entre-deux | lui |
 | **les instantanés des planches** (`appli/arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`, `arrosage-planche-calcul.js`, `arrosage-nourrice-calcul.js`) ne sont pas reconstruits : les planches posent encore les turbines à 80 % | nous, à la prochaine planche d'arrosage |
@@ -30,7 +40,7 @@ Proposé : poser une vraie question avant le plan quand le piquage est sur un ro
 `appli/arrosage-robinet-3d.html` et `appli/robinet-3d/`, rien dans `src/`. Sa demande : *« fais-moi qu'une seule des 9 combinaisons possibles pour l'instant pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans l'appli en 3D ; on touche et on a l'éclaté, sans ombre »*, puis devant la première (Solem et Ø25) : *« Parfait, tu peux faire toutes les autres combinaisons exactement comme tu viens de faire là »*. Ses neuf photos : `docs/robinet-3d-photos/`.
 
 - **Les neuf** : trois programmateurs (Solem BL-NR SP1151, Rain Bird, Buddy AEV11401) fois trois départs (Ø16 rigide par le raccord Plasson taraudé, Ø16 souple par l'embout Palaplast MID6362, PEHD Ø25 ou Ø32 par le raccord femelle 25 OPL70302520 et le PEHD de la nourrice). Toutes partent de son robinet et de la double sortie BRO3493. Deux rangées de boutons sur la page.
-- **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Reste** : la batterie (niveau 3 : `src/lib/arrosage/robinet.ts` atteint 160 points d'entrée). Demandée le 23 novembre, sa réponse : *« Pas de batterie »*. **Le lot attend donc sur la branche `claude/laughing-wright-xxntzg`, PAS sur `main`** : son espace ne l'a pas. Le jour où il dit oui : la batterie, puis `main`, puis regarder l'écran du plan au robinet (jamais ouvert ici, faute de serveur) et l'essayer sur un iPhone.
+- **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Sur `main` depuis le 23 novembre 2026**, batterie au vert. **Reste** : regarder l'écran du plan au robinet (jamais ouvert ici) et l'essayer sur un iPhone.
 - **Une pièce changée ou supprimée ne se voit pas dans la 3D du robinet**, comme sur la nourrice : la liste dessous le dit. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer, pour les deux à la fois.
 - **Le Rain Bird et le Buddy ne sont que sur la planche** : le plan ne connaît que le Solem BL-NR (`src/lib/arrosage/robinet.ts`, `ROBINET.programmateur`). Les proposer dans le plan, c'est un choix de programmateur dans le plan, et leurs pièces dans la liste : à lui demander.
 - **Le Rain Bird prend la sortie DROITE** (décidé sans lui, et dit) : son boîtier part d'un seul côté de l'eau ; sur la sortie gauche il passait sous la sortie du client, et le tourner mettait son écran contre le mur. Le Solem et le Buddy restent sur la gauche (le Buddy s'arrête à 18 mm de la sortie droite, mesuré). Le Rain Bird n'est pas au catalogue Aqua Plus : il garde son nom de marque, sans référence.

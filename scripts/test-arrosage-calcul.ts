@@ -327,12 +327,18 @@ dire(
 // porte les deux. Sur d'autres jardins, les deux zones tombent bien dans le
 // même groupe mais la coupe retombe sur leur limite — le contrôle passerait
 // alors au vert sans rien avoir montré.
+//
+// **La grande pelouse fait 18 × 7 depuis le 23 novembre 2026, et non plus
+// 20 × 7.** Sa règle des parts égales coupe chaque pelouse à part quand cela ne
+// coûte aucune vanne : sur 20 × 7, plus rien ne se mêlait, et le contrôle aurait
+// rougi sur un plan juste. Sur 18 × 7, mêler les deux pelouses économise une
+// vanne, et la bascule se voit encore.
 {
   const deuxBuses = calculerPlan({
     seau: 10, temps: 20, pression: 3, amenee: 30,
     zones: [
       { id: 1, type: "gazon", nom: "Petite", L: 6, l: 5 },
-      { id: 2, type: "gazon", nom: "Grande", L: 20, l: 7 },
+      { id: 2, type: "gazon", nom: "Grande", L: 18, l: 7 },
     ],
   });
   const busesParReseau = new Map<number, Set<string>>();

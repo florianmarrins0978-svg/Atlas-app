@@ -13,15 +13,20 @@
  *   1. **Tout part de la nourrice.** *« Règle indiscutable. »* Chaque réseau a
  *      au moins une ligne qui démarre au regard ; ses antennes se greffent sur
  *      un point qu'il dessert déjà.
- *   2. **On minimise la TRANCHÉE, pas le tuyau.** Deux tuyaux qui suivent le
- *      même chemin n'occupent qu'une saignée : le mètre de tuyau se pose, le
- *      mètre de tranchée se creuse et se remblaie. Un réseau a donc raison de
- *      rallonger son tuyau pour rester dans une tranchée déjà ouverte.
- *   3. **On ne coupe pas le jardin.** *« Beaucoup de choses enterrées — j'aurais
+ *   2. **On ne coupe pas le jardin.** *« Beaucoup de choses enterrées — j'aurais
  *      fait le tour. »* Longer un bord coûte parfois plus de tuyau et toujours
  *      moins d'ennuis : au milieu passent gaines, drains et racines. On ne rentre
  *      que pour desservir un arroseur qui s'y trouve.
- *   4. **Au plus court**, une fois les trois précédentes tenues.
+ *   3. **Le moins de mètres de PE.** Sa correction du 23 novembre 2026 : *« il
+ *      faut pouvoir dépenser le moins de mètres linéaires possible de PE »*.
+ *      Jusque-là, un segment déjà creusé par un autre réseau ne coûtait rien, et
+ *      le second réseau rallongeait son tuyau pour suivre la tranchée du premier :
+ *      sur son 12 × 12 et 8 × 8, le réseau vert faisait 42 m de PE, et son tracé
+ *      à lui en fait 18 (*« en réutilisant la tranchée, il y a 2 fois plus de
+ *      mètres linéaires de PE »*), pour la même tranchée de 72 m.
+ *   4. **À PE égal, la tranchée déjà ouverte** : c'est ce qui reste de sa règle
+ *      du 21 août (*« quand les deux solutions se valent, la tranchée
+ *      l'emporte »*), et rien de plus (`DEPARTAGE`).
  *
  * ─────────────────────────────────────────────────────────────────────────
  * COMMENT, ET POURQUOI PAS AUTREMENT.
@@ -33,14 +38,15 @@
  *   · un segment qui LONGE un bord est facturé sa longueur ;
  *   · un segment qui COUPE l'intérieur est facturé sa longueur × `PENALITE`.
  *
- * C'est ce qui traduit la règle 3 en arithmétique : le tour n'est pris que s'il
+ * C'est ce qui traduit la règle 2 en arithmétique : le tour n'est pris que s'il
  * n'est pas démesurément plus long. `PENALITE = 2` veut dire qu'on accepte de
  * doubler la distance pour rester au bord — au-delà, la traversée redevient
  * raisonnable, et c'est le cas d'un arroseur au milieu d'une grande pelouse.
  *
- * **Et la tranchée est l'UNION des tracés**, jamais leur somme : c'est là que
- * la règle 2 se joue. Un réseau qui rejoint un arroseur lointain le fait par
- * les segments déjà pris par un autre, tant que le détour reste borné.
+ * **Et la tranchée est l'UNION des tracés**, jamais leur somme. Un segment
+ * qu'un autre réseau a déjà creusé coûte son PE, sans la pénalité de la
+ * traversée (rien de neuf ne s'y creuse), et à peine moins qu'un segment neuf :
+ * il ne l'emporte qu'à PE égal.
  */
 
 /** Un point du plan, en mètres, origine au coin haut-gauche du terrain. */
@@ -88,12 +94,19 @@ export type Trace = {
  *
  * **Deux, et le chiffre a une raison.** Sur son extension de 8 × 4, couper fait
  * 4 m et le tour en fait 12 : rapport 3, donc la traversée l'emporterait avec
- * une pénalité de 2. Mais le tour y est GRATUIT — ses segments servent déjà à
- * d'autres arroseurs, et la tranchée ne les compte qu'une fois. C'est
- * l'union qui tranche, pas la pénalité : celle-ci ne sert qu'à départager deux
- * chemins de coût égal en tranchée.
+ * une pénalité de 2. Mais le tour y est déjà le chemin du réseau lui-même : ses
+ * segments servent à ses autres arroseurs, et une antenne qui part d'un point
+ * que le réseau atteint ne coûte que ce qu'elle ajoute.
  */
 const PENALITE_TRAVERSEE = 2;
+
+/**
+ * La remise d'un segment déjà creusé par un autre réseau : un millième de son
+ * PE. **Elle départage, elle ne décide pas** (sa règle du 23 novembre 2026, le
+ * moins de PE d'abord) : la tranchée ouverte ne l'emporte qu'à PE égal, ou à
+ * quelques centimètres sur un chemin de plusieurs dizaines de mètres.
+ */
+const DEPARTAGE = 0.001;
 
 export const distance = (a: Point, b: Point) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 const cle = (p: Point) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`;
@@ -126,9 +139,9 @@ export function surLeBord(p: Point, contour: Point[], tolerance = 0.01): boolean
  * coûteux devient alors un plus-court-chemin, et le tour redevient possible.
  *
  * Les réseaux sont tracés l'un après l'autre, et chacun voit la tranchée déjà
- * ouverte : un segment déjà creusé lui est facturé **zéro**. C'est ainsi que la
- * règle de la tranchée se traduit — le second réseau prend le chemin du premier
- * même s'il rallonge son tuyau.
+ * ouverte : un segment déjà creusé lui coûte son PE, moins `DEPARTAGE`. **Il
+ * ne lui coûtait rien jusqu'au 23 novembre 2026**, et le second réseau prenait
+ * le chemin du premier même en doublant son tuyau : c'est ce qu'il a corrigé.
  */
 export function tracerReseaux(
   nourrice: Point,
@@ -159,7 +172,9 @@ export function tracerReseaux(
   const dedans = (p: Point) => surLeBord(p, contour) || estDedans(p, contour);
   const utiles = noeuds.filter(dedans);
 
-  type Arete = { vers: number; poids: number };
+  // `poids` : ce que coûte un segment neuf (son PE, doublé s'il traverse) ;
+  // `tuyau` : son PE seul, ce que coûte le même segment déjà creusé.
+  type Arete = { vers: number; poids: number; tuyau: number };
   const aretes: Arete[][] = utiles.map(() => []);
   const cleSegment = (a: Point, b: Point) => [cle(a), cle(b)].sort().join("|");
 
@@ -181,8 +196,8 @@ export function tracerReseaux(
       if (coupeUnAutre) continue;
       const l = distance(a, b);
       const poids = surLeBord(milieu, contour) ? l : l * PENALITE_TRAVERSEE;
-      aretes[i].push({ vers: j, poids });
-      aretes[j].push({ vers: i, poids });
+      aretes[i].push({ vers: j, poids, tuyau: l });
+      aretes[j].push({ vers: i, poids, tuyau: l });
     }
   }
 
@@ -220,7 +235,7 @@ export function tracerReseaux(
 
     while (aJoindre.length > 0) {
       // Dijkstra depuis TOUT ce que le réseau atteint déjà, vers le plus proche
-      // des arroseurs restants. Un segment déjà creusé ne coûte rien.
+      // des arroseurs restants. Un segment déjà creusé coûte son PE, à peine moins.
       const dist = new Array(utiles.length).fill(Infinity);
       const parent = new Array(utiles.length).fill(-1);
       const vu = new Array(utiles.length).fill(false);
@@ -232,8 +247,8 @@ export function tracerReseaux(
         if (u < 0) break;
         vu[u] = true;
         for (const e of aretes[u]) {
-          const gratuit = dejaCreuse.has(cleSegment(utiles[u], utiles[e.vers]));
-          const d = dist[u] + (gratuit ? 0 : e.poids);
+          const creuse = dejaCreuse.has(cleSegment(utiles[u], utiles[e.vers]));
+          const d = dist[u] + (creuse ? e.tuyau * (1 - DEPARTAGE) : e.poids);
           if (d < dist[e.vers]) {
             dist[e.vers] = d;
             parent[e.vers] = u;

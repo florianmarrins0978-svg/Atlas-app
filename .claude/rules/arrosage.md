@@ -402,6 +402,30 @@ valve? », rainbird.com). Le nombre de têtes d'un réseau est le débit disponi
 divisé par le débit d'une tête à sa pression, et c'est ce que fait déjà le
 découpage. Neuf buses 0,75 (0,16 m³/h) boivent autant que quatre buses 1,5.
 
+**UNE PARCELLE SUR PLUSIEURS VANNES SE PARTAGE EN PARTS ÉGALES — sa règle du
+23 novembre 2026 :** *« à partir du moment où il doit y avoir deux réseaux
+d'arroseurs sur la même parcelle, deux réseaux de 3005, ça sert à rien de faire
+un réseau à 6 arroseurs et un réseau à 4. Autant faire deux réseaux à 5. C'est
+plus safe. »* Puis, devant trois de ses jardins à 3 bar : *« Oui il faut ma
+règle pour les 3 exemples que tu as donnés »*.
+
+| son jardin | avant | sa règle |
+|---|---|---|
+| 16 × 15 et 12 × 12 | A 9 + 7, B 1 + 7 + 1 (une vanne mêle les deux) | A 8 + 8, B 5 + 4 |
+| 20 × 15 et 12 × 12 | A 10 + 10, B 8 + 1 | A 10 + 10, B 5 + 4 |
+| 16 × 10 et 8 × 8 | A 7 + 5, B 4 | A 6 + 6, B 4 |
+
+**Le nombre de vannes ne bouge pas**, et c'est délibéré : le partage ne sert
+qu'au plan retenu, jamais à sa recherche. Une coupe plus égale perd moins ; la
+recherche y aurait trouvé des plans à une vanne de moins, donc moins de marge
+(son 16 × 15 tombait à 3 vannes), l'inverse de ce qu'il a demandé. Le partage
+n'est gardé que s'il ne charge aucune vanne davantage, ne mêle pas plus de
+parcelles, et **ne perd pas plus** que le remplissage (`partsEgales`,
+`calcul.js`). Sur 1 800 jardins : les parcelles à deux arroseurs d'écart ou
+plus passent de 302 à 14, aucun nombre de vannes ne change, aucune pression ne
+baisse. Les 14 qui restent : quand mêler deux parcelles sur une vanne en
+économise une, ou quand l'égalité ferait perdre plus.
+
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
 goutte ; sur le plan, il n'en a compté qu'un, et pour les pièces aussi ; il n'a
@@ -667,6 +691,17 @@ une longueur saisie oblige à la ressaisir trois fois pour trouver la bascule.
 Quand le débit interdit le Ø25, le seuil vaut **zéro**, jamais un nombre de
 mètres qu'on croirait.
 
+**LE COEFFICIENT DU PE RESTE À 150, ET DARCY N'ENTRE PAS — sa décision du
+23 novembre 2026.** Son 12 × 12 et 8 × 8 a été calculé trois fois devant lui
+(`appli/arrosage-rainbird-et-darcy.html`) : à C = 150, 3 réseaux ; à C = 140
+(la valeur de Rain Bird) comme en Darcy et Moody, 2 réseaux, dont un qui
+arrosait les deux pelouses. Ses réponses : *« Prends avec Rain Bird »*, puis
+*« pour être le plus safe possible, vaut mieux qu'il y ait 3 réseaux que 2.
+Parce que 2, on a un risque que ça lève pas »*, et *« Moi je pense qu'il faut
+l'actuel à 150 3 réseau »*. Le 140 et Darcy sont écartés : ne pas les
+reproposer. La branche Darcy (`claude/adoring-mendel-e8roex`) ne se fusionne
+pas.
+
 **LA PRESSION NE DONNE PAS LE DÉBIT, ET LE DÉBIT NE DONNE PAS LA PRESSION.**
 Les deux se calculent, mais séparément : le débit vient du diamètre (vitesse ×
 section) ou du seau chronométré ; la pression dit ce qui arrivera aux arroseurs
@@ -687,8 +722,30 @@ aller-retour au magasin avec la tranchée ouverte.
 qui est **dans le regard**, ce qui part **au jardin**. Les confondre a déjà fait
 compter un coude du regard comme une fin de ligne d'arroseur.
 
-**CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
-et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
+**CE QU'ON MINIMISE, C'EST LE PE — sa correction du 23 novembre 2026 :** *« par
+où on passe le tuyau, ça c'est une règle qu'il faut que tu corriges. Il faut
+pouvoir dépenser le moins de mètres linéaires possible de PE. »* Il l'a donnée en
+retraçant de sa main le réseau vert de son 12 × 12 et 8 × 8 : *« je serais parti
+de la nourrice, je serais parti à gauche pour faire les 1, 2, 3, 4 arroseurs.
+Parce que comme ça, il y a moins de mètres linéaires de PE. En réutilisant la
+tranchée, certes tu réutilises la tranchée, mais du coup il y a 2 fois plus de
+mètres linéaires de PE. »* Son réseau vert passe de 42 à 18 m de PE, et la
+tranchée reste à 72 m. L'ordre, dans `tracerReseaux` (`trace.ts`) :
+
+1. tout part de la nourrice ;
+2. on ne coupe pas le jardin (le tour, tant qu'il ne double pas la longueur) ;
+3. **le moins de mètres de PE** ;
+4. à PE égal, la tranchée déjà ouverte (`DEPARTAGE`) : c'est ce qui reste de la
+   règle du 21 août ci-dessous, *« quand les deux solutions se valent, la
+   tranchée l'emporte »*.
+
+Ce qui suit, jusqu'à « Le critère est géométrique », est sa règle du 21 août.
+**Ce qui n'en tient plus** : que la tranchée prime sur le tuyau, et qu'un réseau
+ait raison de rallonger son tuyau pour rester dans une saignée ouverte. Ne pas
+les rétablir.
+
+**~~CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU~~** (barré le
+23 novembre 2026). Sa règle du 21 août : *« le trait jaune, c'est une tranchée.
 C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le
 moins de tranchée possible. Si on peut réutiliser une tranchée déjà faite et
 juste faire une petite antenne — un mètre par exemple — pour aller chercher
@@ -696,8 +753,9 @@ l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
 
 **Deux tuyaux qui suivent le même chemin n'occupent qu'UNE tranchée.** Le mètre
 de tuyau se paie une fois ; le mètre de tranchée se paie en heures d'homme, et
-en gazon rouvert. Un réseau a donc raison de **rallonger son tuyau** pour rester
-dans une saignée déjà ouverte.
+en gazon rouvert. ~~Un réseau a donc raison de **rallonger son tuyau** pour rester
+dans une saignée déjà ouverte.~~ (barré le 23 novembre 2026 : le moins de PE
+d'abord.)
 
 Ce qu'il faut chercher, dans cet ordre :
 

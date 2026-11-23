@@ -1384,7 +1384,7 @@ function decouper(){
   var d = decouperUneFois();
   // Sans perte de réseau calculable (que du goutte-à-goutte) ou sans pression
   // connue, il n'y a rien à chercher : aucune buse ne dépend de la pression.
-  if (!(source > 0) || !(pirePerteDeReseau(d) > 0)) return finirLePlan(d, source, true);
+  if (!(source > 0) || !(pirePerteDeReseau(d) > 0)) return finirLePlan(decouperUneFois(true), source, true);
 
   var trouve = chercherUnPlan(source);
   if (trouve) return trouve;
@@ -1408,7 +1408,7 @@ function decouper(){
   // **Aucun plan ne tient au-dessus du plancher** : la pression ne suffit pas
   // à porter ce jardin. On rend le plan de la source, et il porte l'ALERTE.
   pressionDeCalcul = null;
-  return finirLePlan(decouperUneFois(), source, false);
+  return finirLePlan(decouperUneFois(true), source, false);
 }
 
 /* Le meilleur plan à la limite d'une voie en cours : `null` si aucun ne tient
@@ -1425,9 +1425,9 @@ function chercherUnPlan(source){
 
   // Un plan à la pression de choix `p`, jugé à la pression qui arrive : `null`
   // s'il ne tient pas, sinon ce qui le classe.
-  var evaluer = function(p){
+  var evaluer = function(p, egales){
     pressionDeCalcul = p;
-    var essai = decouperUneFois();
+    var essai = decouperUneFois(egales);
     var arrive = source - amenee(essai).perte - pirePerteDeReseau(essai);
     var signature = essai.secteurs.length + '|' + essai.poses.map(function(x){ return x.buse ? x.buse.ref : ''; }).join(',');
     // Les portées ont été prises à `p` : à la pression qui arrive, chacune doit
@@ -1501,8 +1501,12 @@ function chercherUnPlan(source){
   }
   retenu = retenu || secours;
   if (retenu){
+    // Le plan retenu, ses têtes partagées en parts égales : il garde ses vannes
+    // et ses buses, et il doit tenir encore. S'il ne tenait plus, le remplissage
+    // reste, et c'est lui qui a été jugé.
+    var egal = evaluer(retenu.p, true);
     pressionDeCalcul = retenu.p;
-    return finirLePlan(retenu.d, source, true);
+    return finirLePlan(egal.tient && egal.signature === retenu.signature ? egal.d : retenu.d, source, true);
   }
   return null;
 }
@@ -1580,7 +1584,122 @@ function couperEnVannes(elements, limite){
   return paquets;
 }
 
-function decouperUneFois(){
+/* ══ UNE PARCELLE SUR PLUSIEURS VANNES SE PARTAGE EN PARTS ÉGALES ══════════
+
+   **Sa règle du 23 novembre 2026 :** *« à partir du moment où il doit y avoir
+   deux réseaux d'arroseurs sur la même parcelle, ça sert à rien de faire un
+   réseau à 6 arroseurs et un réseau à 4. Autant faire deux réseaux à 5. C'est
+   plus safe. »* Le remplissage seul ne le tenait pas : il vise l'équilibre du
+   GROUPE (toutes les pelouses du même matériel), et le reste tombait sur la
+   dernière vanne. Sur 20 × 15 et 12 × 12, la seconde pelouse partait en 8 + 1.
+
+   **Le nombre de vannes ne bouge pas : c'est le remplissage qui le donne**, et
+   ce partage ne fait que redistribuer les têtes entre ces vannes. Il ne sert
+   donc qu'au plan RETENU, jamais à la recherche du plan (`chercherUnPlan`) :
+   une coupe plus égale perd moins, et la recherche y aurait trouvé des plans à
+   une vanne de moins, donc moins de marge. C'est l'inverse de ce qu'il a
+   demandé, et de sa réponse du même jour : *« pour être le plus safe possible,
+   vaut mieux qu'il y ait 3 réseaux que 2 »*.
+
+   Deux partages, dans cet ordre : chaque parcelle à part, puis le groupe entier
+   quand le remplissage a mêlé deux parcelles sur une vanne pour en économiser
+   une (sans quoi le reste repartait seul, 6 + 1 sur 15 × 15 et 12 × 6). Le
+   premier qui tient l'emporte, et tenir veut dire : le même nombre de vannes,
+   aucune au-dessus de la limite, aucune plus chargée que la plus chargée du
+   remplissage, pas plus de vannes qui mêlent deux parcelles, **et aucune
+   perte pire que la pire du remplissage**. Cette dernière condition est venue
+   d'un balayage de 1 800 jardins : sans elle, 24 perdaient jusqu'à 0,17 bar au
+   dernier arroseur, parce qu'une vanne moins chargée peut courir plus loin.
+   Sinon le remplissage reste tel quel.
+
+   `premier` : le numéro du premier réseau du groupe, pour le diamètre que
+   chaque réseau a reçu (`tuyauDuReseau`). */
+function partsEgales(elements, remplis, limite, premier){
+  var parcelles = [];
+  elements.forEach(function(x){
+    var derniere = parcelles[parcelles.length - 1];
+    if (derniere && derniere[0].zoneId === x.zoneId) derniere.push(x); else parcelles.push([x]);
+  });
+  var aPart = [];
+  parcelles.forEach(function(pc){
+    var seule = couperEnVannes(pc, limite);
+    aPart = aPart.concat(egaliser(pc, seule.length, limite) || seule);
+  });
+  var candidats = [aPart, egaliser(elements, remplis.length, limite)];
+  for (var k = 0; k < candidats.length; k++){
+    var c = candidats[k];
+    if (c && c.length === remplis.length &&
+        laPlusChargee(c) <= laPlusChargee(remplis) + 1e-9 &&
+        melangees(c) <= melangees(remplis) &&
+        pirePerteDesPaquets(c, premier) <= pirePerteDesPaquets(remplis, premier) + 1e-9) return c;
+  }
+  return remplis;
+}
+
+/* La pire perte de ces vannes, comptée comme celle du plan (`perteDuReseau`). */
+function pirePerteDesPaquets(paquets, premier){
+  return paquets.reduce(function(pire, pq, k){
+    var debit = pq.reduce(function(t,x){ return t + x.debit; }, 0);
+    var p = perteDuReseau({ points: pq.map(function(x){ return x.pt; }), debitUnitaire: pq.length ? debit / pq.length : 0 }, premier + k);
+    return p && p.total > pire ? p.total : pire;
+  }, 0);
+}
+
+function laPlusChargee(paquets){
+  return paquets.reduce(function(m, pq){
+    return Math.max(m, pq.reduce(function(t,x){ return t + x.debit; }, 0));
+  }, 0);
+}
+
+/* Combien de vannes arrosent plus d'une parcelle. */
+function melangees(paquets){
+  return paquets.filter(function(pq){
+    return pq.some(function(x){ return x.zoneId !== pq[0].zoneId; });
+  }).length;
+}
+
+/* Couper des têtes en `combien` vannes d'un seul tenant, au plus près de parts
+   égales. **Le plus près se mesure aux écarts à la moyenne, au carré** : le
+   plus gros paquet seul ne suffit pas à juger, car 3 + 3 + 3 + 1 et
+   3 + 2 + 3 + 2 ont le même plus gros, et seul le second est égal. Rend null
+   quand aucune coupe ne tient sous la limite. */
+function egaliser(tetes, combien, limite){
+  var n = tetes.length;
+  if (combien <= 1 || combien > n) return null;
+  var cumul = [0];
+  tetes.forEach(function(x, i){ cumul.push(cumul[i] + x.debit); });
+  var moyenne = cumul[n] / combien;
+  var cout = [], coupe = [];
+  for (var j = 0; j <= combien; j++){
+    cout.push([]); coupe.push([]);
+    for (var i = 0; i <= n; i++){ cout[j].push(Infinity); coupe[j].push(-1); }
+  }
+  cout[0][0] = 0;
+  for (j = 1; j <= combien; j++){
+    for (i = j; i <= n; i++){
+      for (var m = j - 1; m < i; m++){
+        if (cout[j-1][m] === Infinity) continue;
+        var d = cumul[i] - cumul[m];
+        if (limite > 0 && d > limite + 1e-9) continue;
+        var c = cout[j-1][m] + (d - moyenne) * (d - moyenne);
+        // À égalité, la coupe la plus tardive : les premières vannes prennent
+        // l'arroseur de plus, comme le remplissage (5 + 4, et non 4 + 5).
+        if (c <= cout[j][i] + 1e-12){ cout[j][i] = c; coupe[j][i] = m; }
+      }
+    }
+  }
+  if (cout[combien][n] === Infinity) return null;
+  var paquets = [];
+  for (i = n, j = combien; j > 0; j--){
+    var debut = coupe[j][i];
+    paquets.unshift(tetes.slice(debut, i));
+    i = debut;
+  }
+  return paquets;
+}
+
+/* `egales` : vrai pour le plan retenu seul (`partsEgales`). */
+function decouperUneFois(egales){
   var dispo = debitDisponible();
   var limite = limiteParVoie();
   var groupes = {}, ordre = [], poses = [];
@@ -1722,6 +1841,7 @@ function decouperUneFois(){
     // La coupe elle-même vit dans `couperEnVannes` : le choix des buses s'en
     // sert aussi, et deux façons de compter les vannes finiraient par diverger.
     var paquets = couperEnVannes(suite, limite);
+    if (egales) paquets = partsEgales(suite, paquets, limite, premier);
     var debits = paquets.map(function(pq){ return pq.reduce(function(t,x){ return t + x.debit; }, 0); });
     paquets.forEach(function(pq, i){
       ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }), pq);

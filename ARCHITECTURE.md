@@ -38397,3 +38397,53 @@ de robinet).
 **Ce qui n'est pas fait.** Les instantanés des planches d'arrosage ne sont pas
 reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
 (`TODO.md`).
+
+## §610 : Le tuyau passe au plus court en PE, et une parcelle sur deux vannes se partage en parts égales
+
+**Ses deux corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé
+(`appli/arrosage-rainbird-et-darcy.html`) : *« il faut pouvoir dépenser le moins de mètres linéaires
+possible de PE »*, et *« ça sert à rien de faire un réseau à 6 arroseurs et un réseau à 4. Autant
+faire deux réseaux à 5. C'est plus safe. »* Les deux sont des règles du plan ; le détail, mot pour
+mot, est dans `.claude/rules/arrosage.md`.
+
+**Le tracé (`tracerReseaux`, `trace.ts`).** Un segment déjà creusé par un autre réseau ne coûtait
+rien : le second réseau suivait la tranchée du premier même en doublant son tuyau (son réseau vert,
+42 m de PE ; son tracé à lui, 18 m, pour la même tranchée de 72 m). Il coûte désormais son PE, moins
+un millième (`DEPARTAGE`) : la tranchée ouverte départage à PE égal, et ne décide plus. La pénalité
+de la traversée (`PENALITE_TRAVERSEE`) ne s'applique qu'au segment neuf : un segment déjà creusé ne
+fait rien creuser de plus au milieu du jardin.
+
+**Le partage (`partsEgales`, `calcul.js`, les deux copies).** Le remplissage (`couperEnVannes`)
+vise l'équilibre du GROUPE (toutes les pelouses d'un même matériel) : le reste tombait sur la
+dernière vanne, 8 + 1 sur 20 × 15 et 12 × 12. Après lui, deux partages s'essaient dans cet ordre :
+chaque parcelle à part en parts égales, puis le groupe entier quand le remplissage a mêlé deux
+parcelles pour économiser une vanne. `egaliser` coupe en vannes d'un seul tenant au plus près de
+la moyenne, au carré des écarts (le plus gros paquet seul ne distingue pas 3 + 3 + 3 + 1 de
+3 + 2 + 3 + 2). Un partage n'est gardé qu'à quatre conditions : le même nombre de vannes, aucune
+plus chargée que la plus chargée du remplissage, pas plus de vannes mêlées, et aucune perte pire
+que la pire du remplissage (`pirePerteDesPaquets`, par `perteDuReseau`).
+
+**Pourquoi le partage ne sert qu'au plan RETENU, et jamais à la recherche.** La première version
+partageait pendant `chercherUnPlan` : une coupe plus égale perd moins, et la recherche, qui prend le
+moins de vannes d'abord, y trouvait des plans à une vanne de moins (son 16 × 15 et 12 × 12 tombait de
+4 vannes à 3). Moins de marge, donc l'inverse de « plus safe », et de sa réponse du même jour :
+*« pour être le plus safe possible, vaut mieux qu'il y ait 3 réseaux que 2 »*. Le partage se fait
+donc une fois le plan choisi (`decouperUneFois(true)`), et le plan partagé doit encore tenir aux
+épreuves de `evaluer` ; sinon le remplissage reste. Le choix des buses compte toujours les vannes
+par le remplissage, qui donne le même nombre.
+
+**Ce que le balayage de 1 800 jardins a appris** (deux pelouses, quatre pressions, ancien contre
+nouveau). Sans la condition de perte, 24 jardins perdaient jusqu'à 0,17 bar au dernier arroseur :
+une vanne moins chargée peut courir plus loin. Avec elle : parcelles à deux arroseurs d'écart ou
+plus, de 302 à 14 ; aucun nombre de vannes changé ; aucune pression en baisse ; aucune alerte de
+pression nouvelle. Les 14 qui restent sont des jardins où mêler deux parcelles économise une vanne.
+
+**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : deux règles datées du 23 novembre (ses
+18 m et ses 72 m ; ses trois jardins), vues rouges sur l'ancien code, chacune pour sa raison ; la
+règle du té égal au départ garde son fond, son compte barré se relit dans les lignes de chaque
+réseau (le vert part d'un seul côté). `scripts/test-arrosage-calcul.ts` : la grande pelouse de la
+bascule de la pluviométrie passe de 20 × 7 à 18 × 7, où mêler deux pelouses économise encore une
+vanne.
+
+**Ce qui n'est pas fait.** Les instantanés des planches d'arrosage ne portent ni le tracé ni le
+partage (`TODO.md`).
