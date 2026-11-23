@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D (23 novembre 2026)
+
+Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
+en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
+`appli/arrosage-nourrice-3d-gag.html`, la vraie nourrice, « Aujourd'hui » et « Proposé ». Le mot
+entier sous la première voie, GAG sous les suivantes ; un mot qui en couvrirait un autre se décale sur
+le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd'hui, aucune proposée.
+**À lui de choisir**, puis porter les deux changements dans `appli/nourrice-3d/reperes.js` (la
+planche en garde la copie, prête à recopier), que l'écran du plan emploie.
+
 ## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
 
 Sa capture, sur « Changer de formule » : *« Passer à Entreprise flottant, il
