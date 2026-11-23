@@ -1,8 +1,8 @@
 # État du projet
 
-## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), BATTERIE EN ATTENTE DE SON OUI
+## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR SA BRANCHE, PAS SUR `main`
 
-Sa planche `appli/arrosage-robinet-3d.html` (les neuf combinaisons, ses photos dans `docs/robinet-3d-photos/`), puis son « Parfait, code ça ». `MontageAuRobinet` montre la pile en 3D (`Robinet3D.tsx`, module `appli/robinet-3d/vue.js`) au-dessus de la liste de ses pièces ; les photos ne sont plus que le repli. La scène de la nourrice a l'option `debout`, le toucher est commun (`nourrice-3d/toucher.js`). `scripts/test-robinet-3d.ts`. Niveau 3 (`robinet.ts`, 160 points d'entrée) : la batterie attend son oui. `ARCHITECTURE.md` §608.
+Sa planche `appli/arrosage-robinet-3d.html` (les neuf combinaisons, ses photos dans `docs/robinet-3d-photos/`), puis son « Parfait, code ça ». `MontageAuRobinet` montre la pile en 3D (`Robinet3D.tsx`, module `appli/robinet-3d/vue.js`) au-dessus de la liste de ses pièces ; les photos ne sont plus que le repli. La scène de la nourrice a l'option `debout`, le toucher est commun (`nourrice-3d/toucher.js`). `scripts/test-robinet-3d.ts`. Niveau 3 (`robinet.ts`, 160 points d'entrée) ; sa réponse à la batterie : *« Pas de batterie »*. Le lot attend sur `claude/laughing-wright-xxntzg`. `ARCHITECTURE.md` §608.
 
 ## LES NUMÉROS DE LA NOURRICE EN 3D, « VOIR », PLUS D'OMBRES : SUR `main` (23 novembre 2026)
 
