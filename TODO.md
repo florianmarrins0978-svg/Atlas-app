@@ -3098,7 +3098,14 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      plateforme agréée en marque blanche dans Cause, payée par Cause et
      comprise dans son prix (revient en partie sur la décision du
      26 septembre, devis à demander). **Ne pas coder le connecteur par jeton
-     avant ses réponses** : il ferait payer Essentiel à chaque artisan ; Seconde capture, même soir : la
+     avant ses réponses** : il ferait payer Essentiel à chaque artisan ;
+   - **TRANCHÉ LE SOIR MÊME : C** (*« il faut faire C »*). `ARCHITECTURE.md`
+     §610, `docs/facture-electronique-plateforme-comprise.md`. Retenue sous
+     réserve de leur réponse : **Super PDP** (norme AFNOR 1.3.0, prix
+     publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
+     et à Iopole (messages prêts dans le document). **À nous, à son « go »
+     avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
