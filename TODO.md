@@ -2,12 +2,12 @@
 
 ## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
-Le tuyau au plus court en PE, les parts égales, un modèle par vanne, 2,0 bar au dernier arroseur, une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §610, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
+Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §610, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
 
 - **Reste** : la batterie (niveau 3), puis `main`.
-- **La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : elles n'en montrent qu'une, et rien au-delà de six voies. Une planche d'abord (§3 bis), à lui proposer.
+- **La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : elles n'en montrent qu'une, et rien au-delà de six voies. Sa planche : `appli/arrosage-deux-nourrices.html`, la même nourrice dupliquée (*« ne refais pas un truc en 3D »*), à côté (sa demande) ou l'une sous l'autre (côte à côte sur un téléphone, les numéros se poussent loin de leurs pièces). **À lui de choisir**, puis coder dans `NourriceEclatee.tsx` et la page de la nourrice du PDF.
+- **Les mots « goutte-à-goutte » de deux voies voisines se chevauchent** sur la nourrice en 3D (`nourrice-3d/reperes.js`), dans l'appli comme sur ses planches, dès deux voies de goutte-à-goutte côte à côte. Vu le 23 novembre 2026, sans rapport avec ce lot ; à corriger dans le module.
 - **Le second regard se place par lui**, comme le premier : le croquis ne le porte pas encore, et le tuyau du té au second regard reste « à mesurer ».
-- **À 2 bar au compteur, tout jardin de turbines porte l'alerte de pression** (rien n'arrive à 2,0 au bout). C'est la conséquence directe de sa règle ; à lui dire s'il la trouve trop dure.
 - **Les instantanés des planches d'arrosage** ne portent aucune de ces règles (ligne Rain Bird, plus bas).
 
 ## ✅ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, SUR `main` (23 novembre 2026)

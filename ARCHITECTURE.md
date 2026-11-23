@@ -38415,9 +38415,11 @@ qu'au segment neuf.
 (`modeleDe`, la 3504, la 5004 Plus) entre dans la clé de groupe des turbines. Les buses d'un même
 modèle partagent toujours une vanne.
 
-**Au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche** (`MARGE_LEVEE`, `seLeve`) : 2,0
-pour la 3504 et la 5000 Plus, sa réponse à *« comment ça lève ? »*. Une marge plutôt qu'un seuil fixe,
-pour ne pas condamner les buses VAN, dont la fiche s'arrête à 2,1 bar.
+**Au dernier arroseur, le minimum de la fiche, comme Rain Bird** (`seLeve`) : 1,7 bar pour la 3504
+et la 5000 Plus, sa décision du soir (*« tu prends la règle de Rainbird, si c'est 1,7 bar et pas 2 »*).
+Une marge de 0,3 bar (2,0 bar au bout) a vécu deux heures : à 2 bar au compteur, l'électrovanne 100-DV
+mange 0,23 bar à elle seule, et plus aucun jardin de turbines ne passait. L'alerte de pression propose
+désormais aussi le surpresseur, le remède de Rain Bird (`le-plan.ts`).
 
 **Les parts égales (`partsEgales`, `egaliser`).** Le remplissage (`couperEnVannes`) vise l'équilibre
 du GROUPE, et le reste tombait sur la dernière vanne (8 + 1). Deux partages s'essaient après lui :
@@ -38440,7 +38442,8 @@ vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur (`GA
 | partager seulement le plan retenu, à sa pression | le plan partagé perdait parfois plus, ses portées ne tenaient plus, et le 5 + 1 restait |
 | bloquer le nombre de vannes sur celui du remplissage | voulu pour la marge ; la marge est désormais tenue par ses deux règles de pression |
 | un seul modèle sur tout le jardin quand c'est possible | il avait dit oui, puis *« j'ai pas compris ta question »* ; sa raison était la pression |
-| la condition « aucune vanne plus chargée » pour chaque parcelle à part | elle refusait de rendre une pelouse à sa propre vanne ; la marge de pression la remplace |
+| la condition « aucune vanne plus chargée » pour chaque parcelle à part | elle refusait de rendre une pelouse à sa propre vanne ; la recherche vérifie de toute façon que le plan partagé tient |
+| 0,3 bar de marge au dernier arroseur (`MARGE_LEVEE`) | à 2 bar au compteur, rien ne passait ; il a choisi le minimum de Rain Bird |
 
 **Au-delà de six voies, deux nourrices (`fichesNourrices`, catalogue).** Ses fiches s'arrêtent à six :
 sept vannes faisaient perdre la nourrice et les électrovannes à la liste. Moitié-moitié, deux regards,
@@ -38449,16 +38452,20 @@ chaque nourrice sa fiche, un té sur l'amenée et le tuyau jusqu'au second regar
 vue éclatée la dessinent pièce par pièce, et deux fiches fondues y dessineraient une nourrice de sept
 voies qui n'existe pas.
 
-**Ce que le balayage de 1 800 jardins dit de l'ensemble** (deux pelouses, quatre pressions) : à 2 bar
-au compteur, tous en alerte de pression (rien n'arrive à 2,0) ; à 2,5, 3 et 3,5 bar, aucune alerte,
-470 vannes de plus, 33 de moins, la pression moyenne au bout en hausse (1,89 → 2,07 à 2,5 bar). Les
-vannes à deux modèles passent de 362 à 0 ; les pelouses déséquilibrées, de 302 à 4. Un plan se
-calcule en 0,2 à 0,3 s, comme avant.
+**Ce que le balayage de 1 800 jardins dit de l'ensemble** (deux pelouses, quatre pressions) : aucune
+alerte de pression à aucune pression ; à 2 bar au compteur, 21 vannes de plus et 113 de moins, la
+pression au bout inchangée (1,71 → 1,72) ; à 2,5, 3 et 3,5 bar, 349 vannes de plus, 55 de moins, la
+pression au bout en hausse (2,09 → 2,24 à 3 bar). Les vannes à deux modèles passent de 362 à 0 ; les
+pelouses déséquilibrées, de 302 à 1. Un plan se calcule en 0,2 à 0,3 s, comme avant.
 
 **Ce qui le tient.** `scripts/test-regles-du-patron.ts` : sept règles datées du 23 novembre, chacune vue
-rouge sur le code d'avant ; la règle du té égal au départ garde son fond, son compte barré se relit
+rouge sur le code d'avant (celle des 2,0 bar barrée le soir même, sa phrase de Rain Bird dessous) ; la règle du té égal au départ garde son fond, son compte barré se relit
 dans les lignes de chaque réseau. `scripts/test-arrosage-calcul.ts` et `appli/tests/essai-arrosage-detaille.cjs` :
-leurs jardins d'essai suivent le plan nouveau, chacun avec sa raison.
+leurs jardins d'essai suivent le plan nouveau, chacun avec sa raison, comme ceux de
+`test-arrosage-postes.ts` (le seau en 15 s, pour garder ses quatre réseaux) et de
+`test-diametre-choisi.ts` (le 25 × 8 à 2,5 bar, où le Ø32 gagne encore un réseau).
 
-**Ce qui n'est pas fait.** La nourrice en 3D et la vue éclatée avec deux nourrices (une planche
-d'abord) ; les instantanés des planches d'arrosage (`TODO.md`).
+**Ce qui n'est pas fait.** La nourrice en 3D et la vue éclatée avec deux nourrices : une planche,
+`appli/arrosage-deux-nourrices.html`, la même nourrice dupliquée (sa consigne : *« ne refais pas un
+truc en 3D, tu la dupliques pour refaire une deuxième nourrice à côté »*), à côté ou l'une sous
+l'autre, en attente de son choix. Les instantanés des planches d'arrosage (`TODO.md`).

@@ -544,11 +544,12 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 regle("23 novembre 2026", "« faire une deuxième nourrice avec une nouvelle voie, et donc prévoir un Té de plus pour faire arriver l'eau dans la nouvelle nourrice », « moitié-moitié », « deux regards » : au-delà de six voies, deux nourrices", () => {
-  // 30 × 22, 15 × 12 et 12 × 12 à 3 bar : 7 vannes, donc 4 + 3.
+  // 30 × 22, 20 × 15 et 12 × 12 à 3 bar : 7 vannes, donc 4 + 3. (Le 15 × 12 du premier jet ne
+  // demande plus que 6 vannes depuis la règle de Rain Bird du même soir, 1,7 bar au bout.)
   const p = plan([
     { id: 1, type: "gazon", nom: "P1", x: 0, y: 0, L: 30, l: 22 },
-    { id: 2, type: "gazon", nom: "P2", x: 32, y: 0, L: 15, l: 12 },
-    { id: 3, type: "gazon", nom: "P3", x: 49, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "P2", x: 32, y: 0, L: 20, l: 15 },
+    { id: 3, type: "gazon", nom: "P3", x: 54, y: 0, L: 12, l: 12 },
   ]);
   const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte, voies: p.secteurs.length });
   const q = (motif: RegExp, ou: string) => pieces.filter((x) => x.ou === ou && motif.test(x.ref ?? "")).reduce((s, x) => s + (x.q ?? 0), 0);
@@ -561,12 +562,17 @@ regle("23 novembre 2026", "« faire une deuxième nourrice avec une nouvelle voi
 });
 
 regle("23 novembre 2026", "« comment ça lève ? J'ai l'impression qu'il faut une pression énorme », puis « 2,0 bar » : au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche, 2,0 pour la 3504 et la 5000 Plus", () => {
-  // Son exemple : 10 × 6 et 8 × 8 à 2 bar, une vanne à 1,72 bar pour un minimum de 1,70. À 2 bar au compteur, rien n'arrive à 2,0 : l'outil le dit.
+  // ~~2,0 BAR AU DERNIER ARROSEUR~~ BARRÉ le 23 novembre 2026 au soir, sur sa décision : *« tu prends la
+  // règle de Rainbird, si c'est 1,7 bar et pas 2, tu prends leur règle »*. À 2 bar au compteur,
+  // l'électrovanne mange 0,23 bar à elle seule, et plus aucun jardin de turbines ne passait. La règle
+  // est celle de Rain Bird : le minimum de la fiche, 1,7 bar pour la 3504 et la 5000 Plus (leur plage
+  // va de 1,7 à 3,8 bar). Son exemple, 10 × 6 et 8 × 8 à 2 bar, passe donc, au-dessus de 1,7. Et à
+  // 3 bar, ses jardins gardent 2,0 bar au bout : c'est sa règle d'une vanne de plus dès 0,1 bar.
   const juste = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 10, l: 6 }, { id: 2, type: "gazon", nom: "B", x: 12, y: 0, L: 8, l: 8 }], 2);
-  exige(juste.pressionTropBasse === true, `10 × 6 et 8 × 8 à 2 bar : ${juste.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur sans alerte, il en faut 2,0`);
+  exige(juste.pressionTropBasse === false && juste.pressionAuxArroseurs >= 1.7 - 1e-9, `10 × 6 et 8 × 8 à 2 bar : ${juste.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en faut 1,7, et non plus 2,0`);
   for (const [L, l, L2, l2] of [[12, 12, 8, 8], [16, 10, 8, 8], [20, 15, 12, 12], [16, 6, 15, 8]]) {
     const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: l2 }], 3);
-    exige(!p.pressionTropBasse && p.pressionAuxArroseurs >= 2.0 - 1e-9, `${L} × ${l} et ${L2} × ${l2} à 3 bar : ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en faut 2,0`);
+    exige(!p.pressionTropBasse && p.pressionAuxArroseurs >= 2.0 - 1e-9, `${L} × ${l} et ${L2} × ${l2} à 3 bar : ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en arrive au moins 2,0 par sa règle des 0,1 bar`);
   }
 });
 

@@ -449,22 +449,22 @@ remplissage faisait pour gagner une vanne en mêlant deux pelouses. Chaque
 pelouse sur ses vannes à elle passe d'abord quand le nombre de vannes ne change
 pas. **Le nombre de vannes, lui, PEUT bouger** : une première version le
 bloquait, pour que la recherche ne trouve pas des plans à une vanne de moins,
-donc moins de marge. Depuis ses deux règles de pression du même soir (2,0 bar au
-bout, et une vanne de plus dès qu'elle y donne 0,1 bar), la marge est tenue
-autrement, et le verrou est tombé.
+donc moins de marge. Depuis sa règle du même soir, une vanne de plus dès
+qu'elle donne 0,1 bar au dernier arroseur, la marge est tenue autrement, et le
+verrou est tombé.
 
 **Ce que ses règles du 23 novembre changent ensemble, sur 1 800 jardins** (deux
 pelouses, quatre pressions au compteur, l'outil d'avant contre celui-ci) :
 
 | au compteur | vannes en plus | en moins | pression moyenne au bout | alerte de pression |
 |---|---|---|---|---|
-| 2 bar | | | | **les 450 jardins** (aucun n'arrive à 2,0) |
-| 2,5 bar | 217 | 18 | 1,89 → 2,07 | aucune |
-| 3 bar | 159 | 4 | 2,09 → 2,25 | aucune |
+| 2 bar | 21 | 113 | 1,71 → 1,72 | aucune |
+| 2,5 bar | 100 | 39 | 1,89 → 1,96 | aucune |
+| 3 bar | 155 | 5 | 2,09 → 2,24 | aucune |
 | 3,5 bar | 94 | 11 | 2,61 → 2,70 | aucune |
 
 Les vannes qui mêlaient deux modèles passent de 362 à 0 ; les pelouses à deux
-arroseurs d'écart ou plus entre leurs vannes, de 302 à 4.
+arroseurs d'écart ou plus entre leurs vannes, de 302 à 1.
 
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
@@ -629,16 +629,27 @@ ses raccords et l'antenne Ø16 — de l'ordre d'un demi à trois quarts de bar s
 un jardin ordinaire. Dimensionner sur la pression du compteur, c'est prêter aux
 arroseurs de bout de ligne une portée qu'ils n'ont pas.
 
-**AU DERNIER ARROSEUR, 0,3 BAR AU-DESSUS DU MINIMUM DE SA FICHE — sa décision
-du 23 novembre 2026.** Jusque-là, le minimum exact suffisait : sur 10 × 6 et
-8 × 8 à 2 bar, une vanne recevait 1,72 bar pour un minimum de 1,70 (la 3504 et
-la 5000 Plus, Aqua Plus 2026, p. 11 et 13), et le plan passait. Sa question :
-*« comment ça lève ? J'ai l'impression qu'il faut une pression énorme »*, puis,
-devant le choix : **2,0 bar** pour ces turbines (`MARGE_LEVEE`, `seLeve`). La
-marge s'ajoute au minimum de chaque tête, jamais en seuil fixe : une buse VAN,
-dont la fiche s'arrête à 2,1 bar, ne tiendrait jamais sous 2,0. **Conséquence
-qu'il faut savoir** : à 2 bar au compteur, rien n'arrive à 2,0 au bout, et
-tout plan de turbines porte l'alerte « pression trop basse ».
+**AU DERNIER ARROSEUR, LE MINIMUM DE LA FICHE, COMME RAIN BIRD — sa décision
+du 23 novembre 2026 au soir** : *« tu prends la règle de Rainbird, si c'est
+1,7 bar et pas 2, tu prends leur règle »*. 1,7 bar pour la 3504 et la 5000 Plus
+(Aqua Plus 2026, p. 11 et 13 ; Rain Bird donne la 3504 de 1,7 à 3,8 bar et
+publie ses portées à 1,7), `seLeve`. La marge, quand il y en a, vient de sa
+règle d'une vanne de plus dès qu'elle donne 0,1 bar (paragraphe suivant).
+
+~~**0,3 BAR AU-DESSUS DU MINIMUM, 2,0 BAR POUR CES TURBINES**~~ (barré le même
+soir). Il l'avait posé après *« comment ça lève ? J'ai l'impression qu'il faut
+une pression énorme »*, devant 10 × 6 et 8 × 8 à 2 bar (1,72 bar au bout pour un
+minimum de 1,70). Ce qu'elle a coûté, et qui l'a fait revenir à Rain Bird : à
+2 bar au compteur, l'électrovanne 100-DV perd 0,23 bar à elle seule (sa fiche,
+au plus petit débit), il reste au mieux 1,77 bar, et plus aucun jardin de
+turbines ne passait, pas même avec un seul arroseur. Ne pas la remettre sans
+lui.
+
+**L'ALERTE DE PRESSION PROPOSE AUSSI LE SURPRESSEUR** (même soir, son « oui ») :
+*« Raccourcissez les lignes, ajoutez une vanne, piquez plus en amont, ou posez
+un surpresseur »* (`le-plan.ts`). C'est le remède de Rain Bird quand la pression
+reste trop basse après le reste ; les trois autres gestes ne suffisent pas à un
+compteur trop faible.
 
 **UNE VANNE DE PLUS DÈS QU'ELLE DONNE 0,1 BAR AU DERNIER ARROSEUR — sa règle
 du 23 novembre 2026.** Devant son 16 × 10 et 8 × 8 à 3 bar, trois plans : 3 vannes

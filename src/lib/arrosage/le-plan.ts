@@ -160,9 +160,11 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
   // Ø16 — mais PAS le trajet du regard jusqu'à la première tête quand le
   // croquis ne l'a pas donné. La pression annoncée est alors un plafond.
   if (plan.pressionTropBasse) {
+    // Le surpresseur : le remède de Rain Bird quand la pression reste trop basse
+    // après le reste (son guide de dépannage), ajouté sur son « oui » du 23 novembre 2026.
     reserves.push(
       `Il ne resterait que ${bar(plan.pressionAuxArroseurs)} bar au dernier arroseur : trop peu pour ` +
-        "qu'il se lève correctement. Raccourcissez les lignes, ajoutez une vanne, ou piquez plus en amont."
+        "qu'il se lève correctement. Raccourcissez les lignes, ajoutez une vanne, piquez plus en amont, ou posez un surpresseur."
     );
   } else if (plan.pressionRaffinee) {
     reserves.push(
