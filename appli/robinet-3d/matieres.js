@@ -52,7 +52,8 @@ export function ajouterMatieres(m) {
     // Le blanc des cadrans (leur secteur, leurs filets) : celui de la nourrice sortait gris clair.
     // Il ne sert, sur cette planche, qu'aux cadrans du Rain Bird et du Buddy.
     blanc: plastique(0xf1f1ec, 0.42, 0.3, fin, 1.8),
-    // Le gris anthracite de l'embout Palaplast MID6362.
-    grisPalaplast: plastique(0x4c4e51, 0.5, 0.5, fin, 2.2)
+    // Le gris anthracite de l'embout Palaplast MID6362 (sa photo : 47, 49, 54 au milieu du corps). Plus
+    // clair, il sortait gris souris dans l'éclaté ; plus bleu, froid à côté de la photo.
+    grisPalaplast: plastique(0x4a4a4d, 0.5, 0.5, fin, 2.2)
   });
 }
