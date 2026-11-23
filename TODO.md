@@ -1184,16 +1184,21 @@ serait tombé en erreur au déploiement suivant.
 **Reste une question, posée le 23** : la bande sert-elle encore, avec deux
 cartes ? Sans réponse, elle reste.
 
-## ⏳ CHOISIR SA FORMULE SUR LE SITE : la planche attend son « oui » (23 novembre 2026)
+## ✅ CHOISIR SA FORMULE SUR LE SITE : posé dans le site le 23 novembre 2026, sur son « c'est validé »
 
 Sa demande du 23 : *« il faudrait qu'il sélectionne. Il sélectionne la formule
 artisan, par exemple, plus il choisit la formule à 6 euros. Et ensuite, il a un
 prélèvement de 0 euros, il fait ses 15 jours d'essai. Et à la fin, s'il ne
 décide pas de quitter l'appli, l'abonnement démarre. »*
 
-`appli/vente/cause-2-formules.html`, fabriquée depuis le vrai site par
-`python3 appli/scripts/planche-formules-site.py appli/vente/cause-2-visite.html appli/vente/cause-2-formules.html` :
-les cartes se choisissent, les outils s'ajoutent d'un interrupteur, « Votre
+**Validée le 23 au soir** (*« tu peux coder la page cause 2 formule du coup
+c'est validé »*) : tout ce que montrait la planche est dans
+`appli/vente/cause-2-visite.html`, le site. La planche et son script sont
+effacés ; `cause-2-formules.html` renvoie au site, ancre comprise (il l'avait
+ouverte sur son iPhone). Sur le site, « Créer mon compte » mène encore à la
+marche figée (`cause-2-inscription.html`) : l'appli n'est hébergée nulle part ;
+quand elle le sera, ce lien ira à sa création de compte. Ce que montrait la
+planche : les cartes se choisissent, les outils s'ajoutent d'un interrupteur, « Votre
 choix » donne le total et 0 € aujourd'hui, et une feuille montre les 15 jours,
 la place de Stripe (aucun champ : une page publique ne recueille aucun numéro),
 puis le départ. Les phrases « Sans carte bancaire » et la réponse « Que se
@@ -1206,9 +1211,10 @@ puis : *« Ok on garde 15 jours »*. Raison donnée : un artisan doit voir un de
 accepté puis une facture, ce qui tient rarement en 7 jours, et avec la carte
 enregistrée dès l'inscription, un essai court se lit comme un piège.
 
-**Pas encore tranché : A ou B.** A, la carte à l'inscription et l'abonnement qui
-démarre seul (la planche) ; B, la lecture seule à la fin et le paiement pour
-débloquer (ce que disent l'appli et l'article 14.2 aujourd'hui).
+**Tranché par sa validation du 23 : A**, la carte à l'inscription (0 €) et
+l'abonnement qui démarre seul au bout des 15 jours, c'est ce que montre la page
+qu'il a validée, et c'était sa première demande. B (la lecture seule à la fin,
+ce que disent l'appli et l'article 14.2 aujourd'hui) est écarté.
 
 **Ce que disent les chiffres, cherchés le 23 novembre à sa demande** (*« va
 chercher des stats, je t'autorise n'importe quel site »*). Les pages elles-mêmes
@@ -1260,9 +1266,14 @@ carte entre « Vos clients » et « Créer un devis » : « Faire la visite » o
 la coder dans l'accueil (un drapeau par compte, « vue ou refusée »), la visite
 étant celle du site, sur des données d'essai.
 
-**⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : la planche attend son
-« oui »** (`appli/soignee/essai-par-entreprise.html`, sa demande *« fais la
-planche »* du 23 novembre ; le cas des Réglages, où le SIRET se tape plus tard,
+**⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : tranché le 23 novembre,
+le SIREN seul, à coder.** Ses mots : *« on part sur le SIREN comme tu as dit »*,
+et sur la carte de paiement : *« pas une bonne idée, parce que si un patron
+décide de payer l'abonnement à quelqu'un d'autre, il va être bloqué ; il faut
+que ça soit simplement le numéro de SIREN qui bloque »*. **Aucune empreinte de
+carte, donc** : une même carte peut payer plusieurs entreprises. La planche,
+validée sur le principe (`appli/soignee/essai-par-entreprise.html`, sa demande
+*« fais la planche »* du 23 novembre ; le cas des Réglages, où le SIRET se tape plus tard,
 dirait la même chose sous le même champ, et n'est pas dessiné). Sa question du
 23 novembre, non codée : *« Quelqu'un crée un compte pour les 15 jours,
 quitte, et en recrée un avec une autre adresse : est-ce qu'on ne ferait pas un
@@ -1275,8 +1286,8 @@ un déménagement change le SIRET, pas le SIREN) des essais passés ; **ne pas
 bloquer le compte**, mais **terminer l'essai** quand un SIREN déjà essayé
 revient (un SIRET est public, sur chaque devis : bloquer laisserait n'importe
 qui priver un concurrent de son essai) ; dire aux deux personnes d'une même
-entreprise de se faire inviter ; et, avec la carte à l'inscription, la
-reconnaissance de la carte par Stripe en plus. Le SIREN d'un entrepreneur
+entreprise de se faire inviter. (La reconnaissance de la carte par Stripe,
+proposée en plus, est écartée par lui : voir plus haut.) Le SIREN d'un entrepreneur
 individuel est une donnée personnelle : sa garde après l'effacement d'un compte
 va dans la politique de confidentialité, avec une durée, et chez le juriste.
 
@@ -1294,11 +1305,10 @@ va dans la politique de confidentialité, avec une durée, et chez le juriste.
 | les conditions générales | l'article 14.2 en vigueur dit l'inverse : essai *« sans saisie de moyen de paiement »*, et à son terme *« aucune reconduction n'intervient d'elle-même »*. Une version nouvelle, acceptée de nouveau par chaque compte, et relue par le juriste (`docs/A-FAIRE.md` §2) |
 | l'appli | l'essai naît aujourd'hui hors de Stripe (`src/lib/abonnements.ts`, `FORMULE_DE_LESSAI`) : il faudra un abonnement Stripe avec essai et moyen de paiement dès l'inscription, et l'option à 6 €, toujours pas codée (planche du 19 novembre) |
 | le message d'avant la fin | la frise promet « Un message vous prévient » : à tenir par Stripe ou par un e-mail d'Atlas, qui attend le nom de domaine (`docs/A-FAIRE.md` §16) |
-| le reste du site | `outils.html` et la fiche du mode d'emploi (`src/lib/fiches-mode-emploi/fonctionnement.ts`) disent encore « sans carte bancaire » |
+| le reste du site | `outils.html` dit « 0 € pendant 15 jours » depuis le 23 ; la fiche du mode d'emploi de l'appli (`src/lib/fiches-mode-emploi/fonctionnement.ts`) dit encore « sans carte bancaire », à changer avec le code de l'essai |
 
-À son oui sur la planche : reporter dans `cause-2-visite.html`, effacer la
-planche et son script. Le code de l'appli et les conditions générales sont
-des lots à part.
+Le code de l'appli (l'essai avec Stripe, l'option à 6 €) et les conditions
+générales (article 14.2) sont des lots à part, qui restent à faire.
 
 ## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2-visite.html` (sa décision du 22 novembre 2026, son adresse du 23) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 

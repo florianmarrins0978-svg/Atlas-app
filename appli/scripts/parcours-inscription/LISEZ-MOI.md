@@ -5,7 +5,7 @@ création d'un compte (`CLAUDE.md` §3 bis, 2 quinquies) : les vingt questions
 (sur le chemin de l'entreprise individuelle en franchise, sans décennale), le
 code reçu par e-mail, les conditions, « C'est fait », puis l'accueil d'un
 compte neuf. Elle s'ouvre depuis « Créer mon compte », au bout de la planche des
-formules (`appli/vente/cause-2-formules.html`). Pour la refaire après un
+formules du site (`appli/vente/cause-2-visite.html`). Pour la refaire après un
 changement de ces écrans :
 
 ```bash
