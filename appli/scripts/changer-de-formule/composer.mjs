@@ -32,15 +32,15 @@ const lire = (nom) => {
 
 const etats = [
   { nom: "artisan", etape: "artisan", corps: lire("artisan") },
-  { nom: "monter", etape: "monter", corps: lire("monter") },
-  { nom: "feuille-monter", etape: "monter", corps: lire("monter") },
-  { nom: "monter-illimite", etape: "monter", corps: lire("monter-illimite") },
-  { nom: "feuille-illimite", etape: "monter", corps: lire("monter-illimite") },
+  { nom: "monter", etape: "feuille-monter", corps: lire("monter") },
+  { nom: "feuille-monter", etape: "feuille-monter", corps: lire("monter") },
+  { nom: "monter-illimite", etape: "feuille-monter", corps: lire("monter-illimite") },
+  { nom: "feuille-illimite", etape: "feuille-monter", corps: lire("monter-illimite") },
   { nom: "illimite", corps: lire("illimite") },
   { nom: "refusee", etape: "refusee", corps: lire("monter") },
   { nom: "entreprise", etape: "entreprise", corps: lire("entreprise") },
-  { nom: "descendre", etape: "descendre", corps: lire("descendre") },
-  { nom: "feuille-descendre", etape: "descendre", corps: lire("descendre") },
+  { nom: "descendre", etape: "feuille-descendre", corps: lire("descendre") },
+  { nom: "feuille-descendre", etape: "feuille-descendre", corps: lire("descendre") },
   { nom: "prevue", etape: "prevue", corps: lire("entreprise") },
   // Les deux donneurs : la vraie feuille et la vraie plage rouge de l'écran.
   // Ils prêtent leur DOM, puis disparaissent.
