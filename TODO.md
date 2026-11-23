@@ -1341,6 +1341,19 @@ sert donc jamais à envoyer), l'entrepreneur qui a demandé la
 diffusion partielle (son SIRET existe, son nom n'est pas publié : il le tape),
 et le registre qui ne répond pas (on ne bloque pas l'inscription).
 
+**Le trou des Réglages, vu par lui le 23 novembre** : *« s'il utilise le SIRET
+d'un autre, après, dans ses réglages, il peut tout modifier, le nom de la
+boîte… ça le bloque sans le bloquer »*. Exact : aujourd'hui, Mon entreprise
+laisse changer le nom et l'adresse sans toucher au SIRET. Proposé : **le nom
+officiel et l'adresse du siège sont attachés au SIRET**, pris du registre et
+affichés sans se modifier ; pour les changer, on change le SIRET, revérifié, et
+la règle du SIREN joue (même SIREN : pas de nouvel essai). Un **nom commercial**
+libre s'imprime EN PLUS, jamais à la place (la facture porte nom, adresse et
+SIRET de la même entreprise, CGI 242 nonies A). Ainsi le SIRET d'un autre ne
+donne que des devis au nom de cet autre. Reste : la diffusion partielle (nom non
+publié : il le tape). À dessiner sur le vrai écran Mon entreprise, ce qui
+demande de relancer l'appli ici : son « oui » d'abord.
+
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
 | | |
