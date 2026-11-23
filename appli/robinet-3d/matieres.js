@@ -33,6 +33,17 @@ export function ajouterMatieres(m) {
     // est neuf à chaque page). Le laiton tourné de ses photos est satiné et plus pâle que le laiton
     // miroir des raccords de la nourrice ; la pastille des manettes est jaune citron, pas olive.
     laiton: new THREE.MeshPhysicalMaterial({ color: 0xd9bb78, roughness: 0.4, metalness: 1, roughnessMap: fin, envMapIntensity: 4.2 }),
-    jaune: plastique(0xf2e43a, 0.42, 0.2, fin, 1.3, { clearcoat: 0.5, clearcoatRoughness: 0.3 })
+    jaune: plastique(0xf2e43a, 0.42, 0.2, fin, 1.3, { clearcoat: 0.5, clearcoatRoughness: 0.3 }),
+    // LES HUIT AUTRES COMBINAISONS (ses photos du 22 novembre 2026, docs/robinet-3d-photos/).
+    // Le vert vif du Rain Bird, sa coque et son cadre.
+    vertRainBird: plastique(0x21a058, 0.42, 0.4, fin, 1.2, { clearcoat: 0.2, clearcoatRoughness: 0.4 }),
+    // Le vert sapin du Buddy, et le gris clair de sa face.
+    vertBuddy: plastique(0x2f5d47, 0.45, 0.4, fin, 1.3, { clearcoat: 0.15, clearcoatRoughness: 0.45 }),
+    grisBuddy: plastique(0xc7c8c3, 0.48, 0.4, fin, 1),
+    // L'écran à cristaux liquides des deux : un gris verdâtre sous une vitre, sans chiffre (aucun
+    // texte sur les pièces, comme la nourrice).
+    ecran: plastique(0xa7ab9d, 0.6, 0.1, fin, 0.8, { clearcoat: 1, clearcoatRoughness: 0.08 }),
+    // Le gris anthracite de l'embout Palaplast MID6362.
+    grisPalaplast: plastique(0x4c4e51, 0.5, 0.5, fin, 2.2)
   });
 }

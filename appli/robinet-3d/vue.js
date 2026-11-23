@@ -2,6 +2,7 @@
 // composition, sans ombres, et le toucher qui éclate.
 //
 //   var v = ouvrirRobinet(toile, { hdri: "vendor/hdri/studio.exr" });
+//   v.montrer("solem", "pe25"); // une des neuf combinaisons (composition.js, PROGRAMMATEURS et DEPARTS)
 //   v.eclater(true);           // ou un toucher sur la pile
 //   v.regarder("face");        // "face" ou "biais"
 //   v.surEtat(function (e) { e.eclatee, e.vue });
@@ -16,19 +17,23 @@ import { creerScene } from "./scene.js";
 import { creerMatieres } from "../nourrice-3d/matieres.js";
 import { ajouterMatieres } from "./matieres.js";
 import { creerPieces } from "./pieces/index.js";
-import { composer, PILE } from "./composition.js";
-
+import { composer, pile } from "./composition.js";
 
 export function ouvrirRobinet(toile, o) {
   var essai = document.createElement("canvas").getContext("webgl2");
   if (!essai) throw new Error("WebGL 2 absent");
   var matieres = ajouterMatieres(creerMatieres()), S = creerScene(toile, { matieres: matieres, hdri: o.hdri });
-  var pieces = creerPieces(), compo = composer(o.pile || PILE, pieces);
+  var pieces = creerPieces(), compo = null;
   var etat = { eclatee: false, vue: "face" }, ecoutes = [];
   function dire() { ecoutes.forEach(function (f) { f({ eclatee: etat.eclatee, vue: etat.vue }); }); }
 
-  S.poser(compo, pieces);
-  S.regarder(etat.vue, false);
+  // Une autre combinaison : la pile se repose, montée ou éclatée comme elle l'était, et le cadre suit
+  // (depuis le point de vue choisi, ou depuis celui où le doigt l'a laissée).
+  function montrer(programmateur, depart) {
+    compo = composer(pile(programmateur, depart), pieces);
+    S.poser(compo, pieces);
+    if (etat.vue) S.regarder(etat.vue, false); else S.recadrer();
+  }
 
   // Tourner la vue à la main défait le point de vue choisi.
   S.surVue(function (vue) { etat.vue = vue ? etat.vue : ""; dire(); });
@@ -64,10 +69,10 @@ export function ouvrirRobinet(toile, o) {
   toile.addEventListener("keydown", clavier);
 
   return {
-    scene: S, eclater: eclater, regarder: regarder,
+    scene: S, montrer: montrer, eclater: eclater, regarder: regarder,
     surEtat: function (f) { ecoutes.push(f); },
     etat: function () { return { eclatee: etat.eclatee, vue: etat.vue }; },
-    erreurs: function () { return compo.erreurs.slice(); },
-    compo: compo, pieces: pieces
+    erreurs: function () { return compo ? compo.erreurs.slice() : []; },
+    compo: function () { return compo; }
   };
 }

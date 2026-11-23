@@ -312,6 +312,7 @@ export function creerScene(toile, o) {
 
   return {
     pret: pret, detruire: detruire, poser: poser, regler: regler, eclater: eclater, regarder: regarder, touche: touche, demander: demander,
+    recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } },
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });
