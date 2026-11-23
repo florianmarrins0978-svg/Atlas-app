@@ -61,6 +61,12 @@ ajouter AUTH_GOOGLE_ID      "Pour entrer avec Google (voir docs/entrer-avec-goog
 ajouter AUTH_GOOGLE_SECRET  "Le secret du même identifiant Google :"
 ajouter AUTH_APPLE_ID       "Pour entrer avec Apple (Service ID, compte développeur payant) :"
 ajouter AUTH_APPLE_SECRET   "Le secret du même Service ID Apple :"
+# Le paiement de l'abonnement (Stripe). Une clé de TEST (sk_test_) suffit
+# pour tout essayer avec la carte 4242 4242 4242 4242, sans rien débiter :
+# le retour du paiement relit la session, le crochet n'est pas nécessaire
+# au premier essai (`src/server/paiement/stripe.ts`).
+ajouter ATLAS_PAIEMENT_CLE  "Pour payer l'abonnement (Stripe, Développeurs, Clés API, clé secrète sk_test_) :"
+ajouter ATLAS_PAIEMENT_SECRET_CROCHET "Le secret du webhook Stripe (whsec_), facultatif pour un premier essai :"
 # Le seul nom écrit REMPLI : ce n'est pas une clé, c'est le compte du banc.
 # Sans lui, personne n'est éditeur (`src/server/editeur.ts`) et les idées
 # envoyées depuis l'appli ne se lisent nulle part. Payé le 8 novembre 2026.

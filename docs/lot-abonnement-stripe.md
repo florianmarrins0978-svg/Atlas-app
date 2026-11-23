@@ -129,6 +129,27 @@ essai avec une vraie clé de test. Tant que ce n'est pas fait, l'écran dit
 lui-même que le paiement n'est pas branché, et aucun bouton ne promet ce qu'il
 ne peut pas tenir.
 
+**Éprouvé contre le vrai Stripe le 23 novembre 2026**, sur son espace, en
+environnement de test : la clé seule (`ATLAS_PAIEMENT_CLE`, sans crochet), la
+formule Artisan, la page Stripe à 46,80 € (39 € HT et 20 % de TVA), la carte
+4242, puis le retour dans l'appli, qui affiche « Artisan, 39 € HT par mois,
+prochain paiement le 23 décembre 2026 ». Stripe accepte donc ce qu'Atlas
+envoie. Le guichet s'ouvre (abonnement, carte, facture Stripe), et « Résilier »
+depuis l'appli passe par « Avant de partir » puis affiche « Artisan, s'arrête
+le 23 décembre 2026 », avec « Ne pas arrêter ». **Pas encore éprouvé** : « Ne
+pas arrêter », une résiliation faite DANS le guichet (sans crochet, l'appli ne
+l'apprend pas), le crochet (`/api/paiement`), et le mode réel. **La facture de
+Stripe n'est pas conforme** (ni adresse, ni SIRET, ni numéro de TVA du
+vendeur) : en mode réel, couper son envoi aux clients.
+
+**Son compte Stripe réel existe depuis le 23 novembre 2026** : paiements
+activés, profil @cause rendu privé, rien copié du test (l'appli crée ses
+prix elle-même : ne pas en déclarer à la main), Stripe Tax ignoré, Radar au
+moins cher, libellé de relevé `CAUSE ABONNEMENT`. La clé `sk_live_` n'est
+posée nulle part, et ne doit aller que sur le serveur hébergé. Restent, le
+jour de l'hébergement : le crochet, le portail client, couper l'envoi des
+factures Stripe, et passer `cause.fr` dans ses informations publiques.
+
 **Un défaut trouvé par la capture, et par aucun test :** trois cents pixels de
 vide sous la dernière carte — deux retraits qui s'additionnaient. Corrigé.
 
