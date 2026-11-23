@@ -20,6 +20,12 @@
   Mesuré sur 90 nourrices (2 à 6 voies, 2 voies de goutte-à-goutte et plus, trois vues, montée et
   éclatée) : 84 ont aujourd'hui des mots qui se chevauchent, aucune avec la proposition.
   Une fois choisi, les deux changements passent dans nourrice-3d/reperes.js, que l'écran du plan emploie.
+
+  JUSQU'À DOUZE VOIES, TOUTES EN GOUTTE-À-GOUTTE (sa remarque du même soir : « tu l'as pas fait pour s'il y
+  a 12 vannes [...] pourquoi on peut pas avoir 12 réseaux de goutte à goutte ? ça doit être possible »).
+  La planche s'arrêtait à six voies, celle des deux nourrices à quatre en goutte-à-goutte : deux limites
+  de planche, l'appli compose les deux nourrices jusqu'à douze voies toutes en goutte-à-goutte. Sur les
+  deux nourrices aussi, le mot entier une seule fois, GAG partout ailleurs.
 -->
 <!-- La carte des imports passe AVANT tout chargement de module : posée après, le navigateur l'ignore. -->
 <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
@@ -59,8 +65,10 @@
   .voies button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
   .voies button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
   .voies.montage{margin-top:12px}
-  /* « Aucune » et six chiffres sur une ligne : le mot prend la place qu'il lui faut. */
-  #goutte button:first-child{flex:1.7}
+  /* Douze voies : deux rangées de six. Le goutte-à-goutte jusqu'à douze : « Aucune » prend deux cases. */
+  .voies.grille{display:grid;grid-template-columns:repeat(6,1fr)}
+  #goutte{display:grid}
+  #goutte button:first-child{grid-column:span 2}
   @media (prefers-reduced-motion:reduce){.voies button,.attente{transition:none}}
 
 </style>
@@ -87,10 +95,13 @@
     <button type="button" data-vue="biais" aria-pressed="true">De biais</button><button type="button" data-vue="dessus" aria-pressed="false">Dessus</button><button type="button" data-vue="face" aria-pressed="false">De face</button>
   </div>
   <span class="caps" id="l-voies">Combien de voies</span>
-  <div class="voies" role="group" aria-labelledby="l-voies">
+  <div class="voies grille" role="group" aria-labelledby="l-voies">
     <button type="button" data-voies="1">1</button><button type="button" data-voies="2">2</button>
     <button type="button" data-voies="3">3</button><button type="button" data-voies="4">4</button>
     <button type="button" data-voies="5">5</button><button type="button" data-voies="6">6</button>
+    <button type="button" data-voies="7">7</button><button type="button" data-voies="8">8</button>
+    <button type="button" data-voies="9">9</button><button type="button" data-voies="10">10</button>
+    <button type="button" data-voies="11">11</button><button type="button" data-voies="12">12</button>
   </div>
   <span class="caps" id="l-goutte">Dont en goutte-à-goutte</span>
   <div class="voies" id="goutte" role="group" aria-labelledby="l-goutte"></div>
@@ -122,6 +133,8 @@ window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge
 <script type="module">
 import { ouvrirNourrice } from "./nourrice-3d/vue.js";
 import { poserReperes } from "./nourrice-3d/reperes.js";
+import { composer } from "./nourrice-3d/composition.js";
+import { creerPieces } from "./nourrice-3d/pieces/index.js";
 
 // ── LES REPÈRES PROPOSÉS : nourrice-3d/reperes.js, avec ses deux changements (l'en-tête le dit) ─────────
 // LES REPÈRES SUR LA NOURRICE EN 3D : le numéro de la liste sur chaque pièce, et au bout des colonnes la
@@ -295,6 +308,42 @@ function poserReperesPropose(couche, v, o) {
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene"), CAT = window.CATALOGUE;
 var etat = { voies: 6, goutte: 3, eclatee: false, vue: "biais", version: "propose" }, V = null, R = null, couche = null;
 
+// AU-DELÀ DE SIX VOIES, DEUX NOURRICES (sa règle du 23 novembre 2026) : moitié-moitié, le goutte-à-goutte
+// sur la seconde d'abord, la seconde posée à côté de la première. L'écran du plan le fait par
+// partageDesNourrices et nourrice-3d/deux-nourrices.js, pas encore sur main : la planche le refait ici,
+// comme la planche des deux nourrices. Le goutte-à-goutte va jusqu'à toutes les voies : l'appli le compose.
+var ECART_MONTEE = 240, ECART_ECLATEE = 900, PIECES = { fin: null, leger: null };
+function piecesPour(n) { var k = n > 8 ? "leger" : "fin"; return PIECES[k] || (PIECES[k] = creerPieces(k === "leger" ? 0.6 : 1)); }
+function partage() {
+  if (etat.voies <= 6) return [{ voies: etat.voies, goutte: etat.goutte }];
+  var a = Math.ceil(etat.voies / 2), voies = [a, etat.voies - a], reste = etat.goutte;
+  var goutte = voies.slice().reverse().map(function (v) { var x = Math.min(v, reste); reste -= x; return x; }).reverse();
+  return voies.map(function (v, i) { return { voies: v, goutte: goutte[i] }; });
+}
+function aCote(c1, c2) {
+  var droite = function (c, cle) { return c.pieces.reduce(function (m, p) { return Math.max(m, p[cle][0]); }, -Infinity); };
+  var gauche = function (c, cle) { return c.pieces.reduce(function (m, p) { return Math.min(m, p[cle][0]); }, Infinity); };
+  var dM = droite(c1, "monte") + ECART_MONTEE - gauche(c2, "monte"), dE = droite(c1, "eclate") + ECART_ECLATEE - gauche(c2, "eclate");
+  var n = c1.pieces.length, nc = c1.colonnes.length;
+  return {
+    pieces: c1.pieces.concat(c2.pieces.map(function (p) {
+      return Object.assign({}, p, { monte: [p.monte[0] + dM, p.monte[1]], eclate: [p.eclate[0] + dE, p.eclate[1]], indice: p.indice + n, colonne: p.colonne >= 0 ? p.colonne + nc : -1 });
+    })),
+    colonnes: c1.colonnes.concat(c2.colonnes.map(function (c) {
+      return Object.assign({}, c, { parent: c.parent + n, xMonte: c.xMonte + dM, xEclate: c.xEclate + dE, pieces: c.pieces.map(function (i) { return i + n; }) });
+    })),
+    erreurs: c1.erreurs.concat(c2.erreurs)
+  };
+}
+// Les repères lisent la composition posée : les colonnes des deux nourrices, R1, R2… à la suite, et les
+// numéros de la seconde seulement quand ils lui sont propres, comme l'écran du plan.
+var compo = null, premiere = { pieces: Infinity, modeles: {} }, nn = [];
+var vue = {
+  scene: null,
+  numeros: function () { return V.numeros().filter(function (e) { return e.indice < premiere.pieces || !premiere.modeles[e.cle]; }); },
+  colonnes: function () { return compo ? compo.colonnes.map(function (c) { return { arrivee: c.arrivee, goutte: c.goutte, pieces: c.pieces.slice() }; }) : []; }
+};
+
 // Les couleurs des réseaux, celles du plan (src/lib/arrosage/calcul.js, COULEURS_RESEAU).
 var COULEURS_RESEAU = ["#2F6FB5", "#3E8F4E", "#D9A520", "#B5502F", "#7A4FA3", "#1F8A8A", "#B5417F", "#6B7A2F"];
 var voie = function (k) { return { nom: "R" + (k + 1), couleur: COULEURS_RESEAU[k % COULEURS_RESEAU.length] }; };
@@ -302,7 +351,7 @@ var voie = function (k) { return { nom: "R" + (k + 1), couleur: COULEURS_RESEAU[
 // La version change : les repères d'avant s'effacent, les autres se posent sur la même couche.
 function poser() {
   if (R) R.detruire();
-  R = (etat.version === "propose" ? poserReperesPropose : poserReperes)(couche, V, { voie: voie });
+  R = (etat.version === "propose" ? poserReperesPropose : poserReperes)(couche, vue, { voie: voie });
   R.placer();
 }
 
@@ -314,10 +363,22 @@ function boutons() {
   var gg = "";
   for (var j = 0; j <= etat.voies; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === etat.goutte) + '">' + (j ? j : "Aucune") + "</button>";
   $("goutte").innerHTML = gg;
-  $("titre").textContent = CAT.ficheNourrice(etat.voies, etat.goutte).nom;
+  // Une rangée jusqu'à six voies, deux rangées de sept cases au-delà.
+  $("goutte").style.gridTemplateColumns = "repeat(" + (etat.voies <= 6 ? etat.voies + 2 : 7) + ",1fr)";
+  $("titre").textContent = nn.length > 1 ? (nn[0].voies === nn[1].voies ? "Deux nourrices de " + nn[0].voies + " voies" : "Deux nourrices, " + nn[0].voies + " et " + nn[1].voies + " voies") : CAT.ficheNourrice(etat.voies, etat.goutte).nom;
   $("sous-titre").textContent = etat.goutte ? "Dont " + etat.goutte + " en goutte-à-goutte." : "";
 }
-function reposer() { V.montrer(etat.voies, etat.goutte); boutons(); R.placer(); }
+function reposer() {
+  nn = partage();
+  var defs = piecesPour(etat.voies);
+  var c = nn.map(function (n) { return composer(CAT.ficheNourrice(n.voies, n.goutte), n.voies, n.goutte, defs); });
+  compo = c.length > 1 ? aCote(c[0], c[1]) : c[0];
+  premiere = { pieces: c.length > 1 ? c[0].pieces.length : Infinity, modeles: {} };
+  if (c.length > 1) c[0].pieces.forEach(function (p) { premiere.modeles[p.cle] = true; });
+  V.scene.poser(compo, defs);
+  V.scene.regarder(etat.vue || "biais", false);
+  boutons(); R.placer();
+}
 
 document.addEventListener("click", function (e) {
   if (!V) return;
@@ -331,7 +392,7 @@ document.addEventListener("click", function (e) {
 
 try {
   V = ouvrirNourrice(toile, { ficheNourrice: CAT.ficheNourrice, hdri: "vendor/hdri/studio.exr" });
-  couche = $("numeros");
+  couche = $("numeros"); vue.scene = V.scene;
   poser();
   // Les repères suivent les pièces à chaque image, quelle que soit la version posée.
   V.scene.surImage(function () { if (R) R.placer(); });
@@ -341,7 +402,7 @@ try {
   var attente = $("attente"), dejaVue = false;
   attente.className = "attente"; attente.textContent = "Chargement";
   V.scene.surImage(function () { if (dejaVue) return; dejaVue = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
-  window.__nourrice3d = { etat: etat, scene: V.scene };
+  window.__nourrice3d = { etat: etat, scene: V.scene, erreurs: function () { return compo ? compo.erreurs : []; } };
 } catch (erreur) {
   refuser(/WebGL/.test(String(erreur && erreur.message)) ? REFUS.webgl : REFUS.charge);
   throw erreur;
