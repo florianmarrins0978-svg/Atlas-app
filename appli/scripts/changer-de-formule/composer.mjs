@@ -129,7 +129,10 @@ const DIT = {
   illimiteDepuisEntreprise: `Dans l’appli : la même feuille qu’à la montée, 159${N}€ HT débités aujourd’hui (190,80${N}€ TTC).`,
   descenteArtisan: `Dans l’appli : la feuille de la descente, Artisan à partir du 23${N}décembre, rien n’est débité aujourd’hui.`,
   descenteEntreprise: `Dans l’appli : la feuille de la descente, Entreprise à partir du 23${N}décembre, rien n’est débité aujourd’hui.`,
-  annee: "Dans l’appli : les prix passent à l’année. À l’année, seule la différence est débitée.",
+  // Sa précision du 23 novembre au soir : la différence entière, jamais au
+  // prorata, *« même si au bout de 8 mois il décide de passer à la formule du
+  // dessus »*. Les prix viennent de `src/lib/abonnements.ts` (390, 590, 1590).
+  annee: `Dans l’appli : les prix passent à l’année. Monter débite la différence entière, quel que soit le mois : d’Artisan à Entreprise, 200${N}€ HT. L’échéance ne bouge pas.`,
   mois: "Déjà au mois.",
   guichet: "Dans l’appli : ouvre la page du prestataire, pour changer de carte et retrouver vos factures Cause.",
   resilier: "Dans l’appli : ouvre « Avant de partir ».",

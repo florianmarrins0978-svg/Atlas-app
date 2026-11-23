@@ -38421,3 +38421,8 @@ codé** : le catalogue, la liaison (un bouton OAuth à la place des deux cases,
 planche d'abord), un état « vérification en cours ». Garder la norme commune
 est ce qui rend la plateforme remplaçable : changer de plateforme coûte un
 contrat et deux adresses.
+
+**Et ensuite, Cause agréée elle-même** (sa suite du même soir). Ce n'est pas
+contradictoire : Super PDP d'abord, la candidature ensuite. Les exigences
+officielles sont relevées dans `TODO.md` ; la première qui pèse est la
+certification ISO 27001 (ou SecNumCloud).

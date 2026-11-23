@@ -71,13 +71,14 @@ règle. C'est aussi ce que dit son texte de la descente, depuis Entreprise.
 **À trancher avant le code** (le code ne les invente pas) :
 
 1. **À l'année : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« ceux qui payent à
-   l'année, ils payent que la différence »*. **Reste une précision** : la
-   différence des deux prix de l'année (Artisan vers Entreprise : 590 − 390 =
-   200 € HT, l'échéance ne bouge pas), ou cette différence au prorata des
-   mois restants ? Proposé : la différence entière, un chiffre qu'il peut
-   vérifier de tête, sans ouverture à monter puis résilier (il a payé
-   Entreprise jusqu'à l'échéance). La planche dit seulement « seule la
-   différence est débitée ».
+   l'année, ils payent que la différence »*, puis sa précision : *« même si au
+   bout de 8 mois il décide de passer à la formule du dessus, il paye juste la
+   différence, mais pas au prorata »*. **La différence ENTIÈRE des deux prix de
+   l'année**, quel que soit le mois : Artisan vers Entreprise 200 € HT (590 −
+   390), Artisan vers Illimité 1 200, Entreprise vers Illimité 1 000. Déduit,
+   pas dit par lui : l'échéance ne bouge pas (la différence complète l'année
+   déjà payée, elle n'en ouvre pas une neuve). Aucune ouverture à monter puis
+   résilier : il a alors payé la formule du dessus jusqu'à l'échéance.
 2. **Changer de rythme** sur la même formule (au mois vers l'année) : montée
    ou descente ?
 3. **Le compte de personnes : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« s'il veut
@@ -3108,7 +3109,24 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
      et à Iopole (messages prêts dans le document). **À nous, à son « go »
      avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
-     (catalogue, OAuth, « vérification en cours »), niveau 3 ; Seconde capture, même soir : la
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ;
+   - **sa suite, même soir** : *« on va commencer avec Super PDP et ensuite
+     on va essayer de faire agréer Cause »*. Exigences relevées sur la fiche
+     officielle de la DGFiP (`fiche-pdp.pdf`, septembre 2025) : dossier fiscal
+     et technique, **ISO 27001 ou SecNumCloud**, double authentification
+     dont un facteur dynamique (Cause a déjà le code TOTP), données dans
+     l'Union européenne, interconnexion aux autres plateformes, tests avec
+     le portail public, audit de conformité par un organisme indépendant,
+     agrément de 3 ans renouvelable. Rien n'est lancé ; le travail fait
+     pour Super PDP (Factur-X, norme commune) resservira ;
+   - **recherche du même soir** (`docs/faire-agreer-cause.md`) : le guide
+     officiel prévoit l'agrément **en marque blanche** sur une plateforme
+     déjà agréée (cas n° 1, page 20 : contrat, serveurs, liaison, la doc de
+     la plateforme support, et l'ISO 27001 du candidat). Iopole a le dossier
+     prêt, prérequis ISO 27001. Ordre de grandeur, confiance faible : 10 000
+     à 30 000 € la première année. **Trois questions à la DGFiP avant tout
+     achat** : périmètre de l'ISO 27001 en marque blanche, SecNumCloud pour
+     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
