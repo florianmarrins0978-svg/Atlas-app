@@ -1482,11 +1482,22 @@ function chercherUnPlan(source){
 }
 
 /* Une tête se lève-t-elle à cette pression ? Sans pression mini relevée, on ne
-   peut pas le dire : c'est non. */
+   peut pas le dire : c'est non.
+
+   **ET AVEC 0,3 BAR DE MARGE AU-DESSUS DE SA FICHE — sa décision du
+   23 novembre 2026.** Jusque-là, le minimum exact suffisait : sur 10 × 6 et
+   8 × 8 à 2 bar, une vanne de deux 5000 Plus et trois 3504 recevait 1,72 bar
+   pour un minimum de 1,70, et le plan passait. Sa question : *« comment ça
+   lève ? J'ai l'impression qu'il faut une pression énorme »* ; puis, devant
+   le choix, **2,0 bar au dernier arroseur** pour ces turbines, soit leur
+   minimum plus 0,3. La marge s'ajoute au minimum de chaque tête plutôt qu'en
+   seuil fixe : une buse VAN, dont la fiche s'arrête à 2,1 bar, ne tiendrait
+   jamais sous un seuil de 2,0. */
+var MARGE_LEVEE = 0.3; // bar au-dessus du minimum de la fiche
 function seLeve(buse, pression){
   if (!buse) return true;
   var min = pressionMinDe(buse);
-  return min !== null && pression >= min - 1e-9;
+  return min !== null && pression >= min + MARGE_LEVEE - 1e-9;
 }
 
 function finirLePlan(d, source, tient){
