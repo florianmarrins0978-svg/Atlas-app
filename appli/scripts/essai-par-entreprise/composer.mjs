@@ -66,7 +66,13 @@ const MOTS = {
   inconnu: {
     refus: "Ce SIRET n'est pas au registre des entreprises. Vérifiez les chiffres.",
     neuf: "Mon entreprise vient d'être créée",
-    neufDit: "Dans l'appli : le compte se crée, et le SIRET se vérifie de nouveau dans quelques jours.",
+    // Sa règle du 23 novembre : *« il ne faut pas le bloquer, ce n'est pas
+    // l'idée ; il ne faut pas non plus qu'il puisse créer des comptes gratuits
+    // à tire-larigot »*. Rien n'est bloqué, sauf ce qui a de la valeur : un
+    // SIRET que le registre ne connaît pas ne part sur aucun devis ni aucune
+    // facture. L'entreprise toute neuve attend un jour ou deux ; celui qui
+    // invente un numéro n'enverra jamais rien.
+    neufDit: "Dans l'appli : le compte se crée et l'essai démarre, mais aucun devis ni aucune facture ne part tant que le registre n'a pas confirmé le SIRET.",
   },
   passer: "Sans SIRET, l'essai démarre. Il s'arrête dès que le SIRET est tapé : aucun devis ni aucune facture ne part sans lui.",
   deja: {

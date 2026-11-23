@@ -1333,7 +1333,11 @@ de l'appli, ce poste ne le joint pas) pour l'existence et l'activité ; et le
 nom et l'adresse pris du registre, qui partent sur les devis, si bien que le
 SIRET d'un autre ne donne que des devis au nom de cet autre. Trois cas à tenir :
 l'entreprise toute neuve (la publication peut retarder d'un jour ou deux sur
-l'Insee : on ne bloque pas, on revérifie), l'entrepreneur qui a demandé la
+l'Insee : on ne bloque ni le compte ni l'essai, mais **aucun devis ni aucune
+facture ne part tant que le registre n'a pas confirmé le SIRET**, sa règle du
+23 novembre : *« il ne faut pas le bloquer ; il ne faut pas non plus qu'il
+puisse créer des comptes gratuits à tire-larigot »* ; un numéro inventé ne
+sert donc jamais à envoyer), l'entrepreneur qui a demandé la
 diffusion partielle (son SIRET existe, son nom n'est pas publié : il le tape),
 et le registre qui ne répond pas (on ne bloque pas l'inscription).
 
