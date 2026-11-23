@@ -9,8 +9,20 @@ const [S, SORTIE] = process.argv.slice(2);
 const fichiers = readdirSync(S).filter((f) => /^\d\d-.+\.json$/.test(f)).sort();
 // La porte (`/bienvenue`) n'est pas du parcours : depuis le site, « Créer mon
 // compte » ouvre directement la première question.
+// LA HAUTEUR STABLE DE L'ÉCRAN, ET NON LA HAUTEUR VIVANTE. Sa remarque du
+// 23 novembre : « quand je monte et je descends, elle frise et elle saute ».
+// Les écrans de la porte prennent `100dvh`, la hauteur visible, qui change en
+// continu sur iPhone quand Safari rentre ou ressort sa barre d'adresse au
+// défilement. Dans l'appli installée, il n'y a pas de barre, et l'écran tient
+// sans défiler ; ici, l'en-tête de la planche le fait défiler, dans Safari :
+// chaque écran grandissait et rétrécissait sous le doigt. `100svh`, la petite
+// hauteur, ne bouge pas. Seules les VALEURS changent : le nom de la classe
+// (`min-h-[100dvh]`, précédé de « [ ») reste celui que l'appli pose.
+const enHauteurStable = (texte) => texte.replace(/(?<=[:(\s])(\d+)dvh/g, "$1svh");
+
 const etats = fichiers
   .map((f) => ({ nom: f.slice(3, -5), corps: JSON.parse(readFileSync(`${S}/${f}`, "utf8")) }))
+  .map((e) => ({ ...e, corps: { ...e.corps, html: enHauteurStable(e.corps.html) } }))
   .filter((e) => e.nom !== "porte");
 const noms = etats.map((e) => e.nom);
 const etape = (nom) =>
@@ -85,7 +97,7 @@ document.addEventListener("click", (ev) => {
 }, true);
 `;
 
-const css = readFileSync(`${S}/css.txt`, "utf8") + `
+const css = enHauteurStable(readFileSync(`${S}/css.txt`, "utf8")) + `
 .suite-visite{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:80;max-width:420px;margin:0 auto;display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:999px;background:var(--atlas-ink,#1c1c1a);color:var(--atlas-cream,#f5f3ee);font-weight:600;font-size:17px;text-decoration:none;box-shadow:0 18px 40px -16px rgba(0,0,0,.55)}
 `;
 
