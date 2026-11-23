@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" style="--atlas-barre: 48px;"><head><meta charset="utf-8">
+<html lang="fr" style=""><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Changer de formule</title>
 <style>@layer properties {
@@ -1812,6 +1812,20 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu { padding-bottom: 0px; }
 
 <div class="planche-dit" role="status"></div>
 <script>
+(() => {
+  const racine = document.documentElement;
+  const barres = [...document.querySelectorAll(".atlas-nav-basse")];
+  const publier = () => {
+    const boite = barres.map((n) => n.getBoundingClientRect()).find((b) => b.height > 0);
+    if (!boite) return racine.style.removeProperty("--atlas-barre");
+    const enBas = boite.width > window.innerWidth / 2;
+    racine.style.setProperty("--atlas-barre", (enBas ? Math.round(boite.height) : 0) + "px");
+  };
+  const oeil = new ResizeObserver(publier);
+  barres.forEach((n) => oeil.observe(n));
+  publier();
+})();
+
 (() => {
   const etats = [...document.querySelectorAll("[data-planche]")];
   const etapes = [...document.querySelectorAll(".planche-etapes button")];

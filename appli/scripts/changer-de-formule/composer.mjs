@@ -27,7 +27,15 @@ import { enHauteurStable } from "../_hauteur-stable.mjs";
 const [S, SORTIE] = process.argv.slice(2);
 const lire = (nom) => {
   const c = JSON.parse(readFileSync(`${S}/${nom}.json`, "utf8"));
-  return { ...c, html: enHauteurStable(c.html) };
+  // pansement assumé : la hauteur de la barre du bas est MESURÉE par l'appli
+  // (`AtlasBottomNav`, `--atlas-barre` sur <html>) ; `corps()` la fige telle
+  // que Chromium la mesure ici, sans la bande du geste d'accueil d'un iPhone,
+  // et le bouton flottant passait à moitié sous la barre sur son téléphone
+  // (sa capture du 23 novembre 2026). La racine est dans l'outil partagé
+  // (`scripts/planche-figee/`), dont le contrôle attend son « oui » :
+  // `TODO.md`, « LA BARRE DU BAS FIGÉE ». Ici, la mesure se retire et la
+  // planche la refait, comme l'appli.
+  return { ...c, html: enHauteurStable(c.html), styleHtml: c.styleHtml.replace(/--atlas-barre:\s*[^;]*;?\s*/g, "") };
 };
 
 const etats = [
@@ -284,6 +292,25 @@ const retouches = (etat, d) => {
   etat("d-refus").remove();
 };
 
+// La barre du bas publie sa hauteur, comme dans l'appli (`AtlasBottomNav`,
+// `publier`) : celle de l'état visible, bande d'accueil comprise. Sans script
+// encore, la valeur de la feuille de style (`globals.css`) tient la place.
+const MESURER_LA_BARRE = `
+(() => {
+  const racine = document.documentElement;
+  const barres = [...document.querySelectorAll(".atlas-nav-basse")];
+  const publier = () => {
+    const boite = barres.map((n) => n.getBoundingClientRect()).find((b) => b.height > 0);
+    if (!boite) return racine.style.removeProperty("--atlas-barre");
+    const enBas = boite.width > window.innerWidth / 2;
+    racine.style.setProperty("--atlas-barre", (enBas ? Math.round(boite.height) : 0) + "px");
+  };
+  const oeil = new ResizeObserver(publier);
+  barres.forEach((n) => oeil.observe(n));
+  publier();
+})();
+`;
+
 // L'en-tête de la planche passe AU-DESSUS du voile de la feuille : sans quoi,
 // une feuille ouverte, les étapes ne se touchent plus (vu au parcours).
 const css =
@@ -314,6 +341,7 @@ const taille = await composer({
   surtitre: "Planche, le vrai écran Abonnement",
   retouches,
   donnees: { MOTS, DIT },
+  scriptEnPlus: MESURER_LA_BARRE,
   sortie: SORTIE,
 });
 console.log("écrit", SORTIE, taille);

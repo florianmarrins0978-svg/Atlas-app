@@ -1,5 +1,28 @@
 # Prochaines tâches
 
+## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
+
+Sa capture, sur « Changer de formule » : *« Passer à Entreprise flottant, il
+est coupé à moitié par le bandeau déroulant du menu en bas »*. L'appli mesure
+la hauteur de sa barre en direct (`AtlasBottomNav`, `--atlas-barre` posé sur
+`<html>`) ; `corps()` (`scripts/planche-figee/figer.mjs`) fige cette mesure
+telle que Chromium la fait ici, **48 px, sans la bande du geste d'accueil**.
+Sur son iPhone la barre en fait environ 82 : tout ce qui flotte à
+`bottom: var(--atlas-barre)` passe dessous. Reproduit en donnant 34 px de bande
+à la barre : 22 px du bouton dessous.
+
+**Corrigé dans cette seule planche** (`appli/scripts/changer-de-formule/
+composer.mjs`, `pansement assumé`) : la mesure figée se retire, et la planche
+la refait comme l'appli. **La racine est l'outil partagé** : `composer()` doit
+retirer `--atlas-barre` du style figé et la mesurer dans son script, et la
+planche ci-dessus rend alors son pansement. C'est de l'outillage, donc le
+niveau 2 (`npm run verifier:avant-fusion`), qui attend son « oui ».
+
+**26 planches figées portent la même mesure** (`grep -rlE '<html[^>]*--atlas-barre'
+--include='*.html' appli`), dont `identite-au-registre`, `planning-sans-fiche`,
+`abonnement-module-paysage`, `visite-guidee`. Elles se répareront en les
+recomposant, une fois l'outil corrigé.
+
 ## ⏳ UNE PLANCHE À REGARDER : CHANGER DE FORMULE (23 novembre 2026)
 
 **Trouvé par lui le 23 novembre, en payant pour de vrai avec une clé Stripe de
