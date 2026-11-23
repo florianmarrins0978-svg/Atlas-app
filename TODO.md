@@ -1315,6 +1315,20 @@ proposée en plus, est écartée par lui : voir plus haut.) Le SIREN d'un entrep
 individuel est une donnée personnelle : sa garde après l'effacement d'un compte
 va dans la politique de confidentialité, avec une durée, et chez le juriste.
 
+**Contre la triche, sa question du 23 novembre** (*« il n'y a pas moyen de
+taper un numéro au pif ? »*). Constaté dans le code : seuls les 14 chiffres sont
+contrôlés (`siretLu`, `src/lib/siren.ts`), aucun chiffre de contrôle, aucun
+registre. Proposé, et posé sur la planche (« Au registre », « Inconnu ») :
+le chiffre de contrôle du SIRET ; le registre public de l'État (le service
+« Recherche d'entreprises », gratuit, sans clé : à vérifier depuis le serveur
+de l'appli, ce poste ne le joint pas) pour l'existence et l'activité ; et le
+nom et l'adresse pris du registre, qui partent sur les devis, si bien que le
+SIRET d'un autre ne donne que des devis au nom de cet autre. Trois cas à tenir :
+l'entreprise toute neuve (la publication peut retarder d'un jour ou deux sur
+l'Insee : on ne bloque pas, on revérifie), l'entrepreneur qui a demandé la
+diffusion partielle (son SIRET existe, son nom n'est pas publié : il le tape),
+et le registre qui ne répond pas (on ne bloque pas l'inscription).
+
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
 | | |
