@@ -1260,6 +1260,26 @@ carte entre « Vos clients » et « Créer un devis » : « Faire la visite » o
 la coder dans l'accueil (un drapeau par compte, « vue ou refusée »), la visite
 étant celle du site, sur des données d'essai.
 
+**⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : la planche attend son
+« oui »** (`appli/soignee/essai-par-entreprise.html`, sa demande *« fais la
+planche »* du 23 novembre ; le cas des Réglages, où le SIRET se tape plus tard,
+dirait la même chose sous le même champ, et n'est pas dessiné). Sa question du
+23 novembre, non codée : *« Quelqu'un crée un compte pour les 15 jours,
+quitte, et en recrée un avec une autre adresse : est-ce qu'on ne ferait pas un
+truc avec le SIRET ? »* Constaté dans le code : rien ne l'empêche aujourd'hui
+(l'essai est par compte, aucun contrôle du SIRET à la création). Mais un devis
+ou une facture ne part pas sans SIRET (`src/lib/mentions-manquantes.ts`, sa
+règle du 3 octobre) : qui veut s'en servir pour de vrai doit le taper. Ma
+proposition, en réponse : retenir le **SIREN** (les 9 premiers chiffres :
+un déménagement change le SIRET, pas le SIREN) des essais passés ; **ne pas
+bloquer le compte**, mais **terminer l'essai** quand un SIREN déjà essayé
+revient (un SIRET est public, sur chaque devis : bloquer laisserait n'importe
+qui priver un concurrent de son essai) ; dire aux deux personnes d'une même
+entreprise de se faire inviter ; et, avec la carte à l'inscription, la
+reconnaissance de la carte par Stripe en plus. Le SIREN d'un entrepreneur
+individuel est une donnée personnelle : sa garde après l'effacement d'un compte
+va dans la politique de confidentialité, avec une durée, et chez le juriste.
+
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
 | | |
