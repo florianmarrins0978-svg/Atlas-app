@@ -1181,6 +1181,36 @@ serait tombé en erreur au déploiement suivant.
 **Reste une question, posée le 23** : la bande sert-elle encore, avec deux
 cartes ? Sans réponse, elle reste.
 
+## ⏳ CHOISIR SA FORMULE SUR LE SITE : la planche attend son « oui » (23 novembre 2026)
+
+Sa demande du 23 : *« il faudrait qu'il sélectionne. Il sélectionne la formule
+artisan, par exemple, plus il choisit la formule à 6 euros. Et ensuite, il a un
+prélèvement de 0 euros, il fait ses 15 jours d'essai. Et à la fin, s'il ne
+décide pas de quitter l'appli, l'abonnement démarre. »*
+
+`appli/vente/cause-2-formules.html`, fabriquée depuis le vrai site par
+`python3 appli/scripts/planche-formules-site.py appli/vente/cause-2-visite.html appli/vente/cause-2-formules.html` :
+les cartes se choisissent, les outils s'ajoutent d'un interrupteur, « Votre
+choix » donne le total et 0 € aujourd'hui, et une feuille montre les 15 jours,
+la place de Stripe (aucun champ : une page publique ne recueille aucun numéro),
+puis le départ. Les phrases « Sans carte bancaire » et la réponse « Que se
+passe-t-il après les 15 jours ? » changent de mots, pas de place. Pendant
+l'essai, tout reste ouvert (lu ainsi par moi : c'est l'article 14.2 et
+`FORMULE_DE_LESSAI`).
+
+**Ce que son oui déclenchera, et qui n'est pas qu'un report de planche :**
+
+| | |
+|---|---|
+| les conditions générales | l'article 14.2 en vigueur dit l'inverse : essai *« sans saisie de moyen de paiement »*, et à son terme *« aucune reconduction n'intervient d'elle-même »*. Une version nouvelle, acceptée de nouveau par chaque compte, et relue par le juriste (`docs/A-FAIRE.md` §2) |
+| l'appli | l'essai naît aujourd'hui hors de Stripe (`src/lib/abonnements.ts`, `FORMULE_DE_LESSAI`) : il faudra un abonnement Stripe avec essai et moyen de paiement dès l'inscription, et l'option à 6 €, toujours pas codée (planche du 19 novembre) |
+| le message d'avant la fin | la frise promet « Un message vous prévient » : à tenir par Stripe ou par un e-mail d'Atlas, qui attend le nom de domaine (`docs/A-FAIRE.md` §16) |
+| le reste du site | `outils.html` et la fiche du mode d'emploi (`src/lib/fiches-mode-emploi/fonctionnement.ts`) disent encore « sans carte bancaire » |
+
+À son oui sur la planche : reporter dans `cause-2-visite.html`, effacer la
+planche et son script. Le code de l'appli et les conditions générales sont
+des lots à part.
+
 ## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2-visite.html` (sa décision du 22 novembre 2026, son adresse du 23) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 
 **Sa décision du 22 novembre 2026.** À ma question « quelle page devient le
