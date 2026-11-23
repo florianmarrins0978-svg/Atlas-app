@@ -621,6 +621,15 @@ point de départ (sa règle du 16 octobre) ; chaque vanne ajoutée doit rapporte
 0,1 bar (`GAIN_PAR_VANNE`, `avecLaPression`). « Toujours le plus de pression »
 lui a été proposé et n'a pas été retenu : il ajouterait des vannes sans fin.
 
+**LA 3504 D'OFFICE, LA 5000 PLUS QUAND ELLE FAIT ÉCONOMISER UNE VANNE — sa
+réponse du même soir, « Comme aujourd'hui ».** Il avait ajouté : *« si on a
+atteint la longueur maximale pour les 3004, il faudra passer en 5000 »*. Mis
+devant le fait qu'une 3504 porte jusqu'à 10,1 m (buse 4,0) et couvre toujours en
+ajoutant des têtes, il a gardé la règle telle qu'elle était : la gamme la moins
+chère d'abord, la 5000 Plus quand elle économise une vanne (25 × 20 et 40 × 30
+à 3 bar), sauf si la vanne de plus en 3504 donne 0,1 bar au bout. Ne pas
+reposer la question.
+
 **Le débit DÉCROÎT le long de la ligne**, et c'est tout le calcul : entre la
 vanne et la première tête passe le débit du réseau entier, puis une tête de
 moins à chaque tronçon. Compter le débit total partout surestime la perte de
