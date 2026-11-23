@@ -14,6 +14,72 @@ Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimu
 
 Batterie complète au vert, puis le complément d'après-fusion (types, lint), puis `main`.
 
+## ⏳ UNE PLANCHE À REGARDER : CHANGER DE FORMULE (23 novembre 2026)
+
+**Trouvé par lui le 23 novembre, en payant pour de vrai avec une clé Stripe de
+test** : « Passer à Entreprise » change la formule sans rien dire du montant
+et sans rien débiter (`changerLaFormule`, `proration_behavior:
+create_prorations`) : la différence attend l'échéance, donc monter puis
+résilier donne la formule supérieure gratuitement. Et la descente prend effet
+tout de suite, contre l'article 14.6 (« à l'échéance suivante »).
+
+**Ses décisions, à ne pas lui redemander :**
+
+| | |
+|---|---|
+| **monter** | le prix ENTIER de la nouvelle formule est débité le jour du changement, qui devient la nouvelle échéance ; les jours restants de l'ancienne ne sont pas remboursés |
+| **descendre** | rien n'est débité ; la formule moins chère commence à l'échéance, il garde jusque-là celle qu'il a payée |
+| **article 14.6, version 4** | « Le passage à une formule supérieure prend effet immédiatement : son prix est dû en entier à la date du changement, qui devient la nouvelle date d'échéance. La période en cours de l'ancienne formule n'est pas remboursée. Le passage à une formule inférieure prend effet à l'échéance suivante. » |
+
+**La planche**, sur le vrai écran Abonnement figé
+(`appli/scripts/changer-de-formule/`) : `appli/soignee/changer-de-formule.html`.
+Une feuille (celle d'« Avant de partir ») dit le montant avant « Confirmer » ;
+la carte refusée laisse la formule et le dit dans la feuille ; la descente
+prévue se lit sur l'état (« Jusqu'au 23 décembre 2026, puis Artisan ») et sur
+la carte d'Artisan, et **« Garder Entreprise »** la retire (ajouté : sans lui,
+changer d'avis voudrait dire attendre l'échéance puis repayer le prix entier).
+**Rien n'est codé.**
+
+**Son exemple disait « Prochain paiement le 23 janvier » : faux avec sa
+règle.** Abonné Artisan jusqu'au 23 décembre, sa période a commencé le
+23 novembre ; changé ce jour-là, la nouvelle échéance est le 23 décembre, et le
+mois d'Artisan payé le matin même est perdu en entier. La planche suit la
+règle. C'est aussi ce que dit son texte de la descente, depuis Entreprise.
+
+**À trancher avant le code** (le code ne les invente pas) :
+
+1. **À l'année.** Le prix entier, c'est 590 € HT pour Entreprise ; un abonné
+   Artisan à l'année qui monte en février perdrait près de 390 € HT. La règle
+   tient-elle à l'année ?
+2. **Changer de rythme** sur la même formule (au mois vers l'année) : montée
+   ou descente ?
+3. **Le compte de personnes**. Sa rédaction du 14.6 retire la phrase actuelle
+   sur une formule trop petite pour le nombre de comptes (le refus du passage
+   à Artisan avec des salariés, voir le module Paysage plus bas). À garder,
+   sauf avis contraire.
+
+**Ce que le code devra faire, déjà su :**
+
+- monter : un débit immédiat, avec la nouvelle échéance au jour du changement
+  (chez Stripe : `billing_cycle_anchor=now`, `proration_behavior=none`), et
+  **rien ne change si le paiement échoue** (`payment_behavior=error_if_incomplete`).
+  **Une troisième issue est possible** : la banque peut exiger une
+  confirmation (3D Secure) pour un débit immédiat ; la feuille devra l'ouvrir.
+  Pas vérifiable ici, faute de clé : à jouer sur son espace.
+- descendre : un changement PROGRAMMÉ à l'échéance (calendrier chez le
+  prestataire, ou tenu par Cause et appliqué au renouvellement), que « Garder
+  Entreprise » retire. `AvantDePartir.tsx` le disait déjà : le dépôt ne sait
+  pas encore le faire.
+- **« Avant de partir » propose la formule moins chère et la change
+  aujourd'hui, au prorata** : elle doit suivre la même règle de descente.
+- la version 4 des conditions générales, la même que celle du module Paysage
+  (`claude/happy-cannon-2rci5s`, qui touche aussi cet écran) : une seule
+  version 4, et la nouvelle règle ne s'applique qu'à un compte qui l'a
+  acceptée, sans quoi on débiterait contre la version 3 qu'il a signée
+  (prorata).
+
+## ⏳ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD (23 novembre 2026)
+
 Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fusionne avec elles »*. Sur `claude/laughing-wright-xxntzg` : la pile du robinet en 3D (§608) et les turbines aux écartements de Rain Bird (`claude/wonderful-goldberg-q0uoee`, §609 ; il portait §603, déjà pris sur `main`). Puis sa réponse : *« Oui, une batterie »*, une seule pour les deux.
 
 - **Darcy et Moody n'y sont pas, sur sa décision.** Réuni aux écartements de Rain Bird, Darcy faisait rougir la règle du té égal (18 octobre) : sur son jardin de 12 × 12 et 8 × 8, la pression au dernier arroseur tombait de 2,21 à 1,80 bar, et le plan passait de 3 réseaux à 2, dont un qui arrosait les deux pelouses. Devant la planche qui le montre (`appli/arrosage-rainbird-et-darcy.html`), sa réponse : *« Prends avec Rain Bird »*. Le lot reste sur `claude/adoring-mendel-e8roex`.
