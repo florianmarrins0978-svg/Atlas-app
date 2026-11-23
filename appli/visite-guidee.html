@@ -2361,7 +2361,13 @@ html,body{overflow-x:clip}
     guide.classList.remove("secoue"); doigt.classList.remove("appel"); void guide.offsetWidth;
     guide.classList.add("secoue"); if (cibleCourante()) doigt.classList.add("appel");
   };
-  const quitter = () => { const r = document.referrer; location.href = r && new URL(r).origin === location.origin && !r.includes("visite-guidee") ? r : "vente/index.html"; };
+  // « Quitter » ramène à la page d'où l'on vient. Ouverte seule, par son lien,
+  // la visite ramène au site : sa règle du 23 novembre 2026, « n'importe qui va
+  // sur mon site, fait la visite guidée ; s'il la quitte, il ne faut pas qu'il
+  // arrive dans l'appli ». Le site, c'est cause-2-visite.html (sa décision du
+  // même jour) ; vente/index.html, où elle menait, est la planche du
+  // 27 septembre, encore au nom d'Atlas.
+  const quitter = () => { const r = document.referrer; location.href = r && new URL(r).origin === location.origin && !r.includes("visite-guidee") ? r : "vente/cause-2-visite.html"; };
 
   // Faire défiler soi-même, c'est vouloir lire : le guide se replie en une
   // ligne et laisse voir l'écran. Il ne se déplie que quand on le touche.

@@ -1332,7 +1332,7 @@ dans la page elle-même ; rien de tout cela n'est commencé) :
 | son téléphone, son adresse | « à compléter » dans Contact | lui |
 | les mentions légales (`mentions-legales-cause.html`) | huit « à compléter » : siège, SIREN, TVA, directeur de la publication, téléphone, hébergeur, responsable du traitement, exercice des droits | lui, quand sa micro-entreprise a son SIREN |
 | la description de la page | elle dit encore « Planche : le site de vente de Cause, en mouvement. », et c'est ce que montre l'aperçu d'un lien partagé | moi, le jour où elle part sur le domaine |
-| l'accueil du dossier | l'adresse qui finit par `/vente/` sert toujours la planche du 27 septembre, au nom d'Atlas ; la visite guidée y renvoie quand on l'ouvre sans venir du site (`quitter`, `appli/visite-guidee.html`) | moi, au moment de poser le site sur son domaine. **La session de la visite guidée travaille dans ces fichiers** (`claude/loving-rubin-606gqy`, le 22 au soir) : rien n'y a été touché d'ici |
+| l'accueil du dossier | l'adresse qui finit par `/vente/` sert toujours la planche du 27 septembre, au nom d'Atlas ; la visite guidée n'y renvoie plus (23 novembre : ouverte seule, elle ramène à `cause-2-visite.html`) | moi, au moment de poser le site sur son domaine. **La session de la visite guidée travaille dans ces fichiers** (`claude/loving-rubin-606gqy`, le 22 au soir) : rien n'y a été touché d'ici |
 
 **Ce qui suit raconte la planche, du 17 au 19 novembre.**
 
