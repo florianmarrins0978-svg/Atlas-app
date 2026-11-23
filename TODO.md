@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD (23 novembre 2026)
+
+Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fusionne avec elles »*. Sur `claude/laughing-wright-xxntzg` : la pile du robinet en 3D (§608) et les turbines aux écartements de Rain Bird (`claude/wonderful-goldberg-q0uoee`, §609 ; il portait §603, déjà pris sur `main`). Puis sa réponse : *« Oui, une batterie »*, une seule pour les deux.
+
+- **Darcy et Moody n'y sont pas, sur sa décision.** Réuni aux écartements de Rain Bird, Darcy faisait rougir la règle du té égal (18 octobre) : sur son jardin de 12 × 12 et 8 × 8, la pression au dernier arroseur tombait de 2,21 à 1,80 bar, et le plan passait de 3 réseaux à 2, dont un qui arrosait les deux pelouses. Devant la planche qui le montre (`appli/arrosage-rainbird-et-darcy.html`), sa réponse : *« Prends avec Rain Bird »*. Le lot reste sur `claude/adoring-mendel-e8roex`.
+- **Ce que cela coûte, et qu'il doit savoir le jour où il y revient** : sans Darcy, le calcul garde Hazen-Williams, que la session Darcy a trouvé trop optimiste de 4 à 25 % sur la perte du tuyau (le dernier arroseur reçoit un peu moins que ce que l'outil annonce). Le reprendre, c'est accepter le plan réuni de la planche, ou trancher autrement.
+- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : sa branche n'a plus d'histoire commune avec `main`, et son sujet est l'argent.
+
 ## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
 ## LE MANUEL RAIN BIRD : LES TURBINES CODÉES LE 22 NOVEMBRE 2026, CE QUI RESTE
 
