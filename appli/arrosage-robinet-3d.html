@@ -17,17 +17,18 @@
   BRO3493 ; robinet-3d/composition.js dit laquelle de ses deux sorties porte l'arrosage, et pourquoi.
   Au nez de robinet il n'y a pas de nourrice (sa règle du 18 octobre 2026) : c'est une pile.
 
-  CE QUI EST REPRIS DE LA NOURRICE, sans une ligne changée : les formes (filetages en hélice, six
-  pans, arrondis), les matières, le PEHD. CE QUI EST NEUF : robinet-3d/, ses pièces relevées sur ses
-  photos, leur composition, et une scène où la pile est debout et sans ombres (robinet-3d/scene.js dit
-  pourquoi elle n'est pas celle de la nourrice).
+  CE QUI EST REPRIS DE LA NOURRICE : les formes (filetages en hélice, six pans, arrondis), les
+  matières, le PEHD, la scène (avec son option `debout`, qui dit pourquoi) et le toucher. CE QUI EST
+  NEUF : robinet-3d/, ses pièces relevées sur ses photos et leur composition. Depuis son « Parfait,
+  code ça » du 23 novembre 2026, l'écran du plan au robinet montre la même pile
+  (src/app/paysage/arrosage/Robinet3D.tsx).
 
   SI LE TÉLÉPHONE NE SAIT PAS : une phrase à la place de la vue, jamais un cadre vide.
 -->
 <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
 <link rel="modulepreload" href="vendor/three/three.module.min.js">
 <link rel="modulepreload" href="robinet-3d/vue.js">
-<link rel="modulepreload" href="robinet-3d/scene.js">
+<link rel="modulepreload" href="nourrice-3d/scene.js">
 <link rel="modulepreload" href="nourrice-3d/formes.js">
 <style>
 [data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
@@ -121,7 +122,7 @@ function boutons() {
   document.querySelectorAll("[data-depart]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.depart === etat.depart)); });
   $("sous-titre").textContent = "Double sortie, programmateur " + PROGRAMMATEURS[etat.prog].nom + ", départ " + DEPARTS[etat.depart].nom + ".";
 }
-function reposer() { V.montrer(etat.prog, etat.depart); boutons(); }
+function reposer() { V.montrer({ programmateur: etat.prog, double: true, depart: etat.depart }); boutons(); }
 
 document.addEventListener("click", function (e) {
   if (!V) return;

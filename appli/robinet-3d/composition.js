@@ -11,8 +11,8 @@
 // chaque pièce est posée par le bout qui se visse dans la pièce d'au-dessus, jamais à l'oeil.
 //
 // LE REPÈRE, en millimètres : la pile court sur Z, du robinet (z petit) vers le tuyau (z grand). X va
-// de gauche à droite quand on la regarde de face ; Y vient vers celui qui regarde. La scène
-// (robinet-3d/scene.js) la redresse : vue de face, le robinet est en haut, le tuyau en bas.
+// de gauche à droite quand on la regarde de face ; Y vient vers celui qui regarde. La scène de la
+// nourrice, avec `debout` (nourrice-3d/scene.js), la redresse : vue de face, le robinet est en haut, le tuyau en bas.
 //
 // CE QU'UNE PIÈCE DÉCLARE. Elle est modélisée sur son axe Z local, de son bout du haut (z = 0, x = 0)
 // à son bout du bas :
@@ -48,11 +48,18 @@ export var DEPARTS = {
   pe25: { pieces: ["raccord-femelle25", "pehd"], nom: "en PEHD Ø25 ou Ø32" }
 };
 
-// La pile d'une combinaison, du haut vers le bas (les clés de pieces/index.js).
-export function pile(programmateur, depart) {
-  var p = PROGRAMMATEURS[programmateur], d = DEPARTS[depart];
-  if (!p || !d) throw new Error("Aucune combinaison « " + programmateur + " » et « " + depart + " »");
-  return ["robinet-laiton", { cle: "double-sortie-BRO3493", sortie: p.sortie }, p.cle].concat(d.pieces);
+// La pile d'une combinaison, du haut vers le bas (les clés de pieces/index.js). La planche montre
+// toujours la double sortie et un programmateur ; l'écran du plan au robinet suit ce que le plan a
+// retenu : la double sortie est un interrupteur (éteint d'office, sa décision), et quand la nourrice
+// reste (`programmateur: null`), rien ne se visse au robinet que le départ.
+//   pile({ programmateur: "solem", double: true, depart: "pe25" })
+export function pile(o) {
+  var p = o.programmateur ? PROGRAMMATEURS[o.programmateur] : null, d = DEPARTS[o.depart];
+  if ((o.programmateur && !p) || !d) throw new Error("Aucune combinaison « " + o.programmateur + " » et « " + o.depart + " »");
+  var liste = ["robinet-laiton"];
+  if (o.double) liste.push({ cle: "double-sortie-BRO3493", sortie: p ? p.sortie : "gauche" });
+  if (p) liste.push(p.cle);
+  return liste.concat(d.pieces);
 }
 
 // Deux bouts se vissent-ils ? Un mâle dans une femelle, du même filetage.

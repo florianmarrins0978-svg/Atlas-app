@@ -12,6 +12,13 @@
 //   L'image se compose en haute dynamique, se ramène à l'écran par la courbe ACES, et l'anticrénelage
 //   est celui du tampon de rendu (MSAA).
 //
+// LA PILE DU ROBINET, DEBOUT (`o.debout`). La nourrice est couchée dans son regard : chaque pièce est
+//   posée dans le plan du sol, et le doigt tourne autour de la verticale. La pile du robinet (appli/
+//   robinet-3d/) pend d'un robinet : couchée là, elle tournait comme une aiguille de montre sous le
+//   doigt, et son dos ne se voyait jamais (essayé le 22 novembre 2026). Avec `debout`, chaque pièce est
+//   redressée (son axe Z descend), l'éclaté court sur la verticale, le doigt peut passer dessous, et les
+//   deux points de vue sont ceux d'une pile (« face » et « biais »). Le reste ne change pas.
+//
 // CE QUI LE GARDE FLUIDE SUR UN TÉLÉPHONE.
 //   La densité de pixels est plafonnée à 2. Les pièces pareilles se dessinent en une fois (instances).
 //   Rien ne se redessine tant que rien ne bouge. Et si l'appareil peine pendant un mouvement, la
@@ -30,6 +37,12 @@ import { centreDuBout, GAZ } from "./formes.js";
 
 // Les points de vue : d'où l'on regarde le centre de la nourrice.
 var VUES = { biais: [-0.38, 1, 0.74], dessus: [0, 1, 0.0006], face: [0, 0.34, 1] };
+// Ceux de la pile debout : de face, un rien au-dessus, comme on se tient devant un robinet ; de biais, de
+// trois quarts, à droite et au-dessus, pour voir les volumes.
+var VUES_DEBOUT = { face: [0, 0.1, 1], biais: [0.82, 0.48, 0.95] };
+// Le redressement de la pile : l'axe Z d'une pièce (du robinet vers le tuyau) devient le bas de la
+// scène, et son +Y (ce qui fait face) vient vers celui qui regarde de face.
+var REDRESSE = new THREE.Matrix4().makeRotationX(Math.PI / 2);
 var DUREE = 0.6;   // l'éclaté : environ 0,6 s
 
 function douceur(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }   // départ et arrivée en douceur
@@ -38,6 +51,7 @@ function arrivee(t) { return 1 - Math.pow(1 - t, 4); }
 export function creerScene(toile, o) {
   o = o || {};
   var matieres = o.matieres, fond = new THREE.Color(o.fond != null ? o.fond : 0xdcd9d2);
+  var debout = !!o.debout, vues = debout ? VUES_DEBOUT : VUES;
   var reduit = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var rendu = new THREE.WebGLRenderer({ canvas: toile, antialias: false, powerPreference: "high-performance" });
@@ -91,7 +105,10 @@ export function creerScene(toile, o) {
 
   var commandes = new OrbitControls(camera, toile);
   commandes.enableDamping = true; commandes.dampingFactor = 0.1; commandes.rotateSpeed = 0.9; commandes.zoomSpeed = 0.9;
-  commandes.maxPolarAngle = Math.PI / 2 - 0.03; commandes.screenSpacePanning = true;
+  commandes.screenSpacePanning = true;
+  // Une nourrice ne se regarde pas par en dessous du regard. Une pile, si (le passage du nez, la bouche du
+  // raccord) ; on ne passe ni par-dessus ni par-dessous, où la vue se retournerait.
+  if (debout) { commandes.minPolarAngle = 0.12; commandes.maxPolarAngle = Math.PI - 0.12; } else commandes.maxPolarAngle = Math.PI / 2 - 0.03;
 
   // LES PIÈCES, EN INSTANCES. Une couche (une matière d'un modèle de pièce) se dessine une seule fois
   // pour toutes les pièces de ce modèle ; une pièce retournée bout pour bout reste le même modèle.
@@ -99,6 +116,8 @@ export function creerScene(toile, o) {
   var M = new THREE.Matrix4(), demiTour = new THREE.Matrix4().makeRotationY(Math.PI), T = new THREE.Matrix4();
   function matrice(pose, t, sortie) {
     var p = place(pose, t);
+    // La pile n'a pas de pièce retournée bout pour bout : sa composition (robinet-3d/composition.js) n'en pose pas.
+    if (debout) return sortie.makeTranslation(p[0], -p[1], 0).multiply(REDRESSE);
     if (pose.retourne) { sortie.makeTranslation(p[0], 0, p[1] + pose.L).multiply(demiTour); } else sortie.makeTranslation(p[0], 0, p[1]);
     return sortie;
   }
@@ -158,8 +177,14 @@ export function creerScene(toile, o) {
     boiteA(t, etat.boite);
     // Les lampes suivent la nourrice : la lumière vient toujours du même côté d'elle.
     var c = etat.boite.getCenter(new THREE.Vector3()), s = etat.boite.getSize(new THREE.Vector3()), e = Math.hypot(s.x, s.z) / 2 + 60;
-    lampe.position.set(c.x - e * 0.55, etat.bas + e * 1.9, c.z + e * 0.5); lampe.target.position.set(c.x, etat.bas, c.z);
-    contre.position.set(c.x + e, etat.bas + e, c.z - e); contre.target.position.copy(lampe.target.position);
+    if (debout) {   // la pile n'a pas de fond : d'en haut et de l'avant gauche, le contre-jour de l'arrière droite
+      e = s.length() / 2 + 60;
+      lampe.position.set(c.x - e * 0.55, c.y + e * 1.3, c.z + e * 1.1); lampe.target.position.copy(c);
+      contre.position.set(c.x + e, c.y + e * 0.4, c.z - e); contre.target.position.copy(c);
+    } else {
+      lampe.position.set(c.x - e * 0.55, etat.bas + e * 1.9, c.z + e * 0.5); lampe.target.position.set(c.x, etat.bas, c.z);
+      contre.position.set(c.x + e, etat.bas + e, c.z - e); contre.target.position.copy(lampe.target.position);
+    }
     demander();
   }
   // CADRER : toute la nourrice dans l'image, le plus grand possible, depuis une direction donnée.
@@ -219,7 +244,7 @@ export function creerScene(toile, o) {
   }
   function regarder(vue, anime) {
     etat.vue = vue;
-    var dir1 = new THREE.Vector3().fromArray(VUES[vue]).normalize(), t = etat.cibleT != null ? etat.cibleT : etat.t;
+    var dir1 = new THREE.Vector3().fromArray(vues[vue]).normalize(), t = etat.cibleT != null ? etat.cibleT : etat.t;
     var c1 = cadrage(dir1, t, { cible: new THREE.Vector3(), distance: 1 });
     if (!anime) { if (mouvement && !mouvement.pieces) mouvement = null; placerCamera(dir1, c1); commandes.update(); demander(); return; }
     var dir0 = directionActuelle(), c0 = { cible: commandes.target.clone(), distance: camera.position.distanceTo(commandes.target) };
@@ -365,9 +390,14 @@ export function creerScene(toile, o) {
   function boutsDe(cle) {
     var d = etat.definitions[cle], liste = [];
     if (centresLocaux.has(d)) return centresLocaux.get(d);
-    function rayon(b) { return b.gaz === "pe25" ? 12.5 : GAZ[b.gaz].d / 2 + (b.genre === "femelle" ? 2 : 0); }
-    if (d.haut) {
-      [["haut", d.haut], ["bas", d.bas]].forEach(function (x) { liste.push({ nom: x[0], axe: "z", local: centreDuBout(d.couches, "z", x[1].z, rayon(x[1])), attendu: [0, 0, x[1].z] }); });
+    function rayon(b) { return b.gaz === "pe25" ? 12.5 : b.gaz === "pe16" ? 8 : GAZ[b.gaz].d / 2 + (b.genre === "femelle" ? 2 : 0); }
+    // Une pièce de colonne : son haut (le robinet de la pile n'en a pas), son bas, et le décalage du bas
+    // quand il n'est pas sur l'axe du haut (la sortie d'une double sortie).
+    if (d.bas) {
+      [["haut", d.haut], ["bas", d.bas]].forEach(function (x) {
+        var b = x[1], dx = b && b.x || 0;
+        if (b) liste.push({ nom: x[0], axe: "z", decalage: dx, local: centreDuBout(d.couches, "z", b.z, rayon(b), [dx, 0, 0]), attendu: [dx, 0, b.z] });
+      });
     } else {
       [["gauche", d.gauche], ["droite", d.droite]].forEach(function (x) { if (x[1]) liste.push({ nom: x[0], axe: "x", local: centreDuBout(d.couches, "x", x[1].x, rayon(x[1])), attendu: [x[1].x, 0, 0] }); });
       d.branches.forEach(function (b, i) { liste.push({ nom: "branche " + (i + 1), axe: "z", branche: i, local: centreDuBout(d.couches, "z", b.z, rayon(b), [b.x, 0, 0]), attendu: [b.x, 0, b.z] }); });
@@ -384,7 +414,11 @@ export function creerScene(toile, o) {
           if (!b.local) { manquants.push(p.cle + " " + b.nom); return; }
           v.fromArray(b.local).applyMatrix4(lu);
           var ecart;
-          if (p.rang === "colonne") { var col = etat.compo.colonnes[p.colonne], ax = col.xMonte + (col.xEclate - col.xMonte) * etat.t; ecart = Math.hypot(v.x - ax, v.y); }
+          if (p.rang === "colonne") {
+            // L'axe d'une colonne est couché le long de Z dans la nourrice, debout le long de Y dans la pile.
+            var col = etat.compo.colonnes[p.colonne], ax = col.xMonte + (col.xEclate - col.xMonte) * etat.t + (b.decalage || 0);
+            ecart = Math.hypot(v.x - ax, debout ? v.z : v.y);
+          }
           else if (b.axe === "x") ecart = Math.hypot(v.y, v.z);
           else {   // la branche d'une pièce de la rangée : sur l'axe de sa colonne
             var cols = etat.compo.colonnes.filter(function (c) { return c.parent === p.indice; }), cb = cols[b.branche], axb = cb.xMonte + (cb.xEclate - cb.xMonte) * etat.t;

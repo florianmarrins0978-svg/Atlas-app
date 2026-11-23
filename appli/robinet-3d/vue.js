@@ -1,20 +1,24 @@
-// LA PILE DU ROBINET EN 3D, PRÊTE À POSER : la scène de la nourrice, les pièces du robinet, leur
-// composition, sans ombres, et le toucher qui éclate.
+// LA PILE DU ROBINET EN 3D, PRÊTE À POSER : la scène de la nourrice, debout, les pièces du robinet,
+// leur composition, et le toucher qui éclate.
 //
 //   var v = ouvrirRobinet(toile, { hdri: "vendor/hdri/studio.exr" });
-//   v.montrer("solem", "pe25"); // une des neuf combinaisons (composition.js, PROGRAMMATEURS et DEPARTS)
+//   v.montrer({ programmateur: "solem", double: true, depart: "pe25" });   // composition.js, `pile`
 //   v.eclater(true);           // ou un toucher sur la pile
 //   v.regarder("face");        // "face" ou "biais"
 //   v.surEtat(function (e) { e.eclatee, e.vue });
+//   v.detruire();
 //
-// LA SCÈNE est robinet-3d/scene.js : celle de la nourrice, la pile debout et sans ombres (sa demande du
-// 22 novembre 2026, « on touche et on a l'éclaté sans ombre ») ; son en-tête dit pourquoi elle est à part.
+// Deux endroits la montrent, et c'est la même : la planche (appli/arrosage-robinet-3d.html) et l'écran
+// du plan au robinet dans l'appli (src/app/paysage/arrosage/Robinet3D.tsx).
 //
-// LE TOUCHER est celui de nourrice-3d/vue.js, recopié parce que cette planche n'est qu'une planche :
-// retenue, la pile du robinet ira dans nourrice-3d/vue.js, et ce geste n'existera plus qu'une fois.
+// LA SCÈNE est celle de la nourrice (nourrice-3d/scene.js), avec `debout` : la pile pend du robinet, et
+// le doigt tourne autour d'elle. LE TOUCHER est celui de la nourrice (nourrice-3d/toucher.js).
+//
+// Lève une erreur si WebGL 2 manque : à l'appelant de dire la phrase, ou de montrer autre chose.
 
-import { creerScene } from "./scene.js";
+import { creerScene } from "../nourrice-3d/scene.js";
 import { creerMatieres } from "../nourrice-3d/matieres.js";
+import { brancherToucher } from "../nourrice-3d/toucher.js";
 import { ajouterMatieres } from "./matieres.js";
 import { creerPieces } from "./pieces/index.js";
 import { composer, pile } from "./composition.js";
@@ -22,15 +26,18 @@ import { composer, pile } from "./composition.js";
 export function ouvrirRobinet(toile, o) {
   var essai = document.createElement("canvas").getContext("webgl2");
   if (!essai) throw new Error("WebGL 2 absent");
-  var matieres = ajouterMatieres(creerMatieres()), S = creerScene(toile, { matieres: matieres, hdri: o.hdri });
+  var matieres = ajouterMatieres(creerMatieres()), S = creerScene(toile, { matieres: matieres, hdri: o.hdri, debout: true });
   var pieces = creerPieces(), compo = null;
   var etat = { eclatee: false, vue: "face" }, ecoutes = [];
   function dire() { ecoutes.forEach(function (f) { f({ eclatee: etat.eclatee, vue: etat.vue }); }); }
 
   // Une autre combinaison : la pile se repose, montée ou éclatée comme elle l'était, et le cadre suit
-  // (depuis le point de vue choisi, ou depuis celui où le doigt l'a laissée).
-  function montrer(programmateur, depart) {
-    compo = composer(pile(programmateur, depart), pieces);
+  // (depuis le point de vue choisi, ou depuis celui où le doigt l'a laissée). Une composition dont deux
+  // pièces ne se vissent pas l'une dans l'autre ne se pose pas : elle lève, et l'appelant le dit.
+  function montrer(choix) {
+    var neuve = composer(pile(choix), pieces);
+    if (neuve.erreurs.length) throw new Error("La pile du robinet ne se compose pas : " + neuve.erreurs.join(" ; "));
+    compo = neuve;
     S.poser(compo, pieces);
     if (etat.vue) S.regarder(etat.vue, false); else S.recadrer();
   }
@@ -44,32 +51,18 @@ export function ouvrirRobinet(toile, o) {
   }
   function regarder(vue) { etat.vue = vue; dire(); S.regarder(vue, true); }
 
-  // LE TOUCHER (nourrice-3d/vue.js). Un doigt posé puis levé sans bouger (moins de 6 px, moins de
-  // 300 ms), sur la pile : elle s'éclate, ou se remonte. Glisser, pincer appartiennent à la vue.
-  var doigt = null, doigts = 0;
-  function poser(e) {
-    doigts++;
-    doigt = doigts === 1 && e.isPrimary ? { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() } : null;
+  var debrancher = brancherToucher(toile, S, function () { eclater(!etat.eclatee); });
+
+  function detruire() {
+    debrancher();
+    S.detruire();
+    Object.keys(pieces).forEach(function (cle) { pieces[cle].couches.forEach(function (c) { c.geometrie.dispose(); }); });
+    Object.keys(matieres).forEach(function (cle) { matieres[cle].dispose(); });
+    pieces = {}; ecoutes = [];
   }
-  function glisser(e) {
-    if (doigt && e.pointerId === doigt.id && Math.hypot(e.clientX - doigt.x, e.clientY - doigt.y) >= 6) doigt = null;
-  }
-  function lever(e) {
-    doigts = Math.max(0, doigts - 1);
-    var d = doigt; if (!d || e.pointerId !== d.id) return;
-    doigt = null;
-    if (e.type !== "pointerup") return;
-    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6 && performance.now() - d.t < 300 && S.touche(e.clientX, e.clientY)) eclater(!etat.eclatee);
-  }
-  function clavier(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); eclater(!etat.eclatee); } }
-  toile.addEventListener("pointerdown", poser);
-  toile.addEventListener("pointermove", glisser);
-  toile.addEventListener("pointerup", lever);
-  toile.addEventListener("pointercancel", lever);
-  toile.addEventListener("keydown", clavier);
 
   return {
-    scene: S, montrer: montrer, eclater: eclater, regarder: regarder,
+    scene: S, montrer: montrer, eclater: eclater, regarder: regarder, detruire: detruire,
     surEtat: function (f) { ecoutes.push(f); },
     etat: function () { return { eclatee: etat.eclatee, vue: etat.vue }; },
     erreurs: function () { return compo ? compo.erreurs.slice() : []; },
