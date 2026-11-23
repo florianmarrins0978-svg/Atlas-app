@@ -1,8 +1,8 @@
 # État du projet
 
-## LES NUMÉROS DE LA NOURRICE EN 3D, « VOIR », PLUS D'OMBRES : CODÉS (22 novembre 2026)
+## LES NUMÉROS DE LA NOURRICE EN 3D, « VOIR », PLUS D'OMBRES : SUR `main` (23 novembre 2026)
 
-Son choix sur `appli/arrosage-nourrice-3d-numeros.html` : la A noire, à l'éclaté seulement ; R1, R2… et la flèche de l'arrivée d'eau au bout des colonnes ; « Voir » ajouté à la feuille Changer / Supprimer d'une pièce de la légende (grise les autres modèles, allume ses numéros) ; plus d'ombres portées, partout. `appli/nourrice-3d/reperes.js` sert la planche et `Nourrice3D.tsx` (`ARCHITECTURE.md` §607). Contrôle pur : `scripts/test-numeros-nourrice-3d.ts`. Regardé dans la démonstration des outils ; la batterie de son niveau attend son « oui ».
+Son choix sur `appli/arrosage-nourrice-3d-numeros.html` : la A noire, à l'éclaté seulement ; R1, R2… et la flèche de l'arrivée d'eau au bout des colonnes ; « Voir » ajouté à la feuille Changer / Supprimer d'une pièce de la légende (grise les autres modèles, allume ses numéros) ; plus d'ombres portées, partout. `appli/nourrice-3d/reperes.js` sert la planche et `Nourrice3D.tsx` (`ARCHITECTURE.md` §607). Contrôle pur : `scripts/test-numeros-nourrice-3d.ts`. Regardé dans la démonstration des outils. Batterie complète verte (618/618 suites base, 218/218 navigateur, connexion), jouée deux fois : la première avait un seul rouge, `test-tva-virement-de-la-banque-e2e`, rouge aussi sur `main` sans ce lot ; la seconde, après les photos du PDF reprises sans ombres, est toute verte.
 
 ## LA NOURRICE EN 3D DANS L'ÉCRAN DU PLAN ET SUR LE SITE (22 novembre 2026) : SUR `main`
 
