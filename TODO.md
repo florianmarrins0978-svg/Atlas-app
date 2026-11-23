@@ -1268,8 +1268,11 @@ pour que « Quitter » ramène à Chantiers (`ARCHITECTURE.md` §611). Niveau 3
 (migration) : la batterie entière attend son oui. Déjà vert : types, style,
 pansements, tirets, nom, couches, code mort, accès par rôle.
 
-**⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : sa question du
-23 novembre, non codée.** *« Quelqu'un crée un compte pour les 15 jours,
+**⏳ UN ESSAI PAR ENTREPRISE, PAS PAR ADRESSE E-MAIL : la planche attend son
+« oui »** (`appli/soignee/essai-par-entreprise.html`, sa demande *« fais la
+planche »* du 23 novembre ; le cas des Réglages, où le SIRET se tape plus tard,
+dirait la même chose sous le même champ, et n'est pas dessiné). Sa question du
+23 novembre, non codée : *« Quelqu'un crée un compte pour les 15 jours,
 quitte, et en recrée un avec une autre adresse : est-ce qu'on ne ferait pas un
 truc avec le SIRET ? »* Constaté dans le code : rien ne l'empêche aujourd'hui
 (l'essai est par compte, aucun contrôle du SIRET à la création). Mais un devis
