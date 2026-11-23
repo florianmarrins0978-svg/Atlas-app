@@ -49,6 +49,7 @@ const etats = [
   { nom: "entreprise", etape: "entreprise", corps: lire("entreprise") },
   { nom: "descendre", etape: "feuille-descendre", corps: lire("descendre") },
   { nom: "feuille-descendre", etape: "feuille-descendre", corps: lire("descendre") },
+  { nom: "feuille-salaries", etape: "feuille-salaries", corps: lire("descendre") },
   { nom: "prevue", etape: "prevue", corps: lire("entreprise") },
   // Les deux donneurs : la vraie feuille et la vraie plage rouge de l'écran.
   // Ils prêtent leur DOM, puis disparaissent.
@@ -61,6 +62,7 @@ const ETAPES = [
   { va: "refusee", mot: "Carte refusée" },
   { va: "entreprise", mot: "Entreprise" },
   { va: "feuille-descendre", mot: "Descendre" },
+  { va: "feuille-salaries", mot: "Avec des salariés" },
   { va: "prevue", mot: "Descente prévue" },
 ];
 
@@ -93,6 +95,17 @@ const MOTS = {
   // feuille, là où l'œil attend la réponse à « Confirmer », à la place que
   // l'appli donne déjà à un refus (« Avant de partir »).
   refus: "Carte refusée. Vous restez sur Artisan, rien n’est débité.",
+  // Sa décision du 23 novembre au soir : *« s'il veut passer d'Entreprise à
+  // Artisan avec des salariés, faut lui dire que tous ses autres comptes vont
+  // être supprimés »* (elle remplace le refus du 18 novembre). Le jour est
+  // celui où Artisan commence : jusque-là, Entreprise et ses comptes restent.
+  // Les devis et les factures, eux, sont à l'entreprise et se gardent dix ans
+  // (Code de commerce, L123-22) : la phrase le dit, sans quoi « supprimés »
+  // ferait craindre de perdre le travail des salariés.
+  salaries: {
+    titre: "Le 23 décembre, les 2 autres comptes de l’entreprise seront supprimés.",
+    texte: "Leurs devis et factures restent dans l’entreprise.",
+  },
   prevue: {
     detail: `Jusqu’au 23 décembre 2026, puis Artisan à 39${N}€ HT par mois.`,
     marque: "À partir du 23 décembre",
@@ -107,6 +120,7 @@ const DIT = {
   confirmerEntreprise: `70,80${N}€ TTC débités. L’écran passe à Entreprise.`,
   confirmerIllimite: `190,80${N}€ TTC débités. L’écran passe à Illimité.`,
   confirmerDescente: `Rien n’est débité. Artisan est prévu au 23${N}décembre.`,
+  confirmerSalaries: `Rien n’est débité. Le 23${N}décembre, Artisan commence et les 2 autres comptes sont supprimés.`,
   garder: `Entreprise continue. Rien ne change au 23${N}décembre.`,
   changerDeCarte: "Dans l’appli : ouvre la page du prestataire pour changer de carte. Au retour, Confirmer se retente.",
   dejaChoisie: "Déjà choisie.",
@@ -115,7 +129,7 @@ const DIT = {
   illimiteDepuisEntreprise: `Dans l’appli : la même feuille qu’à la montée, 159${N}€ HT débités aujourd’hui (190,80${N}€ TTC).`,
   descenteArtisan: `Dans l’appli : la feuille de la descente, Artisan à partir du 23${N}décembre, rien n’est débité aujourd’hui.`,
   descenteEntreprise: `Dans l’appli : la feuille de la descente, Entreprise à partir du 23${N}décembre, rien n’est débité aujourd’hui.`,
-  annee: "Dans l’appli : les prix passent à l’année. Changer de formule à l’année reste à décider.",
+  annee: "Dans l’appli : les prix passent à l’année. À l’année, seule la différence est débitée.",
   mois: "Déjà au mois.",
   guichet: "Dans l’appli : ouvre la page du prestataire, pour changer de carte et retrouver vos factures Cause.",
   resilier: "Dans l’appli : ouvre « Avant de partir ».",
@@ -136,7 +150,7 @@ const retouches = (etat, d) => {
 
   // Ce qui répond pareil dans tous les états : l'en-tête, le guichet, Résilier,
   // le rythme.
-  for (const nom of ["artisan", "monter", "monter-illimite", "illimite", "entreprise", "descendre", "prevue", "feuille-monter", "feuille-illimite", "refusee", "feuille-descendre"]) {
+  for (const nom of ["artisan", "monter", "monter-illimite", "illimite", "entreprise", "descendre", "prevue", "feuille-monter", "feuille-illimite", "refusee", "feuille-descendre", "feuille-salaries"]) {
     const el = etat(nom);
     el.querySelectorAll('a[aria-label="Retour"]').forEach((a) => (a.dataset.dit = DIT.retour));
     el.querySelector('[data-atlas="guichet-abonnement"]').dataset.dit = DIT.guichet;
@@ -181,7 +195,7 @@ const retouches = (etat, d) => {
 
   // LA FEUILLE : celle de l'écran, vidée sous son titre, et posée là où l'appli
   // la pose (juste après Résilier).
-  const feuille = (nom, m, { confirmer, annuler, refus }) => {
+  const feuille = (nom, m, { confirmer, annuler, refus, avertir }) => {
     const el = etat(nom);
     const o = gabarit.cloneNode(true);
     const dlg = o.querySelector('[role="dialog"]');
@@ -218,6 +232,19 @@ const retouches = (etat, d) => {
       r.firstElementChild.textContent = refus;
       dernier.after(r);
     }
+    // L'avertissement prend la plage ambre de l'écran (« ce qui demande un
+    // geste »), à la même place qu'un refus : juste au-dessus de Confirmer.
+    if (avertir) {
+      const r = plageRouge.cloneNode(true);
+      r.className = "mt-4";
+      r.removeAttribute("role");
+      r.dataset.atlas = "comptes-supprimes";
+      const plage = r.firstElementChild;
+      plage.style.backgroundColor = "var(--atlas-carteAmbreFond, #ede3d2)";
+      plage.style.color = "var(--atlas-carteAmbreTexte, #806031)";
+      plage.innerHTML = `<b class="font-semibold">${avertir.titre}</b> ${avertir.texte}`;
+      dernier.after(r);
+    }
 
     // « Confirmer » est le vrai bouton plein de l'écran ; « Annuler » celui
     // de la feuille.
@@ -251,6 +278,11 @@ const retouches = (etat, d) => {
   feuille("feuille-descendre", MOTS.descendre, {
     confirmer: { va: "prevue", dit: DIT.confirmerDescente },
     annuler: "descendre",
+  });
+  feuille("feuille-salaries", MOTS.descendre, {
+    confirmer: { va: "prevue", dit: DIT.confirmerSalaries },
+    annuler: "descendre",
+    avertir: MOTS.salaries,
   });
 
   // LA DESCENTE PRÉVUE : l'état dit les deux formules, la carte d'Artisan sa

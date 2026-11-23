@@ -57,15 +57,26 @@ règle. C'est aussi ce que dit son texte de la descente, depuis Entreprise.
 
 **À trancher avant le code** (le code ne les invente pas) :
 
-1. **À l'année.** Le prix entier, c'est 590 € HT pour Entreprise ; un abonné
-   Artisan à l'année qui monte en février perdrait près de 390 € HT. La règle
-   tient-elle à l'année ?
+1. **À l'année : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« ceux qui payent à
+   l'année, ils payent que la différence »*. **Reste une précision** : la
+   différence des deux prix de l'année (Artisan vers Entreprise : 590 − 390 =
+   200 € HT, l'échéance ne bouge pas), ou cette différence au prorata des
+   mois restants ? Proposé : la différence entière, un chiffre qu'il peut
+   vérifier de tête, sans ouverture à monter puis résilier (il a payé
+   Entreprise jusqu'à l'échéance). La planche dit seulement « seule la
+   différence est débitée ».
 2. **Changer de rythme** sur la même formule (au mois vers l'année) : montée
    ou descente ?
-3. **Le compte de personnes**. Sa rédaction du 14.6 retire la phrase actuelle
-   sur une formule trop petite pour le nombre de comptes (le refus du passage
-   à Artisan avec des salariés, voir le module Paysage plus bas). À garder,
-   sauf avis contraire.
+3. **Le compte de personnes : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« s'il veut
+   passer d'Entreprise à Artisan avec des salariés, faut lui dire que tous ses
+   autres comptes vont être supprimés »*. **Cela remplace le refus du
+   18 novembre** (Artisan refusé tant qu'il ne les a pas retirés). La feuille
+   le dit en ambre au-dessus de Confirmer (étape « Avec des salariés »), et
+   la suppression se fait le jour où Artisan commence. **Les devis et les
+   factures restent à l'entreprise** : une facture se garde dix ans (Code de
+   commerce, L123-22), donc supprimer un compte retire l'accès, jamais ses
+   documents. La phrase du 14.6 sur le nombre de comptes se réécrit dans ce
+   sens, au lieu de disparaître.
 
 **Ce que le code devra faire, déjà su :**
 
@@ -744,7 +755,7 @@ ouvre les **trois** outils de Paysage (arrosage, diagnostic, fiches de
 chantier) et se vend **avec les trois formules** (sa correction du soir :
 *« ça doit être pour toutes les formules »*), donc Entreprise et Illimité ne
 les comprennent plus ; choisir Artisan avec des salariés déjà invités est
-**refusé** tant qu'il ne les a pas retirés (article 14.6). Le module se règle
+**refusé** tant qu'il ne les a pas retirés (article 14.6). **Remplacé le 23 novembre** : la descente avec salariés n'est plus refusée, elle prévient que les autres comptes seront supprimés à l'échéance (« CHANGER DE FORMULE », en tête). Le module se règle
 **en haut**, une fois pour les trois (la variante « dans la carte Artisan » est
 tombée avec sa correction). Le même prix pour les trois formules, **confirmé
 le 19 novembre**. **Le 19 novembre aussi** : un plan d'arrosage et un
