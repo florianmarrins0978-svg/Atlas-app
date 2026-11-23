@@ -972,7 +972,7 @@ function couvreTout(points, portee, L, l){
    tuyère passe avant toute turbine. */
 function gammeDe(m){
   if (!m || !m.buse || m.type !== 'turbine') return 0;
-  var base = m.buse.ref.split('-B')[0];
+  var base = modeleDe(m);
   if (!(base in GAMMES)){
     GAMMES[base] = CATALOGUE.buses.reduce(function(max, b){
       return b.ref.split('-B')[0] === base ? Math.max(max, Number(b.rayon) || 0) : max;
@@ -982,6 +982,11 @@ function gammeDe(m){
 }
 // Le catalogue ne change pas pendant la vie du module : la gamme d'un corps non plus.
 var GAMMES = {};
+
+/* Le modèle d'un arroseur, sans sa buse : la 3504, la 5004 Plus. */
+function modeleDe(m){
+  return m && m.buse ? m.buse.ref.split('-B')[0] : (m && m.ref) || null;
+}
 
 function poser(z, refImposee, tolerant){
   // **Sa buse imposée à la zone gagne sur tout** — ajouté le 23 août 2026 avec
@@ -1568,7 +1573,8 @@ function couperEnVannes(elements, limite){
 
    Deux partages, dans cet ordre : chaque parcelle à part, puis le groupe entier
    quand le remplissage a mêlé deux parcelles sur une vanne pour en économiser
-   une (sans quoi le reste repartait seul, 6 + 1 sur 15 × 15 et 12 × 6). Le
+   une (sans quoi le reste repartait seul, 6 + 1 sur 15 × 15 et 12 × 6), et
+   seulement entre arroseurs du même modèle. Le
    premier qui tient l'emporte, et tenir veut dire : le même nombre de vannes,
    aucune au-dessus de la limite, aucune plus chargée que la plus chargée du
    remplissage, pas plus de vannes qui mêlent deux parcelles, **et aucune
@@ -1590,7 +1596,12 @@ function partsEgales(elements, remplis, limite, premier){
     var seule = couperEnVannes(pc, limite);
     aPart = aPart.concat(egaliser(pc, seule.length, limite) || seule);
   });
-  var candidats = [aPart, egaliser(elements, remplis.length, limite)];
+  // Le groupe entier ne se repartage qu'entre arroseurs du même modèle : *« les
+  // 3005 avec les 3005 ; s'il y a des 3005 et des 5000, tu peux pas diviser
+  // 3005 et 5000 »* (23 novembre 2026). Sinon la vanne qui mêle deux pelouses
+  // reste telle que le remplissage l'a faite.
+  var unSeulModele = elements.every(function(x){ return x.modele === elements[0].modele; });
+  var candidats = [aPart, unSeulModele ? egaliser(elements, remplis.length, limite) : null];
   for (var k = 0; k < candidats.length; k++){
     var c = candidats[k];
     if (c && c.length === remplis.length &&
@@ -1687,13 +1698,20 @@ function decouperUneFois(egales){
     // **Aucune durée n'est calculée** (sa décision du 18 octobre 2026 : « on ne
     // donne pas les durées d'arrosage ni les périodes à arroser ») : les besoins
     // par saison, qui n'avaient aucune source venue de lui, sont retirés avec elles.
-    var clef = p.cle + '|' + TYPES[z.type].famille;
+    //
+    // **DEUX MODÈLES DE TURBINE NE PARTAGENT JAMAIS UNE VANNE — sa décision du
+    // 23 novembre 2026**, devant 10 × 6 et 8 × 8 à 2 bar, où une vanne portait
+    // deux 5000 Plus et trois 3504 : *« Non, jamais ensemble »*. Le modèle entre
+    // donc dans la clé des turbines. Les buses d'un même modèle partagent
+    // toujours une vanne (la décision du 23 août ci-dessus) ; les tuyères ont un
+    // seul corps pour tout le jardin, et rien ne change pour elles.
+    var clef = p.cle + '|' + TYPES[z.type].famille + (p.cle === 'turbine' ? '|' + modeleDe(p.m) : '');
     if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
     // **Le nom de chaque zone, retrouvable par son identifiant.** Un secteur ne
     // dessert pas forcément tout le groupe : il faut pouvoir nommer LES SIENNES.
     groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
-    groupes[clef].membres.push({ zoneId: z.id, points: p.points });
+    groupes[clef].membres.push({ zoneId: z.id, modele: modeleDe(p.m), points: p.points });
     groupes[clef].debit += p.debit;
     groupes[clef].nombre = (groupes[clef].nombre || 0) + p.nombre;
     if (p.m && p.m.buse && p.ecartEntreTetes > 0){
@@ -1789,7 +1807,7 @@ function decouperUneFois(egales){
     var suite = [];
     g.membres.forEach(function(mb){
       if (!mb.points) return;
-      mb.points.forEach(function(pt){ suite.push({ zoneId: mb.zoneId, pt: pt, debit: pt.debit || 0 }); });
+      mb.points.forEach(function(pt){ suite.push({ zoneId: mb.zoneId, modele: mb.modele, pt: pt, debit: pt.debit || 0 }); });
     });
 
     if (!suite.length){

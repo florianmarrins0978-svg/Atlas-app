@@ -543,6 +543,20 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
+regle("23 novembre 2026", "« les 3005 avec les 3005 ; s'il y a des 3005 et des 5000, tu peux pas diviser 3005 et 5000 », puis « Non, jamais ensemble » : une vanne ne porte qu'un seul modèle de turbine", () => {
+  // Son exemple : 10 × 6 et 8 × 8 à 2 bar, où une vanne portait deux 5000 Plus et trois 3504.
+  const CAS: [number, number, number, number, number][] = [[10, 6, 8, 8, 2], [16, 6, 15, 8, 3], [12, 12, 8, 8, 3], [20, 15, 12, 12, 3], [6, 5, 18, 7, 3]];
+  for (const [L, l, L2, l2, pression] of CAS) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: l2 }], pression);
+    const modeles = new Map<number, Set<string>>();
+    for (const z of p.dessin as unknown as { buse: string | null; points: { reseau?: number }[] }[]) {
+      for (const pt of z.points) if (pt.reseau !== undefined) modeles.set(pt.reseau, (modeles.get(pt.reseau) ?? new Set<string>()).add(String(z.buse ?? "").split(" buse")[0]));
+    }
+    const meles = [...modeles.entries()].filter(([, m]) => m.size > 1).map(([r, m]) => `réseau ${r + 1} : ${[...m].join(" et ")}`);
+    exige(meles.length === 0, `${L} × ${l} et ${L2} × ${l2} à ${pression} bar : ${meles.join(" ; ")} sur la même vanne`);
+  }
+});
+
 // ── Le tuyau au plus court, et les parts égales ─────────────────────────────
 // Ses deux corrections du 23 novembre 2026, données devant son jardin de
 // 12 × 12 et 8 × 8 recalculé (`appli/arrosage-rainbird-et-darcy.html`).

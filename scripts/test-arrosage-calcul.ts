@@ -541,7 +541,14 @@ dire(
   // qui portent plus loin : « Pelouse devant » 8 × 3504 buse 1,0 au lieu de
   // 0,75, « Pelouse derrière » 6 × 5000 Plus buse 1,0 u+ au lieu de 3504 buse
   // 1,0. La formule n'a pas bougé.
-  const PERTE_RESEAU_ATTENDUE = 0.641;
+  //
+  // **ELLE A BOUGÉ LE 23 NOVEMBRE 2026, DE 0,641 À 0,535**, et c'est le plan :
+  // sa décision que deux modèles de turbine ne partagent jamais une vanne
+  // (*« Non, jamais ensemble »*). La seconde vanne portait une 3504 de la pelouse
+  // devant avec les six 5000 Plus ; elle ne porte plus que les 5000 Plus
+  // (1,20 m³/h), et la première les huit 3504 (1,53). Toujours deux vannes, la
+  // pire perd moins. La formule n'a pas bougé.
+  const PERTE_RESEAU_ATTENDUE = 0.535;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
