@@ -341,7 +341,8 @@ function face(F, lot) {
   var B = BAGUE, K = CADRE, y = AVANT;
   var dehors = bagueEtCadre(B.x, B.z, B.r1, K.haut, K.bas, K.droite, 4.5, 4);
   var dedans = bagueEtCadre(B.x, B.z, B.r0, K.hautDedans, K.basDedans, K.droiteDedans, 2.2, 2);
-  lot.ajouter("grisBuddy", plaque(F, dehors, [dedans], y - 0.2, K.y, K.arrondi, 5));
+  // Le jonc argenté : sa matière à lui (robinet-3d/matieres.js, « argent »), un plastique peint satiné.
+  lot.ajouter("argent", plaque(F, dehors, [dedans], y - 0.2, K.y, K.arrondi, 5));
   // Sous la vitre, le noir de l'afficheur ; la vitre, sans un chiffre, s'arrête avant le bord droit.
   // Elle commence à x = 29,5, sous le bord de la bague : à droite du cadran elle remplit le jour entre
   // eux, comme sur la photo ; au-dessus, le noir de la face reste visible. Partie de x = 25,5, son coin

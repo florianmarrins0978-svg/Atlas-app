@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-23
+
+- **Planche : le robinet en 3D, ses neuf combinaisons** (`appli/arrosage-robinet-3d.html`, sa réponse devant la première : *« Parfait, tu peux faire toutes les autres combinaisons exactement comme tu viens de faire là »*). Deux rangées de boutons, le programmateur (Solem, Rain Bird, Buddy) et le départ (Ø16 rigide, Ø16 souple, Ø25 ou Ø32) ; la pile se recompose, montée ou éclatée. Quatre pièces neuves relevées sur ses photos et revues contre elles : le Rain Bird, le Buddy AEV11401, le raccord taraudé Plasson 16 rigide, l'embout Palaplast MID6362 ; le tube Ø16 de sa photo. Le Rain Bird prend la sortie droite de la double sortie : sur la gauche, son boîtier bouchait la sortie du client. Rien n'est codé.
+
 ## 2026-11-22
 
 - **Planche : le robinet en 3D** (`appli/arrosage-robinet-3d.html`, sa demande du 22 : *« fais-moi qu'une seule des 9 combinaisons possibles pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans l'appli en 3D ; on touche et on a l'éclaté, sans ombre »*). Son robinet, la double sortie BRO3493 (l'arrosage sur la sortie gauche), le Solem BL-NR SP1151, le raccord femelle 25 x 3/4" OPL70302520 et le PEHD Ø25 de la nourrice, chaque pièce relevée sur ses photos (`docs/robinet-3d-photos/`) puis revue contre elles. La pile est debout dans sa propre scène (`appli/robinet-3d/scene.js`) : couchée dans celle de la nourrice, elle tournait comme une aiguille sous le doigt et son dos ne se voyait jamais. Le toucher, les boutons et le glissé sont joués au format iPhone. Rien n'est codé.
