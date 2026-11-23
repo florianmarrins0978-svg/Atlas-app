@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-23
+
+- **La visite guidée est sur le site, à ses trois places** (`appli/vente/cause-2.html`, sa phrase du 23 : *« On est censé avoir la visite guidée installée sur le site à 3 endroits. »*). La planche du 22 reportée telle quelle : la carte sous l'ouverture, la bande « Voyez l'appli en vrai. » avant les prix, et la carte sous l'option des outils. Vu à 390 px : les trois places s'affichent, la page ne déborde pas, chaque bouton ouvre la visite, aucune erreur. La planche `cause-2-visite.html` et son script sont effacés, pour qu'il n'y ait plus deux pages à tenir pareilles.
+
 ## 2026-11-22
 
 - **Planche : le robinet en 3D** (`appli/arrosage-robinet-3d.html`, sa demande du 22 : *« fais-moi qu'une seule des 9 combinaisons possibles pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans l'appli en 3D ; on touche et on a l'éclaté, sans ombre »*). Son robinet, la double sortie BRO3493 (l'arrosage sur la sortie gauche), le Solem BL-NR SP1151, le raccord femelle 25 x 3/4" OPL70302520 et le PEHD Ø25 de la nourrice, chaque pièce relevée sur ses photos (`docs/robinet-3d-photos/`) puis revue contre elles. La pile est debout dans sa propre scène (`appli/robinet-3d/scene.js`) : couchée dans celle de la nourrice, elle tournait comme une aiguille sous le doigt et son dos ne se voyait jamais. Le toucher, les boutons et le glissé sont joués au format iPhone. Rien n'est codé.

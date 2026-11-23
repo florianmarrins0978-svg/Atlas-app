@@ -1161,17 +1161,19 @@ seulement de la première. **À faire, à part, sur son « oui »** (outillage,
 niveau 2) : que le flux attende de voir son artefact avant de déployer, ou
 redéploie une fois de lui-même.
 
-## ⏳ LA VISITE GUIDÉE SUR LE SITE : la planche attend son « oui » (22 novembre 2026)
+## ✅ LA VISITE GUIDÉE EST SUR LE SITE, À SES TROIS PLACES (posée le 23 novembre 2026)
 
-`appli/vente/cause-2-visite.html` porte ce qu'il a choisi le 22 au soir : la
-carte de la visite (un petit téléphone avec la vraie image du planning, qui
-gigote « 1, 2, 3, il s'arrête ») sous l'ouverture **et** sous l'option des
-outils à 6 €, plus une bande « Voyez l'appli en vrai. » avant les prix. Elle
-se refait par `python3 appli/scripts/planche-visite-site.py appli/vente/cause-2.html appli/vente/cause-2-visite.html`.
+Sa phrase du 23, devant l'adresse du site : *« C'est pas le bon. On est censé
+avoir la visite guidée installée sur le site à 3 endroits. »* Lue comme son
+oui à la planche du 22. `appli/vente/cause-2.html` porte maintenant ce qu'elle
+montrait, à l'identique : la carte (le petit téléphone qui gigote « 1, 2, 3,
+il s'arrête ») sous l'ouverture **et** sous l'option des outils à 6 €, et la
+bande « Voyez l'appli en vrai. » avant les prix. La planche
+(`cause-2-visite.html`) et son script sont effacés : une retouche de la visite
+sur le site se fait dans `cause-2.html`, et nulle part ailleurs.
 
-**Rien n'est posé dans `cause-2.html` tant qu'il n'a pas dit oui.** À son oui :
-reporter les trois places dans `cause-2.html`, effacer la planche et son
-script, et lui demander au passage si la bande reste utile avec deux cartes.
+**Reste une question, posée le 23** : la bande sert-elle encore, avec deux
+cartes ? Sans réponse, elle reste.
 
 ## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2.html` (sa décision du 22 novembre 2026) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 
@@ -1180,7 +1182,7 @@ site ? » : *« Bah c'est la dernière page qu'on a faite en date là. Bah c'est
 celle que tu as. »* Il venait de la regarder sur son iPhone : *« Oui, l'adresse
 marche sur mon iPhone. Ça va jusqu'à Le Maire, le retour. Tout est bon. »* Le
 même jour, dans une autre session, il l'appelle lui-même « le site Cause 2 »
-(la visite guidée à y poser, `appli/vente/cause-2-visite.html`).
+(la visite guidée, posée dessus le 23 novembre à trois places).
 
 | | |
 |---|---|
