@@ -1234,6 +1234,21 @@ générales est due de toute façon pour l'option à 6 €, donc l'article 14.2 
 réécrit sans coût de plus. Le rappel d'avant la fin peut partir de Stripe, sans
 le nom de domaine (à vérifier dans ses réglages, confiance moyenne).
 
+**La marche jusque dans l'appli, faite le 23 novembre** (sa demande : *« j'ai
+envie de faire toute la marche jusqu'à rentrer dans l'appli »*) :
+`appli/vente/cause-2-inscription.html`, les vrais écrans de la création d'un
+compte, ouverte par « Créer mon compte » au bout de la feuille. Refaire :
+`appli/scripts/parcours-inscription/LISEZ-MOI.md`. **Une question d'ordre
+reste** : la planche met la carte avant le compte ; Stripe a besoin de
+l'e-mail du compte, donc le compte viendra sans doute avant la carte.
+
+**Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
+
+| | |
+|---|---|
+| la porte (`/bienvenue`) | elle affiche encore **ATLAS** en grand (`src/app/bienvenue/page.tsx`, ligne 82), contre sa demande du 17 novembre (tout texte qu'il lit dit Cause). `test-nom-cause.ts` ne l'a pas vu : à comprendre avant de corriger |
+| « C'est fait », Vous joindre | « 06 39 98 00 00 » s'y lit **« 6 39 98 00 00 »** : `recapitulatifDuCompte` prend `afficherTelephone(...).affiche`, qui est le numéro APRÈS l'indicatif, fait pour s'écrire à côté du drapeau et du +33 (`src/lib/recapitulatif-compte.ts`, ligne 115) |
+
 **Ce que son oui déclenchera, et qui n'est pas qu'un report de planche :**
 
 | | |
