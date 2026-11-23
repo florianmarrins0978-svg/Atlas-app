@@ -7,7 +7,8 @@
 - **la recherche (`chercherUnPlan`) juge chaque pression deux fois**, remplie et partagée en parts égales, et retient le plan partagé : c'est lui qui se pose. Le tableau « essayé et retiré » de §610 dit ce qui a déjà échoué ;
 - **`avecLaPression`** : le moins de vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur. Le retirer remet son 16 × 10 et 8 × 8 en 2 vannes de 5000 Plus, qu'il a refusées ;
 - **`seLeve` prend le minimum de la fiche, comme Rain Bird** (1,7 bar pour la 3504 et la 5000 Plus) : une marge de 0,3 bar a été posée puis retirée le même soir, ne pas la remettre sans lui (`.claude/rules/arrosage.md`) ;
-- **`ficheNourrice` est la fiche d'UNE nourrice**, lue par la 3D et la vue éclatée ; les listes lisent `fichesNourrices`, qui en compose deux au-delà de six voies ;
+- **`ficheNourrice` est la fiche d'UNE nourrice**, lue par la 3D et la vue éclatée ; les listes lisent `fichesNourrices`, qui en compose deux au-delà de six voies ; le partage vit dans `partageDesNourrices`, et l'écran (`composerLesNourrices`), la 3D (`nourrice-3d/deux-nourrices.js`) et le PDF le lisent ;
+- **`aCote` reste hors de `composition.js`** : l'empreinte des photos du PDF lit ce fichier, et l'y remettre périme les photos sans qu'aucune pièce ait changé ;
 - **le tracé** : un segment déjà creusé coûte son PE moins un millième (`DEPARTAGE`), jamais zéro ;
 - **on ne fusionne pas la branche d'une autre session**, même quand elle a l'air d'attendre sa batterie : la session Rain Bird attendait sur un « Non, attends » du patron, et sa fusion ici a cassé la publication des planches jusqu'à `e1225b7`.
 

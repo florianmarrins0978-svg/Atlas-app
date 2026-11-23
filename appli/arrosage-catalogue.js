@@ -1648,12 +1648,20 @@ CATALOGUE.voiesDesNourrices = function (n) {
   var a = Math.ceil(n / 2);
   return [a, n - a];
 };
-CATALOGUE.fichesNourrices = function (n, combienGoutte) {
+/* Le partage : chaque nourrice, ses voies et celles de goutte-à-goutte (sur la seconde d'abord). Le seul
+   endroit où il s'écrit : la liste, l'écran (`composerLesNourrices`) et la planche le lisent ici. */
+CATALOGUE.partageDesNourrices = function (n, combienGoutte) {
   var voies = CATALOGUE.voiesDesNourrices(n);
   if (!voies || !voies.length) return null;
   var reste = Math.max(0, Math.min(combienGoutte || 0, n));
   var goutte = voies.slice().reverse().map(function (v) { var x = Math.min(v, reste); reste -= x; return x; }).reverse();
-  var fiches = voies.map(function (v, i) { return CATALOGUE.ficheNourrice(v, goutte[i]); });
+  return voies.map(function (v, i) { return { voies: v, goutte: goutte[i] }; });
+};
+CATALOGUE.fichesNourrices = function (n, combienGoutte) {
+  var parts = CATALOGUE.partageDesNourrices(n, combienGoutte);
+  if (!parts) return null;
+  var voies = parts.map(function (p) { return p.voies; });
+  var fiches = parts.map(function (p) { return CATALOGUE.ficheNourrice(p.voies, p.goutte); });
   if (fiches.some(function (f) { return !f; })) return null;
   var fusion = {};
   fiches.forEach(function (f) { f.pieces.forEach(function (p) { fusion[p.ref] = (fusion[p.ref] || 0) + p.q; }); });

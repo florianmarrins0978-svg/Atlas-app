@@ -18,7 +18,7 @@ import { resumeDuPlan, type PlanFige, type SaisieDuPlan } from "@/lib/arrosage/p
 import { liaisonsDuReseau, phraseDeLaNourrice, quantiteDeLigne, voiesEnGoutte, zonesGoutteDuReseau } from "@/lib/arrosage/postes";
 import { photoDeLaNourrice } from "@/lib/arrosage/nourrice-en-photo";
 import { photoDe } from "@/lib/arrosage/photos";
-import { composerNourrice } from "@/lib/arrosage/nourrice-eclatee";
+import { composerLesNourrices, ordreDesNourrices } from "@/lib/arrosage/nourrice-eclatee";
 import type { Retouches } from "@/lib/arrosage/retouches";
 import type { Groupe } from "@/lib/arrosage/postes";
 import { nomDeLaZone } from "@/lib/arrosage/zones-du-plan";
@@ -83,7 +83,10 @@ function laNourrice(fige: PlanFige, r: Retouches, nez: boolean): DonneesPdfDuPla
   const n = fige.nourrice;
   if (nez || n.voies.length === 0 || Object.keys(n.lignes).length === 0) return null;
   const goutte = voiesEnGoutte(fige.plan, n.voies);
-  const ordre = (composerNourrice(n.voies.length, goutte)?.ordre ?? []).filter((ref) => ref in n.nombre);
+  // Au-delà de six voies, deux nourrices (sa règle du 23 novembre 2026) : une photo pour chacune, et les
+  // numéros de l'écran, qui courent sur les deux (`ordreDesNourrices`).
+  const parts = composerLesNourrices(n.voies.length, goutte) ?? [];
+  const ordre = ordreDesNourrices(parts).filter((ref) => ref in n.nombre);
   // La pièce qu'il a mise à la place compte sous SA référence ; une pièce supprimée reste, barrée.
   const montree = (ref: string) => r.remplacees[`nr:${ref}`]?.ref ?? ref;
   const numerotees = ordre.map((ref, i) => {
@@ -95,8 +98,7 @@ function laNourrice(fige: PlanFige, r: Retouches, nez: boolean): DonneesPdfDuPla
   return {
     titre: n.nom,
     phrase: phraseDeLaNourrice(goutte),
-    photo: photoDeLaNourrice(n.voies.length, goutte),
-    places: `${n.voies.length}-${goutte}`,
+    photos: parts.map((x) => ({ photo: photoDeLaNourrice(x.voies, x.goutte), places: `${x.voies}-${x.goutte}` })),
     numerotees,
     avec: Object.entries(n.lignes)
       .filter(([ref]) => !vues.has(ref))

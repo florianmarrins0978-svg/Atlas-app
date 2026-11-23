@@ -423,7 +423,7 @@ export default function LePlanDuJardin({
             {basculeSonde}
             {compteur && basculesGrillageTeflon}
           </Plage>
-          <NourriceEclatee voies={nourrice.voies} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
+          <NourriceEclatee voies={nourrice.voies} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} compteur={compteur} />
         </section>
       )}
 

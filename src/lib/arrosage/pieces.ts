@@ -52,6 +52,11 @@ export type Piece = {
   ou: Zone;
   /** D'où sort le chiffre — sa position, ou ce que chaque réseau apporte. */
   detail?: string;
+  /**
+   * Ce que la pièce fait, quand sa référence ne le dit pas : le té des deux nourrices est un té égal
+   * comme celui du compteur, et la liste de l'écran (`postes.ts`) doit les ranger à part.
+   */
+  role?: "te-nourrices" | "pe-second-regard";
 };
 
 export const TITRES_DES_ZONES: Record<Zone, string> = {
@@ -168,8 +173,8 @@ export function piecesDuPlan(
   if ((CAT.voiesDesNourrices(options.voies ?? 0)?.length ?? 0) > 1) {
     const r = raccordsEn(options.diametreAmenee === 32 ? 32 : 25);
     amenee.push(
-      { ref: r.egal, reference: CAT.referenceDe(r.egal), nom: nomDe(r.egal), q: 1, u: "u", ou: "amenee", detail: "partage l’amenée entre les deux nourrices" },
-      { ref: "pe-second-regard", nom: r.nomPe, q: null, u: "ml", ou: "amenee", detail: "du té au second regard, à mesurer" },
+      { ref: r.egal, reference: CAT.referenceDe(r.egal), nom: nomDe(r.egal), q: 1, u: "u", ou: "amenee", detail: "partage l’amenée entre les deux nourrices", role: "te-nourrices" },
+      { ref: "pe-second-regard", nom: r.nomPe, q: null, u: "ml", ou: "amenee", detail: "du té au second regard, à mesurer", role: "pe-second-regard" },
     );
   }
 

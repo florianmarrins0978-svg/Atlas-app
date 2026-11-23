@@ -65,11 +65,11 @@ export type DonneesPdfDuPlan = {
   resume: string;
   legende: { symbole: NoeudSvg; texte: SegmentDeTexte[] }[];
   /**
-   * La page de la nourrice, ou `null` au nez de robinet. `photo` : son éclaté vu
+   * La page de la nourrice, ou `null` au nez de robinet. `photos` : son éclaté vu
    * du dessus, sous `public/` ; `places` : sa clé dans `places.json`.
    * `numerotees` : ce que la photo montre, numéroté ; `avec` : le reste.
    */
-  nourrice: { titre: string; phrase: string; photo: string; places: string; numerotees: LigneNumerotee[]; avec: { quantite: string; nom: string }[] } | null;
+  nourrice: { titre: string; phrase: string; photos: { photo: string; places: string }[]; numerotees: LigneNumerotee[]; avec: { quantite: string; nom: string }[] } | null;
   reseaux: ReseauDuPdf[];
   groupes: { titre: string; lignes: { quantite: string; nom: string }[] }[];
 };
@@ -342,10 +342,16 @@ function numeroterLaPhoto(page: PDFPage, places: PlaceSurLaPhoto[], numeros: Map
  * La photo et la liste se posent côte à côte, ou la liste sous la photo, selon
  * ce qui donne la PLUS GRANDE photo : une nourrice d'une voie est haute et
  * étroite, une de six est presque carrée.
+ *
+ * **Au-delà de six voies, deux nourrices, deux photos côte à côte** (sa règle et
+ * sa planche du 23 novembre 2026), à la même hauteur : chaque photo est
+ * recadrée sur sa nourrice, aucune échelle ne leur est commune. Les numéros
+ * courent sur les deux ; la seconde ne porte que les siens, comme la 3D de
+ * l'écran (`appli/nourrice-3d/vue.js`, `numeros`).
  */
 async function pageDeLaNourrice(doc: PDFDocument, n: NonNullable<DonneesPdfDuPlan["nourrice"]>, p: Polices, photos: Photos) {
   const page = doc.addPage([A4.largeur, A4.hauteur]);
-  let y = rubrique(page, "La nourrice", MARGE, A4.hauteur - MARGE - 8, p);
+  let y = rubrique(page, n.photos.length > 1 ? "Les nourrices" : "La nourrice", MARGE, A4.hauteur - MARGE - 8, p);
   page.drawText(papier(n.titre), { x: MARGE, y: y - 12, size: 20, font: p.titres, color: ENCRE });
   y -= 30;
   for (const l of couper(n.phrase, p.texte, 10, UTILE)) {
@@ -354,22 +360,36 @@ async function pageDeLaNourrice(doc: PDFDocument, n: NonNullable<DonneesPdfDuPla
   }
   y -= 10;
 
-  const image = await photos.lire(n.photo);
-  if (!image) throw new Error(`La photo de la nourrice n'est pas sous public/arrosage-photos : ${n.photo}`);
+  const images = [];
+  for (const x of n.photos) {
+    const image = await photos.lire(x.photo);
+    if (!image) throw new Error(`La photo de la nourrice n'est pas sous public/arrosage-photos : ${x.photo}`);
+    images.push(image);
+  }
   const sections: Section[] = [{ titre: "Ses pièces", lignes: n.numerotees }];
-  if (n.avec.length) sections.push({ titre: "Avec la nourrice", lignes: n.avec });
-  const haut = y, dispo = y - BAS, COLONNE = 200;
-  const echelle = (w: number, h: number) => Math.min(w / image.width, h / image.height);
-  // Côte à côte : la liste dans sa colonne, la photo dans le reste.
-  const cote = echelle(UTILE - COLONNE - ECART_COLONNES, dispo);
-  // L'une sous l'autre : la liste sur deux colonnes, sous la photo.
-  const dessous = echelle(UTILE, dispo - hauteurDesSections(sections, UTILE, 2, p) - ECART_COLONNES);
+  if (n.avec.length) sections.push({ titre: images.length > 1 ? "Avec les nourrices" : "Avec la nourrice", lignes: n.avec });
+  const haut = y, dispo = y - BAS, COLONNE = 200, ENTRE = 12;
+  // La hauteur commune des photos qui tiennent dans ce cadre, côte à côte.
+  const rapports = images.reduce((t, im) => t + im.width / im.height, 0);
+  const hauteur = (w: number, h: number) => (images.length ? Math.min(h, (w - ENTRE * (images.length - 1)) / rapports) : 0);
+  // Côte à côte : la liste dans sa colonne, les photos dans le reste.
+  const cote = hauteur(UTILE - COLONNE - ECART_COLONNES, dispo);
+  // L'une sous l'autre : la liste sur deux colonnes, sous les photos.
+  const dessous = hauteur(UTILE, dispo - hauteurDesSections(sections, UTILE, 2, p) - ECART_COLONNES);
 
-  const s = Math.max(cote, dessous);
-  const w = image.width * s, h = image.height * s;
-  const x = cote >= dessous ? MARGE : MARGE + (UTILE - w) / 2;
-  page.drawImage(image, { x, y: haut - h, width: w, height: h });
-  numeroterLaPhoto(page, await placesDeLaNourrice(n.places), new Map(n.numerotees.map((l) => [l.ref, l.numero])), { x, haut, largeur: w, hauteur: h }, p);
+  const h = Math.max(cote, dessous);
+  const largeurs = images.map((im) => (im.width / im.height) * h);
+  const total = largeurs.reduce((t, w) => t + w, 0) + ENTRE * (images.length - 1);
+  let x = cote >= dessous ? MARGE : MARGE + (UTILE - total) / 2;
+  const numeros = new Map(n.numerotees.map((l) => [l.ref, l.numero]));
+  const dejaVus = new Set<string>();
+  for (const [k, image] of images.entries()) {
+    const places = await placesDeLaNourrice(n.photos[k].places);
+    page.drawImage(image, { x, y: haut - h, width: largeurs[k], height: h });
+    numeroterLaPhoto(page, places, new Map([...numeros].filter(([ref]) => !dejaVus.has(ref))), { x, haut, largeur: largeurs[k], hauteur: h }, p);
+    for (const q of places) dejaVus.add(q.ref);
+    x += largeurs[k] + ENTRE;
+  }
   if (cote >= dessous) await ecrireLesSections(page, photos, sections, MARGE + UTILE - COLONNE, haut - 8, COLONNE, 1, p);
   else await ecrireLesSections(page, photos, sections, MARGE, haut - h - ECART_COLONNES, UTILE, 2, p);
 }

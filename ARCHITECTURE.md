@@ -38465,7 +38465,19 @@ leurs jardins d'essai suivent le plan nouveau, chacun avec sa raison, comme ceux
 `test-arrosage-postes.ts` (le seau en 15 s, pour garder ses quatre réseaux) et de
 `test-diametre-choisi.ts` (le 25 × 8 à 2,5 bar, où le Ø32 gagne encore un réseau).
 
-**Ce qui n'est pas fait.** La nourrice en 3D et la vue éclatée avec deux nourrices : une planche,
-`appli/arrosage-deux-nourrices.html`, la même nourrice dupliquée (sa consigne : *« ne refais pas un
-truc en 3D, tu la dupliques pour refaire une deuxième nourrice à côté »*), à côté ou l'une sous
-l'autre, en attente de son choix. Les instantanés des planches d'arrosage (`TODO.md`).
+**Les deux nourrices à l'écran et sur le PDF**, sa planche `appli/arrosage-deux-nourrices.html` (sa
+consigne : *« ne refais pas un truc en 3D, tu la dupliques pour refaire une deuxième nourrice à côté »*),
+puis sa réponse : *« Sur la nourrice de gauche, il n'y a pas la flèche pour arriver d'eau. Tu peux la
+rajouter. Sinon après, c'est bon, tu peux coder. »*
+
+| | |
+|---|---|
+| le partage | `CATALOGUE.partageDesNourrices` (et sa copie) : moitié-moitié, le goutte-à-goutte sur la seconde. `fichesNourrices` le lit, la 3D et l'écran aussi : une seule règle |
+| la 3D | `appli/nourrice-3d/deux-nourrices.js`, `aCote` : la composition d'UNE nourrice, posée deux fois. Hors de `composition.js` exprès : l'empreinte des photos du PDF (`_nourrice-3d.ts`) lit ce qui dessine une nourrice, et poser la seconde n'en change aucune pièce |
+| les numéros | ils courent sur les deux ; la seconde ne porte que les siens (`vue.numeros`), sinon chaque numéro redoublait. La légende prend l'union des deux ordres (`ordreDesNourrices`), et `test-numeros-nourrice-3d.ts` les confronte pour 7 à 12 voies |
+| la flèche | `reperes.js` en posait une seule, sur la dernière colonne d'arrivée : une par arrivée |
+| l'amenée | un schéma au-dessus de la nourrice (`Amenee`, `NourriceEclatee.tsx`) : le piquage, le té, un tuyau vers chaque regard, le second en tirets, « à mesurer » ; à la largeur du téléphone, un point du dessin pour un pixel |
+| le PDF | deux photos côte à côte, à la même hauteur (chacune est recadrée sur sa nourrice, aucune échelle commune), numérotées comme l'écran. **Avant, le PDF d'un plan à sept réseaux ne se composait pas** : il cherchait la photo d'une nourrice de sept voies, qui n'existe pas (`test-pdf-du-plan-arrosage.ts`, vu rouge) |
+
+**Ce qui n'est pas fait.** Le montage d'un devis de fournisseur (`montageDuDevis`) au-delà de six
+électrovannes ; les instantanés des planches d'arrosage (`TODO.md`).

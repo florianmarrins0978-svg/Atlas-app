@@ -2,7 +2,7 @@
 
 ## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
-Le tuyau au plus court en PE (`trace.ts`), les parts égales (`partsEgales`), un modèle de turbine par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, et le surpresseur proposé quand il manque), une vanne de plus dès qu'elle y donne 0,1 bar (`avecLaPression`), deux nourrices au-delà de six voies (`fichesNourrices`). `ARCHITECTURE.md` §610. Ses décisions notées dans `.claude/rules/arrosage.md` : le PE reste à 150, Darcy et le 140 n'entrent pas ; la 3504 d'office. La 3D et la vue éclatée avec deux nourrices : planche `appli/arrosage-deux-nourrices.html`, en attente de son choix (à côté, ou l'une sous l'autre).
+Le tuyau au plus court en PE (`trace.ts`), les parts égales (`partsEgales`), un modèle de turbine par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, et le surpresseur proposé quand il manque), une vanne de plus dès qu'elle y donne 0,1 bar (`avecLaPression`), deux nourrices au-delà de six voies (`fichesNourrices`). `ARCHITECTURE.md` §610. Ses décisions notées dans `.claude/rules/arrosage.md` : le PE reste à 150, Darcy et le 140 n'entrent pas ; la 3504 d'office. Les deux nourrices à l'écran (3D à côté, une flèche chacune, l'amenée en schéma) et sur le PDF (deux photos), sur sa planche choisie `appli/arrosage-deux-nourrices.html`. Reste : la batterie, sur son accord.
 
 ## ✅ LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD : SUR `main` (23 novembre 2026)
 

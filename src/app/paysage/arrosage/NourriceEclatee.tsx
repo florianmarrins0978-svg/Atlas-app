@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { OMBRE_VIGNETTE } from "./Vignette";
 import Nourrice3D from "./Nourrice3D";
-import { composerNourrice, etatsDesPoses, HAUT, type EtatPose, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
+import { composerLesNourrices, etatsDesPoses, HAUT, ordreDesNourrices, resteDesNourrices, type EtatPose, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
 import { PHOTOS_NOURRICE } from "@/lib/arrosage/photos-nourrice";
 import { photoDe } from "@/lib/arrosage/photos";
 import type { Retouches } from "@/lib/arrosage/retouches";
@@ -34,6 +34,14 @@ const CAT = CATALOGUE as unknown as { piece(ref: string): { nom: string; marque?
  * supprimer »*) : une ligne de la légende passe à sa feuille de quoi montrer
  * ses pièces sur la 3D, tant que la 3D s'affiche. Le bac « Avec la nourrice »
  * n'en a pas : ses pièces ne sont pas dans la 3D.
+ *
+ * **Au-delà de six voies, deux nourrices** (sa règle du 23 novembre 2026 :
+ * moitié-moitié, chacune dans son regard, un té sur l'amenée), et sa planche
+ * `appli/arrosage-deux-nourrices.html` (*« tu la dupliques pour refaire une
+ * deuxième nourrice à côté »*, puis *« c'est bon, tu peux coder »*) : au-dessus,
+ * l'amenée et ses deux regards ; puis les deux nourrices dans la même 3D, la
+ * seconde à côté de la première ; une seule légende, les numéros de la première
+ * puis ce que la seconde a en propre (`ordreDesNourrices`), dans l'ordre de la 3D.
  */
 export default function NourriceEclatee({
   voies,
@@ -42,6 +50,7 @@ export default function NourriceEclatee({
   retouches,
   nombre,
   onTouche,
+  compteur = true,
 }: {
   /**
    * Les réseaux qui ont leur voie, dans l'ordre du dessin (`voiesVivantes`) : un
@@ -56,18 +65,24 @@ export default function NourriceEclatee({
   nombre: Record<string, number>;
   /** `voir`, quand la pièce peut se montrer sur la 3D : la feuille le propose. */
   onTouche: (ref: string, nom: string, voir?: () => void) => void;
+  /** Le piquage : au compteur, ou au robinet. Le schéma de l'amenée le nomme. */
+  compteur?: boolean;
 }) {
   const [prete, setPrete] = useState(false);
   const [montree, setMontree] = useState<{ ref: string } | null>(null);
   const rendre = useCallback(() => setMontree(null), []);
-  const n = composerNourrice(voies.length, nbGoutte);
-  if (!n) {
+  const parts = composerLesNourrices(voies.length, nbGoutte);
+  if (!parts) {
     return (
       <p className="mt-3 text-[14px]" style={{ color: colors.alert }}>
         Aucune fiche de nourrice pour {voies.length} voies.
       </p>
     );
   }
+  const deux = parts.length > 1;
+  const ordre = ordreDesNourrices(parts), reste = resteDesNourrices(parts);
+  // Les voies de chaque nourrice, dans l'ordre du dessin : la première prend les premiers réseaux.
+  const voiesDe = (i: number) => voies.slice(i ? parts[0].voies : 0, i ? undefined : parts[0].voies);
   const NOMS: Record<string, string> = { "coude-mf": "Coude MF 1\"", mamelon: "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", pehd: "PEHD Ø25" };
   const etatDe = (ref: string) => (retouches.blocsRetires.nourrice || retouches.retirees[`nr:${ref}`] || (retouches.nrUne[ref] ?? 0) >= (nombre[ref] ?? 1) ? "retiree" : retouches.remplacees[`nr:${ref}`] ? "changee" : "");
   const nomDe = (ref: string) => {
@@ -80,27 +95,33 @@ export default function NourriceEclatee({
 
   return (
     <div data-atlas="nourrice-eclatee">
+      {deux && <Amenee parts={parts} compteur={compteur} />}
       {/* Le dessin et sa légende dans une même plage : celle de la planche soignée du 26 octobre 2026. */}
       <div className="mt-4 rounded-[6px] px-[14px] pb-[14px] pt-4" style={{ backgroundColor: colors.card }}>
       {/* La nourrice en 3D, sa planche du 22 novembre 2026 ; le dessin d'avant reste pour l'appareil qui ne sait pas l'afficher. */}
       <Nourrice3D
-        voies={voies.length}
-        nbGoutte={nbGoutte}
+        voies={parts[0].voies}
+        nbGoutte={parts[0].goutte}
+        seconde={deux ? { voies: parts[1].voies, nbGoutte: parts[1].goutte } : undefined}
         // R1, R2… au bout des colonnes : le numéro du réseau que la voie alimente, dans sa couleur, comme le dessin.
         reseaux={voies.map((r) => ({ nom: `R${r + 1}`, couleur: couleurs[r] ?? "#4a4a44" }))}
         montree={montree}
         onRendre={rendre}
         onPrete={setPrete}
         repli={
-          <div className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-            <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
+          <div className="flex flex-col gap-2">
+            {parts.map((p, i) => (
+              <div key={i} className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                <Dessin n={p.n} couleurs={couleurs} etats={etatsDesPoses(p.n.poses, retouches)} reseauDeVoie={voiesDe(i)} />
+              </div>
+            ))}
           </div>
         }
       />
 
       {/* La légende numérotée : c'est elle qu'on touche. */}
       <ol className="mt-3 grid list-none grid-cols-2 gap-x-[14px] gap-y-[2px] p-0" style={{ fontSize: 14, lineHeight: 1.35, color: colors.ink }}>
-        {n.ordre.map((ref, i) => {
+        {ordre.map((ref, i) => {
           const etat = etatDe(ref);
           return (
             <li key={ref} className="flex">
@@ -124,12 +145,12 @@ export default function NourriceEclatee({
       </div>
 
       {/* Le bac : ce que la fiche compte et que le dessin ne pose pas (regard, programmateur, pile…). */}
-      {Object.keys(n.reste).some((ref) => n.reste[ref] > 0) && (
+      {Object.keys(reste).some((ref) => reste[ref] > 0) && (
         <div className="mt-[14px]">
-          <h3 className="mb-[10px] mt-[18px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>Avec la nourrice</h3>
+          <h3 className="mb-[10px] mt-[18px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>{deux ? "Avec les nourrices" : "Avec la nourrice"}</h3>
           <div className="flex flex-wrap gap-x-[10px] gap-y-3">
-            {Object.keys(n.reste)
-              .filter((ref) => n.reste[ref] > 0)
+            {Object.keys(reste)
+              .filter((ref) => reste[ref] > 0)
               .map((ref) => {
                 const etat = etatDe(ref);
                 const montree = retouches.remplacees[`nr:${ref}`]?.ref ?? ref;
@@ -153,7 +174,7 @@ export default function NourriceEclatee({
                       )}
                     </span>
                     <span style={{ fontSize: 13, lineHeight: 1.3, color: couleurTexte(etat), textDecoration: etat === "retiree" ? "line-through" : undefined }}>
-                      {n.reste[ref] > 1 ? `${n.reste[ref]}x ` : ""}
+                      {reste[ref] > 1 ? `${reste[ref]}x ` : ""}
                       {nomDe(ref)}
                     </span>
                   </button>
@@ -271,5 +292,40 @@ function Badge({ n, x, y, teinte }: { n: number; x: number; y: number; teinte?: 
         {n}
       </text>
     </g>
+  );
+}
+
+/**
+ * L'AMENÉE DES DEUX NOURRICES, celle de sa planche du 23 novembre 2026 : du
+ * piquage au té, puis un tuyau vers chaque regard, le second en tirets, sa
+ * longueur ne se lit sur aucun croquis. Le té et le tuyau se comptent dans la
+ * liste (« Té des deux nourrices », `postes.ts`), pas ici.
+ */
+function Amenee({ parts, compteur }: { parts: { voies: number }[]; compteur: boolean }) {
+  const r = (debut: number, n: number) => `R${debut + 1} à R${debut + n}`;
+  // Le dessin à la largeur de la plage sur un téléphone (390 moins les marges) : un point du dessin, un pixel.
+  const texte = { fontSize: 13, fill: colors.inkSoft };
+  const titre = { fontSize: 14, fontWeight: 600, fill: colors.ink };
+  const tuyau = { fill: "none", stroke: colors.ink, strokeWidth: 2.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  return (
+    <div className="mt-4 rounded-[6px] px-[14px] pb-3 pt-4" style={{ backgroundColor: colors.card }} data-atlas="amenee-deux-nourrices">
+      <h3 className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>L’amenée</h3>
+      <svg viewBox="0 0 318 150" className="mt-3 block h-auto w-full" role="img" aria-label="Du piquage au té, puis un tuyau vers chaque regard.">
+        <text x={0} y={80} style={texte}>{compteur ? "Compteur" : "Robinet"}</text>
+        <path d="M70 75 H128" style={tuyau} />
+        <path d="M128 75 V31 H184" style={tuyau} />
+        <path d="M128 75 V123 H184" style={{ ...tuyau, strokeDasharray: "5 5" }} />
+        <path d="M128 66 L137 75 L128 84 L119 75 Z" style={{ fill: colors.or, stroke: colors.ink, strokeWidth: 1.2 }} />
+        <text x={142} y={80} style={texte}>Té</text>
+        <text x={120} y={110} textAnchor="end" style={texte}>à mesurer</text>
+        {parts.map((p, i) => (
+          <g key={i}>
+            <rect x={184} y={i ? 100 : 8} width={133} height={46} rx={6} style={{ fill: colors.cream, stroke: colors.ink, strokeWidth: 1.5 }} />
+            <text x={194} y={i ? 120 : 28} style={titre}>Regard {i + 1}</text>
+            <text x={194} y={i ? 138 : 46} style={texte}>{p.voies} voies, {r(i ? parts[0].voies : 0, p.voies)}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
   );
 }

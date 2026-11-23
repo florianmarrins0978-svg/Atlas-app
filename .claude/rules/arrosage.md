@@ -113,10 +113,11 @@ un Té de plus pour faire arriver l'eau dans la nouvelle nourrice »*, puis
 nourrice garde sa fiche, regard et programmateur compris ; le goutte-à-goutte,
 numéroté en dernier, va sur la seconde ; le té est du diamètre de l'amenée, et
 le tuyau jusqu'au second regard se mesure (`fichesNourrices`, `piecesDuPlan`).
-Au-delà de douze voies, rien n'est composé, et le plan le dit. **Ce qui n'est
-pas fait** : la nourrice en 3D et la vue éclatée du PDF ne montrent pas les deux
-nourrices (une planche d'abord, `TODO.md`). Le second regard se place par lui,
-comme le premier.
+Au-delà de douze voies, rien n'est composé, et le plan le dit. **À l'écran et
+sur le PDF, les deux nourrices côte à côte**, sa planche choisie le même soir
+(*« c'est bon, tu peux coder »*) : la même nourrice dupliquée, une flèche
+d'arrivée sur chacune, les numéros qui courent sur les deux. Le second regard se
+place par lui, comme le premier.
 
 **Informer n'est pas proposer.** S'il demande ce que change tel ou tel
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes

@@ -40,7 +40,7 @@ var FEUILLE =
 var AUTOUR = [[0, 0], [0, 1], [0, -1], [-2.2, 0], [1, 0], [-2.2, 1], [-2.2, -1], [1, 1], [1, -1], [0, 2], [0, -2]];
 
 export function poserReperes(couche, v, o) {
-  var reglage = { quand: "eclatee", fil: false }, choisie = null, mots = [], fleche = null, pastilles = [], traits = [];
+  var reglage = { quand: "eclatee", fil: false }, choisie = null, mots = [], fleches = [], pastilles = [], traits = [];
   if (!document.getElementById(STYLE)) {
     var feuille = document.createElement("style"); feuille.id = STYLE; feuille.textContent = FEUILLE; document.head.appendChild(feuille);
   }
@@ -63,8 +63,13 @@ export function poserReperes(couche, v, o) {
     }
     ecr.forEach(function (e) { par[e.indice] = e; });
     while (mots.length < cols.length) { var m = document.createElement("span"); m.className = "n3d-mot"; couche.appendChild(m); mots.push(m); }
-    if (!fleche) { fleche = document.createElementNS(SVG, "g"); fleche.innerHTML = '<line class="n3d-fleche"/><path class="n3d-pointe"/>'; fils.appendChild(fleche); }
-    var voie = 0;
+    // UNE FLÈCHE PAR ARRIVÉE D'EAU : deux nourrices en ont deux (sa remarque du 23 novembre 2026 devant la
+    // planche des deux nourrices : « sur la nourrice de gauche, il n'y a pas la flèche »). Une seule flèche,
+    // reprise par chaque arrivée, ne restait que sur la dernière.
+    var arrivees = cols.filter(function (c) { return c.arrivee; }).length;
+    while (fleches.length < arrivees) { var f = document.createElementNS(SVG, "g"); f.innerHTML = '<line class="n3d-fleche"/><path class="n3d-pointe"/>'; fils.appendChild(f); fleches.push(f); }
+    fleches.forEach(function (f, i) { f.style.display = i < arrivees ? "" : "none"; });
+    var voie = 0, arrivee = 0;
     mots.forEach(function (m, i) {
       var c = cols[i];
       if (!c) { m.style.display = "none"; return; }
@@ -75,6 +80,7 @@ export function poserReperes(couche, v, o) {
       var demi = Math.abs(dx) * (bas.droite - bas.gauche) / 2 + Math.abs(dy) * (bas.bas - bas.haut) / 2;
       var bx = bas.x + dx * demi, by = bas.y + dy * demi;
       if (c.arrivee) {
+        var fleche = fleches[arrivee++];
         var x0 = bx + dx * 34, y0 = by + dy * 34, x1 = bx + dx * 7, y1 = by + dy * 7, nx = -dy, ny = dx;
         fleche.firstChild.setAttribute("x1", x0); fleche.firstChild.setAttribute("y1", y0); fleche.firstChild.setAttribute("x2", x1 + dx * 5); fleche.firstChild.setAttribute("y2", y1 + dy * 5);
         fleche.lastChild.setAttribute("d", "M" + x1 + " " + y1 + " L" + (x1 + dx * 8 + nx * 5) + " " + (y1 + dy * 8 + ny * 5) + " L" + (x1 + dx * 8 - nx * 5) + " " + (y1 + dy * 8 - ny * 5) + " Z");
@@ -132,6 +138,6 @@ export function poserReperes(couche, v, o) {
     placer: placer,
     choisir: function (cle) { choisie = cle || null; placer(); },
     regler: function (r) { Object.assign(reglage, r); placer(); },
-    detruire: function () { couche.textContent = ""; mots = []; pastilles = []; traits = []; fleche = null; }
+    detruire: function () { couche.textContent = ""; mots = []; pastilles = []; traits = []; fleches = []; }
   };
 }
