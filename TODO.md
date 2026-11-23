@@ -1245,6 +1245,14 @@ compte, ouverte par « Créer mon compte » au bout de la feuille. Refaire :
 reste** : la planche met la carte avant le compte ; Stripe a besoin de
 l'e-mail du compte, donc le compte viendra sans doute avant la carte.
 
+**Le double appui de « Voir mon choix » (23 novembre)** : la barre est passée
+en haut, sous l'en-tête, sans pouvoir l'éprouver sur Safari ici. Si l'iPhone
+répond du premier coup, la cause était la barre d'outils de Safari en bas de
+l'écran, et le bouton au pouce du site (« Essayer 15 jours gratuits »,
+`cause-2-visite.html`, `.pouce`) a le même défaut : à lui proposer de le
+remonter aussi. S'il faut encore deux appuis, la cause est ailleurs : la
+rendre bavarde avant de toucher autre chose.
+
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
 | | |

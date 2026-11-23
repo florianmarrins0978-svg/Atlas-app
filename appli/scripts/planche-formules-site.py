@@ -181,7 +181,12 @@ body.a-choisi .formule.mise:not(.choisie){box-shadow:0 0 0 1px rgba(var(--ombre)
 .recap-date b{color:var(--encre)}
 .recap-bouton{width:100%;margin-top:20px}
 @media (min-width:960px){.recap{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:64px;padding:44px 48px 40px;align-items:end}}
-.pouce-choix{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:16;display:flex;align-items:center;gap:12px;max-width:520px;margin-inline:auto;padding:10px 10px 10px 20px;border-radius:999px;background:var(--nuit);color:var(--sur-nuit);box-shadow:0 20px 44px -16px rgba(var(--ombre),.75);transform:translateY(calc(100% + 24px + env(safe-area-inset-bottom)));visibility:hidden;pointer-events:none;transition:transform .5s var(--sortie),visibility 0s linear .5s}
+/* La barre vit en HAUT, sous l'en-tête, et non au pouce : sa remarque du
+   23 novembre, « il faut cliquer deux fois sur Voir mon choix ». Sur iPhone,
+   une fois la page défilée, Safari réduit sa barre d'outils en bas, et le
+   premier appui dans le bas de l'écran la fait revenir au lieu d'atteindre la
+   page. Sous l'en-tête fixe (64 px), l'appui arrive du premier coup. */
+.pouce-choix{position:fixed;left:12px;right:12px;top:74px;z-index:14;display:flex;align-items:center;gap:12px;max-width:520px;margin-inline:auto;padding:10px 10px 10px 20px;border-radius:999px;background:var(--nuit);color:var(--sur-nuit);box-shadow:0 20px 44px -16px rgba(var(--ombre),.75);transform:translateY(calc(-100% - 90px));visibility:hidden;pointer-events:none;transition:transform .5s var(--sortie),visibility 0s linear .5s}
 .pouce-choix.vu{transform:none;visibility:visible;pointer-events:auto;transition:transform .5s var(--sortie),visibility 0s}
 .pc-mots{flex:1;min-width:0;display:grid;gap:3px}
 .pc-mots b{font:600 16px/1.2 var(--texte);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
