@@ -1284,13 +1284,13 @@ compte, ouverte par « Créer mon compte » au bout de la feuille. Refaire :
 reste** : la planche met la carte avant le compte ; Stripe a besoin de
 l'e-mail du compte, donc le compte viendra sans doute avant la carte.
 
-**Le double appui de « Voir mon choix » (23 novembre)** : la barre est passée
-en haut, sous l'en-tête, sans pouvoir l'éprouver sur Safari ici. Si l'iPhone
-répond du premier coup, la cause était la barre d'outils de Safari en bas de
-l'écran, et le bouton au pouce du site (« Essayer 15 jours gratuits »,
-`cause-2-visite.html`, `.pouce`) a le même défaut : à lui proposer de le
-remonter aussi. S'il faut encore deux appuis, la cause est ailleurs : la
-rendre bavarde avant de toucher autre chose.
+**« Voir mon choix », réglé le 23 novembre par un bouton dans la page.** La
+barre flottante a connu deux places : en bas, Safari avalait le premier appui
+(non reproduit ici, cause retenue avec une confiance moyenne) ; en haut, elle
+était *« chiante d'accès avec le pouce »*. Elle est retirée : le bouton de la
+formule choisie devient « Voir mon choix », là où il vient d'appuyer. Le bouton
+au pouce du site (« Essayer 15 jours gratuits », `.pouce`) reste en bas : s'il
+demande deux appuis sur son iPhone, c'est la même cause.
 
 **⏳ La visite guidée sur l'accueil d'un compte neuf : proposée le 23 novembre,
 attend son « oui »** (`cause-2-inscription.html`, l'étape « L'appli »). Une
@@ -1319,10 +1319,42 @@ un déménagement change le SIRET, pas le SIREN) des essais passés ; **ne pas
 bloquer le compte**, mais **terminer l'essai** quand un SIREN déjà essayé
 revient (un SIRET est public, sur chaque devis : bloquer laisserait n'importe
 qui priver un concurrent de son essai) ; dire aux deux personnes d'une même
-entreprise de se faire inviter. (La reconnaissance de la carte par Stripe,
+entreprise de demander un accès au titulaire du compte (l'appli n'envoie pas
+d'invitation : le patron ouvre l'accès dans Réglages, Équipe). (La reconnaissance de la carte par Stripe,
 proposée en plus, est écartée par lui : voir plus haut.) Le SIREN d'un entrepreneur
 individuel est une donnée personnelle : sa garde après l'effacement d'un compte
 va dans la politique de confidentialité, avec une durée, et chez le juriste.
+
+**Contre la triche, sa question du 23 novembre** (*« il n'y a pas moyen de
+taper un numéro au pif ? »*). Constaté dans le code : seuls les 14 chiffres sont
+contrôlés (`siretLu`, `src/lib/siren.ts`), aucun chiffre de contrôle, aucun
+registre. Proposé, et posé sur la planche (« Au registre », « Inconnu ») :
+le chiffre de contrôle du SIRET ; le registre public de l'État (le service
+« Recherche d'entreprises », gratuit, sans clé : à vérifier depuis le serveur
+de l'appli, ce poste ne le joint pas) pour l'existence et l'activité ; et le
+nom et l'adresse pris du registre, qui partent sur les devis, si bien que le
+SIRET d'un autre ne donne que des devis au nom de cet autre. Trois cas à tenir :
+l'entreprise toute neuve (la publication peut retarder d'un jour ou deux sur
+l'Insee : on ne bloque ni le compte ni l'essai, mais **aucun devis ni aucune
+facture ne part tant que le registre n'a pas confirmé le SIRET**, sa règle du
+23 novembre : *« il ne faut pas le bloquer ; il ne faut pas non plus qu'il
+puisse créer des comptes gratuits à tire-larigot »* ; un numéro inventé ne
+sert donc jamais à envoyer), l'entrepreneur qui a demandé la
+diffusion partielle (son SIRET existe, son nom n'est pas publié : il le tape),
+et le registre qui ne répond pas (on ne bloque pas l'inscription).
+
+**Le trou des Réglages, vu par lui le 23 novembre** : *« s'il utilise le SIRET
+d'un autre, après, dans ses réglages, il peut tout modifier, le nom de la
+boîte… ça le bloque sans le bloquer »*. Exact : aujourd'hui, Mon entreprise
+laisse changer le nom et l'adresse sans toucher au SIRET. Proposé : **le nom
+officiel et l'adresse du siège sont attachés au SIRET**, pris du registre et
+affichés sans se modifier ; pour les changer, on change le SIRET, revérifié, et
+la règle du SIREN joue (même SIREN : pas de nouvel essai). Un **nom commercial**
+libre s'imprime EN PLUS, jamais à la place (la facture porte nom, adresse et
+SIRET de la même entreprise, CGI 242 nonies A). Ainsi le SIRET d'un autre ne
+donne que des devis au nom de cet autre. Reste : la diffusion partielle (nom non
+publié : il le tape). Planche sur le vrai écran Mon entreprise, sur son « oui » du même soir :
+`appli/soignee/identite-au-registre.html`. Rien n'est codé.
 
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 

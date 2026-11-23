@@ -546,10 +546,16 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // turbines — et 22 SBE en 1/2" quand une turbine se raccorde en 3/4". Tout
   // était vert. On éprouve donc un jardin qui MÊLE les deux familles, avec
   // une turbine en 3/4" : c'est le seul cas où l'erreur se voit.
+  //
+  // **La grande pelouse fait 40 × 30 depuis le 23 novembre 2026.** Elle faisait
+  // 30 × 22 ; aux écartements de Rain Bird (sa décision du 22 novembre), ce
+  // jardin pose 42 Hunter SRM, un corps en 1/2" : le cas du 3/4" n'était plus
+  // atteint, et les deux contrôles du SBE accusaient à tort un compte juste.
+  // Le contrôle « le cas est atteint », ci-dessous, le dit désormais lui-même.
   const familles = await page.evaluate(() => {
     window.__avant = { zones: JSON.parse(JSON.stringify(etat.zones)), marque: etat.marque };
     etat.marque = 'hunter';
-    etat.zones = [ { id:1, nom:'Grande pelouse', type:'gazon', L:'30', l:'22', materiel:'turbine' },
+    etat.zones = [ { id:1, nom:'Grande pelouse', type:'gazon', L:'40', l:'30', materiel:'turbine' },
                    { id:2, nom:'Petite bande',   type:'gazon', L:'8',  l:'4',  materiel:'tuyere' } ];
     recalculer(true);
     const l = listeMateriel(decouper());
@@ -569,10 +575,17 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     // famille, plus un SBE 3/4" en bas par arroseur, toutes familles
     // confondues. Le 3/4" porte donc les deux emplois quand le corps est en
     // 3/4" — c'est précisément le cas de ce jardin d'épreuve.
+    const pose = poser(etat.zones[0]);
+    const corps = pose.m && pose.m.buse ? CATALOGUE.corpsDeLaBuse(pose.m.buse) : null;
     return { nTurb:n[0], nTuy:n[1],
              corpsTurb: corpsTurb && corpsTurb.q, corpsTuy: corpsTuy && corpsTuy.q,
+             filetageTurb: corps ? corps.filetage : null,
              sbe34: q(/SBE 075/), sbe12: q(/SBE 050/) };
   });
+  // Sans turbine en 3/4", les deux contrôles du SBE plus bas ne prouvent rien :
+  // on refuse de conclure, et l'on dit que c'est le jardin qui manque son cas.
+  cas('la grande pelouse pose bien une turbine en 3/4" — le cas est atteint',
+      familles.filetageTurb === '3/4', JSON.stringify(familles));
   // Le cas qui empêche de mesurer zéro : sans deux familles réellement posées,
   // tout ce qui suit vaudrait 0 === 0, en vert, sans rien prouver.
   cas('le jardin d\'épreuve mêle bien turbines ET tuyères',
