@@ -3084,8 +3084,12 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      elles-mêmes sont refusées par le réseau d'ici ;
    - **côté lui, vu sur sa capture du 23 novembre** : « Connectivité » porte
      un cadenas dans ses Paramètres Pennylane, donc sa formule n'ouvre pas
-     l'API aujourd'hui (selon des tiers : à partir de la formule Essentiel,
-     à confirmer dans Gestion d'abonnement). Seconde capture, même soir : la
+     l'API aujourd'hui. **Confirmé sur sa capture de Gestion d'abonnement** :
+     « API et intégrations avec vos outils du quotidien » figure dans la
+     formule **Essentiel** (Starter, une deuxième, Essentiel, Premium ; toutes
+     « sans engagement » ; prix non visibles sur la capture). Essentiel pris sur
+     sa vraie entreprise ne donne pas pour autant où éprouver : un dépôt y
+     part pour de bon, d'où l'environnement d'essai demandé à Pennylane. Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
