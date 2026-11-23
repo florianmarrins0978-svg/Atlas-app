@@ -38398,6 +38398,35 @@ de robinet).
 reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
 (`TODO.md`).
 
+## §610 : La facture électronique passe par une plateforme que Cause paie (voie C)
+
+*23 novembre 2026, sa décision : « il faut faire C ».* Révise §424 (« chaque
+artisan connecte son compte ») et le choix 2 A de §555 (la clé collée). **La
+raison** : sur Pennylane, la clé n'existe qu'en formule Essentiel (vu sur ses
+captures), soit 24 € par mois payés par chaque artisan en plus de Cause. Une
+plateforme achetée en gros par Cause coûte quelques centimes par facture.
+
+**La plateforme retenue, sous réserve de leur réponse** : Super PDP
+(immatriculée le 22 décembre 2025, liste officielle de la DGFiP). Elle expose
+l'API AFNOR XP Z12-013 Flow 1.3.0 à `https://api.superpdp.tech/afnor-flow`,
+jeton à `https://api.superpdp.tech/oauth2/token` : les chemins de
+`api-commune.ts`. Plusieurs artisans : OAuth 2.1 « authorization code », chaque
+artisan donne son accord sur Super PDP ; un 403 tant que sa vérification
+d'identité n'est pas finie. Secours : Iopole. Le détail, les prix lus et les
+messages à envoyer : `docs/facture-electronique-plateforme-comprise.md`.
+
+**Ce qui ne bouge pas** : Cause fabrique la Factur-X (choix 1 A), le dépôt se
+fait dans la transaction d'émission (3 B). **Ce qui change, rien n'étant
+codé** : le catalogue, la liaison (un bouton OAuth à la place des deux cases,
+planche d'abord), un état « vérification en cours ». Garder la norme commune
+est ce qui rend la plateforme remplaçable : changer de plateforme coûte un
+contrat et deux adresses.
+
+**Et ensuite, Cause agréée elle-même** (sa suite du même soir). Ce n'est pas
+contradictoire : Super PDP d'abord, la candidature ensuite. Les exigences
+officielles sont relevées dans `TODO.md` ; la première qui pèse est la
+certification ISO 27001 (ou SecNumCloud).
+
 ## §614 : Le tuyau au plus court en PE, les parts égales, la pression au bout, deux nourrices
 
 **Ses corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé,
