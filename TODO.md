@@ -3115,7 +3115,15 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      l'Union européenne, interconnexion aux autres plateformes, tests avec
      le portail public, audit de conformité par un organisme indépendant,
      agrément de 3 ans renouvelable. Rien n'est lancé ; le travail fait
-     pour Super PDP (Factur-X, norme commune) resservira ; Seconde capture, même soir : la
+     pour Super PDP (Factur-X, norme commune) resservira ;
+   - **recherche du même soir** (`docs/faire-agreer-cause.md`) : le guide
+     officiel prévoit l'agrément **en marque blanche** sur une plateforme
+     déjà agréée (cas n° 1, page 20 : contrat, serveurs, liaison, la doc de
+     la plateforme support, et l'ISO 27001 du candidat). Iopole a le dossier
+     prêt, prérequis ISO 27001. Ordre de grandeur, confiance faible : 10 000
+     à 30 000 € la première année. **Trois questions à la DGFiP avant tout
+     achat** : périmètre de l'ISO 27001 en marque blanche, SecNumCloud pour
+     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
