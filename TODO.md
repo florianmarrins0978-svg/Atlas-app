@@ -1305,8 +1305,9 @@ comptes d'avant 0195 ne sont pas inscrits (aucun rattrapage, l'appli n'est pas
 vendue). Fait le même soir, pas éprouvé non plus : le message sous la case du SIRET
 avant la création du compte, et le registre des entreprises (un SIRET qu'il
 n'a pas confirmé n'envoie ni devis ni facture, migration 0196,
-`ARCHITECTURE.md` §613). **L'écran d'inscription n'a pas été regardé** : à
-regarder, serveur relancé sur son oui. « Ce n'est pas votre entreprise ?
+`ARCHITECTURE.md` §613). L'écran d'inscription a été regardé dans ses cinq
+états, sur son oui. Le registre écrit en majuscules : l'adresse qu'il remplit
+part ainsi sur les devis tant qu'il ne la retape pas. « Ce n'est pas votre entreprise ?
 Écrivez-nous. » n'est pas posé : Cause n'a pas encore d'adresse où écrire.
 Reste : l'identité attachée au SIRET. Ses mots : *« on part sur le SIREN comme tu as dit »*,
 et sur la carte de paiement : *« pas une bonne idée, parce que si un patron
