@@ -1198,6 +1198,21 @@ passe-t-il après les 15 jours ? » changent de mots, pas de place. Pendant
 l'essai, tout reste ouvert (lu ainsi par moi : c'est l'article 14.2 et
 `FORMULE_DE_LESSAI`).
 
+**Tranché le 23 novembre : l'essai reste à 15 jours.** Il avait proposé 7,
+puis : *« Ok on garde 15 jours »*. Raison donnée : un artisan doit voir un devis
+accepté puis une facture, ce qui tient rarement en 7 jours, et avec la carte
+enregistrée dès l'inscription, un essai court se lit comme un piège.
+
+**Pas encore tranché : A ou B.** A, la carte à l'inscription et l'abonnement qui
+démarre seul (la planche) ; B, la lecture seule à la fin et le paiement pour
+débloquer (ce que disent l'appli et l'article 14.2 aujourd'hui). Ma
+recommandation : A. Sa raison à lui de payer sur le site, la commission
+d'Apple, ne joue que si Cause entre sur l'App Store : installée depuis Safari,
+comme aujourd'hui, Apple ne touche rien. Sur l'App Store, B demanderait dans
+l'appli iPhone un bouton « payer sur le site », qu'Apple interdit ou fait payer
+hors des États-Unis (règle 3.1.3(f), confiance moyenne, ces règles bougent en
+Europe) ; A n'en a pas besoin.
+
 **Ce que son oui déclenchera, et qui n'est pas qu'un report de planche :**
 
 | | |
