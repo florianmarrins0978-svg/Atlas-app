@@ -1152,6 +1152,18 @@ seulement de la première. **À faire, à part, sur son « oui »** (outillage,
 niveau 2) : que le flux attende de voir son artefact avant de déployer, ou
 redéploie une fois de lui-même.
 
+## ⏳ LA VISITE GUIDÉE SUR LE SITE : la planche attend son « oui » (22 novembre 2026)
+
+`appli/vente/cause-2-visite.html` porte ce qu'il a choisi le 22 au soir : la
+carte de la visite (un petit téléphone avec la vraie image du planning, qui
+gigote « 1, 2, 3, il s'arrête ») sous l'ouverture **et** sous l'option des
+outils à 6 €, plus une bande « Voyez l'appli en vrai. » avant les prix. Elle
+se refait par `python3 appli/scripts/planche-visite-site.py appli/vente/cause-2.html appli/vente/cause-2-visite.html`.
+
+**Rien n'est posé dans `cause-2.html` tant qu'il n'a pas dit oui.** À son oui :
+reporter les trois places dans `cause-2.html`, effacer la planche et son
+script, et lui demander au passage si la bande reste utile avec deux cartes.
+
 ## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2.html` (sa décision du 22 novembre 2026) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 
 **Sa décision du 22 novembre 2026.** À ma question « quelle page devient le
