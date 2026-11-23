@@ -57,6 +57,12 @@ const MOTS = {
     titre: "Un compte Cause existe déjà pour votre entreprise.",
     texte: "Demandez à y être invité, ou continuez avec un compte à vous, sans essai gratuit.",
   },
+  // Sa question du 23 novembre : « ce qu'il faut qu'il fasse, c'est qu'il fasse
+  // retour et qu'il se connecte à son compte ». Un appui, plutôt que sept
+  // « Retour » jusqu'à la porte : le lien vient en premier, c'est le cas le
+  // plus courant (il a déjà son compte, il ne s'en souvenait plus).
+  connexion: "J'ai déjà un compte : me connecter",
+  connexionDit: "Dans l'appli : ouvre la connexion. Il retrouve son compte, ses devis et ses clients.",
   pasMoi: "Ce n'est pas votre entreprise ? Écrivez-nous.",
   pasMoiDit: "Dans l'appli : ouvre un message à Cause. Le SIRET est public. On vérifie, et l'essai est rendu.",
   ruban: "Essai déjà utilisé par votre entreprise",
@@ -93,6 +99,7 @@ const retouches = (etat, d) => {
     bloc.innerHTML =
       `<p class="ed-titre">${cas.titre}</p>` +
       `<p class="ed-texte">${cas.texte}</p>` +
+      `<button type="button" class="ed-lien" data-dit="${d.mots.connexionDit}">${d.mots.connexion}</button>` +
       `<button type="button" class="ed-lien" data-va="siret">Corriger le SIRET</button>` +
       `<button type="button" class="ed-lien" data-dit="${d.mots.pasMoiDit}">${d.mots.pasMoi}</button>`;
     refus.replaceWith(bloc);
