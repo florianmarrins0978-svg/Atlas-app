@@ -1,5 +1,42 @@
 # Prochaines tâches
 
+## TRANCHÉ : CHANGER DE FORMULE (23 novembre 2026), À CODER
+
+**Trouvé par son essai contre le vrai Stripe** (clé de test, son espace) : un
+toucher sur « Entreprise » change la formule **sans confirmation et sans rien
+débiter** (`changerLaFormule`, `src/server/paiement/stripe.ts`,
+`proration_behavior: create_prorations`). La différence attend la prochaine
+échéance : un client qui monte puis résilie a la formule supérieure gratuite.
+Et la descente prend effet tout de suite, contre l'article 14.6 des conditions
+générales (« à l'échéance suivante »).
+
+**Ses décisions du 23 novembre :**
+
+| | |
+|---|---|
+| **monter** | *« si il change de formule, il repaye »* : le prix entier de la nouvelle formule est débité le jour du changement, qui devient la nouvelle échéance ; la période en cours n'est pas remboursée |
+| **descendre** | *« pour descendre il paie rien »* : la formule moins chère commence à l'échéance suivante, rien n'est débité |
+
+**Ce qu'il faut, dans l'ordre :** (1) une planche figée sur le vrai écran
+Abonnement, avec la feuille de confirmation qui dit le montant avant de
+valider (« 59 € HT débités aujourd'hui, les jours restants d'Artisan ne sont
+pas remboursés ») ; (2) une version 4 des conditions générales, article 14.6
+réécrit, avec son préavis de trente jours ; (3) le code : montée par
+`billing_cycle_anchor=now` et `proration_behavior=none`, sans changer la
+formule tant que le paiement n'est pas passé (carte refusée, 3-D Secure) ;
+descente programmée à l'échéance (planification d'abonnement Stripe, ou
+crochet). Niveau 3 (argent) : batterie sur son « oui ». **Le texte de 14.6
+qu'il a vu** : « Le passage à une formule supérieure prend effet
+immédiatement : son prix est dû en entier à la date du changement, qui devient
+la nouvelle date d'échéance. La période en cours de l'ancienne formule n'est
+pas remboursée. Le passage à une formule inférieure prend effet à l'échéance
+suivante. »
+
+**Le risque, dit une fois** : entre professionnels, une clause qui fait payer
+deux fois la même période peut être contestée (Code de commerce, L442-1).
+Ce qui la défend : elle est écrite, et le montant s'affiche avant la
+validation. À faire relire par le juriste des conditions générales.
+
 ## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
 
 Proposé : poser une vraie question avant le plan quand le piquage est sur un robinet (« Garder une sortie libre pour un tuyau d'arrosage ? »), au lieu de l'interrupteur « Double sortie sous le robinet », éteint d'office (`LePlanDuJardin.tsx`). Sa réponse : *« Non »*. Ne pas le reproposer.
