@@ -1480,6 +1480,15 @@ Trois règles qui en découlent, et qui ne se négocient pas :
    travaillait à l'autre bout, c'est repayer dix minutes pour n'apprendre rien
    — et laisser `main` bouger encore pendant ce temps.
 
+5. **ON NE FUSIONNE JAMAIS LA BRANCHE D'UNE AUTRE SESSION — 23 novembre
+   2026.** Une session a fusionné `origin/claude/wonderful-goldberg-q0uoee`
+   dans la sienne, puis a poussé sur `main` : elle a emporté un lot d'arrosage
+   qui attendait sa batterie, refusée par lui (*« Non, attends »*). Son espace
+   a servi un calcul non éprouvé, et la publication des planches est tombée
+   jusqu'à la correction. **Ce qui attend sur une branche de session n'est pas
+   validé ; seul `main` est commun.** On refusionne `origin/main`, et rien
+   d'autre.
+
 **Après une fusion, rejouer la batterie SEULEMENT si le code arrivé touche ce
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
