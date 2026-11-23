@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deux nourrices</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ À L'ÉCRAN (CLAUDE.md §3 bis). Sa règle du 23 novembre 2026, donnée quand sa
+  règle « une vanne de plus dès 0,1 bar » a fait passer des jardins de six à sept vannes : « faire une
+  deuxième nourrice avec une nouvelle voie, et donc prévoir un Té de plus pour faire arriver l'eau dans la
+  nouvelle nourrice », puis « moitié-moitié » et « deux regards ». Puis, devant ce qui restait à faire (la
+  3D et la vue éclatée n'en montrent qu'une) : « Fait une planche ».
+
+  CE QUI EST DÉJÀ CODÉ, et que cette planche lit tel quel : la composition (CATALOGUE.fichesNourrices,
+  moitié-moitié, le goutte-à-goutte sur la seconde), la liste des pièces, le té et le tuyau de l'amenée.
+
+  CE QUI EST PROPOSÉ, pour l'écran du plan (NourriceEclatee.tsx), sur sa consigne du même soir : « ne
+  refais pas un truc en 3D. Tu prends par exemple une nourrice 4 voies et du coup tu la dupliques pour
+  refaire une deuxième nourrice 4 voies à côté. » Une seule vue : la nourrice de l'appli, composée deux
+  fois par le même module (nourrice-3d/composition.js), la seconde posée à côté de la première. Mêmes
+  pièces, même éclaté au toucher, mêmes numéros d'une nourrice à l'autre ; R1, R2… se suivent de la
+  première à la seconde. Au-dessus, l'amenée : le té, et un tuyau vers chaque regard.
+-->
+<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
+<link rel="modulepreload" href="vendor/three/three.module.min.js">
+<link rel="modulepreload" href="nourrice-3d/vue.js">
+<link rel="modulepreload" href="nourrice-3d/reperes.js">
+<link rel="modulepreload" href="nourrice-3d/composition.js">
+<style>
+[data-charte="origine"]{--atlas-orTexte:#8b6835;--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#6f6b60;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint);-webkit-text-size-adjust:100%}
+  ::selection{background:var(--atlas-ink);color:var(--atlas-card)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif;text-wrap:balance}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:16px 16px 70px;min-height:100vh}
+  h2{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  h3{margin:18px 0 8px;font:400 18px/1.25 Georgia,"Times New Roman",serif}
+  .caps{display:block;margin:16px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .caps:first-child{margin-top:0}
+  .voies{display:flex;gap:6px;margin-top:10px}
+  .voies button{flex:1;min-width:0;min-height:44px;padding:0 4px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font:inherit;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .18s ease-out,color .18s ease-out,border-color .18s ease-out,transform .12s ease-out}
+  .voies button:active{transform:scale(.97)}
+  .voies button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .voies button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){.voies button,.attente{transition:none}}
+
+  /* L'AMENÉE : du compteur au té, puis un tuyau par regard. Le second se mesure. */
+  .amenee{margin-top:18px;padding:14px 14px 12px;border-radius:6px;background:var(--atlas-card)}
+  .amenee svg{display:block;width:100%;height:auto;margin-top:12px;overflow:visible}
+  .amenee .tuyau{fill:none;stroke:var(--atlas-ink);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  .amenee .mesurer{stroke-dasharray:5 5}
+  .amenee .regard{fill:var(--atlas-cream);stroke:var(--atlas-ink);stroke-width:1.5}
+  .amenee .te{fill:var(--atlas-or);stroke:var(--atlas-ink);stroke-width:1.2}
+  .amenee text{font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;fill:var(--atlas-ink)}
+  .amenee .leger{fill:var(--atlas-inkSoft);font-size:12.5px}
+  .amenee .titre-regard{font-weight:600;font-size:13.5px}
+  .pieces-amenee{margin:12px 0 0;padding:10px 0 0;border-top:1px solid var(--atlas-line);list-style:none;font-size:14px;line-height:1.4}
+  .pieces-amenee li{display:flex;gap:8px;padding:3px 0}
+  .pieces-amenee .q{flex:none;min-width:2.4em;font-variant-numeric:tabular-nums;color:var(--atlas-inkSoft)}
+  .pieces-amenee .detail{display:block;font-size:12.5px;color:var(--atlas-muted)}
+
+  /* UNE NOURRICE : la plage de l'écran du plan (NourriceEclatee.tsx), sa 3D, sa liste, ce qui va avec. */
+  .nourrice{margin-top:24px}
+  .nourrice .plage{margin-top:10px;padding:16px 14px 14px;border-radius:6px;background:var(--atlas-card)}
+  .sous{margin:4px 0 0;min-height:1.45em;font-size:13.5px;color:var(--atlas-muted)}
+  .plage .voies{margin-top:12px}
+  .plage .voies + .voies{margin-top:6px}
+  .vue{position:relative;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--atlas-line);background:#d6d5d2;aspect-ratio:4/5;max-height:76vh;width:100%}
+  .vue canvas{display:block;width:100%;height:100%;touch-action:none;outline:0;-webkit-tap-highlight-color:transparent;cursor:grab}
+  .vue canvas:active{cursor:grabbing}
+  .vue canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--atlas-or)}
+  .vue::after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px var(--atlas-line);pointer-events:none}
+  .attente{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-size:14px;color:var(--atlas-inkSoft);background:#d6d5d2;transition:opacity .35s ease-out}
+  .attente[hidden]{display:none}
+  .attente.part{opacity:0;pointer-events:none}
+  .attente.refus{font-size:15px;line-height:1.4;color:var(--atlas-ink)}
+  .liste{margin:12px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+  .liste button{display:flex;align-items:flex-start;gap:8px;width:100%;min-height:40px;padding:4px 0;border:0;background:none;color:var(--atlas-ink);font:inherit;font-size:14px;line-height:1.35;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .liste b{flex:none;display:flex;align-items:center;justify-content:center;width:22px;height:22px;margin-top:-1px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:12px}
+  .liste button[aria-pressed="true"] span{color:var(--atlas-orTexte);font-weight:600}
+  .liste button[aria-pressed="true"] b{background:var(--atlas-or)}
+  .liste button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px;border-radius:4px}
+  .avec{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .avec li{padding:8px 12px;border-radius:10px;background:var(--atlas-card);box-shadow:inset 0 0 0 1px var(--atlas-line);font-size:14px;line-height:1.3}
+  .avec .q{font-variant-numeric:tabular-nums;color:var(--atlas-inkSoft)}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Deux nourrices</h1>
+  <p>Au-delà de six réseaux : la même nourrice, deux fois, chacune dans son regard, et un té sur l’amenée. Touchez-les pour les éclater.</p>
+</div>
+<main class="ecran">
+  <span class="caps" id="l-reseaux">Combien de réseaux</span>
+  <div class="voies" role="group" aria-labelledby="l-reseaux">
+    <button type="button" data-reseaux="7">7</button><button type="button" data-reseaux="8">8</button><button type="button" data-reseaux="9">9</button>
+    <button type="button" data-reseaux="10">10</button><button type="button" data-reseaux="11">11</button><button type="button" data-reseaux="12">12</button>
+  </div>
+  <span class="caps" id="l-goutte">Dont en goutte-à-goutte</span>
+  <div class="voies" id="goutte" role="group" aria-labelledby="l-goutte"></div>
+
+  <section class="amenee" aria-labelledby="t-amenee">
+    <h2 id="t-amenee">L’amenée</h2>
+    <svg id="schema" viewBox="0 0 360 176" role="img" aria-label="Du compteur au té, puis un tuyau vers chaque regard."></svg>
+    <ul class="pieces-amenee" id="pieces-amenee"></ul>
+  </section>
+
+  <section class="nourrice" aria-labelledby="t-nourrices">
+    <h2 id="t-nourrices"></h2><p class="sous" id="sous-titre"></p>
+    <div class="plage">
+      <div class="vue"><canvas id="scene" tabindex="0" role="img" aria-label="Les deux nourrices en 3D. Un toucher les éclate, un second les remonte."></canvas>
+        <div id="reperes" aria-hidden="true"></div><div class="attente" id="attente" role="status">Chargement</div></div>
+      <div class="voies" role="group" aria-label="Disposition"><button type="button" data-disposition="cote" aria-pressed="true">À côté</button><button type="button" data-disposition="dessous" aria-pressed="false">L’une sous l’autre</button></div>
+      <div class="voies" role="group" aria-label="Montage"><button type="button" data-montage="montee" aria-pressed="true">Montée</button><button type="button" data-montage="eclatee" aria-pressed="false">Éclatée</button></div>
+      <div class="voies" role="group" aria-label="Point de vue"><button type="button" data-vue="biais" aria-pressed="true">De biais</button><button type="button" data-vue="dessus" aria-pressed="false">Dessus</button><button type="button" data-vue="face" aria-pressed="false">De face</button></div>
+      <ol class="liste" id="liste"></ol>
+    </div>
+    <h3>Avec les nourrices</h3><ul class="avec" id="avec"></ul>
+  </section>
+</main>
+<script>
+// CE QUI SE DIT QUAND LA 3D NE PEUT PAS S'AFFICHER : la même phrase que la planche de la nourrice en 3D,
+// posée dans chaque vue. Écrit à l'ancienne : il doit tourner sur le téléphone qui ne sait pas lire le reste.
+var NOURRICE_3D = { prete: false, refus: "" };
+function refuser(phrase) {
+  if (NOURRICE_3D.prete || NOURRICE_3D.refus) return;
+  NOURRICE_3D.refus = phrase;
+  var vues = document.querySelectorAll(".attente");
+  for (var i = 0; i < vues.length; i++) { vues[i].hidden = false; vues[i].className = "attente refus"; vues[i].textContent = phrase; }
+}
+var REFUS = {
+  ancien: "Ce navigateur est trop ancien pour afficher la 3D. Mettez votre téléphone à jour (Safari 16.4 ou plus récent).",
+  webgl: "Cet appareil ne sait pas afficher la 3D : WebGL est absent ou coupé.",
+  charge: "La 3D n’a pas pu se charger. Rechargez la page."
+};
+if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports("importmap"))) document.addEventListener("DOMContentLoaded", function () { refuser(REFUS.ancien); });
+window.addEventListener("error", function () { refuser(REFUS.charge); }, true);
+window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge); });
+</script>
+<script src="arrosage-catalogue.js"></script>
+<script type="module">
+import { ouvrirNourrice } from "./nourrice-3d/vue.js";
+import { poserReperes } from "./nourrice-3d/reperes.js";
+import { composer } from "./nourrice-3d/composition.js";
+import { creerPieces } from "./nourrice-3d/pieces/index.js";
+
+var $ = function (id) { return document.getElementById(id); }, CAT = window.CATALOGUE;
+var etat = { reseaux: 8, goutte: 0, choisi: 0, eclatee: false, vue: "biais", disposition: "cote" };
+
+// Les couleurs des réseaux, celles du plan (calcul.js, COULEURS_RESEAU).
+var COULEURS_RESEAU = ["#2F6FB5", "#3E8F4E", "#D9A520", "#B5502F", "#7A4FA3", "#1F8A8A", "#B5417F", "#6B7A2F"];
+// Le nom de chaque pièce, comme la légende de l'appli (NourriceEclatee.tsx).
+var NOMS = { "coude-mf": "Coude MF 1\"", mamelon: "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", pehd: "PEHD Ø25" };
+function nomDe(cle) { if (NOMS[cle]) return NOMS[cle]; var p = CAT.piece(cle) || CAT.piecesReseau[cle]; return p ? (p.marque ? p.marque + " " : "") + p.nom : cle; }
+
+// LE PARTAGE, celui que la liste compte (CATALOGUE.fichesNourrices dans le calcul) : moitié-moitié, le
+// goutte-à-goutte (numéroté en dernier) sur la seconde. Écrit ici pour que la planche se lise sans lui.
+function partage() {
+  var a = Math.ceil(etat.reseaux / 2), voies = [a, etat.reseaux - a], reste = etat.goutte;
+  var goutte = voies.slice().reverse().map(function (v) { var x = Math.min(v, reste); reste -= x; return x; }).reverse();
+  return voies.map(function (v, i) { return { voies: v, goutte: goutte[i], premier: i ? voies[0] : 0 }; });
+}
+
+// L'AMENÉE, dessinée : le compteur à gauche, le té, et un tuyau vers chaque regard ; le second en tirets, il se mesure.
+function schema(nn) {
+  var r = function (n) { return "R" + (n.premier + 1) + " à R" + (n.premier + n.voies); };
+  $("schema").innerHTML =
+    '<text x="0" y="93" class="leger">Compteur</text>' +
+    '<path class="tuyau" d="M64 88 H150"/>' +
+    '<path class="tuyau" d="M150 88 V36 H226"/>' +
+    '<path class="tuyau mesurer" d="M150 88 V140 H226"/>' +
+    '<path class="te" d="M150 79 L159 88 L150 97 L141 88 Z"/>' +
+    '<text x="164" y="93" class="leger">Té</text>' +
+    '<text x="160" y="160" class="leger">à mesurer</text>' +
+    '<rect class="regard" x="226" y="12" width="134" height="48" rx="6"/>' +
+    '<text x="238" y="32" class="titre-regard">Regard 1</text>' +
+    '<text x="238" y="50" class="leger">' + nn[0].voies + " voies, " + r(nn[0]) + "</text>" +
+    '<rect class="regard" x="226" y="116" width="134" height="48" rx="6"/>' +
+    '<text x="238" y="136" class="titre-regard">Regard 2</text>' +
+    '<text x="238" y="154" class="leger">' + nn[1].voies + " voies, " + r(nn[1]) + "</text>";
+  $("pieces-amenee").innerHTML =
+    '<li><span class="q">1x</span><span>' + nomDe("te-25-25-25") + '<span class="detail">partage l’amenée entre les deux nourrices</span></span></li>' +
+    '<li><span class="q">?</span><span>PEHD Ø25<span class="detail">du té au second regard, à mesurer</span></span></li>';
+}
+
+// LA NOURRICE DUPLIQUÉE. Chaque nourrice se compose comme dans l'appli (sa fiche, composition.js) ; la
+// seconde se pose à côté de la première, à la largeur d'un regard près, montée comme éclatée.
+var ECART_MONTEE = 240, ECART_ECLATEE = 900; // mm entre le bord de la première et le début de la seconde ; à l'éclaté, les colonnes s'allongent et se penchent dans la vue de biais
+var PIECES = { fin: null, leger: null };
+function piecesPour(n) { var k = n > 8 ? "leger" : "fin"; return PIECES[k] || (PIECES[k] = creerPieces(k === "leger" ? 0.6 : 1)); }
+// « À côté » (sa consigne) : la seconde à droite de la première. « L'une sous l'autre » : la seconde
+// au-delà du bout des tuyaux de la première ; chaque nourrice garde alors toute la largeur du téléphone.
+var ECART_DESSOUS = 340; // mm entre le bout des tuyaux de la première et la rangée de la seconde, de quoi y écrire « Arrivée d’eau »
+function aCote(c1, c2, disposition) {
+  var dM = 0, dE = 0, zM = 0, zE = 0;
+  if (disposition === "dessous") {
+    var bout = function (c, cle) { return c.pieces.reduce(function (m, p) { return Math.max(m, p[cle][1] + (p.L || 0)); }, -Infinity); };
+    zM = bout(c1, "monte") + ECART_DESSOUS; zE = bout(c1, "eclate") + ECART_DESSOUS;
+  } else {
+    var droite = function (c, cle) { return c.pieces.reduce(function (m, p) { return Math.max(m, p[cle][0]); }, -Infinity); };
+    var gauche = function (c, cle) { return c.pieces.reduce(function (m, p) { return Math.min(m, p[cle][0]); }, Infinity); };
+    dM = droite(c1, "monte") + ECART_MONTEE - gauche(c2, "monte"); dE = droite(c1, "eclate") + ECART_ECLATEE - gauche(c2, "eclate");
+  }
+  var n = c1.pieces.length, nc = c1.colonnes.length;
+  return {
+    pieces: c1.pieces.concat(c2.pieces.map(function (p) {
+      return Object.assign({}, p, { monte: [p.monte[0] + dM, p.monte[1] + zM], eclate: [p.eclate[0] + dE, p.eclate[1] + zE], indice: p.indice + n, colonne: p.colonne >= 0 ? p.colonne + nc : -1 });
+    })),
+    colonnes: c1.colonnes.concat(c2.colonnes.map(function (c) {
+      return Object.assign({}, c, { parent: c.parent + n, xMonte: c.xMonte + dM, xEclate: c.xEclate + dE, pieces: c.pieces.map(function (i) { return i + n; }) });
+    })),
+    erreurs: c1.erreurs.concat(c2.erreurs)
+  };
+}
+
+var V = null, R = null, compo = null, cles = [], premiere = { pieces: 0, modeles: {} };
+function reposer() {
+  var nn = partage();
+  schema(nn);
+  var defs = piecesPour(etat.reseaux);
+  var c1 = composer(CAT.ficheNourrice(nn[0].voies, nn[0].goutte), nn[0].voies, nn[0].goutte, defs);
+  compo = aCote(c1, composer(CAT.ficheNourrice(nn[1].voies, nn[1].goutte), nn[1].voies, nn[1].goutte, defs), etat.disposition);
+  premiere = { pieces: c1.pieces.length, modeles: {} };
+  c1.pieces.forEach(function (p) { premiere.modeles[p.cle] = true; });
+  V.scene.poser(compo, defs);
+  V.scene.regarder(etat.vue || "biais", false);
+  $("t-nourrices").textContent = nn[0].voies === nn[1].voies ? "Deux nourrices de " + nn[0].voies + " voies" : "Deux nourrices, " + nn[0].voies + " et " + nn[1].voies + " voies";
+  $("sous-titre").textContent = etat.goutte ? "Dont " + etat.goutte + " en goutte-à-goutte, sur la seconde." : "";
+  // La liste : un numéro par modèle, le même sur les deux nourrices, comme l'écran du plan.
+  var vus = {};
+  cles = [];
+  V.numeros().forEach(function (e) { if (!vus[e.numero]) { vus[e.numero] = true; cles.push(e.cle); } });
+  if (etat.choisi > cles.length) etat.choisi = 0;
+  $("liste").innerHTML = cles.map(function (c, k) {
+    return '<li><button type="button" data-numero="' + (k + 1) + '" aria-pressed="false"><b>' + (k + 1) + "</b><span>" + nomDe(c) + "</span></button></li>";
+  }).join("");
+  // Ce que les deux fiches comptent et que la 3D ne pose pas : les regards, les programmateurs, les piles.
+  var dans = {};
+  cles.forEach(function (c) { dans[c] = true; });
+  var fusion = {};
+  nn.forEach(function (n) { CAT.ficheNourrice(n.voies, n.goutte).pieces.forEach(function (p) { fusion[p.ref] = (fusion[p.ref] || 0) + p.q; }); });
+  $("avec").innerHTML = Object.keys(fusion).map(function (ref) { return { ref: ref, q: fusion[ref] }; }).filter(function (p) { return !dans[p.ref] && /^(regard|prog|pile)/.test(p.ref); })
+    .map(function (p) { return '<li><span class="q">' + p.q + "x</span> " + nomDe(p.ref) + "</li>"; }).join("");
+  choisir();
+  boutons();
+}
+
+function choisir() { var cle = etat.choisi ? cles[etat.choisi - 1] : null; V.choisir(cle); R.choisir(cle); }
+
+function boutons() {
+  document.querySelectorAll("[data-reseaux]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.reseaux) === etat.reseaux)); });
+  var gg = "";
+  for (var j = 0; j <= 4; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === etat.goutte) + '">' + (j ? j : "Aucune") + "</button>";
+  $("goutte").innerHTML = gg;
+  document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
+  document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === etat.vue)); });
+  document.querySelectorAll("[data-disposition]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.disposition === etat.disposition)); });
+  document.querySelectorAll("[data-numero]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.numero) === etat.choisi)); });
+}
+
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b || !V) return;
+  if (b.dataset.reseaux) { etat.reseaux = Number(b.dataset.reseaux); reposer(); }
+  else if (b.dataset.goutte) { etat.goutte = Number(b.dataset.goutte); reposer(); }
+  else if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
+  else if (b.dataset.vue) V.regarder(b.dataset.vue);
+  else if (b.dataset.disposition) { etat.disposition = b.dataset.disposition; reposer(); }
+  // Une ligne touchée allume ses numéros sur les deux nourrices, grise les autres pièces, et éclate.
+  else if (b.dataset.numero) { var n = Number(b.dataset.numero); etat.choisi = etat.choisi === n ? 0 : n; if (etat.choisi) V.eclater(true); boutons(); choisir(); }
+});
+
+try {
+  V = ouvrirNourrice($("scene"), { ficheNourrice: CAT.ficheNourrice, hdri: "vendor/hdri/studio.exr" });
+  // Les repères lisent les colonnes de la composition posée : celles des deux nourrices, R1, R2… à la suite.
+  // LES NUMÉROS SUR LA PREMIÈRE : la seconde est la même nourrice, ses numéros redoublaient chacun et,
+  // deux fois plus petites à l'écran, les pièces se perdaient sous eux. Elle ne garde que les siens
+  // (le goutte-à-goutte, un collecteur d'une autre taille). Les R du bas, eux, restent sur les deux.
+  var numeros = function () { return V.numeros().filter(function (e) { return e.indice < premiere.pieces || !premiere.modeles[e.cle]; }); };
+  var vue = { scene: V.scene, numeros: numeros, colonnes: function () { return compo ? compo.colonnes.map(function (c) { return { arrivee: c.arrivee, goutte: c.goutte, pieces: c.pieces.slice() }; }) : []; } };
+  R = poserReperes($("reperes"), vue, { voie: function (k) { return { nom: "R" + (k + 1), couleur: COULEURS_RESEAU[k % COULEURS_RESEAU.length] }; } });
+  V.scene.surImage(R.placer);
+  V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
+  NOURRICE_3D.prete = true;
+  reposer();
+  var attente = $("attente"), dejaVue = false;
+  V.scene.surImage(function () { if (dejaVue) return; dejaVue = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
+  // Pour les contrôles : l'état, la scène, et les erreurs de composition des deux nourrices.
+  window.__deuxNourrices = { etat: etat, scene: V.scene, erreurs: function () { return compo ? compo.erreurs : []; } };
+} catch (erreur) {
+  refuser(/WebGL/.test(String(erreur && erreur.message)) ? REFUS.webgl : REFUS.charge);
+  throw erreur;
+}
+</script>
+</body>
+</html>

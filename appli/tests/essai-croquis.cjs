@@ -185,9 +185,13 @@ const ORPHELINS = `(() => {
   // On le PROVOQUE, avec une pelouse assez grande pour qu'une PGP soit posée.
   // Un contrôle qui ne rencontre jamais son cas ne mesure rien — le piège du
   // 15 août, en version « jamais atteint ».
+  //
+  // **60 × 40 depuis le 23 novembre 2026.** Le 40 × 30 posait une PGP ; aux
+  // écartements de Rain Bird (sa décision du 22 novembre), il pose dans cette
+  // page des Hunter SRM en 1/2", et le cas n'était plus atteint.
   const gros = await page.evaluate(() => {
     etat.marque = 'hunter';
-    etat.zones = [{ id: 1, nom: 'Grande pelouse', type: 'gazon', L: 40, l: 30, materiel: 'auto' }];
+    etat.zones = [{ id: 1, nom: 'Grande pelouse', type: 'gazon', L: 60, l: 40, materiel: 'auto' }];
     const p = poser(etat.zones[0]);
     const c = p.m && p.m.type === 'turbine' ? CATALOGUE.corpsDeLaBuse(p.m.buse) : null;
     const lignes = listeMateriel(decouper());

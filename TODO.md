@@ -1,5 +1,117 @@
 # Prochaines tâches
 
+## ⏳ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ SUR LA BRANCHE DES DEUX NOURRICES (23 novembre 2026)
+
+Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
+en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
+`appli/arrosage-nourrice-3d-gag.html`, la vraie nourrice, « Aujourd'hui » et « Proposé ». Le mot
+entier sous la première voie, GAG sous les suivantes ; un mot qui en couvrirait un autre se décale sur
+le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd'hui, aucune proposée.
+~~**À lui de choisir**~~ : *« C'est bien »*, puis *« pareil pour 12 vannes : une goutte à goutte et le
+reste GAG »*. La planche va désormais de 1 à 12 voies, toutes en goutte-à-goutte au besoin (elle
+s'arrêtait à six voies, celle des deux nourrices à quatre en goutte-à-goutte : des limites de planche,
+pas de l'appli). Codé dans `appli/nourrice-3d/reperes.js` sur la branche `claude/laughing-wright-xxntzg`,
+avec les deux nourrices : il arrive sur `main` avec leur batterie, sur son accord.
+
+## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
+
+Sa capture, sur « Changer de formule » : *« Passer à Entreprise flottant, il
+est coupé à moitié par le bandeau déroulant du menu en bas »*. L'appli mesure
+la hauteur de sa barre en direct (`AtlasBottomNav`, `--atlas-barre` posé sur
+`<html>`) ; `corps()` (`scripts/planche-figee/figer.mjs`) fige cette mesure
+telle que Chromium la fait ici, **48 px, sans la bande du geste d'accueil**.
+Sur son iPhone la barre en fait environ 82 : tout ce qui flotte à
+`bottom: var(--atlas-barre)` passe dessous. Reproduit en donnant 34 px de bande
+à la barre : 22 px du bouton dessous.
+
+**Corrigé dans cette seule planche** (`appli/scripts/changer-de-formule/
+composer.mjs`, `pansement assumé`) : la mesure figée se retire, et la planche
+la refait comme l'appli. **La racine est l'outil partagé** : `composer()` doit
+retirer `--atlas-barre` du style figé et la mesurer dans son script, et la
+planche ci-dessus rend alors son pansement. C'est de l'outillage, donc le
+niveau 2 (`npm run verifier:avant-fusion`), qui attend son « oui ».
+
+**26 planches figées portent la même mesure** (`grep -rlE '<html[^>]*--atlas-barre'
+--include='*.html' appli`), dont `identite-au-registre`, `planning-sans-fiche`,
+`abonnement-module-paysage`, `visite-guidee`. Elles se répareront en les
+recomposant, une fois l'outil corrigé.
+
+## ⏳ UNE PLANCHE À REGARDER : CHANGER DE FORMULE (23 novembre 2026)
+
+**Trouvé par lui le 23 novembre, en payant pour de vrai avec une clé Stripe de
+test** : « Passer à Entreprise » change la formule sans rien dire du montant
+et sans rien débiter (`changerLaFormule`, `proration_behavior:
+create_prorations`) : la différence attend l'échéance, donc monter puis
+résilier donne la formule supérieure gratuitement. Et la descente prend effet
+tout de suite, contre l'article 14.6 (« à l'échéance suivante »).
+
+**Ses décisions, à ne pas lui redemander :**
+
+| | |
+|---|---|
+| **monter** | le prix ENTIER de la nouvelle formule est débité le jour du changement, qui devient la nouvelle échéance ; les jours restants de l'ancienne ne sont pas remboursés |
+| **descendre** | rien n'est débité ; la formule moins chère commence à l'échéance, il garde jusque-là celle qu'il a payée |
+| **article 14.6, version 4** | « Le passage à une formule supérieure prend effet immédiatement : son prix est dû en entier à la date du changement, qui devient la nouvelle date d'échéance. La période en cours de l'ancienne formule n'est pas remboursée. Le passage à une formule inférieure prend effet à l'échéance suivante. » |
+
+**La planche**, sur le vrai écran Abonnement figé
+(`appli/scripts/changer-de-formule/`) : `appli/soignee/changer-de-formule.html`.
+Une feuille (celle d'« Avant de partir ») dit le montant avant « Confirmer » ;
+la carte refusée laisse la formule et le dit dans la feuille ; la descente
+prévue se lit sur l'état (« Jusqu'au 23 décembre 2026, puis Artisan ») et sur
+la carte d'Artisan, et **« Garder Entreprise »** la retire (ajouté : sans lui,
+changer d'avis voudrait dire attendre l'échéance puis repayer le prix entier).
+**Rien n'est codé.**
+
+**Son exemple disait « Prochain paiement le 23 janvier » : faux avec sa
+règle.** Abonné Artisan jusqu'au 23 décembre, sa période a commencé le
+23 novembre ; changé ce jour-là, la nouvelle échéance est le 23 décembre, et le
+mois d'Artisan payé le matin même est perdu en entier. La planche suit la
+règle. C'est aussi ce que dit son texte de la descente, depuis Entreprise.
+
+**À trancher avant le code** (le code ne les invente pas) :
+
+1. **À l'année : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« ceux qui payent à
+   l'année, ils payent que la différence »*, puis sa précision : *« même si au
+   bout de 8 mois il décide de passer à la formule du dessus, il paye juste la
+   différence, mais pas au prorata »*. **La différence ENTIÈRE des deux prix de
+   l'année**, quel que soit le mois : Artisan vers Entreprise 200 € HT (590 −
+   390), Artisan vers Illimité 1 200, Entreprise vers Illimité 1 000. Déduit,
+   pas dit par lui : l'échéance ne bouge pas (la différence complète l'année
+   déjà payée, elle n'en ouvre pas une neuve). Aucune ouverture à monter puis
+   résilier : il a alors payé la formule du dessus jusqu'à l'échéance.
+2. **Changer de rythme** sur la même formule (au mois vers l'année) : montée
+   ou descente ?
+3. **Le compte de personnes : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« s'il veut
+   passer d'Entreprise à Artisan avec des salariés, faut lui dire que tous ses
+   autres comptes vont être supprimés »*. **Cela remplace le refus du
+   18 novembre** (Artisan refusé tant qu'il ne les a pas retirés). La feuille
+   le dit en ambre au-dessus de Confirmer (étape « Avec des salariés »), et
+   la suppression se fait le jour où Artisan commence. **Les devis et les
+   factures restent à l'entreprise** : une facture se garde dix ans (Code de
+   commerce, L123-22), donc supprimer un compte retire l'accès, jamais ses
+   documents. La phrase du 14.6 sur le nombre de comptes se réécrit dans ce
+   sens, au lieu de disparaître.
+
+**Ce que le code devra faire, déjà su :**
+
+- monter : un débit immédiat, avec la nouvelle échéance au jour du changement
+  (chez Stripe : `billing_cycle_anchor=now`, `proration_behavior=none`), et
+  **rien ne change si le paiement échoue** (`payment_behavior=error_if_incomplete`).
+  **Une troisième issue est possible** : la banque peut exiger une
+  confirmation (3D Secure) pour un débit immédiat ; la feuille devra l'ouvrir.
+  Pas vérifiable ici, faute de clé : à jouer sur son espace.
+- descendre : un changement PROGRAMMÉ à l'échéance (calendrier chez le
+  prestataire, ou tenu par Cause et appliqué au renouvellement), que « Garder
+  Entreprise » retire. `AvantDePartir.tsx` le disait déjà : le dépôt ne sait
+  pas encore le faire.
+- **« Avant de partir » propose la formule moins chère et la change
+  aujourd'hui, au prorata** : elle doit suivre la même règle de descente.
+- la version 4 des conditions générales, la même que celle du module Paysage
+  (`claude/happy-cannon-2rci5s`, qui touche aussi cet écran) : une seule
+  version 4, et la nouvelle règle ne s'applique qu'à un compte qui l'a
+  acceptée, sans quoi on débiterait contre la version 3 qu'il a signée
+  (prorata).
+
 ## ⏳ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD (23 novembre 2026)
 
 Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fusionne avec elles »*. Sur `claude/laughing-wright-xxntzg` : la pile du robinet en 3D (§608) et les turbines aux écartements de Rain Bird (`claude/wonderful-goldberg-q0uoee`, §609 ; il portait §603, déjà pris sur `main`). Puis sa réponse : *« Oui, une batterie »*, une seule pour les deux.
@@ -657,7 +769,7 @@ ouvre les **trois** outils de Paysage (arrosage, diagnostic, fiches de
 chantier) et se vend **avec les trois formules** (sa correction du soir :
 *« ça doit être pour toutes les formules »*), donc Entreprise et Illimité ne
 les comprennent plus ; choisir Artisan avec des salariés déjà invités est
-**refusé** tant qu'il ne les a pas retirés (article 14.6). Le module se règle
+**refusé** tant qu'il ne les a pas retirés (article 14.6). **Remplacé le 23 novembre** : la descente avec salariés n'est plus refusée, elle prévient que les autres comptes seront supprimés à l'échéance (« CHANGER DE FORMULE », en tête). Le module se règle
 **en haut**, une fois pour les trois (la variante « dans la carte Artisan » est
 tombée avec sa correction). Le même prix pour les trois formules, **confirmé
 le 19 novembre**. **Le 19 novembre aussi** : un plan d'arrosage et un
@@ -2978,6 +3090,68 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      sur son espace une fois l'adresse connue, puis un premier dépôt réel sur
      le compte d'essai, jamais sur son vrai compte (une facture transmise ne
      s'efface pas) ;
+   - **appris le 23 novembre 2026, et cela change la ligne du dessus** :
+     poser les deux variables ne suffira PAS. Notre connecteur
+     (`api-commune.ts`) parle l'API commune AFNOR (`/v1/healthcheck`,
+     `/v1/flows`) ; aucune source trouvée ne dit que Pennylane l'expose.
+     Ce que Pennylane documente, c'est SA propre API v2 :
+     `POST https://app.pennylane.com/api/external/v2/customer_invoices/e_invoices/imports`
+     (Factur-X en multipart, champ `file`, `invoice_options` facultatif,
+     portée `customer_invoices:all`), ouverte le 13 mars 2026 ; l'ancienne
+     `/e_invoices/imports` est dépréciée. Il faut donc un connecteur
+     Pennylane à côté de l'API commune, branché dans `catalogue.ts`
+     (niveau 3). **Inconnu à lever sur le compte d'essai** : une discussion
+     de leur forum dit qu'une facture importée ainsi peut rester
+     « informative », sans partir par la plateforme agréée. Sources
+     tierces et changelog lus par recherche web ; les pages de Pennylane
+     elles-mêmes sont refusées par le réseau d'ici ;
+   - **côté lui, vu sur sa capture du 23 novembre** : « Connectivité » porte
+     un cadenas dans ses Paramètres Pennylane, donc sa formule n'ouvre pas
+     l'API aujourd'hui. **Confirmé sur sa capture de Gestion d'abonnement** :
+     « API et intégrations avec vos outils du quotidien » figure dans la
+     formule **Essentiel** (Starter, une deuxième, Essentiel, Premium ; toutes
+     « sans engagement » ; prix non visibles sur la capture). Essentiel pris sur
+     sa vraie entreprise ne donne pas pour autant où éprouver : un dépôt y
+     part pour de bon, d'où l'environnement d'essai demandé à Pennylane.
+     **Sa réaction, même soir** : *« les utilisateurs vont devoir payer 24 €
+     par mois plus mon abonnement »*. Vrai pour un artisan sur Pennylane avec
+     le jeton collé (2 A). Trois voies posées, **rien de tranché** : garder
+     2 A ; l'application partenaire (2 B, à demander à Pennylane si elle
+     marche sur Starter, l'onglet Intégrations y étant visible) ; une
+     plateforme agréée en marque blanche dans Cause, payée par Cause et
+     comprise dans son prix (revient en partie sur la décision du
+     26 septembre, devis à demander). **Ne pas coder le connecteur par jeton
+     avant ses réponses** : il ferait payer Essentiel à chaque artisan ;
+   - **TRANCHÉ LE SOIR MÊME : C** (*« il faut faire C »*). `ARCHITECTURE.md`
+     §610, `docs/facture-electronique-plateforme-comprise.md`. Retenue sous
+     réserve de leur réponse : **Super PDP** (norme AFNOR 1.3.0, prix
+     publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
+     et à Iopole (messages prêts dans le document). **À nous, à son « go »
+     avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ;
+   - **sa suite, même soir** : *« on va commencer avec Super PDP et ensuite
+     on va essayer de faire agréer Cause »*. Exigences relevées sur la fiche
+     officielle de la DGFiP (`fiche-pdp.pdf`, septembre 2025) : dossier fiscal
+     et technique, **ISO 27001 ou SecNumCloud**, double authentification
+     dont un facteur dynamique (Cause a déjà le code TOTP), données dans
+     l'Union européenne, interconnexion aux autres plateformes, tests avec
+     le portail public, audit de conformité par un organisme indépendant,
+     agrément de 3 ans renouvelable. Rien n'est lancé ; le travail fait
+     pour Super PDP (Factur-X, norme commune) resservira ;
+   - **recherche du même soir** (`docs/faire-agreer-cause.md`) : le guide
+     officiel prévoit l'agrément **en marque blanche** sur une plateforme
+     déjà agréée (cas n° 1, page 20 : contrat, serveurs, liaison, la doc de
+     la plateforme support, et l'ISO 27001 du candidat). Iopole a le dossier
+     prêt, prérequis ISO 27001. Ordre de grandeur, confiance faible : 10 000
+     à 30 000 € la première année. **Trois questions à la DGFiP avant tout
+     achat** : périmètre de l'ISO 27001 en marque blanche, SecNumCloud pour
+     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ; Seconde capture, même soir : la
+     page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
+     accès accordés aux applications tierces », vide) et **aucun onglet
+     Développeurs**, donc pas de jeton possible sur sa formule. Cette page
+     d'accès accordés prouve que Pennylane relie des applications tierces
+     par autorisation (le choix 2 B) : à garder en tête, puisque le jeton
+     collé (2 A) exige de CHAQUE artisan une formule qui ouvre Développeurs ;
    - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
      particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
      joué à la main le 5 novembre).
