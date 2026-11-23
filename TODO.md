@@ -3085,7 +3085,13 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
    - **côté lui, vu sur sa capture du 23 novembre** : « Connectivité » porte
      un cadenas dans ses Paramètres Pennylane, donc sa formule n'ouvre pas
      l'API aujourd'hui (selon des tiers : à partir de la formule Essentiel,
-     à confirmer dans Gestion d'abonnement) ;
+     à confirmer dans Gestion d'abonnement). Seconde capture, même soir : la
+     page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
+     accès accordés aux applications tierces », vide) et **aucun onglet
+     Développeurs**, donc pas de jeton possible sur sa formule. Cette page
+     d'accès accordés prouve que Pennylane relie des applications tierces
+     par autorisation (le choix 2 B) : à garder en tête, puisque le jeton
+     collé (2 A) exige de CHAQUE artisan une formule qui ouvre Développeurs ;
    - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
      particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
      joué à la main le 5 novembre).
