@@ -1205,13 +1205,34 @@ enregistrée dès l'inscription, un essai court se lit comme un piège.
 
 **Pas encore tranché : A ou B.** A, la carte à l'inscription et l'abonnement qui
 démarre seul (la planche) ; B, la lecture seule à la fin et le paiement pour
-débloquer (ce que disent l'appli et l'article 14.2 aujourd'hui). Ma
-recommandation : A. Sa raison à lui de payer sur le site, la commission
-d'Apple, ne joue que si Cause entre sur l'App Store : installée depuis Safari,
-comme aujourd'hui, Apple ne touche rien. Sur l'App Store, B demanderait dans
-l'appli iPhone un bouton « payer sur le site », qu'Apple interdit ou fait payer
-hors des États-Unis (règle 3.1.3(f), confiance moyenne, ces règles bougent en
-Europe) ; A n'en a pas besoin.
+débloquer (ce que disent l'appli et l'article 14.2 aujourd'hui).
+
+**Ce que disent les chiffres, cherchés le 23 novembre à sa demande** (*« va
+chercher des stats, je t'autorise n'importe quel site »*). Les pages elles-mêmes
+sont refusées par le réseau de ce poste : ce qui suit vient des résumés de
+recherche, pas des rapports lus en entier.
+
+| pour 1 000 visiteurs | A, carte demandée | B, sans carte |
+|---|---|---|
+| essais commencés | 35 | environ 47 (déduit par moi de la moyenne, 45) |
+| payants à 6 mois | 10,5 (30 %) | environ 2 (4 à 6 %, « très bien » à 10 à 15 %) |
+| encore là après 120 jours (Totango, étude ancienne) | 60 % des payants | 80 % des payants |
+
+Source principale : le rapport ChartMogul de janvier 2026, 200 logiciels
+vendus aux entreprises, avec ProductLed et Growth Unhinged ; il prévient
+lui-même que la carte peut faire baisser le total des payants. Même après la
+perte de rétention, A garde environ quatre fois plus de payants par visiteur.
+Limites : des logiciels surtout américains et technophiles, aucune donnée sur
+des artisans peu à l'aise avec le téléphone, et une corrélation (ceux qui
+demandent la carte ne sont pas tirés au hasard).
+
+**Mes avis successifs, écrits pour ne pas les perdre** : A (pour la commission
+d'Apple, raison qui ne jouait pas), puis B (son public, les appels, rien à
+réécrire), puis **A de nouveau sur les chiffres** : l'écart est trop grand pour
+que la frilosité de son public le comble, et la version 4 des conditions
+générales est due de toute façon pour l'option à 6 €, donc l'article 14.2 s'y
+réécrit sans coût de plus. Le rappel d'avant la fin peut partir de Stripe, sans
+le nom de domaine (à vérifier dans ses réglages, confiance moyenne).
 
 **Ce que son oui déclenchera, et qui n'est pas qu'un report de planche :**
 
