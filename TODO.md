@@ -1351,8 +1351,8 @@ la règle du SIREN joue (même SIREN : pas de nouvel essai). Un **nom commercial
 libre s'imprime EN PLUS, jamais à la place (la facture porte nom, adresse et
 SIRET de la même entreprise, CGI 242 nonies A). Ainsi le SIRET d'un autre ne
 donne que des devis au nom de cet autre. Reste : la diffusion partielle (nom non
-publié : il le tape). À dessiner sur le vrai écran Mon entreprise, ce qui
-demande de relancer l'appli ici : son « oui » d'abord.
+publié : il le tape). Planche sur le vrai écran Mon entreprise, sur son « oui » du même soir :
+`appli/soignee/identite-au-registre.html`. Rien n'est codé.
 
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
