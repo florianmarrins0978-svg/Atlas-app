@@ -38335,3 +38335,65 @@ Bird remis à gauche).
 **Les teintes se règlent sur le rendu.** Prises telles quelles sur ses photos, elles sortaient deux à
 trois fois trop sombres sous l'éclairage de la scène ; elles sont réglées en comparant le rendu à la photo
 (l'anthracite de l'embout Palaplast : 47, 49, 54 sur la photo, 46, 49, 53 au rendu).
+
+## §609 : Une turbine se pose aux écartements de Rain Bird, une tuyère garde ses 80 %
+
+**Sa décision du 22 novembre 2026**, devant le manuel de conception Rain Bird
+qu'il a envoyé (p. 41 à 43, `docs/arrosage-manuel-rain-bird.md`) : *« Non prend
+les écartement de rainbird »*, puis, devant le coût chiffré sur ses jardins,
+*« Oui, Rain Bird »* et *« Toujours sans vent »*. Sans vent, le manuel donne
+entre deux têtes voisines : 1,1 × la portée en carré, ou 1,2 × sur un côté et
+1,0 × sur l'autre en rectangle. Sa règle allait jusqu'à 1,25 × (80 %), et
+1,33 × (75 %) quand cela gagnait un réseau.
+
+**Deux fonctions, une par famille, et l'aiguillage au seul endroit qui pose.**
+`poseSelonSaRegle` reçoit le type de la tête (`estTurbine`) : une turbine part
+dans `poseRainBird`, une tuyère reste dans l'ancienne recherche. Une seule
+fonction qui mêlerait les deux règles aurait caché la seconde sous un `if` au
+milieu de la première ; et un second calcul de pose, à côté, aurait divergé
+(`CLAUDE.md` §3).
+
+**Le carré et le rectangle, rien entre eux.** Le manuel donne deux lignes ; une
+grille de 1,15 × 1,05 n'est dans aucune, et l'on ne lui invente pas de règle
+(§4 ter, « aucune valeur ne se devine »). `ecartRainBird` dit oui à l'une ou à
+l'autre.
+
+**Une recherche, pas l'élargissement d'un côté à la fois.** L'ancienne pose
+ajoutait une rangée du côté le plus lâche jusqu'à ce que la règle tienne : avec
+une seule règle, c'était le moins de têtes. Avec deux, le rectangle tient
+parfois avec MOINS de têtes que le carré (son 16 × 10 : six têtes à 8 m sur
+10 m), et l'élargissement passait à côté. `poseRainBird` essaie chaque nombre
+de colonnes et garde la grille au plus petit nombre de têtes ; elle s'arrête
+dès qu'une rangée de plus resserrerait sous la portée la plus bridée, ce qui
+borne la recherche.
+
+**Ce qui ne bouge pas pour les turbines.** « Jamais moins que la portée » (sa
+règle du 17 août), tenu par la vis dans la limite d'Aqua Plus (`bridageDe`), et
+ses 105 % quand ils gagnent un réseau ou une gamme (`tolerant`). **Ce qui s'en
+va** : ses 75 %, qui espaçaient au-delà de Rain Bird.
+
+**Pourquoi les tuyères n'y passent pas.** Une tuyère ne se bride pas (sa
+réponse du 16 octobre). Sur son couloir de 10 × 2 en 6-VAN (1,8 m), deux rangées
+à 2 m l'une de l'autre demandent, en rectangle Rain Bird, un écart de 1,8 m au
+plus le long du couloir, et sa règle un écart d'au moins 1,8 m : aucun nombre de
+têtes ne tombe dans cette fenêtre. Seule une pose plus serrée que la portée
+tenait, et elle doublait ses tuyères (14 au lieu de 7). Mis devant les deux, il
+a gardé les siennes (*« Mes 7 en quinconce »*).
+
+**Ce que ça coûte, et qu'il a lu avant de trancher.** Son carré de 12 × 12 garde
+ses 9 turbines, en buse 1,0 au lieu de 0,75, et passe de 1 à 2 réseaux ; son
+30 × 22 passe de 12 turbines sur 2 réseaux à 20 sur 3. Le 16 × 10 lui a d'abord
+été annoncé à 12 turbines sur 2 réseaux, d'après un premier essai qui ne
+connaissait que le carré : faux, il garde 6 turbines sur 1 réseau.
+
+**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : deux règles datées
+du 22 novembre (chaque grille de turbines dans l'une des deux poses, sur huit
+jardins et quatre pressions ; son couloir garde 7 tuyères plus écartées que
+1,2 × leur portée), vues rouges sur l'ancien calcul ; trois règles barrées, leurs
+chiffres gardés comme trace (le 12 × 12 sur 1 vanne, et deux exemples qui en
+dépendaient : les tés égaux de sa pelouse arrière, les voies qui manquent au nez
+de robinet).
+
+**Ce qui n'est pas fait.** Les instantanés des planches d'arrosage ne sont pas
+reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
+(`TODO.md`).

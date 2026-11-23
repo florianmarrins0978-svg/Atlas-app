@@ -34,10 +34,14 @@ console.log("=== Le Ø25 ou le Ø32 qu'il choisit ===\n");
 
 // ── 2. Les réseaux passés en Ø32 perdent moins, et peuvent en économiser un ─
 {
-  const en25 = plan(jardin(20, 12, 3, 15));
-  const en32 = plan({ ...jardin(20, 12, 3, 15), diametres: TOUS_EN_32 });
+  // **Le 20 × 10 depuis le 22 novembre 2026.** Le 20 × 12 en était l'exemple ;
+  // aux écartements de Rain Bird (sa décision), il garde deux réseaux même en
+  // Ø32. Ce qui est éprouvé ne change pas : le Ø32 perd moins, et peut faire
+  // gagner un réseau.
+  const en25 = plan(jardin(20, 10, 3, 15));
+  const en32 = plan({ ...jardin(20, 10, 3, 15), diametres: TOUS_EN_32 });
   dire(en32.perteReseau < en25.perteReseau, `en Ø32 le réseau perd moins (${en32.perteReseau.toFixed(2)} contre ${en25.perteReseau.toFixed(2)} bar)`);
-  dire(en25.secteurs.length === 2 && en32.secteurs.length === 1, `20 x 12 à 3 bar : 2 réseaux en Ø25, 1 en Ø32 (lu : ${en25.secteurs.length} et ${en32.secteurs.length})`);
+  dire(en25.secteurs.length === 2 && en32.secteurs.length === 1, `20 x 10 à 3 bar : 2 réseaux en Ø25, 1 en Ø32 (lu : ${en25.secteurs.length} et ${en32.secteurs.length})`);
 }
 
 // ── 3. L'amenée : l'outil propose, il peut refuser ──────────────────────────

@@ -1,6 +1,19 @@
 # Prochaines tâches
 
 ## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
+## LE MANUEL RAIN BIRD : LES TURBINES CODÉES LE 22 NOVEMBRE 2026, CE QUI RESTE
+
+Le relevé : `docs/arrosage-manuel-rain-bird.md`. **Codé** : les turbines aux
+écartements de Rain Bird, sans vent (`poseRainBird`, `ARCHITECTURE.md` §609).
+
+| ce qui reste | qui |
+|---|---|
+| **compter le dénivelé** (0,1 bar par mètre, rien dans le calcul aujourd'hui) : une saisie de la hauteur du dernier arroseur par rapport à la nourrice ; tant qu'il n'est pas compté, une réserve sous le plan. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| **le coefficient du PE à 140** (Rain Bird) au lieu de 150 (sans source) : 12 % de perte de ligne en plus. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| **un réseau alimenté par le milieu** se calcule comme une seule file (`perteDuReseau`) : perte surestimée, un réseau de trop possible. Demandé le 22 novembre, sans réponse | lui, puis nous |
+| **la vitesse de 1,5 m/s** : son plafond retiré le 16 octobre était la règle écrite du fabricant ; le commentaire de `calcul.js` qui le dit « le nôtre » est faux. Une réserve qui n'ajoute aucune vanne serait l'entre-deux | lui |
+| **les instantanés des planches** (`appli/arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`, `arrosage-planche-calcul.js`, `arrosage-nourrice-calcul.js`) ne sont pas reconstruits : les planches posent encore les turbines à 80 % | nous, à la prochaine planche d'arrosage |
+
 
 Proposé : poser une vraie question avant le plan quand le piquage est sur un robinet (« Garder une sortie libre pour un tuyau d'arrosage ? »), au lieu de l'interrupteur « Double sortie sous le robinet », éteint d'office (`LePlanDuJardin.tsx`). Sa réponse : *« Non »*. Ne pas le reproposer.
 

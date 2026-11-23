@@ -528,7 +528,14 @@ dire(
   // **ELLE A BOUGÉ LE 17 OCTOBRE 2026, DE 0,606 À 0,618**, et c'est l'électrovanne :
   // le forfait de 0,25 bar cède la place à la fiche Rain Bird de sa 100-DV, lue
   // au débit de la vanne (Valves, p. 89). Le plan ne change pas.
-  const PERTE_RESEAU_ATTENDUE = 0.618;
+  //
+  // **ELLE A BOUGÉ LE 22 NOVEMBRE 2026, DE 0,618 À 0,641**, et c'est le plan :
+  // sa décision de poser les turbines aux écartements de Rain Bird (« Non
+  // prend les écartement de rainbird »). Toujours deux vannes, mais des buses
+  // qui portent plus loin : « Pelouse devant » 8 × 3504 buse 1,0 au lieu de
+  // 0,75, « Pelouse derrière » 6 × 5000 Plus buse 1,0 u+ au lieu de 3504 buse
+  // 1,0. La formule n'a pas bougé.
+  const PERTE_RESEAU_ATTENDUE = 0.641;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
@@ -828,17 +835,24 @@ dire(
     ],
   });
   const zones = sienDu23.dessin as { nom: string; buse: string | null; points: unknown[] }[];
+  // **TROIS RÉSEAUX DEPUIS LE 22 NOVEMBRE 2026, sur sa décision.** Aux
+  // écartements de Rain Bird, une turbine alignée ne s'écarte plus qu'à
+  // 1,1 × sa portée : le carré de douze garde ses neuf têtes, mais il lui faut
+  // la buse 1,0 au lieu de la 0,75, et deux vannes à lui seul. Le patron l'a
+  // lu avant de trancher (« Oui, Rain Bird »). Ce qui reste vrai, et que ce
+  // contrôle tient : le moins de vannes passe avant le moins d'arroseurs, et
+  // le carré ne repart pas en quatre grosses buses.
   dire(
-    sienDu23.secteurs.length <= 2,
+    sienDu23.secteurs.length <= 3,
     `son jardin du 23 août tient sur ${sienDu23.secteurs.length} réseau(x) — ` +
       zones.map((z) => `${z.points.length}× ${z.buse}`).join(" + "),
   );
-  // Et c'est bien le plan qu'il avait dessiné à la main le 21 août : neuf 3504
-  // buse 0,75 sur le carré de douze.
+  // Neuf têtes sur le carré de douze, comme son plan à la main du 21 août ;
+  // la buse est la 1,0 depuis Rain Bird.
   const haut = zones.find((z) => z.nom === "Haut");
   dire(
-    haut?.points.length === 9 && /0,75/.test(haut?.buse ?? ""),
-    `le carré de 12 m reçoit ${haut?.points.length} × ${haut?.buse} — sa pose du 21 août`,
+    haut?.points.length === 9 && /3504 buse 1,0/.test(haut?.buse ?? ""),
+    `le carré de 12 m reçoit ${haut?.points.length} × ${haut?.buse} — neuf têtes comme sa pose du 21 août, en buse 1,0 depuis Rain Bird`,
   );
 }
 
