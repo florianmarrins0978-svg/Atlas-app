@@ -3067,6 +3067,25 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      sur son espace une fois l'adresse connue, puis un premier dépôt réel sur
      le compte d'essai, jamais sur son vrai compte (une facture transmise ne
      s'efface pas) ;
+   - **appris le 23 novembre 2026, et cela change la ligne du dessus** :
+     poser les deux variables ne suffira PAS. Notre connecteur
+     (`api-commune.ts`) parle l'API commune AFNOR (`/v1/healthcheck`,
+     `/v1/flows`) ; aucune source trouvée ne dit que Pennylane l'expose.
+     Ce que Pennylane documente, c'est SA propre API v2 :
+     `POST https://app.pennylane.com/api/external/v2/customer_invoices/e_invoices/imports`
+     (Factur-X en multipart, champ `file`, `invoice_options` facultatif,
+     portée `customer_invoices:all`), ouverte le 13 mars 2026 ; l'ancienne
+     `/e_invoices/imports` est dépréciée. Il faut donc un connecteur
+     Pennylane à côté de l'API commune, branché dans `catalogue.ts`
+     (niveau 3). **Inconnu à lever sur le compte d'essai** : une discussion
+     de leur forum dit qu'une facture importée ainsi peut rester
+     « informative », sans partir par la plateforme agréée. Sources
+     tierces et changelog lus par recherche web ; les pages de Pennylane
+     elles-mêmes sont refusées par le réseau d'ici ;
+   - **côté lui, vu sur sa capture du 23 novembre** : « Connectivité » porte
+     un cadenas dans ses Paramètres Pennylane, donc sa formule n'ouvre pas
+     l'API aujourd'hui (selon des tiers : à partir de la formule Essentiel,
+     à confirmer dans Gestion d'abonnement) ;
    - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
      particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
      joué à la main le 5 novembre).
