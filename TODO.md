@@ -1253,6 +1253,13 @@ l'écran, et le bouton au pouce du site (« Essayer 15 jours gratuits »,
 remonter aussi. S'il faut encore deux appuis, la cause est ailleurs : la
 rendre bavarde avant de toucher autre chose.
 
+**⏳ La visite guidée sur l'accueil d'un compte neuf : proposée le 23 novembre,
+attend son « oui »** (`cause-2-inscription.html`, l'étape « L'appli »). Une
+carte entre « Vos clients » et « Créer un devis » : « Faire la visite » ou
+« Non merci », et elle ne revient plus une fois faite ou refusée. À son oui :
+la coder dans l'accueil (un drapeau par compte, « vue ou refusée »), la visite
+étant celle du site, sur des données d'essai.
+
 **Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
 
 | | |

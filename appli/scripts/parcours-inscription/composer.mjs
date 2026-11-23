@@ -79,26 +79,73 @@ const retouches = (etat, d) => {
   etat("code").querySelectorAll("button, a").forEach((b) => { if (mot(b) === "Renvoyer le code") b.dataset.dit = "Dans l'appli : renvoie un nouveau code par e-mail."; });
   etat("code-tape").querySelectorAll("button, a").forEach((b) => { if (mot(b) === "Renvoyer le code") b.dataset.dit = "Dans l'appli : renvoie un nouveau code par e-mail."; });
   etat("conditions").querySelectorAll("button, a").forEach((b) => { if (mot(b) === "Se déconnecter") b.dataset.dit = "Dans l'appli : ferme la session sans accepter."; });
-  // La fin du parcours : la visite guidée continue dans l'appli.
-  const fin = document.createElement("a");
-  fin.className = "suite-visite";
-  fin.href = "../visite-guidee.html";
-  fin.dataset.lien = "../visite-guidee.html";
-  fin.textContent = "Continuer dans la visite guidée";
-  etat("accueil").appendChild(fin);
+  // LA PROPOSITION : une carte de la visite guidée sur l'accueil d'un compte
+  // neuf, qu'on peut refuser. Ses mots du 23 novembre : « il faut permettre à
+  // l'utilisateur, s'il ne veut pas faire la visite guidée, d'enlever le
+  // bouton ». Elle se pose dans le vide qui sépare « Vos clients » de « Créer
+  // un devis », aux couleurs de l'appli, et nulle part ailleurs.
+  const accueil = etat("accueil");
+  const vide = accueil.querySelector('div[aria-hidden="true"].flex-\\[2\\]');
+  const carte = document.createElement("div");
+  carte.dataset.atlas = "carte-visite";
+  carte.className = "carte-visite";
+  carte.innerHTML =
+    '<b class="cv-titre">La visite guidée</b>' +
+    '<p class="cv-dit">Dix minutes, sur des données d’essai.</p>' +
+    '<div class="cv-gestes">' +
+    '<a class="atlas-plein cv-faire" href="../visite-guidee.html" data-vers-la-visite>Faire la visite</a>' +
+    '<button type="button" class="cv-non" data-non-merci>Non merci</button>' +
+    "</div>";
+  vide.parentNode.insertBefore(carte, vide);
 };
 
+// Ce qui tourne dans la planche publiée.
+//
+// LE RETOUR DE LA VISITE REVIENT OÙ IL ÉTAIT. Sa remarque du 23 novembre :
+// « quand je quitte la visite guidée, ça me remet au début à la création du
+// compte ; une fois qu'on quitte, il faut rester dans l'appli ». « Quitter la
+// visite » rouvre la page d'où l'on vient (`visite-guidee.html`, `quitter`),
+// et cette page repartait de son premier écran. L'adresse porte donc l'écran
+// où l'on est (`?etat=accueil`) au moment de partir, et la page le rouvre :
+// une adresse se garde quand l'onglet se recharge, une variable non.
 const scriptEnPlus = `
-document.addEventListener("click", (ev) => {
-  const lien = ev.target.closest("[data-lien]");
-  if (!lien) return;
-  ev.preventDefault(); ev.stopImmediatePropagation();
-  location.href = lien.dataset.lien;
-}, true);
+(() => {
+  const ici = new URLSearchParams(location.search);
+  const cacherLaCarte = () => document.querySelectorAll("[data-atlas=carte-visite]").forEach((c) => (c.hidden = true));
+  document.addEventListener("click", (ev) => {
+    const vers = ev.target.closest("[data-vers-la-visite]");
+    const non = ev.target.closest("[data-non-merci]");
+    if (!vers && !non) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    if (vers) {
+      history.replaceState(null, "", "?etat=accueil&visite=faite");
+      location.href = vers.getAttribute("href");
+      return;
+    }
+    history.replaceState(null, "", "?etat=accueil&visite=non");
+    cacherLaCarte();
+    const dit = document.querySelector(".planche-dit");
+    dit.textContent = "Dans l'appli, elle ne revient plus.";
+    dit.classList.add("visible"); setTimeout(() => dit.classList.remove("visible"), 2600);
+  }, true);
+  if (ici.get("visite")) cacherLaCarte();
+  const etat = ici.get("etat");
+  if (etat) setTimeout(() => {
+    const aller = document.createElement("button");
+    aller.dataset.va = etat; aller.hidden = true;
+    document.body.appendChild(aller); aller.click(); aller.remove();
+  }, 0);
+})();
 `;
 
 const css = enHauteurStable(readFileSync(`${S}/css.txt`, "utf8")) + `
-.suite-visite{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:80;max-width:420px;margin:0 auto;display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:999px;background:var(--atlas-ink,#1c1c1a);color:var(--atlas-cream,#f5f3ee);font-weight:600;font-size:17px;text-decoration:none;box-shadow:0 18px 40px -16px rgba(0,0,0,.55)}
+.carte-visite{margin:28px 26px 0;padding:18px 18px 14px;border-radius:6px;background-color:var(--atlas-card,#faf9f5);box-shadow:inset 0 0 0 1px var(--atlas-line,rgba(28,28,26,0.12))}
+.carte-visite[hidden]{display:none}
+.cv-titre{display:block;font-family:var(--font-display);font-weight:400;font-size:22px;line-height:1.2;color:var(--atlas-ink,#1c1c1a)}
+.cv-dit{margin:4px 0 0;font-size:15px;line-height:1.45;color:var(--atlas-inkSoft,#4a4a44)}
+.cv-gestes{display:flex;align-items:center;gap:8px;margin-top:14px}
+.cv-faire{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background-color:var(--atlas-plein,#7d9a6d);color:var(--atlas-card,#faf9f5);font-size:16px;font-weight:600;text-decoration:none}
+.cv-non{min-height:48px;padding:0 14px;border:0;background:none;color:var(--atlas-inkSoft,#4a4a44);font:inherit;font-size:16px;font-weight:600;cursor:pointer}
 `;
 
 const taille = await composer({
