@@ -1038,6 +1038,16 @@ body.a-choisi .formule.mise:not(.choisie){box-shadow:0 0 0 1px rgba(var(--ombre)
 .recap-lignes dt{color:var(--encre-2)}
 .recap-lignes dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .recap-lignes .r-formule dd{font-weight:600}
+/* L'interrupteur des outils, repris dans « Votre choix » (sa demande du
+   23 novembre : qui passe trop vite ne voit pas la carte des outils ; les deux
+   interrupteurs disent la même chose, toujours). */
+.recap-lignes .r-outils{align-items:center;padding:6px 0}
+.r-outils dd{display:flex;align-items:center;gap:12px}
+.r-outils .r-prix{color:var(--encre-2);font-weight:400;transition:color .3s}
+.r-outils.oui .r-prix{color:var(--encre);font-weight:600}
+.r-inter{display:grid;place-items:center;min-width:58px;min-height:48px;padding:0;border:0;background:none;cursor:pointer}
+.r-inter[aria-checked="true"] .interrupteur{background:var(--action)}
+.r-inter[aria-checked="true"] .interrupteur::after{transform:translateX(20px)}
 .recap-lignes .r-total{border-top:1.5px solid color-mix(in srgb,var(--encre) 30%,transparent)}
 .recap-lignes .r-total dt{color:var(--encre);font-weight:600}
 .r-formule.vide dd{color:var(--encre-2);font-weight:400}
@@ -1082,7 +1092,7 @@ body.a-choisi .pouce{display:none}
 .place-stripe span{font-size:16px;color:var(--encre-2)}
 .fe-ok{display:grid;place-items:center;width:64px;height:64px;margin:6px 0 18px;border-radius:50%;background:var(--action);color:var(--action-texte)}
 .f-court{margin-top:10px;font-size:17px;color:var(--encre-2)}
-@media (prefers-reduced-motion:reduce){.formule .coche,.interrupteur::after,.pouce-choix,.ajout-outils{transition:none}.fe[open]{animation:none}}
+@media (prefers-reduced-motion:reduce){.formule .coche,.interrupteur::after,.r-outils .r-prix,.pouce-choix,.ajout-outils{transition:none}.fe[open]{animation:none}}
 </style>
 </head>
 <body>
@@ -1391,7 +1401,7 @@ body.a-choisi .pouce{display:none}
         <h3 id="recap-titre">Votre choix</h3>
         <dl class="recap-lignes" aria-live="polite">
           <div class="r-formule"><dt>Formule</dt><dd>à choisir</dd></div>
-          <div class="r-outils" hidden><dt>Les outils de paysage</dt><dd></dd></div>
+          <div class="r-outils"><dt>Les outils de paysage</dt><dd><span class="r-prix"></span><button type="button" class="r-inter" role="switch" aria-checked="false" aria-label="Ajouter les outils de paysage"><span class="interrupteur" aria-hidden="true"></span></button></dd></div>
           <div class="r-total" hidden><dt>Après l'essai</dt><dd></dd></div>
         </dl>
       </div>
@@ -2380,15 +2390,15 @@ body.a-choisi .pouce{display:none}
       b.setAttribute("aria-pressed", String(oui));
       b.textContent = oui ? "Formule choisie" : "Choisir " + k.getAttribute("data-nom");
     });
-    interrupteur.setAttribute("aria-checked", String(etat.outils));
+    interrupteurs.forEach(function(b){ b.setAttribute("aria-checked", String(etat.outils)); });
     un(".ajout-mots", interrupteur).textContent = etat.outils ? "Outils ajoutés" : "Ajouter les outils";
     outils.classList.toggle("ajoutee", etat.outils);
     var lf = un(".r-formule", recap), lo = un(".r-outils", recap), lt = un(".r-total", recap), ld = un(".recap-date", recap);
     lf.classList.toggle("vide", !c);
     un("dt", lf).textContent = c ? c.getAttribute("data-nom") : "Formule";
     un("dd", lf).textContent = c ? euros(prix(c, p)) : "à choisir";
-    lo.hidden = !etat.outils;
-    un("dd", lo).textContent = "+ " + euros(OUTILS[p]);
+    lo.classList.toggle("oui", etat.outils);
+    un(".r-prix", lo).textContent = "+ " + euros(OUTILS[p]);
     lt.hidden = !c;
     un("dd", lt).textContent = total();
     ld.hidden = !c;
@@ -2403,7 +2413,10 @@ body.a-choisi .pouce{display:none}
   cartes.forEach(function(k){
     k.addEventListener("click", function(e){ if (e.target.closest("a")) return; choisir(k.getAttribute("data-formule")); });
   });
-  interrupteur.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); etat.outils = !etat.outils; peindre(); });
+  // Les deux interrupteurs des outils, celui de la carte et celui de « Votre
+  // choix », ne tiennent qu'un seul état : l'un suit l'autre.
+  var interrupteurs = [interrupteur, un(".r-inter", recap)];
+  interrupteurs.forEach(function(b){ b.addEventListener("click", function(e){ e.preventDefault(); e.stopPropagation(); etat.outils = !etat.outils; peindre(); }); });
   // La bascule mois ou année change les prix : « Votre choix » les suit.
   tous("[data-periode]").forEach(function(b){ b.addEventListener("click", function(){ setTimeout(peindre, 0); }); });
 
