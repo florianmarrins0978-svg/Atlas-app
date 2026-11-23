@@ -68,13 +68,14 @@ règle. C'est aussi ce que dit son texte de la descente, depuis Entreprise.
 **À trancher avant le code** (le code ne les invente pas) :
 
 1. **À l'année : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« ceux qui payent à
-   l'année, ils payent que la différence »*. **Reste une précision** : la
-   différence des deux prix de l'année (Artisan vers Entreprise : 590 − 390 =
-   200 € HT, l'échéance ne bouge pas), ou cette différence au prorata des
-   mois restants ? Proposé : la différence entière, un chiffre qu'il peut
-   vérifier de tête, sans ouverture à monter puis résilier (il a payé
-   Entreprise jusqu'à l'échéance). La planche dit seulement « seule la
-   différence est débitée ».
+   l'année, ils payent que la différence »*, puis sa précision : *« même si au
+   bout de 8 mois il décide de passer à la formule du dessus, il paye juste la
+   différence, mais pas au prorata »*. **La différence ENTIÈRE des deux prix de
+   l'année**, quel que soit le mois : Artisan vers Entreprise 200 € HT (590 −
+   390), Artisan vers Illimité 1 200, Entreprise vers Illimité 1 000. Déduit,
+   pas dit par lui : l'échéance ne bouge pas (la différence complète l'année
+   déjà payée, elle n'en ouvre pas une neuve). Aucune ouverture à monter puis
+   résilier : il a alors payé la formule du dessus jusqu'à l'échéance.
 2. **Changer de rythme** sur la même formule (au mois vers l'année) : montée
    ou descente ?
 3. **Le compte de personnes : TRANCHÉ LE 23 NOVEMBRE AU SOIR**, *« s'il veut
