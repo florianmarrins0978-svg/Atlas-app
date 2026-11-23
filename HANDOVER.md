@@ -2,9 +2,9 @@
 
 ## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE
 
-`ARCHITECTURE.md` §610. Ce qu'il faut savoir avant d'y toucher :
+`ARCHITECTURE.md` §614. Ce qu'il faut savoir avant d'y toucher :
 
-- **la recherche (`chercherUnPlan`) juge chaque pression deux fois**, remplie et partagée en parts égales, et retient le plan partagé : c'est lui qui se pose. Le tableau « essayé et retiré » de §610 dit ce qui a déjà échoué ;
+- **la recherche (`chercherUnPlan`) juge chaque pression deux fois**, remplie et partagée en parts égales, et retient le plan partagé : c'est lui qui se pose. Le tableau « essayé et retiré » de §614 dit ce qui a déjà échoué ;
 - **`avecLaPression`** : le moins de vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur. Le retirer remet son 16 × 10 et 8 × 8 en 2 vannes de 5000 Plus, qu'il a refusées ;
 - **`seLeve` prend le minimum de la fiche, comme Rain Bird** (1,7 bar pour la 3504 et la 5000 Plus) : une marge de 0,3 bar a été posée puis retirée le même soir, ne pas la remettre sans lui (`.claude/rules/arrosage.md`) ;
 - **`ficheNourrice` est la fiche d'UNE nourrice**, lue par la 3D et la vue éclatée ; les listes lisent `fichesNourrices`, qui en compose deux au-delà de six voies ; le partage vit dans `partageDesNourrices`, et l'écran (`composerLesNourrices`), la 3D (`nourrice-3d/deux-nourrices.js`) et le PDF le lisent ;

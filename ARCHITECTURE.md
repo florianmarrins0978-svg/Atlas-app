@@ -38398,7 +38398,7 @@ de robinet).
 reconstruits, le dénivelé n'est pas compté, le coefficient du PE reste à 150
 (`TODO.md`).
 
-## §610 : Le tuyau au plus court en PE, les parts égales, la pression au bout, deux nourrices
+## §614 : Le tuyau au plus court en PE, les parts égales, la pression au bout, deux nourrices
 
 **Ses corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé,
 puis question par question le même soir. Le détail, mot pour mot, est dans
