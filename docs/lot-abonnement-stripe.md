@@ -142,6 +142,14 @@ l'apprend pas), le crochet (`/api/paiement`), et le mode réel. **La facture de
 Stripe n'est pas conforme** (ni adresse, ni SIRET, ni numéro de TVA du
 vendeur) : en mode réel, couper son envoi aux clients.
 
+**Son compte Stripe réel existe depuis le 23 novembre 2026** : paiements
+activés, profil @cause rendu privé, rien copié du test (l'appli crée ses
+prix elle-même : ne pas en déclarer à la main), Stripe Tax ignoré, Radar au
+moins cher, libellé de relevé `CAUSE ABONNEMENT`. La clé `sk_live_` n'est
+posée nulle part, et ne doit aller que sur le serveur hébergé. Restent, le
+jour de l'hébergement : le crochet, le portail client, couper l'envoi des
+factures Stripe, et passer `cause.fr` dans ses informations publiques.
+
 **Un défaut trouvé par la capture, et par aucun test :** trois cents pixels de
 vide sous la dernière carte — deux retraits qui s'additionnaient. Corrigé.
 
