@@ -543,6 +543,22 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
+regle("23 novembre 2026", "« comment ça lève ? J'ai l'impression qu'il faut une pression énorme », puis « 2,0 bar » : au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche, 2,0 pour la 3504 et la 5000 Plus", () => {
+  // Son exemple : 10 × 6 et 8 × 8 à 2 bar, une vanne à 1,72 bar pour un minimum de 1,70. À 2 bar au compteur, rien n'arrive à 2,0 : l'outil le dit.
+  const juste = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 10, l: 6 }, { id: 2, type: "gazon", nom: "B", x: 12, y: 0, L: 8, l: 8 }], 2);
+  exige(juste.pressionTropBasse === true, `10 × 6 et 8 × 8 à 2 bar : ${juste.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur sans alerte, il en faut 2,0`);
+  for (const [L, l, L2, l2] of [[12, 12, 8, 8], [16, 10, 8, 8], [20, 15, 12, 12], [16, 6, 15, 8]]) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: l2 }], 3);
+    exige(!p.pressionTropBasse && p.pressionAuxArroseurs >= 2.0 - 1e-9, `${L} × ${l} et ${L2} × ${l2} à 3 bar : ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en faut 2,0`);
+  }
+});
+
+regle("23 novembre 2026", "« plus de pression au bout », puis « dès 0,1 bar gagné » : une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur ; son 16 × 10 et 8 × 8 à 3 bar part en 3 vannes de 3504 (2,21 bar), pas en 2 vannes de 5000 Plus (2,06)", () => {
+  const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 16, l: 10 }, { id: 2, type: "gazon", nom: "B", x: 18, y: 0, L: 8, l: 8 }], 3);
+  const modeles = [...new Set((p.dessin as unknown as { buse: string | null }[]).map((z) => String(z.buse ?? "").split(" buse")[0]))];
+  exige(p.secteurs.length === 3 && modeles.join(" et ") === "3504" && p.pressionAuxArroseurs > 2.15, `${p.secteurs.length} vannes en ${modeles.join(" et ")}, ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur ; il en faut 3 en 3504, à 2,21 bar`);
+});
+
 regle("23 novembre 2026", "« les 3005 avec les 3005 ; s'il y a des 3005 et des 5000, tu peux pas diviser 3005 et 5000 », puis « Non, jamais ensemble » : une vanne ne porte qu'un seul modèle de turbine", () => {
   // Son exemple : 10 × 6 et 8 × 8 à 2 bar, où une vanne portait deux 5000 Plus et trois 3504.
   const CAS: [number, number, number, number, number][] = [[10, 6, 8, 8, 2], [16, 6, 15, 8, 3], [12, 12, 8, 8, 3], [20, 15, 12, 12, 3], [6, 5, 18, 7, 3]];

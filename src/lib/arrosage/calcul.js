@@ -1458,7 +1458,7 @@ function chercherUnPlan(source){
     var gonfle = arrive - p > TOLERANCE_CHOIX ? Math.sqrt(arrive / p) : 1;
     if (tient && limite > 0 && essai.secteurs.some(function(s){ return s.debit * gonfle > limite + 1e-9; })) tient = false;
     if (!tient) return { p: p, tient: false, signature: signature };
-    return { d: essai, p: p, tient: true, horsMarge: horsMarge, signature: signature,
+    return { d: essai, p: p, tient: true, horsMarge: horsMarge, signature: signature, arrive: arrive,
              vannes: essai.secteurs.length,
              gamme: essai.poses.reduce(function(t, x){ return t + (x.gamme || 0); }, 0),
              tetes: essai.secteurs.reduce(function(t, s){ return t + (s.points ? s.points.length : 0); }, 0),
@@ -1491,29 +1491,97 @@ function chercherUnPlan(source){
      points voisins qui rendent le même plan, tenu ou non des deux côtés, il n'y
      a rien à trouver : on ne descend au centième qu'entre deux points qui
      diffèrent (une buse, un nombre de vannes, ou le verdict). */
-  var grossiers = [];
-  for (var p = depart; p >= PLANCHER_UTILE - 1e-9; p = Math.round((p - PAS_GROSSIER) * 1000) / 1000){
+  /* **Chaque pression s'essaie aussi en parts égales** (`partsEgales`), et
+     c'est ce plan-là qui se juge, puisque c'est lui qui se pose. Mais le
+     NOMBRE de vannes vient du remplissage : une coupe plus égale perd moins, et
+     la laisser choisir lui ferait retenir des plans à une vanne de moins.
+     N'essayer le partage qu'à la pression du plan retenu ne suffisait pas : il
+     perd parfois un peu plus que le remplissage, ses portées ne tiennent plus à
+     cette pression-là, et le remplissage restait (16 × 10 et 8 × 8, une pelouse
+     coupée en 5 + 1 qui tenait seule sur une vanne). */
+  var egaux = [];
+  var essayer = function(p){
     var e = evaluer(p);
     garder(e);
-    grossiers.push(e);
+    var eg = evaluer(p, true);
+    if (eg.tient) egaux.push(eg);
+    return e;
+  };
+  var grossiers = [];
+  for (var p = depart; p >= PLANCHER_UTILE - 1e-9; p = Math.round((p - PAS_GROSSIER) * 1000) / 1000){
+    grossiers.push(essayer(p));
   }
   for (var k = 0; k + 1 < grossiers.length; k++){
     var a = grossiers[k], b = grossiers[k + 1];
     if (a.tient === b.tient && a.signature === b.signature) continue;
     for (var q = Math.round((a.p - PAS_CHOIX) * 1000) / 1000; q > b.p + 1e-9; q = Math.round((q - PAS_CHOIX) * 1000) / 1000){
-      garder(evaluer(q));
+      essayer(q);
     }
   }
+  // **Un plan où chaque pelouse partagée l'est à un arroseur près passe
+  // devant tout autre**, même s'il coûte une vanne : sa règle des parts égales
+  // (*« autant faire deux réseaux à 5, c'est plus safe »*), qui refuse aussi le
+  // 5 + 1 qu'un remplissage fait pour gagner une vanne en mêlant deux pelouses.
+  // Dans la marge d'abord, puis hors marge au plus près de ce qui arrive,
+  // comme `garder`. Sans plan égal qui tienne, l'ancien choix reste : le plan
+  // partagé aux vannes du plan retenu, sinon le remplissage.
+  var aEgalite = function(e, c){
+    return e.gamme < c.gamme || (e.gamme === c.gamme && (e.tetes < c.tetes || (e.tetes === c.tetes && e.ecart < c.ecart)));
+  };
+  var vraimentEgaux = egaux.filter(function(e){ return partageEgal(e.d); });
+  var dansLaMarge = vraimentEgaux.filter(function(e){ return !e.horsMarge; });
+  var egal = avecLaPression(dansLaMarge, function(e){ return e.arrive; }, aEgalite);
+  if (!egal) vraimentEgaux.forEach(function(e){ if (!egal || e.ecart < egal.ecart) egal = e; });
   retenu = retenu || secours;
-  if (retenu){
-    // Le plan retenu, ses têtes partagées en parts égales : il garde ses vannes
-    // et ses buses, et il doit tenir encore. S'il ne tenait plus, le remplissage
-    // reste, et c'est lui qui a été jugé.
-    var egal = evaluer(retenu.p, true);
-    pressionDeCalcul = retenu.p;
-    return finirLePlan(egal.tient && egal.signature === retenu.signature ? egal.d : retenu.d, source, true);
+  var choisi = egal;
+  if (!choisi && retenu){
+    egaux.forEach(function(e){
+      if (e.vannes === retenu.vannes && (!e.horsMarge || retenu.horsMarge) && (!choisi || aEgalite(e, choisi))) choisi = e;
+    });
+    choisi = choisi || retenu;
+  }
+  if (choisi){
+    pressionDeCalcul = choisi.p;
+    return finirLePlan(choisi.d, source, true);
   }
   return null;
+}
+
+/* **UNE VANNE DE PLUS DÈS QU'ELLE DONNE 0,1 BAR AU DERNIER ARROSEUR — sa règle
+   du 23 novembre 2026.** Devant son 16 × 10 et 8 × 8 à 3 bar, trois plans : il
+   a choisi les 3 vannes en 3504 (2,21 bar au bout) plutôt que les 2 vannes en
+   5000 Plus (2,06), parce qu'il y a *« plus de pression au bout »*, et la
+   limite : *« dès 0,1 bar gagné »*. Le moins de vannes reste le point de
+   départ (sa règle du 16 octobre) ; chaque vanne de plus doit y ajouter
+   0,1 bar, sans quoi elle ne vaut pas son prix. À nombre de vannes égal,
+   `aEgalite` départage (la gamme, puis les têtes). */
+var GAIN_PAR_VANNE = 0.1; // bar au dernier arroseur, pour une vanne de plus
+function avecLaPression(plans, pression, aEgalite){
+  var parVannes = {};
+  plans.forEach(function(e){
+    if (!parVannes[e.vannes] || aEgalite(e, parVannes[e.vannes])) parVannes[e.vannes] = e;
+  });
+  var choisi = null;
+  Object.keys(parVannes).map(Number).sort(function(a, b){ return a - b; }).forEach(function(n){
+    var e = parVannes[n];
+    if (!choisi || pression(e) >= pression(choisi) + GAIN_PAR_VANNE * (n - choisi.vannes) - 1e-9) choisi = e;
+  });
+  return choisi;
+}
+
+/* Chaque pelouse sur plusieurs vannes y a-t-elle le même nombre de têtes, à
+   une près ? Se lit dans `reseauDuPoint`, qui dit la vanne de chaque tête. */
+function partageEgal(d){
+  var parZone = {};
+  Object.keys(d.reseauDuPoint || {}).forEach(function(cle){
+    var zone = cle.split(':')[0], vanne = d.reseauDuPoint[cle];
+    if (!parZone[zone]) parZone[zone] = {};
+    parZone[zone][vanne] = (parZone[zone][vanne] || 0) + 1;
+  });
+  return Object.keys(parZone).every(function(zone){
+    var n = Object.keys(parZone[zone]).map(function(v){ return parZone[zone][v]; });
+    return n.length < 2 || Math.max.apply(null, n) - Math.min.apply(null, n) <= 1;
+  });
 }
 
 /* Une tête se lève-t-elle à cette pression ? Sans pression mini relevée, on ne
@@ -1621,12 +1689,12 @@ function couperEnVannes(elements, limite){
    quand le remplissage a mêlé deux parcelles sur une vanne pour en économiser
    une (sans quoi le reste repartait seul, 6 + 1 sur 15 × 15 et 12 × 6), et
    seulement entre arroseurs du même modèle. Le
-   premier qui tient l'emporte, et tenir veut dire : le même nombre de vannes,
-   aucune au-dessus de la limite, aucune plus chargée que la plus chargée du
-   remplissage, pas plus de vannes qui mêlent deux parcelles, **et aucune
-   perte pire que la pire du remplissage**. Cette dernière condition est venue
-   d'un balayage de 1 800 jardins : sans elle, 24 perdaient jusqu'à 0,17 bar au
-   dernier arroseur, parce qu'une vanne moins chargée peut courir plus loin.
+   premier qui tient l'emporte. Chaque parcelle à part tient dès qu'elle garde
+   le même nombre de vannes, aucune au-dessus de la limite. Le groupe entier
+   tient s'il ne charge aucune vanne plus que le remplissage, ne mêle pas plus
+   de parcelles, **et ne perd pas plus que le remplissage** : un balayage de
+   1 800 jardins a montré que, sans cette condition, une vanne moins chargée
+   pouvait courir plus loin (jusqu'à 0,17 bar de moins au dernier arroseur).
    Sinon le remplissage reste tel quel.
 
    `premier` : le numéro du premier réseau du groupe, pour le diamètre que
@@ -1647,14 +1715,18 @@ function partsEgales(elements, remplis, limite, premier){
   // 3005 et 5000 »* (23 novembre 2026). Sinon la vanne qui mêle deux pelouses
   // reste telle que le remplissage l'a faite.
   var unSeulModele = elements.every(function(x){ return x.modele === elements[0].modele; });
-  var candidats = [aPart, unSeulModele ? egaliser(elements, remplis.length, limite) : null];
-  for (var k = 0; k < candidats.length; k++){
-    var c = candidats[k];
-    if (c && c.length === remplis.length &&
-        laPlusChargee(c) <= laPlusChargee(remplis) + 1e-9 &&
-        melangees(c) <= melangees(remplis) &&
-        pirePerteDesPaquets(c, premier) <= pirePerteDesPaquets(remplis, premier) + 1e-9) return c;
-  }
+  // **Chaque parcelle sur ses vannes à elle passe d'abord**, dès que le nombre
+  // de vannes ne change pas et qu'aucune ne dépasse la limite : 16 × 10 et
+  // 8 × 8 en 5000 Plus, le remplissage coupait la première pelouse en 5 + 1
+  // pour équilibrer le groupe, quand elle tenait seule sur une vanne. Sa marge
+  // de 0,3 bar au dernier arroseur se vérifie ensuite sur le plan partagé
+  // (`chercherUnPlan`), comme sur tout plan.
+  if (aPart.length === remplis.length && !(limite > 0 && laPlusChargee(aPart) > limite + 1e-9)) return aPart;
+  var groupe = unSeulModele ? egaliser(elements, remplis.length, limite) : null;
+  if (groupe && groupe.length === remplis.length &&
+      laPlusChargee(groupe) <= laPlusChargee(remplis) + 1e-9 &&
+      melangees(groupe) <= melangees(remplis) &&
+      pirePerteDesPaquets(groupe, premier) <= pirePerteDesPaquets(remplis, premier) + 1e-9) return groupe;
   return remplis;
 }
 

@@ -173,6 +173,18 @@ depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a reti
 désormais une vanne, avec des millimètres/heure différents pour une même durée
 d'ouverture, et c'est lui qui arbitre à l'arrosage.
 
+**DEUX MODÈLES DE TURBINE NE PARTAGENT JAMAIS UNE VANNE — sa décision du
+23 novembre 2026.** *« Les 3005 avec les 3005 ; s'il y a des 3005 et des 5000,
+tu peux pas diviser 3005 et 5000 »*, puis, devant 10 × 6 et 8 × 8 à 2 bar, où
+une vanne portait deux 5000 Plus et trois 3504 : *« Non, jamais ensemble »*. Le
+modèle entre dans la clé des turbines (`modeleDe`, `calcul.js`). Les buses d'un
+même modèle partagent toujours une vanne (la décision du 23 août ci-dessus). Un
+jardin peut garder deux modèles, chacun sur ses vannes. **Ce qui a été retiré
+le même soir** : « un seul modèle sur tout le jardin quand c'est possible ».
+Il avait répondu oui, puis : *« j'ai pas compris ta question »* ; sa vraie
+raison était la pression au bout (paragraphe « UNE VANNE DE PLUS DÈS QU'ELLE
+DONNE 0,1 BAR »). Ne pas la remettre sans lui.
+
 **Ce qui sépare, en revanche, c'est le MATÉRIEL.** Une turbine et une tuyère ne
 s'ouvrent jamais ensemble : l'une verse environ trois fois plus vite. Cette
 règle-là n'a pas bougé.
@@ -588,6 +600,26 @@ le bout d'une ligne se perdent l'amenée, l'électrovanne, la ligne elle-même,
 ses raccords et l'antenne Ø16 — de l'ordre d'un demi à trois quarts de bar sur
 un jardin ordinaire. Dimensionner sur la pression du compteur, c'est prêter aux
 arroseurs de bout de ligne une portée qu'ils n'ont pas.
+
+**AU DERNIER ARROSEUR, 0,3 BAR AU-DESSUS DU MINIMUM DE SA FICHE — sa décision
+du 23 novembre 2026.** Jusque-là, le minimum exact suffisait : sur 10 × 6 et
+8 × 8 à 2 bar, une vanne recevait 1,72 bar pour un minimum de 1,70 (la 3504 et
+la 5000 Plus, Aqua Plus 2026, p. 11 et 13), et le plan passait. Sa question :
+*« comment ça lève ? J'ai l'impression qu'il faut une pression énorme »*, puis,
+devant le choix : **2,0 bar** pour ces turbines (`MARGE_LEVEE`, `seLeve`). La
+marge s'ajoute au minimum de chaque tête, jamais en seuil fixe : une buse VAN,
+dont la fiche s'arrête à 2,1 bar, ne tiendrait jamais sous 2,0. **Conséquence
+qu'il faut savoir** : à 2 bar au compteur, rien n'arrive à 2,0 au bout, et
+tout plan de turbines porte l'alerte « pression trop basse ».
+
+**UNE VANNE DE PLUS DÈS QU'ELLE DONNE 0,1 BAR AU DERNIER ARROSEUR — sa règle
+du 23 novembre 2026.** Devant son 16 × 10 et 8 × 8 à 3 bar, trois plans : 3 vannes
+en 3504 (2,21 bar au bout), 2 vannes avec deux modèles (2,05), 2 vannes en
+5000 Plus (2,06). Il a choisi les 3 vannes en 3504, pour *« plus de pression au
+bout »*, et la limite : *« dès 0,1 bar gagné »*. Le moins de vannes reste le
+point de départ (sa règle du 16 octobre) ; chaque vanne ajoutée doit rapporter
+0,1 bar (`GAIN_PAR_VANNE`, `avecLaPression`). « Toujours le plus de pression »
+lui a été proposé et n'a pas été retenu : il ajouterait des vannes sans fin.
 
 **Le débit DÉCROÎT le long de la ligne**, et c'est tout le calcul : entre la
 vanne et la première tête passe le débit du réseau entier, puis une tête de

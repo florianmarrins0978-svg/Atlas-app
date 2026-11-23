@@ -328,17 +328,19 @@ dire(
 // même groupe mais la coupe retombe sur leur limite — le contrôle passerait
 // alors au vert sans rien avoir montré.
 //
-// **La grande pelouse fait 18 × 7 depuis le 23 novembre 2026, et non plus
-// 20 × 7.** Sa règle des parts égales coupe chaque pelouse à part quand cela ne
-// coûte aucune vanne : sur 20 × 7, plus rien ne se mêlait, et le contrôle aurait
-// rougi sur un plan juste. Sur 18 × 7, mêler les deux pelouses économise une
-// vanne, et la bascule se voit encore.
+// **Le jardin est de 5 × 5 et 6 × 5 depuis le 23 novembre 2026**, et non plus
+// de 6 × 5 et 20 × 7. Ses règles du même jour (chaque pelouse partagée en parts
+// égales, une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur)
+// séparent presque toujours deux pelouses de buses différentes : sur 6 × 5 et
+// 20 × 7, plus rien ne se mêlait, et le contrôle aurait rougi sur un plan juste.
+// Ici, les deux petites pelouses tiennent ensemble sur une seule vanne, une en
+// 3504 buse 0,75, l'autre en 3504 buse 1,0 : la bascule se voit encore.
 {
   const deuxBuses = calculerPlan({
     seau: 10, temps: 20, pression: 3, amenee: 30,
     zones: [
-      { id: 1, type: "gazon", nom: "Petite", L: 6, l: 5 },
-      { id: 2, type: "gazon", nom: "Grande", L: 18, l: 7 },
+      { id: 1, type: "gazon", nom: "Petite", L: 5, l: 5 },
+      { id: 2, type: "gazon", nom: "Grande", L: 6, l: 5 },
     ],
   });
   const busesParReseau = new Map<number, Set<string>>();
@@ -542,13 +544,15 @@ dire(
   // 0,75, « Pelouse derrière » 6 × 5000 Plus buse 1,0 u+ au lieu de 3504 buse
   // 1,0. La formule n'a pas bougé.
   //
-  // **ELLE A BOUGÉ LE 23 NOVEMBRE 2026, DE 0,641 À 0,535**, et c'est le plan :
-  // sa décision que deux modèles de turbine ne partagent jamais une vanne
-  // (*« Non, jamais ensemble »*). La seconde vanne portait une 3504 de la pelouse
-  // devant avec les six 5000 Plus ; elle ne porte plus que les 5000 Plus
-  // (1,20 m³/h), et la première les huit 3504 (1,53). Toujours deux vannes, la
-  // pire perd moins. La formule n'a pas bougé.
-  const PERTE_RESEAU_ATTENDUE = 0.535;
+  // **ELLE A BOUGÉ LE 23 NOVEMBRE 2026, DE 0,641 À 0,445**, et c'est le plan :
+  // ses trois règles du jour. Deux modèles de turbine ne partagent plus une vanne
+  // (*« Non, jamais ensemble »*) : la seconde vanne portait une 3504 de la
+  // pelouse devant avec les six 5000 Plus. Une pelouse partagée l'est en parts
+  // égales. Et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur
+  // (*« dès 0,1 bar gagné »*) : la pelouse devant passe sur deux vannes de
+  // 4 + 4 (0,80 m³/h chacune), les 5000 Plus sur la troisième (1,26), et le
+  // dernier arroseur reçoit 2,27 bar au lieu de 2,03. La formule n'a pas bougé.
+  const PERTE_RESEAU_ATTENDUE = 0.445;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
