@@ -129,6 +129,14 @@ essai avec une vraie clé de test. Tant que ce n'est pas fait, l'écran dit
 lui-même que le paiement n'est pas branché, et aucun bouton ne promet ce qu'il
 ne peut pas tenir.
 
+**Éprouvé contre le vrai Stripe le 23 novembre 2026**, sur son espace, en
+environnement de test : la clé seule (`ATLAS_PAIEMENT_CLE`, sans crochet), la
+formule Artisan, la page Stripe à 46,80 € (39 € HT et 20 % de TVA), la carte
+4242, puis le retour dans l'appli, qui affiche « Artisan, 39 € HT par mois,
+prochain paiement le 23 décembre 2026 ». Stripe accepte donc ce qu'Atlas
+envoie. **Pas encore éprouvé** : le guichet (« Gérer mon abonnement »), la
+résiliation, le crochet (`/api/paiement`), et le mode réel.
+
 **Un défaut trouvé par la capture, et par aucun test :** trois cents pixels de
 vide sous la dernière carte — deux retraits qui s'additionnaient. Corrigé.
 
