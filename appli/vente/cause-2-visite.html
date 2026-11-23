@@ -1058,19 +1058,6 @@ body.a-choisi .formule.mise:not(.choisie){box-shadow:0 0 0 1px rgba(var(--ombre)
 .recap-date b{color:var(--encre)}
 .recap-bouton{width:100%;margin-top:20px}
 @media (min-width:960px){.recap{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:64px;padding:44px 48px 40px;align-items:end}}
-/* La barre vit en HAUT, sous l'en-tête, et non au pouce : sa remarque du
-   23 novembre, « il faut cliquer deux fois sur Voir mon choix ». Sur iPhone,
-   une fois la page défilée, Safari réduit sa barre d'outils en bas, et le
-   premier appui dans le bas de l'écran la fait revenir au lieu d'atteindre la
-   page. Sous l'en-tête fixe (64 px), l'appui arrive du premier coup. */
-.pouce-choix{position:fixed;left:12px;right:12px;top:74px;z-index:14;display:flex;align-items:center;gap:12px;max-width:520px;margin-inline:auto;padding:10px 10px 10px 20px;border-radius:999px;background:var(--nuit);color:var(--sur-nuit);box-shadow:0 20px 44px -16px rgba(var(--ombre),.75);transform:translateY(calc(-100% - 90px));visibility:hidden;pointer-events:none;transition:transform .5s var(--sortie),visibility 0s linear .5s}
-.pouce-choix.vu{transform:none;visibility:visible;pointer-events:auto;transition:transform .5s var(--sortie),visibility 0s}
-.pc-mots{flex:1;min-width:0;display:grid;gap:3px}
-.pc-mots b{font:600 16px/1.2 var(--texte);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pc-mots span{font-size:14px;color:var(--sur-nuit-2)}
-.pouce-choix .bouton{flex:none;min-height:52px;padding:0 22px;font-size:16px}
-body.a-choisi .pouce{display:none}
-@media (min-width:960px){.pouce-choix{display:none}}
 .fe{width:min(100%,560px);max-width:none;max-height:min(92dvh,760px);margin:auto auto 0;padding:14px 24px calc(28px + env(safe-area-inset-bottom));border:0;border-radius:28px 28px 0 0;background:var(--papier);color:var(--encre);box-shadow:0 -24px 60px -30px rgba(var(--ombre),.6);overflow:auto}
 .fe::backdrop{background:rgba(14,42,27,.55)}
 .fe[open]{animation:fe-monte .55s var(--sortie)}
@@ -1097,7 +1084,7 @@ body.a-choisi .pouce{display:none}
 .place-stripe span{font-size:16px;color:var(--encre-2)}
 .fe-ok{display:grid;place-items:center;width:64px;height:64px;margin:6px 0 18px;border-radius:50%;background:var(--action);color:var(--action-texte)}
 .f-court{margin-top:10px;font-size:17px;color:var(--encre-2)}
-@media (prefers-reduced-motion:reduce){.formule .coche,.interrupteur::after,.r-outils .r-prix,.pouce-choix,.ajout-outils{transition:none}.fe[open]{animation:none}}
+@media (prefers-reduced-motion:reduce){.formule .coche,.interrupteur::after,.r-outils .r-prix,.ajout-outils{transition:none}.fe[open]{animation:none}}
 </style>
 </head>
 <body>
@@ -1486,10 +1473,6 @@ body.a-choisi .pouce{display:none}
 
 </main>
 
-<div class="pouce-choix" id="pouce-choix" aria-hidden="true">
-  <p class="pc-mots"><b></b><span>0 € aujourd'hui</span></p>
-  <a class="bouton" href="#votre-choix" tabindex="-1">Voir mon choix</a>
-</div>
 <div class="pouce" id="pouce"><a class="bouton" href="#prix">Essayer 15 jours gratuits</a></div>
 
 
@@ -2375,7 +2358,7 @@ body.a-choisi .pouce{display:none}
   var tous = function(s, d){ return Array.prototype.slice.call((d || document).querySelectorAll(s)); };
   var etat = { formule: null, outils: false };
   var cartes = tous(".formule[data-formule]"), outils = un(".option-outils"), interrupteur = un(".ajout-outils");
-  var recap = un("#votre-choix"), bouton = un(".recap-bouton"), feuille = un("#feuille-essai"), barre = un("#pouce-choix");
+  var recap = un("#votre-choix"), bouton = un(".recap-bouton"), feuille = un("#feuille-essai");
   var euros = function(n){ return n.toLocaleString("fr-FR") + " €"; };
   var periode = function(){ var b = un("[data-periode][aria-pressed='true']"); return b ? b.getAttribute("data-periode") : "mois"; };
   var finEssai = new Date(); finEssai.setDate(finEssai.getDate() + JOURS_ESSAI);
@@ -2393,7 +2376,7 @@ body.a-choisi .pouce{display:none}
       k.classList.toggle("choisie", oui);
       var b = un(".choisir", k);
       b.setAttribute("aria-pressed", String(oui));
-      b.textContent = oui ? "Formule choisie" : "Choisir " + k.getAttribute("data-nom");
+      b.textContent = oui ? "Voir mon choix" : "Choisir " + k.getAttribute("data-nom");
     });
     interrupteurs.forEach(function(b){ b.setAttribute("aria-checked", String(etat.outils)); });
     un(".ajout-mots", interrupteur).textContent = etat.outils ? "Outils ajoutés" : "Ajouter les outils";
@@ -2410,13 +2393,22 @@ body.a-choisi .pouce{display:none}
     ld.innerHTML = c ? "Premier prélèvement le <b>" + date + "</b>, sauf si vous arrêtez avant." : "";
     bouton.textContent = c ? "Commencer l'essai gratuit" : "Choisir ma formule";
     document.body.classList.toggle("a-choisi", !!c);
-    un("b", barre).textContent = nomDuChoix();
-    voirBarre();
   };
 
   var choisir = function(code){ etat.formule = code; peindre(); };
   cartes.forEach(function(k){
-    k.addEventListener("click", function(e){ if (e.target.closest("a")) return; choisir(k.getAttribute("data-formule")); });
+    k.addEventListener("click", function(e){
+      if (e.target.closest("a")) return;
+      // « Voir mon choix » : le bouton de la formule choisie, sous le pouce, là
+      // où il vient d'appuyer. Sa remarque du 23 novembre : la barre flottante
+      // était « chiante d'accès avec le pouce » en haut, et Safari avalait le
+      // premier appui en bas. Un bouton dans la page n'a ni l'un ni l'autre.
+      if (etat.formule === k.getAttribute("data-formule") && e.target.closest(".choisir")) {
+        recap.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      choisir(k.getAttribute("data-formule"));
+    });
   });
   // Les deux interrupteurs des outils, celui de la carte et celui de « Votre
   // choix », ne tiennent qu'un seul état : l'un suit l'autre.
@@ -2431,15 +2423,6 @@ body.a-choisi .pouce{display:none}
     ouvrir();
   });
 
-  // La barre du pouce : dès qu'une formule est choisie, et tant que « Votre
-  // choix » n'est pas à l'écran.
-  var recapVu = false, piedVu = false;
-  var voirBarre = function(){ var oui = !!carte() && !recapVu && !piedVu; barre.classList.toggle("vu", oui); barre.setAttribute("aria-hidden", String(!oui)); un("a", barre).tabIndex = oui ? 0 : -1; };
-  if ("IntersectionObserver" in window){
-    new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.target === recap) recapVu = e.isIntersecting; else piedVu = e.isIntersecting; }); voirBarre(); })
-      .observe(recap);
-    new IntersectionObserver(function(es){ es.forEach(function(e){ piedVu = e.isIntersecting; }); voirBarre(); }).observe(un(".pied"));
-  }
 
   // La feuille de l'essai.
   var etape = 1, retour = un(".fe-retour", feuille);
