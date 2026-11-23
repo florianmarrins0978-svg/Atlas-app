@@ -84,7 +84,15 @@ test("la ligne sous la barre est à 15 px, comme la planche", () => {
 
 test("« Attention au mot » est une simple ligne, sans encadré bleu", () => {
   const html = renderToStaticMarkup(
-    React.createElement(AbonnementClient, { formuleActuelle: "entreprise", periodiciteActuelle: "mensuelle", annulationDemandee: false, paiementBranche: true })
+    React.createElement(AbonnementClient, {
+      formuleActuelle: "entreprise",
+      periodiciteActuelle: "mensuelle",
+      annulationDemandee: false,
+      paiementBranche: true,
+      echeance: null,
+      prevu: null,
+      comptesQuiPartent: { artisan: 0, entreprise: 0, illimite: 0 },
+    })
   );
   const i = html.indexOf("Attention au mot.");
   assert.ok(i >= 0, "la ligne a disparu");

@@ -7,6 +7,7 @@ import {
   appliquerDepuisLeCrochet,
   compterLesFabricants,
   enregistrerLAbonnement,
+  noterLeChangementPrevu,
   type EtatVenuDuPrestataire,
 } from "../src/server/repositories/abonnements";
 import { donnerUnAcces, listerAcces, changerLeRole } from "../src/server/repositories/membres-entreprise";
@@ -92,6 +93,7 @@ function etat(surcharge: Partial<EtatVenuDuPrestataire> & { abonnementPrestatair
     periodeFin: LE_9_OCTOBRE,
     annulationDemandee: false,
     clientPrestataire: `cus_${surcharge.abonnementPrestataire}`,
+    changementPrevu: false,
     ...surcharge,
   };
 }
@@ -160,7 +162,7 @@ async function main() {
       "customer.subscription.updated",
       etat({ abonnementPrestataire: "sub_C", periodeFin: LE_9_NOVEMBRE })
     );
-    assert.equal(applique, true);
+    assert.equal(applique.applique, true);
 
     const lu = await abonnementDeLEntreprise(ctx);
     assert.equal(lu?.periodeFin?.toISOString(), LE_9_NOVEMBRE.toISOString());
@@ -183,8 +185,8 @@ async function main() {
       etat({ abonnementPrestataire: "sub_D", periodeFin: new Date("2027-01-01T00:00:00Z") })
     );
 
-    assert.equal(premier, true, "le premier passage n'a rien fait");
-    assert.equal(second, false, "le rejeu a été traité une seconde fois");
+    assert.equal(premier.applique, true, "le premier passage n'a rien fait");
+    assert.equal(second.applique, false, "le rejeu a été traité une seconde fois");
 
     const lu = await abonnementDeLEntreprise(ctx);
     assert.equal(
@@ -203,7 +205,7 @@ async function main() {
       "customer.subscription.updated",
       etat({ abonnementPrestataire: "sub_INVENTE", formule: "illimite" })
     );
-    assert.equal(applique, false);
+    assert.equal(applique.applique, false);
 
     const lu = await abonnementDeLEntreprise(ctx);
     assert.equal(lu?.formule, "artisan", "un identifiant inconnu a modifié un abonnement voisin");
@@ -239,6 +241,72 @@ async function main() {
       etat({ abonnementPrestataire: "sub_H", annulationDemandee: true })
     );
     assert.equal((await abonnementDeLEntreprise(ctx))?.annulationDemandee, true);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  console.log("\n── La descente confirmée, le jour où elle prend effet ──\n");
+
+  // Sa décision du 23 novembre 2026 : passer d'Entreprise à Artisan avec
+  // d'autres personnes aux devis prévient que leurs comptes seront supprimés,
+  // et ils le sont à l'échéance, par le crochet. Ces trois cas tiennent qu'il
+  // ne le fait QUE pour une descente notée par lui, et jamais au-delà.
+  async function entrepriseAvecDeux(nom: string, sub: string): Promise<Ctx> {
+    const ctx = await contexte(nom);
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: sub, formule: "entreprise" }));
+    for (let i = 0; i < 2; i++) {
+      const r = await donnerUnAcces(ctx, {
+        nom: `Facturation ${i}`,
+        email: `descente-${sub}-${i}-${Date.now()}@t.test`,
+        motDePasse: "motdepasse-douze",
+        confirmation: "motdepasse-douze",
+        role: "facturation",
+      });
+      assert.equal(r.ok, true, `l'accès ${i} a été refusé`);
+    }
+    assert.equal(await compterLesFabricants(ctx), 3);
+    return ctx;
+  }
+
+  await test("LA DESCENTE CONFIRMÉE retire les accès en trop, et le patron reste", async () => {
+    const ctx = await entrepriseAvecDeux("Descendue", "sub_D1");
+    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle" });
+    const r = await appliquerDepuisLeCrochet(
+      "evt_d1",
+      "customer.subscription.updated",
+      etat({ abonnementPrestataire: "sub_D1", formule: "artisan", periodeFin: LE_9_NOVEMBRE, changementPrevu: true })
+    );
+    assert.equal(r.applique, true);
+    assert.equal(r.comptesRetires, 2, "les deux autres accès sont restés");
+    assert.equal(await compterLesFabricants(ctx), 1);
+    const restants = await listerAcces(ctx);
+    assert.deepEqual(restants.map((a) => a.role), ["proprietaire"], "le patron a perdu son accès");
+    assert.equal((await abonnementDeLEntreprise(ctx))?.formule, "artisan");
+  });
+
+  await test("SANS DESCENTE NOTÉE, une formule plus petite ne retire personne", async () => {
+    // Un retour de paiement, un premier abonnement, une formule mal lue :
+    // aucun ne doit pouvoir couper l'accès de quelqu'un.
+    const ctx = await entrepriseAvecDeux("Non notée", "sub_D2");
+    const r = await appliquerDepuisLeCrochet(
+      "evt_d2",
+      "customer.subscription.updated",
+      etat({ abonnementPrestataire: "sub_D2", formule: "artisan" })
+    );
+    assert.equal(r.comptesRetires, 0);
+    assert.equal(await compterLesFabricants(ctx), 3, "des accès ont été retirés sans descente confirmée");
+  });
+
+  await test("le calendrier retiré chez le prestataire, la descente prévue s'oublie", async () => {
+    const ctx = await entrepriseAvecDeux("Gardée", "sub_D3");
+    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle" });
+    await appliquerDepuisLeCrochet(
+      "evt_d3",
+      "customer.subscription.updated",
+      etat({ abonnementPrestataire: "sub_D3", formule: "entreprise", changementPrevu: false })
+    );
+    const lu = await abonnementDeLEntreprise(ctx);
+    assert.equal(lu?.formulePrevue, null, "la descente prévue est restée sans calendrier");
+    assert.equal(await compterLesFabricants(ctx), 3);
   });
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -547,7 +547,15 @@ export type EtatAffiche = {
  */
 export function etatAffiche(
   abonnement:
-    | { formule: FormuleCode; periodicite: Periodicite; statut: StatutAbonnement; periodeFin: Date | null; annulationDemandee: boolean }
+    | {
+        formule: FormuleCode;
+        periodicite: Periodicite;
+        statut: StatutAbonnement;
+        periodeFin: Date | null;
+        annulationDemandee: boolean;
+        /** La formule qui commence à l'échéance (`changementAVenir`), ou rien. */
+        prevu?: { formule: FormuleCode; periodicite: Periodicite } | null;
+      }
     | null,
   maintenant: Date
 ): EtatAffiche {
@@ -607,6 +615,26 @@ export function etatAffiche(
           },
         };
       }
+      // **Une descente prévue se lit sur l'état** (planche du 23 novembre
+      // 2026) : la formule payée jusqu'à l'échéance, puis celle qui commence,
+      // dans le carré doré de la date. Doré et non ambre : rien n'attend un
+      // geste de sa part.
+      if (abonnement.prevu && abonnement.periodeFin) {
+        const suivante = formule(abonnement.prevu.formule);
+        if (suivante) {
+          const rythmeSuivant = abonnement.prevu.periodicite === "annuelle" ? "par an" : "par mois";
+          return {
+            titre: nom,
+            detail: `Jusqu’au ${jourEnLettres(abonnement.periodeFin)}, puis ${suivante.nom} à ${montantDu(suivante, abonnement.prevu.periodicite)} € HT ${rythmeSuivant}.`,
+            ton: "calme",
+            signe: {
+              genre: "echeance",
+              jour: abonnement.periodeFin.getUTCDate(),
+              mois: MOIS_ABREGES[abonnement.periodeFin.getUTCMonth()],
+            },
+          };
+        }
+      }
       return {
         titre: nom,
         // **Deux phrases, chacune son point** — et plus le « · » qui les
@@ -654,6 +682,11 @@ const MOIS_ABREGES = [
   "nov.",
   "déc.",
 ];
+
+/** Le mois d'un carré de date, « déc. » : celui de l'état, et celui de la feuille du changement. */
+export function moisAbrege(d: Date): string {
+  return MOIS_ABREGES[d.getUTCMonth()];
+}
 
 /**
  * « 9 octobre 2026 ». Pas de `toLocaleDateString` : le fuseau et la langue du

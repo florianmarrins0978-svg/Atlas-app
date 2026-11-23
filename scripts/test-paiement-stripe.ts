@@ -346,77 +346,253 @@ async function main() {
     });
   }
 
-  console.log("\n=== Changer de formule : au prorata, sur la ligne existante ===\n");
+  console.log("\n=== Monter : débité tout de suite, sur la ligne existante ===\n");
 
-  {
+  // Ses décisions du 23 novembre 2026 (`src/lib/changement-de-formule.ts`) :
+  // au mois, le prix entier et l'échéance remise ; à l'année, la différence
+  // entière, l'échéance gardée. Le faux prestataire note ce qui part ; que
+  // Stripe l'accepte et débite bien ce montant se joue sur son espace.
+  async function monter(facon: "monter-au-mois" | "monter-a-l-annee" | "passer-a-l-annee", rendu = abonnementRendu()) {
     const { serveur, recues } = fauxPrestataire((r) => {
-      if (r.methode === "GET" && r.chemin === "/v1/subscriptions/sub_123") {
-        return { statut: 200, corps: abonnementRendu() };
-      }
+      if (r.methode === "GET" && r.chemin === "/v1/subscriptions/sub_123") return { statut: 200, corps: rendu };
       if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_illimite" }] } };
+      if (r.chemin.endsWith("/release")) return { statut: 200, corps: { id: "sub_sched_1" } };
       if (r.methode === "POST" && r.chemin === "/v1/subscriptions/sub_123") {
-        return {
-          statut: 200,
-          corps: abonnementRendu({ metadata: { formule: "illimite", periodicite: "mensuelle" } }),
-        };
+        return { statut: 200, corps: abonnementRendu({ metadata: { formule: "illimite", periodicite: "mensuelle" } }) };
       }
       return { statut: 404, corps: {} };
     });
     const port = await surUnPort(serveur);
     process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
     const stripe = await moduleFrais();
-
-    const r = await stripe.changerLaFormule({
+    const r = await stripe.monterToutDeSuite({
       abonnementPrestataire: "sub_123",
       formule: "illimite",
-      periodicite: "mensuelle",
+      periodicite: facon === "monter-au-mois" ? "mensuelle" : "annuelle",
+      facon,
     });
+    serveur.close();
+    const maj = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123");
+    return { r, recues, maj: maj ? champs(maj.corps) : null };
+  }
+
+  {
+    const { r, maj } = await monter("monter-au-mois");
 
     await cas("la nouvelle formule est rendue", async () => {
       assert.equal(r.ok, true);
       if (r.ok) assert.equal(r.etat.formule, "illimite");
     });
 
-    await cas("LA LIGNE EXISTANTE EST REMPLACÉE — jamais une seconde ajoutée", async () => {
-      // Une ligne de plus, c'est deux formules facturées sur le même
-      // abonnement, tous les mois.
-      const maj = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123");
+    await cas("LA LIGNE EXISTANTE EST REMPLACÉE, jamais une seconde ajoutée", async () => {
       assert.ok(maj);
-      const c = champs(maj.corps);
-      assert.equal(c.get("items[0][id]"), "si_789");
-      assert.equal(c.get("items[0][price]"), "price_illimite");
-      assert.equal(c.get("items[1][id]"), null, "une seconde ligne a été envoyée");
+      assert.equal(maj.get("items[0][id]"), "si_789");
+      assert.equal(maj.get("items[0][price]"), "price_illimite");
+      assert.equal(maj.get("items[1][id]"), null, "une seconde ligne a été envoyée");
     });
 
-    await cas("le prorata est demandé — c'est ce que l'article 14.6 promet", async () => {
-      const maj = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123");
-      assert.equal(champs(maj!.corps).get("proration_behavior"), "create_prorations");
+    await cas("AU MOIS : le prix entier, l'échéance remise à aujourd'hui, aucun prorata", async () => {
+      assert.equal(maj?.get("billing_cycle_anchor"), "now");
+      assert.equal(maj?.get("proration_behavior"), "none");
+      assert.equal(maj?.get("proration_date"), null);
+    });
+
+    await cas("UN PAIEMENT QUI NE PASSE PAS LAISSE L'ABONNEMENT INTACT", async () => {
+      assert.equal(maj?.get("payment_behavior"), "error_if_incomplete");
     });
 
     await cas("une résiliation en cours est annulée : il vient de choisir de rester", async () => {
-      const maj = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123");
-      assert.equal(champs(maj!.corps).get("cancel_at_period_end"), "false");
+      assert.equal(maj?.get("cancel_at_period_end"), "false");
     });
 
-    serveur.close();
+    await cas("la formule et le rythme partent dans les étiquettes", async () => {
+      assert.equal(maj?.get("metadata[formule]"), "illimite");
+      assert.equal(maj?.get("metadata[periodicite]"), "mensuelle");
+    });
+  }
+
+  {
+    const { maj } = await monter("monter-a-l-annee", abonnementRendu({ current_period_start: 1760097600 }));
+    await cas("À L'ANNÉE : la différence entière, comptée depuis le début de la période, l'échéance gardée", async () => {
+      assert.equal(maj?.get("proration_behavior"), "always_invoice");
+      assert.equal(maj?.get("proration_date"), "1760097600");
+      assert.equal(maj?.get("billing_cycle_anchor"), null, "l'échéance a été remise");
+      assert.equal(maj?.get("payment_behavior"), "error_if_incomplete");
+    });
+  }
+
+  {
+    const lignes = { data: [{ id: "si_789", current_period_start: 1760097600 }] };
+    const { maj } = await monter("monter-a-l-annee", abonnementRendu({ items: lignes }));
+    await cas("le début de période se lit AUSSI sur la ligne, comme la fin", async () => {
+      assert.equal(maj?.get("proration_date"), "1760097600");
+    });
+  }
+
+  {
+    const { r, maj } = await monter("monter-a-l-annee");
+    await cas("sans début de période, la différence ne se devine pas : rien ne part", async () => {
+      assert.equal(r.ok, false);
+      assert.equal(maj, null, "un changement est parti sans montant sûr");
+    });
+  }
+
+  {
+    const { maj } = await monter("passer-a-l-annee");
+    await cas("DU MOIS À L'ANNÉE : l'année entière, l'échéance remise", async () => {
+      assert.equal(maj?.get("billing_cycle_anchor"), "now");
+      assert.equal(maj?.get("proration_behavior"), "none");
+    });
+  }
+
+  {
+    const { recues } = await monter("monter-au-mois", abonnementRendu({ schedule: "sub_sched_1" }));
+    await cas("un calendrier resté chez le prestataire part AVANT la montée", async () => {
+      const ordre = recues.map((x) => `${x.methode} ${x.chemin.split("?")[0]}`);
+      const liberation = ordre.indexOf("POST /v1/subscription_schedules/sub_sched_1/release");
+      const montee = ordre.indexOf("POST /v1/subscriptions/sub_123");
+      assert.ok(liberation >= 0, "le calendrier est resté");
+      assert.ok(liberation < montee, "la montée est partie avant que le calendrier soit retiré");
+    });
+  }
+
+  for (const [nom, erreur, attendu] of [
+    ["une carte refusée se dit « carte refusée »", { type: "card_error", code: "card_declined" }, "carte_refusee"],
+    ["la banque qui veut une confirmation se dit comme telle", { type: "card_error", code: "authentication_required" }, "confirmation_bancaire"],
+  ] as const) {
+    await cas(nom, async () => {
+      const { serveur } = fauxPrestataire((r) => {
+        if (r.methode === "GET") return { statut: 200, corps: abonnementRendu() };
+        if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_illimite" }] } };
+        return { statut: 402, corps: { error: erreur } };
+      });
+      const port = await surUnPort(serveur);
+      process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+      const stripe = await moduleFrais();
+      const r = await stripe.monterToutDeSuite({
+        abonnementPrestataire: "sub_123",
+        formule: "illimite",
+        periodicite: "mensuelle",
+        facon: "monter-au-mois",
+      });
+      serveur.close();
+      assert.deepEqual(r, { ok: false, erreur: attendu });
+    });
   }
 
   await cas("un abonnement à DEUX lignes est refusé plutôt que deviné", async () => {
-    const { serveur } = fauxPrestataire(() => ({
-      statut: 200,
-      corps: abonnementRendu({ items: { data: [{ id: "si_1" }, { id: "si_2" }] } }),
-    }));
+    const { r, maj } = await monter("monter-au-mois", abonnementRendu({ items: { data: [{ id: "si_1" }, { id: "si_2" }] } }));
+    assert.equal(r.ok, false, "une ligne a été choisie au hasard parmi deux");
+    assert.equal(maj, null);
+  });
+
+  console.log("\n=== Descendre : un calendrier, rien de débité ===\n");
+
+  {
+    const avecPrix = abonnementRendu({
+      metadata: { entreprise_id: "ent-1", formule: "entreprise", periodicite: "mensuelle" },
+      items: { data: [{ id: "si_789", price: { id: "price_entreprise" } }] },
+    });
+    let relu = 0;
+    const { serveur, recues } = fauxPrestataire((r) => {
+      if (r.methode === "GET" && r.chemin === "/v1/subscriptions/sub_123") {
+        relu++;
+        return { statut: 200, corps: relu === 1 ? avecPrix : { ...avecPrix, schedule: "sub_sched_9" } };
+      }
+      if (r.chemin === "/v1/subscription_schedules") {
+        return { statut: 200, corps: { id: "sub_sched_9", phases: [{ start_date: 1763899200, end_date: 1766491200 }] } };
+      }
+      if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_artisan" }] } };
+      if (r.chemin.startsWith("/v1/tax_rates?")) {
+        return { statut: 200, corps: { data: [{ id: "txr_20", metadata: { atlas_cle: "atlas_tva_fr_20" } }] } };
+      }
+      if (r.chemin === "/v1/subscription_schedules/sub_sched_9") return { statut: 200, corps: { id: "sub_sched_9" } };
+      return { statut: 404, corps: {} };
+    });
     const port = await surUnPort(serveur);
     process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
     const stripe = await moduleFrais();
-
-    const r = await stripe.changerLaFormule({
-      abonnementPrestataire: "sub_123",
-      formule: "illimite",
-      periodicite: "mensuelle",
-    });
-    assert.equal(r.ok, false, "une ligne a été choisie au hasard parmi deux");
+    const r = await stripe.prevoirALEcheance({ abonnementPrestataire: "sub_123", formule: "artisan", periodicite: "mensuelle" });
     serveur.close();
+    const maj = recues.find((x) => x.chemin === "/v1/subscription_schedules/sub_sched_9");
+    const c = champs(maj?.corps ?? "");
+
+    await cas("le calendrier naît de l'abonnement, et l'abonnement relu le porte", async () => {
+      assert.ok(recues.some((x) => x.chemin === "/v1/subscription_schedules" && champs(x.corps).get("from_subscription") === "sub_123"));
+      assert.equal(r.ok, true);
+      if (r.ok) {
+        assert.equal(r.etat.changementPrevu, true);
+        assert.equal(r.etat.formule, "entreprise", "la formule payée a changé avant l'échéance");
+      }
+    });
+
+    await cas("AUCUN ABONNEMENT N'EST MODIFIÉ, donc rien n'est débité aujourd'hui", async () => {
+      assert.equal(recues.filter((x) => x.methode === "POST" && x.chemin === "/v1/subscriptions/sub_123").length, 0);
+    });
+
+    await cas("la période en cours reste telle quelle, jusqu'à l'échéance", async () => {
+      assert.equal(c.get("phases[0][items][0][price]"), "price_entreprise");
+      assert.equal(c.get("phases[0][start_date]"), "1763899200");
+      assert.equal(c.get("phases[0][end_date]"), "1766491200");
+      assert.equal(c.get("phases[0][metadata][formule]"), "entreprise");
+    });
+
+    await cas("ARTISAN COMMENCE À L'ÉCHÉANCE, sans prorata, ses étiquettes avec lui", async () => {
+      assert.equal(c.get("phases[1][items][0][price]"), "price_artisan");
+      assert.equal(c.get("phases[1][metadata][formule]"), "artisan");
+      assert.equal(c.get("phases[1][metadata][periodicite]"), "mensuelle");
+      assert.equal(c.get("phases[1][metadata][entreprise_id]"), "ent-1");
+      assert.equal(c.get("phases[1][proration_behavior]"), "none");
+      assert.equal(c.get("proration_behavior"), "none");
+      assert.equal(c.get("end_behavior"), "release");
+    });
+
+    await cas("LA TVA EST REDONNÉE À CHAQUE PHASE : Artisan ne part pas hors taxe", async () => {
+      assert.equal(c.get("phases[0][default_tax_rates][0]"), "txr_20");
+      assert.equal(c.get("phases[1][default_tax_rates][0]"), "txr_20");
+    });
+
+    await cas("la phase d'Artisan court une période, puis le calendrier se retire", async () => {
+      // 23 décembre 2025 + un mois = 23 janvier 2026, en secondes.
+      assert.equal(c.get("phases[1][end_date]"), String(Date.UTC(2026, 0, 23, 12) / 1000));
+    });
+  }
+
+  console.log("\n=== Garder, et résilier : le calendrier part ===\n");
+
+  for (const [nom, appel] of [
+    ["« Garder Entreprise » retire le calendrier, rien d'autre", "garder"],
+    ["résilier retire d'abord une descente prévue", "resilier"],
+  ] as const) {
+    await cas(nom, async () => {
+      const { serveur, recues } = fauxPrestataire((r) => {
+        if (r.methode === "GET") return { statut: 200, corps: abonnementRendu({ schedule: "sub_sched_9" }) };
+        if (r.chemin.endsWith("/release")) return { statut: 200, corps: { id: "sub_sched_9" } };
+        return { statut: 200, corps: abonnementRendu({ cancel_at_period_end: true }) };
+      });
+      const port = await surUnPort(serveur);
+      process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+      const stripe = await moduleFrais();
+      const r =
+        appel === "garder"
+          ? await stripe.garderLaFormule({ abonnementPrestataire: "sub_123" })
+          : await stripe.demanderLaResiliation({ abonnementPrestataire: "sub_123", raison: null, texte: null });
+      serveur.close();
+      assert.equal(r.ok, true);
+      const ordre = recues.map((x) => `${x.methode} ${x.chemin.split("?")[0]}`);
+      assert.ok(ordre.includes("POST /v1/subscription_schedules/sub_sched_9/release"), "le calendrier est resté");
+      if (appel === "garder") {
+        assert.equal(ordre.filter((x) => x === "POST /v1/subscriptions/sub_123").length, 0, "garder a modifié l'abonnement");
+      } else {
+        assert.ok(ordre.indexOf("POST /v1/subscription_schedules/sub_sched_9/release") < ordre.indexOf("POST /v1/subscriptions/sub_123"));
+      }
+    });
+  }
+
+  await cas("un abonnement relu SANS calendrier ne prévoit rien", async () => {
+    const stripe = await moduleFrais();
+    assert.equal(stripe.lireUnAbonnement(abonnementRendu())?.changementPrevu, false);
+    assert.equal(stripe.lireUnAbonnement(abonnementRendu({ schedule: { id: "sub_sched_1" } }))?.changementPrevu, true);
   });
 
   console.log("\n=== Le guichet ===\n");
@@ -463,30 +639,33 @@ async function main() {
       texte: "la facturation en anglais",
     });
 
+    // La résiliation relit d'abord l'abonnement (une descente prévue partirait
+    // avant elle) : on lit donc les ENVOIS, dans l'ordre.
+    const envois = () => recues.filter((x) => x.methode === "POST");
+
     await cas("la résiliation part pour l'échéance, jamais tout de suite", async () => {
-      assert.equal(recues[0].methode, "POST");
-      assert.equal(recues[0].chemin, "/v1/subscriptions/sub_123");
-      assert.equal(champs(recues[0].corps).get("cancel_at_period_end"), "true");
+      assert.equal(envois()[0].chemin, "/v1/subscriptions/sub_123");
+      assert.equal(champs(envois()[0].corps).get("cancel_at_period_end"), "true");
       assert.equal(r.ok, true);
       if (r.ok) assert.equal(r.etat.annulationDemandee, true);
     });
 
     await cas("sa raison et son texte partent avec, là où le patron les lit", async () => {
-      const c = champs(recues[0].corps);
+      const c = champs(envois()[0].corps);
       assert.equal(c.get("cancellation_details[feedback]"), "missing_features");
       assert.equal(c.get("cancellation_details[comment]"), "la facturation en anglais");
     });
 
     await cas("sans raison ni texte, rien n'est inventé", async () => {
       await stripe.demanderLaResiliation({ abonnementPrestataire: "sub_123", raison: null, texte: null });
-      const c = champs(recues[1].corps);
+      const c = champs(envois()[1].corps);
       assert.equal(c.has("cancellation_details[feedback]"), false);
       assert.equal(c.has("cancellation_details[comment]"), false);
     });
 
     await cas("« Ne pas arrêter » retire la résiliation demandée", async () => {
       await stripe.retirerLaResiliation({ abonnementPrestataire: "sub_123" });
-      assert.equal(champs(recues[2].corps).get("cancel_at_period_end"), "false");
+      assert.equal(champs(envois()[2].corps).get("cancel_at_period_end"), "false");
     });
 
     serveur.close();

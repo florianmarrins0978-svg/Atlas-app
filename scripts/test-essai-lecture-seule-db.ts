@@ -158,6 +158,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
+      changementPrevu: false,
     });
     const a = await abonnementDeLEntreprise(ctx);
     assert.equal(a?.statut, "actif");
@@ -189,6 +190,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
+      changementPrevu: false,
     });
     for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) await exigerFonction(ctx, f, "essai");
   });
@@ -310,6 +312,7 @@ async function main() {
       annulationDemandee: true,
       clientPrestataire: "cus_resilie",
       abonnementPrestataire: "sub_resilie",
+      changementPrevu: false,
     });
     assert.equal((await listerChantiers(ctxResilie)).length, 1, "il ne relit plus ses chantiers");
   });
@@ -331,6 +334,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_resilie",
       abonnementPrestataire: "sub_reprise",
+      changementPrevu: false,
     });
     await creerChantier(ctxResilie, { nom: "Chantier après la reprise" });
     assert.equal((await listerChantiers(ctxResilie)).length, 2);

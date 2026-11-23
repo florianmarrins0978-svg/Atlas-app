@@ -43,20 +43,7 @@ function SigneDeLEtat({ signe, attention }: { signe: SigneAbonnement; attention:
   if (signe.genre === "jours" || signe.genre === "echeance") {
     const chiffre = signe.genre === "jours" ? signe.nombre : signe.jour;
     const dessous = signe.genre === "jours" ? (signe.nombre > 1 ? "jours" : "jour") : signe.mois;
-    return (
-      <span
-        aria-hidden
-        className="w-[52px] flex-none rounded-[10px] pb-[7px] pt-2 text-center leading-none"
-        style={{ backgroundColor: voile(attention ? colors.carteAmbreTexte : colors.or, attention ? 0.16 : 0.14) }}
-      >
-        <span className="block text-[24px] leading-none" style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}>
-          {chiffre}
-        </span>
-        <span className="mt-1 block text-[13px] font-bold" style={{ color: attention ? colors.carteAmbreTexte : colors.or }}>
-          {dessous}
-        </span>
-      </span>
-    );
+    return <CarreDeDate chiffre={chiffre} dessous={dessous} attention={attention} />;
   }
   const dessin = signe.genre === "paiement" ? "carte" : signe.genre === "ferme" ? "cadenas" : "couronne";
   const ton = attention ? "ambre" : signe.genre === "formule" ? "vert" : undefined;
@@ -64,5 +51,28 @@ function SigneDeLEtat({ signe, attention }: { signe: SigneAbonnement; attention:
     <PastilleIcone ton={ton}>
       <Picto nom={dessin} />
     </PastilleIcone>
+  );
+}
+
+/**
+ * LE CARRÉ D'UNE DATE (ou d'un nombre de jours) : le chiffre, et dessous son
+ * mot. Doré quand tout va, ambre quand il demande un geste. Exporté pour la
+ * feuille du changement de formule, qui y pose l'échéance (planche du
+ * 23 novembre 2026) : un seul dessin de la date sur cet écran.
+ */
+export function CarreDeDate({ chiffre, dessous, attention = false }: { chiffre: number; dessous: string; attention?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className="w-[52px] flex-none rounded-[10px] pb-[7px] pt-2 text-center leading-none"
+      style={{ backgroundColor: voile(attention ? colors.carteAmbreTexte : colors.or, attention ? 0.16 : 0.14) }}
+    >
+      <span className="block text-[24px] leading-none" style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}>
+        {chiffre}
+      </span>
+      <span className="mt-1 block text-[13px] font-bold" style={{ color: attention ? colors.carteAmbreTexte : colors.or }}>
+        {dessous}
+      </span>
+    </span>
   );
 }

@@ -46,6 +46,7 @@ import {
   type Periodicite,
 } from "@/lib/abonnements";
 import { remboursementAuProrata, type RaisonDepart } from "@/lib/resiliation";
+import { plusUnePeriode } from "@/lib/changement-de-formule";
 import type { EtatVenuDuPrestataire } from "../repositories/abonnements";
 
 /**
@@ -62,7 +63,16 @@ export function paiementConfigure(): boolean {
   return Boolean(getEnv().paiementCleSecrete);
 }
 
-export type Echec = { ok: false; erreur: "non_configure" | "prestataire_injoignable" | "prestataire_refuse" };
+/**
+ * **`carte_refusee` et `confirmation_bancaire` viennent d'un débit immédiat
+ * refusé** (la montée, `monterToutDeSuite`) : Stripe répond 402, et rien n'a
+ * changé chez lui. Les distinguer dit au patron quoi faire : changer de carte,
+ * ou répondre à sa banque.
+ */
+export type Echec = {
+  ok: false;
+  erreur: "non_configure" | "prestataire_injoignable" | "prestataire_refuse" | "carte_refusee" | "confirmation_bancaire";
+};
 export type Ouverture = { ok: true; url: string };
 
 /**
@@ -117,6 +127,14 @@ async function appeler(
     // Le détail va au journal, jamais à l'écran : il porte des identifiants de
     // compte, et il est écrit en anglais pour un développeur.
     logger.error("Le prestataire de paiement a refusé", { chemin, statut: reponse.status, reponse: donnees });
+    // **402, c'est un PAIEMENT refusé**, pas une requête fausse : la carte, ou
+    // la banque qui veut une confirmation (3D Secure). Avec
+    // `payment_behavior=error_if_incomplete`, l'abonnement n'a pas bougé.
+    if (reponse.status === 402) {
+      const e = estObjet(donnees.error) ? donnees.error : {};
+      const confirmation = e.code === "authentication_required" || e.decline_code === "authentication_required";
+      return { ok: false, erreur: confirmation ? "confirmation_bancaire" : "carte_refusee" };
+    }
     return { ok: false, erreur: "prestataire_refuse" };
   }
 
@@ -382,7 +400,16 @@ export function lireUnAbonnement(brut: Record<string, unknown>): EtatVenuDuPrest
     annulationDemandee: brut.cancel_at_period_end === true,
     clientPrestataire: clientId,
     abonnementPrestataire: id,
+    changementPrevu: calendrierDe(brut) !== null,
   };
+}
+
+/** Le calendrier de l'abonnement (« subscription schedule »), identifiant ou objet développé. */
+function calendrierDe(brut: Record<string, unknown>): string | null {
+  const c = brut.schedule;
+  if (typeof c === "string") return c;
+  if (estObjet(c) && typeof c.id === "string") return c.id;
+  return null;
 }
 
 /** Ce qu'une facture PAYÉE de Stripe dit, et qu'Atlas recopie sur la sienne. */
@@ -489,23 +516,155 @@ function finDePeriode(brut: Record<string, unknown>): Date | null {
   return null;
 }
 
+/** Le début de la période payée, aux deux mêmes endroits que `finDePeriode`, et pour la même raison. */
+function debutDePeriode(brut: Record<string, unknown>): number | null {
+  if (typeof brut.current_period_start === "number") return brut.current_period_start;
+  const lignes = estObjet(brut.items) ? brut.items.data : null;
+  if (Array.isArray(lignes) && lignes.length > 0 && estObjet(lignes[0]) && typeof lignes[0].current_period_start === "number") {
+    return lignes[0].current_period_start;
+  }
+  return null;
+}
+
 /**
- * CHANGER DE FORMULE — au prorata, sans repasser par la carte bancaire.
+ * La ligne unique d'un abonnement d'Atlas, et son prix. Une ligne devinée
+ * ferait naître une SECONDE ligne facturée à côté de la première : deux
+ * lignes, ou une ligne sans identifiant, se refusent.
+ */
+function ligneUnique(brut: Record<string, unknown>): { ligne: string; prix: string | null } | null {
+  const lignes = estObjet(brut.items) ? brut.items.data : null;
+  if (!Array.isArray(lignes) || lignes.length !== 1 || !estObjet(lignes[0]) || typeof lignes[0].id !== "string") return null;
+  const p = lignes[0].price;
+  return { ligne: lignes[0].id, prix: typeof p === "string" ? p : estObjet(p) && typeof p.id === "string" ? p.id : null };
+}
+
+async function lireLAbonnement(id: string): Promise<{ ok: true; brut: Record<string, unknown> } | Echec> {
+  const r = await appeler(`/v1/subscriptions/${encodeURIComponent(id)}`, "GET");
+  return r.ok ? { ok: true, brut: r.donnees } : r;
+}
+
+/**
+ * Retire le calendrier d'un abonnement, s'il en a un : l'abonnement continue
+ * tel qu'il est, à sa formule payée, et ce qui attendait l'échéance n'arrivera
+ * pas. Aucun argent ne bouge.
+ */
+async function libererLeCalendrier(brut: Record<string, unknown>): Promise<{ ok: true } | Echec> {
+  const calendrier = calendrierDe(brut);
+  if (!calendrier) return { ok: true };
+  const r = await appeler(`/v1/subscription_schedules/${encodeURIComponent(calendrier)}/release`, "POST", "");
+  return r.ok ? { ok: true } : r;
+}
+
+/**
+ * CHANGER DE FORMULE TOUT DE SUITE — et DÉBITER tout de suite, ses décisions
+ * du 23 novembre 2026 (`src/lib/changement-de-formule.ts`). Payé pour de vrai
+ * avec une clé de test, l'ancien changement (au prorata, sur la facture
+ * suivante) offrait la formule du dessus à qui montait puis résiliait.
  *
- * C'est ce que l'article 14.6 des conditions annonce : *« le changement prend
- * effet immédiatement, et la différence est calculée au prorata »*. Sans cette
- * fonction, cet article serait une promesse que le code ne tient pas.
+ * | `facon` | Ce que Stripe reçoit | Ce qui est débité |
+ * |---|---|---|
+ * | `monter-au-mois` | `billing_cycle_anchor=now`, `proration_behavior=none` | le mois entier de la nouvelle formule, aujourd'hui devient l'échéance |
+ * | `passer-a-l-annee` | les mêmes | l'année entière |
+ * | `monter-a-l-annee` | `proration_behavior=always_invoice`, `proration_date` = début de la période | l'ancienne année créditée en entier, la nouvelle due en entier : la DIFFÉRENCE ENTIÈRE, jamais au prorata ; l'échéance ne bouge pas |
+ *
+ * **`payment_behavior=error_if_incomplete`** : si le paiement ne passe pas
+ * (carte refusée, ou banque qui veut une confirmation), Stripe répond 402 et
+ * l'abonnement NE CHANGE PAS. C'est ce que dit la feuille : « Vous restez sur
+ * Artisan, rien n'est débité ».
+ *
+ * **NON ÉPROUVÉ CONTRE STRIPE** (sa documentation n'est pas joignable d'ici) :
+ * que `proration_date` au début de la période soit accepté et donne bien la
+ * différence entière, et la forme exacte du refus 3D Secure. À jouer sur son
+ * espace avec sa clé de test, avant toute livraison (`TODO.md`).
  *
  * **Pourquoi PAS le guichet du prestataire.** Son portail sait changer de
- * formule — à condition qu'on y ait déclaré les prix à la main. C'est
- * exactement la seconde grille tarifaire que `prixDeLaFormule` refuse. Le
- * changement se fait donc ici, avec le montant qu'Atlas connaît.
- *
- * **Et surtout PAS un second abonnement.** Ouvrir une nouvelle page de
- * paiement pour qui est déjà abonné le ferait prélever deux fois, sur deux
- * abonnements vivants — le défaut le plus cher que cet écran puisse produire.
+ * formule, à condition qu'on y ait déclaré les prix à la main : la seconde
+ * grille tarifaire que `prixDeLaFormule` refuse. **Et surtout PAS un second
+ * abonnement** : il serait prélevé deux fois, tous les mois.
  */
-export async function changerLaFormule(params: {
+export async function monterToutDeSuite(params: {
+  abonnementPrestataire: string;
+  formule: FormuleCode;
+  periodicite: Periodicite;
+  facon: "monter-au-mois" | "monter-a-l-annee" | "passer-a-l-annee";
+}): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
+  const f = formule(params.formule);
+  if (!f) return { ok: false, erreur: "prestataire_refuse" };
+
+  const lu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!lu.ok) return lu;
+  const ligne = ligneUnique(lu.brut);
+  if (!ligne) {
+    logger.error("Abonnement dont la ligne ne se lit pas", { abonnement: params.abonnementPrestataire });
+    return { ok: false, erreur: "prestataire_refuse" };
+  }
+
+  // La différence entière se compte depuis le début de la période : sans lui,
+  // Stripe ferait un prorata, et le montant débité ne serait plus celui que
+  // la feuille a annoncé. On refuse plutôt que de le deviner.
+  const debut = debutDePeriode(lu.brut);
+  if (params.facon === "monter-a-l-annee" && debut === null) {
+    logger.error("Début de période illisible : la différence à l'année ne se calcule pas", { abonnement: params.abonnementPrestataire });
+    return { ok: false, erreur: "prestataire_refuse" };
+  }
+
+  const prix = await prixDeLaFormule(f, params.periodicite);
+  if (!prix.ok) return prix;
+
+  // Un calendrier resté chez le prestataire (une descente que l'écran ne
+  // savait plus) ramènerait l'ancienne formule à l'échéance : il part avant.
+  const libre = await libererLeCalendrier(lu.brut);
+  if (!libre.ok) return libre;
+
+  const r = await appeler(
+    `/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`,
+    "POST",
+    corpsFormulaire({
+      "items[0][id]": ligne.ligne,
+      "items[0][price]": prix.prix,
+      payment_behavior: "error_if_incomplete",
+      ...(params.facon === "monter-a-l-annee"
+        ? { proration_behavior: "always_invoice", proration_date: debut ?? undefined }
+        : { proration_behavior: "none", billing_cycle_anchor: "now" }),
+      // La formule se relit dans les étiquettes, ici comme au premier paiement :
+      // une seule façon de savoir quelle formule porte un abonnement.
+      "metadata[formule]": params.formule,
+      "metadata[periodicite]": params.periodicite,
+      // Un changement de formule annule une résiliation en cours : il vient de
+      // choisir de rester. Laisser le drapeau couperait son abonnement neuf à
+      // la fin de la période, sans que rien ne l'en avertisse.
+      cancel_at_period_end: "false",
+    })
+  );
+  if (!r.ok) return r;
+
+  const etat = lireUnAbonnement(r.donnees);
+  if (!etat) return { ok: false, erreur: "prestataire_refuse" };
+  return { ok: true, etat };
+}
+
+/**
+ * CHANGER DE FORMULE À L'ÉCHÉANCE — descendre, ou passer de l'année au mois :
+ * rien n'est débité aujourd'hui, et il garde jusque-là la formule qu'il a
+ * payée (sa décision du 23 novembre 2026, l'article 14.6).
+ *
+ * **Un calendrier chez le prestataire** (« subscription schedule ») : la
+ * période en cours, telle quelle, puis la nouvelle formule. Changer le prix de
+ * l'abonnement lui-même ne convient pas : de l'année au mois, Stripe remet
+ * l'échéance à aujourd'hui et débite sur-le-champ. Les étiquettes de la phase
+ * qui commence passent sur l'abonnement le jour venu ; le crochet relit alors
+ * la nouvelle formule, et la ligne d'Atlas avec elle.
+ *
+ * Un calendrier déjà là (une descente précédente) est retiré d'abord : on
+ * repart de l'abonnement tel qu'il est, plutôt que de recomposer ses phases.
+ *
+ * **La TVA est redonnée à chaque phase** : une phase sans taux ferait partir
+ * la nouvelle formule hors taxe, soit 20 % de recette en moins chaque mois.
+ *
+ * **NON ÉPROUVÉ CONTRE STRIPE**, comme `monterToutDeSuite` : à jouer sur son
+ * espace avec sa clé de test.
+ */
+export async function prevoirALEcheance(params: {
   abonnementPrestataire: string;
   formule: FormuleCode;
   periodicite: Periodicite;
@@ -513,45 +672,94 @@ export async function changerLaFormule(params: {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
 
-  // La ligne à remplacer : un abonnement Atlas n'en a qu'une, et la lire vaut
-  // mieux que de la supposer — une ligne devinée ferait naître une SECONDE
-  // ligne facturée à côté de la première.
-  const actuel = await appeler(`/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`, "GET");
-  if (!actuel.ok) return actuel;
-
-  const lignes = estObjet(actuel.donnees.items) ? actuel.donnees.items.data : null;
-  if (!Array.isArray(lignes) || lignes.length !== 1 || !estObjet(lignes[0]) || typeof lignes[0].id !== "string") {
-    logger.error("Abonnement dont la ligne ne se lit pas", { abonnement: params.abonnementPrestataire });
+  const lu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!lu.ok) return lu;
+  const ligne = ligneUnique(lu.brut);
+  const meta = estObjet(lu.brut.metadata) ? lu.brut.metadata : {};
+  if (!ligne?.prix || typeof meta.formule !== "string" || typeof meta.periodicite !== "string") {
+    logger.error("Abonnement illisible : la descente ne se prévoit pas", { abonnement: params.abonnementPrestataire });
     return { ok: false, erreur: "prestataire_refuse" };
   }
-  const ligneId = lignes[0].id;
+
+  const libre = await libererLeCalendrier(lu.brut);
+  if (!libre.ok) return libre;
+
+  const cree = await appeler(
+    "/v1/subscription_schedules",
+    "POST",
+    corpsFormulaire({ from_subscription: params.abonnementPrestataire })
+  );
+  if (!cree.ok) return cree;
+  const calendrier = cree.donnees.id;
+  const phases = cree.donnees.phases;
+  const phase = Array.isArray(phases) && phases.length > 0 && estObjet(phases[0]) ? phases[0] : null;
+  if (typeof calendrier !== "string" || !phase || typeof phase.start_date !== "number" || typeof phase.end_date !== "number") {
+    logger.error("Calendrier du prestataire illisible", { abonnement: params.abonnementPrestataire });
+    return { ok: false, erreur: "prestataire_refuse" };
+  }
 
   const prix = await prixDeLaFormule(f, params.periodicite);
   if (!prix.ok) return prix;
+  const tva = await tauxDeTva();
+  if (!tva.ok) return tva;
 
-  const r = await appeler(
-    `/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`,
-    "POST",
-    corpsFormulaire({
-      "items[0][id]": ligneId,
-      "items[0][price]": prix.prix,
-      // Le prorata, c'est ce que l'article 14.6 promet. Sans ce paramètre, le
-      // changement serait gratuit jusqu'à la prochaine échéance dans un sens,
-      // et payé deux fois dans l'autre.
-      proration_behavior: "create_prorations",
-      // La formule se relit dans les étiquettes, ici comme au premier paiement :
-      // une seule façon de savoir quelle formule porte un abonnement.
-      "metadata[formule]": params.formule,
-      "metadata[periodicite]": params.periodicite,
-      // Un changement de formule annule une résiliation en cours : il vient de
-      // choisir de rester. Laisser le drapeau couperait son abonnement neuf à
-      // la fin du mois, sans que rien ne l'en avertisse.
-      cancel_at_period_end: "false",
-    })
-  );
-  if (!r.ok) return r;
+  // La nouvelle formule court une période, puis le calendrier se retire et
+  // l'abonnement continue seul : `end_date` plutôt qu'un nombre de
+  // répétitions, dont le nom change d'une version de l'API à l'autre.
+  const finDeLaSuivante = Math.round(plusUnePeriode(new Date(phase.end_date * 1000), params.periodicite).getTime() / 1000);
+  const etiquettes = (formuleCode: string, periodicite: string) => ({
+    entreprise_id: typeof meta.entreprise_id === "string" ? meta.entreprise_id : undefined,
+    formule: formuleCode,
+    periodicite,
+  });
+  const champs: Record<string, string | number | undefined> = {
+    end_behavior: "release",
+    proration_behavior: "none",
+    "phases[0][items][0][price]": ligne.prix,
+    "phases[0][items][0][quantity]": 1,
+    "phases[0][start_date]": phase.start_date,
+    "phases[0][end_date]": phase.end_date,
+    "phases[0][default_tax_rates][0]": tva.taux,
+    "phases[0][proration_behavior]": "none",
+    "phases[1][items][0][price]": prix.prix,
+    "phases[1][items][0][quantity]": 1,
+    "phases[1][end_date]": finDeLaSuivante,
+    "phases[1][default_tax_rates][0]": tva.taux,
+    "phases[1][proration_behavior]": "none",
+  };
+  for (const [cle, valeur] of Object.entries(etiquettes(meta.formule, meta.periodicite))) {
+    champs[`phases[0][metadata][${cle}]`] = valeur;
+  }
+  for (const [cle, valeur] of Object.entries(etiquettes(params.formule, params.periodicite))) {
+    champs[`phases[1][metadata][${cle}]`] = valeur;
+  }
 
-  const etat = lireUnAbonnement(r.donnees);
+  const maj = await appeler(`/v1/subscription_schedules/${encodeURIComponent(calendrier)}`, "POST", corpsFormulaire(champs));
+  if (!maj.ok) return maj;
+
+  // L'abonnement relu : il porte maintenant son calendrier, et toujours la
+  // formule payée jusqu'à l'échéance.
+  const relu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!relu.ok) return relu;
+  const etat = lireUnAbonnement(relu.brut);
+  if (!etat) return { ok: false, erreur: "prestataire_refuse" };
+  return { ok: true, etat };
+}
+
+/**
+ * « GARDER ENTREPRISE » — la descente prévue est retirée, l'abonnement
+ * continue à sa formule payée. Aucun argent ne bouge.
+ */
+export async function garderLaFormule(params: {
+  abonnementPrestataire: string;
+}): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
+  const lu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!lu.ok) return lu;
+  const libre = await libererLeCalendrier(lu.brut);
+  if (!libre.ok) return libre;
+  const relu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!relu.ok) return relu;
+  const etat = lireUnAbonnement(relu.brut);
   if (!etat) return { ok: false, erreur: "prestataire_refuse" };
   return { ok: true, etat };
 }
@@ -586,6 +794,14 @@ export async function demanderLaResiliation(params: {
   raison: RaisonDepart | null;
   texte: string | null;
 }): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
+  // **Une descente prévue n'a plus d'objet** : l'abonnement s'arrête à cette
+  // même échéance. Le calendrier part d'abord, sans quoi il porterait encore
+  // la phase suivante, et le prestataire refuserait l'arrêt.
+  const lu = await lireLAbonnement(params.abonnementPrestataire);
+  if (!lu.ok) return lu;
+  const libre = await libererLeCalendrier(lu.brut);
+  if (!libre.ok) return libre;
+
   const r = await appeler(
     `/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`,
     "POST",

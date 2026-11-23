@@ -4,10 +4,11 @@ import Paquet from "@/components/atlas/reglages/Paquet";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
-import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, enregistrerLAbonnement, equipeDeLEntreprise } from "@/server/repositories/abonnements";
 import { lireLaSessionDePaiement, paiementConfigure } from "@/server/paiement/stripe";
 import { retourConfigure } from "@/server/paiement/retour";
-import { etatAffiche, formuleChoisie } from "@/lib/abonnements";
+import { FORMULES, etatAffiche, formuleChoisie, type FormuleCode } from "@/lib/abonnements";
+import { changementAVenir, lesComptesQuiPartent } from "@/lib/changement-de-formule";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
 import CreditsIA from "./CreditsIA";
@@ -90,7 +91,14 @@ export default async function AbonnementPage({
 
   const abonnement = await abonnementDeLEntreprise(ctx);
   const maintenant = new Date();
-  const etat = etatAffiche(abonnement, maintenant);
+  const prevu = abonnement ? changementAVenir(abonnement) : null;
+  const etat = etatAffiche(abonnement ? { ...abonnement, prevu } : null, maintenant);
+  // Ce qui partirait avec chaque formule, compté sur l'équipe telle qu'elle
+  // est : la feuille l'annonce, le crochet le fera, par la même règle.
+  const equipe = await equipeDeLEntreprise(ctx);
+  const comptesQuiPartent = Object.fromEntries(
+    FORMULES.map((f) => [f.code, lesComptesQuiPartent(equipe, f.code).length])
+  ) as Record<FormuleCode, number>;
   const credits = await creditsIADeLEntreprise(ctx, maintenant);
 
   return (
@@ -111,6 +119,9 @@ export default async function AbonnementPage({
         periodiciteActuelle={formuleChoisie(abonnement) ? abonnement!.periodicite : null}
         annulationDemandee={abonnement?.annulationDemandee ?? false}
         paiementBranche={paiementConfigure() && retourConfigure()}
+        echeance={abonnement?.periodeFin?.toISOString() ?? null}
+        prevu={prevu}
+        comptesQuiPartent={comptesQuiPartent}
       />
     </div>
   );

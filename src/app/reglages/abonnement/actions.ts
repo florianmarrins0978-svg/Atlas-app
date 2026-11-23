@@ -15,17 +15,20 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
-import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, enregistrerLAbonnement, noterLeChangementPrevu } from "@/server/repositories/abonnements";
 import {
   ouvrirLePaiement,
   ouvrirLeGuichet,
-  changerLaFormule,
+  monterToutDeSuite,
+  prevoirALEcheance,
+  garderLaFormule,
   demanderLaResiliation,
   retirerLaResiliation,
 } from "@/server/paiement/stripe";
 import { revalidatePath } from "next/cache";
 import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
-import { estFormule, estPeriodicite } from "@/lib/abonnements";
+import { estFormule, estPeriodicite, formule, jourEnLettres } from "@/lib/abonnements";
+import { changementAVenir, changementDeFormule } from "@/lib/changement-de-formule";
 import { estRaisonDepart, texteDeDepart } from "@/lib/resiliation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
@@ -35,13 +38,22 @@ import { logger } from "@/server/logger";
  * S'abonner envoie chez le prestataire ; changer de formule se fait sans
  * quitter Atlas — l'écran se recharge alors, il ne redirige pas.
  */
-export type ReponsePaiement = { ok: true; url?: string } | { ok: false; message: string };
+export type ReponsePaiement =
+  | { ok: true; url?: string }
+  | {
+      ok: false;
+      message: string;
+      /** Le débit immédiat n'est pas passé : la feuille propose de changer de carte. */
+      paiementRefuse?: boolean;
+    };
 
 /**
  * Les phrases lues par le patron. **Aucune ne dit « erreur 500 » ni ne nomme
  * Stripe** : ce qui compte pour lui, c'est s'il doit réessayer ou appeler.
  */
-function phrase(erreur: "non_configure" | "prestataire_injoignable" | "prestataire_refuse"): string {
+function phrase(
+  erreur: "non_configure" | "prestataire_injoignable" | "prestataire_refuse" | "carte_refusee" | "confirmation_bancaire"
+): string {
   switch (erreur) {
     case "non_configure":
       return "Le paiement n’est pas encore branché.";
@@ -49,6 +61,10 @@ function phrase(erreur: "non_configure" | "prestataire_injoignable" | "prestatai
       return "La page de paiement ne répond pas. Réessayez dans un instant.";
     case "prestataire_refuse":
       return "Le paiement n’a pas pu s’ouvrir. Réessayez dans un instant.";
+    case "carte_refusee":
+      return "Carte refusée. Rien n’est débité.";
+    case "confirmation_bancaire":
+      return "Votre banque demande une confirmation. Rien n’est débité.";
   }
 }
 
@@ -134,12 +150,17 @@ export async function ouvrirLeGuichetAction(): Promise<ReponsePaiement> {
 }
 
 /**
- * CHANGER DE FORMULE — au prorata, sans repasser par la carte.
+ * CHANGER DE FORMULE — ce que la feuille vient d'annoncer, et rien d'autre
+ * (ses décisions du 23 novembre 2026, `src/lib/changement-de-formule.ts`).
+ *
+ * **La même règle que la feuille** : `changementDeFormule` décide ici ce qui
+ * part tout de suite et ce qui attend l'échéance, comme elle l'a décidé à
+ * l'écran. Une action qui recalculerait à sa façon pourrait débiter un autre
+ * montant que celui qu'il vient de lire.
  *
  * **Pourquoi ce n'est PAS `sabonnerAction`.** Ouvrir une page de paiement pour
  * qui est déjà abonné créerait un SECOND abonnement vivant à côté du premier :
  * il serait prélevé deux fois, tous les mois, et rien à l'écran ne le dirait.
- * C'est le défaut le plus cher que cet écran puisse produire.
  *
  * **L'état est réécrit tout de suite**, sans attendre le crochet : le patron
  * revient sur son écran dans la seconde, et y lire encore l'ancienne formule
@@ -162,11 +183,51 @@ export async function changerDeFormuleAction(
   }
 
   const abonnement = await abonnementDeLEntreprise(ctx);
-  if (!abonnement?.abonnementPrestataire) {
-    return { ok: false, message: "Vous n’avez pas encore d’abonnement." };
+  if (!abonnement?.abonnementPrestataire || abonnement.statut !== "actif") {
+    return { ok: false, message: "Vous n’avez pas d’abonnement en cours." };
   }
 
-  const r = await changerLaFormule({
+  const actuelle = formule(abonnement.formule);
+  const voulu = { formule: formuleVoulue, periodicite: periodiciteVoulue };
+  const prevu = changementAVenir(abonnement);
+  const changement = changementDeFormule({ formule: abonnement.formule, periodicite: abonnement.periodicite }, voulu);
+  if (changement.genre === "aucun") return { ok: false, message: "C’est déjà votre formule." };
+
+  if (changement.genre === "tout-de-suite") {
+    // **Une descente prévue se retire d'abord**, d'un geste à lui (« Garder ») :
+    // monter par-dessus la ferait disparaître sans qu'il l'ait vu, et un débit
+    // refusé la laisserait perdue.
+    if (prevu && abonnement.periodeFin) {
+      const nomPrevu = formule(prevu.formule)?.nom ?? prevu.formule;
+      return {
+        ok: false,
+        message: `${nomPrevu} est prévu le ${jourEnLettres(abonnement.periodeFin)}. Touchez d’abord « Garder ${actuelle?.nom ?? abonnement.formule} ».`,
+      };
+    }
+    const r = await monterToutDeSuite({
+      abonnementPrestataire: abonnement.abonnementPrestataire,
+      formule: formuleVoulue,
+      periodicite: periodiciteVoulue,
+      facon: changement.facon,
+    });
+    if (!r.ok) {
+      // Sa phrase de la planche : la formule ne change pas, et une ligne le dit.
+      const reste = `Vous restez sur ${actuelle?.nom ?? abonnement.formule}, rien n’est débité.`;
+      if (r.erreur === "carte_refusee") return { ok: false, paiementRefuse: true, message: `Carte refusée. ${reste}` };
+      if (r.erreur === "confirmation_bancaire") {
+        return { ok: false, paiementRefuse: true, message: `Votre banque demande une confirmation. ${reste}` };
+      }
+      return { ok: false, message: phrase(r.erreur) };
+    }
+    await enregistrerLAbonnement(ctx, r.etat);
+    revalidatePath("/reglages/abonnement");
+    return { ok: true };
+  }
+
+  // À l'échéance : déjà prévue telle quelle, rien à refaire.
+  if (prevu && prevu.formule === voulu.formule && prevu.periodicite === voulu.periodicite) return { ok: true };
+
+  const r = await prevoirALEcheance({
     abonnementPrestataire: abonnement.abonnementPrestataire,
     formule: formuleVoulue,
     periodicite: periodiciteVoulue,
@@ -174,6 +235,33 @@ export async function changerDeFormuleAction(
   if (!r.ok) return { ok: false, message: phrase(r.erreur) };
 
   await enregistrerLAbonnement(ctx, r.etat);
+  await noterLeChangementPrevu(ctx, voulu);
+  revalidatePath("/reglages/abonnement");
+  return { ok: true };
+}
+
+/**
+ * « GARDER ENTREPRISE » — la descente prévue est retirée (planche du
+ * 23 novembre 2026). Sans ce geste, changer d'avis voudrait dire attendre
+ * l'échéance, puis repayer le prix entier pour remonter.
+ */
+export async function garderLaFormuleAction(): Promise<ReponsePaiement> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "garder sa formule");
+
+  const limite = await verifierLimite(`ouvrirLePaiement:${ctx.entrepriseId}`, LIMITES.ouvrirLePaiement);
+  if (!limite.autorise) return { ok: false, message: "Patientez un instant, puis réessayez." };
+
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!abonnement?.abonnementPrestataire || !changementAVenir(abonnement)) {
+    return { ok: false, message: "Aucun changement n’est prévu." };
+  }
+
+  const r = await garderLaFormule({ abonnementPrestataire: abonnement.abonnementPrestataire });
+  if (!r.ok) return { ok: false, message: phrase(r.erreur) };
+
+  await enregistrerLAbonnement(ctx, r.etat);
+  await noterLeChangementPrevu(ctx, null);
   revalidatePath("/reglages/abonnement");
   return { ok: true };
 }

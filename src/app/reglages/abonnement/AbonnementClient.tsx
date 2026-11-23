@@ -17,8 +17,11 @@ import {
   type FormuleCode,
   type Periodicite,
 } from "@/lib/abonnements";
-import { sabonnerAction, ouvrirLeGuichetAction, changerDeFormuleAction, nePasArreterAction } from "./actions";
+import { sabonnerAction, ouvrirLeGuichetAction, garderLaFormuleAction, nePasArreterAction } from "./actions";
 import AvantDePartir from "./AvantDePartir";
+import ConfirmerLeChangement from "./ConfirmerLeChangement";
+import { jourEnLettres } from "@/lib/abonnements";
+import type { Choix } from "@/lib/changement-de-formule";
 import EtatEcrit from "@/components/atlas/reglages/EtatEcrit";
 import Picto from "@/components/atlas/reglages/Picto";
 
@@ -46,6 +49,9 @@ export default function AbonnementClient({
   periodiciteActuelle,
   annulationDemandee,
   paiementBranche,
+  echeance,
+  prevu,
+  comptesQuiPartent,
 }: {
   /** `null` quand il n'a pas d'abonnement. */
   formuleActuelle: FormuleCode | null;
@@ -54,6 +60,12 @@ export default function AbonnementClient({
   annulationDemandee: boolean;
   /** Faux tant que la clé du prestataire n'est pas posée : on le DIT. */
   paiementBranche: boolean;
+  /** La fin de la période payée, en ISO. */
+  echeance: string | null;
+  /** La formule qui commence à l'échéance (`changementAVenir`). */
+  prevu: Choix | null;
+  /** Par formule, les accès qui partiraient avec elle (`lesComptesQuiPartent`). */
+  comptesQuiPartent: Record<FormuleCode, number>;
 }) {
   const [periodicite, setPeriodicite] = useState<Periodicite>(periodiciteActuelle ?? "mensuelle");
   // Abonné, sa formule est touchée d'avance ; sinon la moins chère, la
@@ -62,6 +74,9 @@ export default function AbonnementClient({
   const [message, setMessage] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const [partir, setPartir] = useState(false);
+  // La formule dont la feuille annonce le montant avant de valider (planche
+  // du 23 novembre 2026). Rien ne change tant qu'il n'a pas confirmé.
+  const [aConfirmer, setAConfirmer] = useState<Choix | null>(null);
 
   function nePasArreter() {
     setMessage(null);
@@ -74,20 +89,26 @@ export default function AbonnementClient({
 
   function choisir(code: FormuleCode) {
     setMessage(null);
+    // **Deux gestes différents derrière le même bouton, et c'est voulu.**
+    // Ouvrir une page de paiement pour qui est déjà abonné créerait un SECOND
+    // abonnement, et il serait prélevé deux fois. Abonné, il voit d'abord ce
+    // qui sera débité, dans la feuille.
+    if (formuleActuelle) {
+      setAConfirmer({ formule: code, periodicite });
+      return;
+    }
     demarrer(async () => {
-      // **Deux gestes différents derrière le même bouton, et c'est voulu.**
-      // Ouvrir une page de paiement pour qui est déjà abonné créerait un
-      // SECOND abonnement, et il serait prélevé deux fois.
-      const r = formuleActuelle
-        ? await changerDeFormuleAction(code, periodicite)
-        : await sabonnerAction(code, periodicite);
-      if (!r.ok) {
-        setMessage(r.message);
-        return;
-      }
-      // Le changement de formule ne renvoie nulle part : il est fait, et
-      // l'écran se recharge pour montrer le nouvel état.
-      if (r.url) window.location.href = r.url;
+      const r = await sabonnerAction(code, periodicite);
+      if (!r.ok) setMessage(r.message);
+      else if (r.url) window.location.href = r.url;
+    });
+  }
+
+  function garder() {
+    setMessage(null);
+    demarrer(async () => {
+      const r = await garderLaFormuleAction();
+      if (!r.ok) setMessage(r.message);
       else window.location.reload();
     });
   }
@@ -106,6 +127,11 @@ export default function AbonnementClient({
   // plutôt que de proposer un geste qui ne ferait rien.
   const nomChoisi = formule(choisie)?.nom ?? choisie;
   const dejaLaSienne = choisie === formuleActuelle && periodicite === periodiciteActuelle;
+  // **Une descente prévue se retire d'ici** : sa formule touchée, le bouton
+  // dit « Garder Entreprise » au lieu de se retirer. Celle qui est prévue,
+  // touchée, n'a plus rien à faire.
+  const garderPossible = prevu !== null && dejaLaSienne;
+  const dejaPrevue = prevu !== null && choisie === prevu.formule && periodicite === prevu.periodicite;
   // Sa formule à l'autre rythme : le bouton dit le rythme, dans les deux sens.
   const libelleDuBas = !formuleActuelle
     ? `S’abonner à ${nomChoisi}`
@@ -199,6 +225,24 @@ export default function AbonnementClient({
           formuleActuelle={formuleActuelle}
           periodicite={periodiciteActuelle}
           fermer={() => setPartir(false)}
+          proposer={(code) => {
+            setPartir(false);
+            setAConfirmer({ formule: code, periodicite: periodiciteActuelle });
+          }}
+        />
+      )}
+
+      {aConfirmer && formuleActuelle && periodiciteActuelle && (
+        <ConfirmerLeChangement
+          actuel={{ formule: formuleActuelle, periodicite: periodiciteActuelle }}
+          voulu={aConfirmer}
+          echeance={echeance}
+          comptesQuiPartent={comptesQuiPartent[aConfirmer.formule]}
+          fermer={() => setAConfirmer(null)}
+          changerDeCarte={() => {
+            setAConfirmer(null);
+            guichet();
+          }}
         />
       )}
 
@@ -278,6 +322,13 @@ export default function AbonnementClient({
                     <EtatEcrit ton="vert">Votre formule</EtatEcrit>
                   </p>
                 )}
+                {/* La formule prévue porte sa date, en or : elle n'est pas
+                    encore la sienne, et rien n'attend un geste. */}
+                {prevu && echeance && f.code === prevu.formule && periodicite === prevu.periodicite && (
+                  <p className="ml-8 mt-2.5" data-atlas="formule-prevue">
+                    <EtatEcrit ton="or">À partir du {jourEnLettres(new Date(echeance))}</EtatEcrit>
+                  </p>
+                )}
                 <p className="ml-8 mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                   {f.accroche}
                 </p>
@@ -313,7 +364,24 @@ export default function AbonnementClient({
         )}
       </Paquet>
 
-      {!dejaLaSienne && (
+      {garderPossible && formuleActuelle && (
+        <ActionBas>
+          {/* Cerné comme « Ne pas arrêter » : le geste qui rattrape, pas celui
+              qu'on attend de lui. */}
+          <button
+            type="button"
+            onClick={garder}
+            disabled={enCours || !paiementBranche}
+            data-atlas="garder-la-formule"
+            className="min-h-[56px] w-full rounded-full px-[22px] text-[17px] font-semibold disabled:opacity-50"
+            style={{ color: colors.ink, backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+          >
+            Garder {formule(formuleActuelle)?.nom ?? formuleActuelle}
+          </button>
+        </ActionBas>
+      )}
+
+      {!dejaLaSienne && !dejaPrevue && (
         <ActionBas>
           <button
             type="button"
