@@ -59,20 +59,27 @@ const ETAPES = [
 // Les mots proposés, et eux seuls : tout le reste est l'écran de l'appli.
 // L'espace insécable tient le montant et son « € » sur la même ligne.
 const N = " ";
+// Sa demande du soir : « hésite pas à me faire quelque chose de plus joli ».
+// La feuille se lit comme un relevé, deux rangs : ce qui part aujourd'hui, en
+// gros chiffres à droite, comme les prix des cartes ; et l'échéance, dans le
+// carré doré que l'écran donne déjà aux dates (`EtatDeLAbonnement`). Le
+// montant d'aujourd'hui est à la même place dans les deux sens : à la
+// descente, il vaut 0 €.
+const ECHEANCE = { jour: "23", mois: "déc." };
 const monter = (nom, ht, ttc, ancienne) => ({
   titre: `Passer à ${nom}`,
-  chiffre: `${ht}${N}€ HT`,
-  sous: `débités aujourd’hui (${ttc}${N}€ TTC)`,
-  lignes: [`Les jours restants d’${ancienne} ne sont pas remboursés.`, "Prochain paiement le 23 décembre 2026."],
+  aujourdhui: { libelle: "Débité aujourd’hui", chiffre: `${ht}${N}€`, unite: "HT", sous: `${ttc}${N}€ TTC` },
+  echeance: { ...ECHEANCE, libelle: "Prochain paiement", sous: `${ht}${N}€ HT par mois` },
+  note: `Les jours restants d’${ancienne} ne sont pas remboursés.`,
 });
 const MOTS = {
   feuilleEntreprise: monter("Entreprise", "59", "70,80", "Artisan"),
   feuilleIllimite: monter("Illimité", "159", "190,80", "Artisan"),
   descendre: {
     titre: "Passer à Artisan",
-    chiffre: "Le 23 décembre",
-    sous: `Artisan commence ce jour-là, 39${N}€ HT par mois.`,
-    lignes: ["Rien n’est débité aujourd’hui.", "Jusque-là, vous gardez Entreprise."],
+    aujourdhui: { libelle: "Débité aujourd’hui", chiffre: `0${N}€`, unite: "", sous: "" },
+    echeance: { ...ECHEANCE, libelle: "Artisan commence", sous: `39${N}€ HT par mois` },
+    note: "Jusque-là, vous gardez Entreprise.",
   },
   // Sa demande : « la formule ne change pas, et une ligne le dit ». Dans la
   // feuille, là où l'œil attend la réponse à « Confirmer », à la place que
@@ -157,6 +164,13 @@ const retouches = (etat, d) => {
   etat("monter-illimite").querySelector('[data-atlas="choisir-illimite"]').dataset.va = "feuille-illimite";
   etat("descendre").querySelector('[data-atlas="choisir-artisan"]').dataset.va = "feuille-descendre";
 
+  // Le carré d'une date, tel que l'écran le dessine pour une échéance
+  // (`SigneDeLEtat`, doré quand tout va) : mêmes classes, mêmes teintes.
+  const carre = (jour, mois) =>
+    `<span aria-hidden="true" class="w-[52px] flex-none rounded-[10px] pb-[7px] pt-2 text-center leading-none" style="background-color:color-mix(in srgb, var(--atlas-or, #B98B47) 14%, transparent)">` +
+    `<span class="block text-[24px] leading-none" style="font-family:var(--font-display);font-variant-numeric:lining-nums">${jour}</span>` +
+    `<span class="mt-1 block text-[13px] font-bold" style="color:var(--atlas-or, #B98B47)">${mois}</span></span>`;
+
   // LA FEUILLE : celle de l'écran, vidée sous son titre, et posée là où l'appli
   // la pose (juste après Résilier).
   const feuille = (nom, m, { confirmer, annuler, refus }) => {
@@ -170,18 +184,26 @@ const retouches = (etat, d) => {
     const gestes = dlg.querySelector('[data-atlas="resilier-quand-meme"]').parentElement;
     [...dlg.children].filter((c) => c !== h2 && c !== gestes).forEach((c) => c.remove());
 
-    const bloc = document.createElement("div");
-    bloc.className = "cf-montant";
-    bloc.innerHTML = `<p class="cf-chiffre">${m.chiffre}</p><p class="cf-sous">${m.sous}</p>`;
-    h2.after(bloc);
-    let dernier = bloc;
-    m.lignes.forEach((t, i) => {
-      const p = document.createElement("p");
-      p.className = i === 0 ? "cf-ligne" : "cf-ligne cf-suite";
-      p.textContent = t;
-      dernier.after(p);
-      dernier = p;
-    });
+    const a = m.aujourdhui;
+    const e = m.echeance;
+    const releve = document.createElement("div");
+    releve.className = "cf-releve";
+    releve.dataset.atlas = "releve-du-changement";
+    releve.innerHTML =
+      `<div class="cf-rang"><span class="cf-libelle">${a.libelle}</span>` +
+      `<span class="cf-valeur"><span><span class="cf-chiffre">${a.chiffre}</span>${a.unite ? `<span class="cf-unite">${a.unite}</span>` : ""}</span>` +
+      `${a.sous ? `<span class="cf-ttc">${a.sous}</span>` : ""}</span></div>` +
+      `<div class="cf-rang">${carre(e.jour, e.mois)}` +
+      `<span class="cf-quand"><span class="cf-quand-titre">${e.libelle}</span><span class="cf-quand-sous">${e.sous}</span></span></div>`;
+    // Refusée, la somme d'aujourd'hui se barre : c'est le trait que l'écran
+    // donne déjà à ce qu'on n'a pas (les lignes manquantes des cartes).
+    if (refus) releve.firstElementChild.classList.add("cf-refuse");
+    h2.after(releve);
+    const note = document.createElement("p");
+    note.className = "cf-note";
+    note.textContent = m.note;
+    releve.after(note);
+    const dernier = note;
     if (refus) {
       const r = plageRouge.cloneNode(true);
       r.className = "mt-4";
@@ -230,6 +252,10 @@ const retouches = (etat, d) => {
     const el = etat("prevue");
     const detail = el.querySelector('[data-atlas="etat-abonnement"] .min-w-0 > span:nth-child(2)');
     detail.textContent = MOTS.prevue.detail;
+    // Le signe devient le carré de la date du changement, comme pour une
+    // résiliation demandée, mais doré : rien ne demande un geste.
+    const signe = el.querySelector('[data-atlas="etat-abonnement"] > span[aria-hidden]');
+    signe.outerHTML = carre("23", "déc.");
     const votre = [...carte(el, "entreprise").querySelectorAll("p")].find((p) => mot(p) === "Votre formule");
     const marque = votre.cloneNode(true);
     const pastille = marque.firstElementChild;
@@ -245,6 +271,10 @@ const retouches = (etat, d) => {
     const garder = bas.querySelector("button");
     garder.dataset.atlas = "garder-entreprise";
     garder.textContent = MOTS.prevue.garder;
+    // Cerné, comme « Ne pas arrêter » : retirer un changement prévu n'est pas
+    // le geste qu'on attend de lui, c'est celui qui le rattrape.
+    garder.classList.remove("atlas-plein");
+    garder.setAttribute("style", "color:var(--atlas-ink, #1c1c1a);background-color:var(--atlas-cream, #f5f3ee);box-shadow:inset 0 0 0 1.5px var(--atlas-line, rgba(28,28,26,0.12))");
     garder.dataset.va = "entreprise";
     garder.dataset.dit = DIT.garder;
     section.after(espace, bas);
@@ -260,12 +290,19 @@ const css =
   enHauteurStable(readFileSync(`${S}/css.txt`, "utf8")) +
   `
 .planche-tete{position:relative;z-index:50}
-.cf-montant{margin:0;padding:16px 18px 15px;border-radius:6px;background-color:var(--atlas-card,#faf9f5)}
-.cf-montant p{margin:0}
-.cf-chiffre{font-family:var(--font-display);font-size:32px;line-height:1.1;color:var(--atlas-ink,#1c1c1a);font-variant-numeric:tabular-nums lining-nums}
-.cf-montant .cf-sous{margin-top:6px;font-size:16px;line-height:1.4;color:var(--atlas-inkSoft,#4a4a44)}
-.cf-ligne{margin:16px 0 0;font-size:16px;line-height:1.45;color:var(--atlas-ink,#1c1c1a)}
-.cf-suite{margin-top:6px}
+.cf-releve{padding:0 18px;border-radius:6px;background-color:var(--atlas-card,#faf9f5)}
+.cf-rang{display:flex;align-items:center;gap:14px;padding:17px 0}
+.cf-rang+.cf-rang{border-top:1px solid var(--atlas-lineSoft,rgba(28,28,26,0.08))}
+.cf-libelle{flex:1;min-width:0;font-size:16px;line-height:1.35;color:var(--atlas-ink,#1c1c1a)}
+.cf-valeur{display:inline-grid;justify-items:end;row-gap:5px;white-space:nowrap}
+.cf-chiffre{font-family:var(--font-display);font-size:36px;line-height:1;letter-spacing:-0.01em;color:var(--atlas-ink,#1c1c1a);font-variant-numeric:tabular-nums lining-nums}
+.cf-unite{margin-left:5px;font-size:14px;color:var(--atlas-inkSoft,#4a4a44)}
+.cf-ttc{font-size:14.5px;line-height:1.2;color:var(--atlas-inkSoft,#4a4a44);font-variant-numeric:tabular-nums lining-nums}
+.cf-refuse .cf-chiffre,.cf-refuse .cf-unite,.cf-refuse .cf-ttc{text-decoration:line-through;text-decoration-thickness:1.5px;color:var(--atlas-inkSoft,#4a4a44)}
+.cf-quand{flex:1;min-width:0}
+.cf-quand-titre{display:block;font-family:var(--font-display);font-size:19px;line-height:1.25;color:var(--atlas-ink,#1c1c1a)}
+.cf-quand-sous{display:block;margin-top:3px;font-size:14.5px;line-height:1.4;color:var(--atlas-inkSoft,#4a4a44)}
+.cf-note{margin:14px 2px 0;font-size:15.5px;line-height:1.45;color:var(--atlas-ink,#1c1c1a)}
 .cf-prevue{color:var(--atlas-or,#B98B47);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--atlas-or,#B98B47) 60%,transparent)}
 `;
 
