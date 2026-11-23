@@ -224,6 +224,11 @@ const EXEMPTIONS: Record<string, string> = {
     "quelconque venue du navigateur atteindrait Auth.js.",
   "src/app/login/actions.ts#deconnexionAction":
     "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
+  "src/app/creer-un-compte/actions.ts#etatDuSiretAction":
+    "La question du SIRET se pose AVANT que le compte existe (23 novembre 2026) : ni " +
+    "rôle, ni entreprise, ni session. Elle ne rend qu'un mot sur un numéro public, ne " +
+    "décide rien, et ce qui la protège est son limiteur (`questionSiren`), qui borne " +
+    "le relevé des entreprises clientes de Cause.",
   "src/app/creer-un-compte/actions.ts#creerLeCompteAction":
     "Elle CRÉE le compte, l'entreprise et la session : il n'existe encore ni rôle, " +
     "ni entreprise, ni personne à qui les demander. Ce qui la protège n'est donc pas " +

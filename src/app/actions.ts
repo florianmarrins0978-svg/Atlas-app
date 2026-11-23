@@ -254,5 +254,7 @@ export async function retirerChantierDeLaListeAction(
  */
 export async function carteVisiteVueAction(): Promise<void> {
   const ctx = await getCurrentCtx();
+  // La carte vit sur l'accueil : qui ne l'atteint pas n'a rien à éteindre.
+  await exigerEcran(ctx, "/", "marquer la visite guidée comme vue");
   await marquerCarteVisiteVue(ctx.utilisateurId);
 }
