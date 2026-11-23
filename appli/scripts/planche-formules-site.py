@@ -11,7 +11,8 @@
 # outils s'ajoutent d'un interrupteur, « Votre choix » dit le total et 0 € pour
 # aujourd'hui, et une feuille montre l'essai, la carte ou l'IBAN (la place de la
 # page de Stripe, sans un champ : une page publique ne recueille aucun numéro),
-# puis le départ. Les phrases « Sans carte bancaire » deviennent fausses dans ce
+# puis le départ, d'où « Créer mon compte » ouvre la marche dans les vrais écrans
+# de l'appli (cause-2-inscription.html). Les phrases « Sans carte bancaire » deviennent fausses dans ce
 # modèle : elles changent de mots à leur place. Les boutons d'essai mènent aux
 # prix, puisque c'est là qu'on choisit.
 import re
@@ -124,8 +125,7 @@ FEUILLE = '''
     <span class="fe-ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
     <h2>C'est parti.</h2>
     <p class="f-court"></p>
-    <button type="button" class="bouton" data-compte>Créer mon compte</button>
-    <p class="fe-maquette" aria-live="polite"></p>
+    <a class="bouton" href="cause-2-inscription.html">Créer mon compte</a>
   </div>
 </dialog>
 '''
@@ -205,7 +205,6 @@ body.a-choisi .pouce{display:none}
 .place-stripe span{font-size:16px;color:var(--encre-2)}
 .fe-ok{display:grid;place-items:center;width:64px;height:64px;margin:6px 0 18px;border-radius:50%;background:var(--action);color:var(--action-texte)}
 .f-court{margin-top:10px;font-size:17px;color:var(--encre-2)}
-.fe-maquette{margin-top:14px;font-size:15px;color:var(--or);min-height:1.4em}
 @media (prefers-reduced-motion:reduce){.formule .coche,.interrupteur::after,.pouce-choix,.ajout-outils{transition:none}.fe[open]{animation:none}}
 </style>
 </head>'''
@@ -289,7 +288,6 @@ SCRIPT = '''<script>
     etape = n;
     tous(".fe-etape", feuille).forEach(function(e){ e.hidden = Number(e.getAttribute("data-etape")) !== n; });
     retour.hidden = n === 1 || n === 3;
-    un(".fe-maquette", feuille).textContent = "";
     var h = un(".fe-etape:not([hidden]) h2", feuille); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
     feuille.scrollTop = 0;
   };
@@ -307,9 +305,6 @@ SCRIPT = '''<script>
   retour.addEventListener("click", function(){ montrer(etape - 1); });
   un(".fe-fermer", feuille).addEventListener("click", function(){ feuille.close ? feuille.close() : feuille.removeAttribute("open"); });
   feuille.addEventListener("click", function(e){ if (e.target === feuille) feuille.close(); });
-  un("[data-compte]", feuille).addEventListener("click", function(){
-    un(".fe-maquette", feuille).textContent = "Dans l'appli, l'écran Créer un compte s'ouvre ici.";
-  });
 
   peindre();
 })();
