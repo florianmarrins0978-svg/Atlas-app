@@ -55,7 +55,10 @@ const MOTS = {
   },
   compte: {
     titre: "Un compte Cause existe déjà pour votre entreprise.",
-    texte: "Demandez à y être invité, ou continuez avec un compte à vous, sans essai gratuit.",
+    // « Invité », écrit d'abord, était faux : l'appli n'envoie aucune
+    // invitation. Le patron ouvre lui-même l'accès de son collègue, dans
+    // Réglages, Équipe (`donnerUnAcces`, `membres-entreprise.ts`).
+    texte: "Demandez à son titulaire de vous ouvrir un accès, ou continuez avec un compte à vous, sans essai gratuit.",
   },
   // Sa question du 23 novembre : « ce qu'il faut qu'il fasse, c'est qu'il fasse
   // retour et qu'il se connecte à son compte ». Un appui, plutôt que sept

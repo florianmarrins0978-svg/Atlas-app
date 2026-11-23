@@ -1317,7 +1317,8 @@ un déménagement change le SIRET, pas le SIREN) des essais passés ; **ne pas
 bloquer le compte**, mais **terminer l'essai** quand un SIREN déjà essayé
 revient (un SIRET est public, sur chaque devis : bloquer laisserait n'importe
 qui priver un concurrent de son essai) ; dire aux deux personnes d'une même
-entreprise de se faire inviter. (La reconnaissance de la carte par Stripe,
+entreprise de demander un accès au titulaire du compte (l'appli n'envoie pas
+d'invitation : le patron ouvre l'accès dans Réglages, Équipe). (La reconnaissance de la carte par Stripe,
 proposée en plus, est écartée par lui : voir plus haut.) Le SIREN d'un entrepreneur
 individuel est une donnée personnelle : sa garde après l'effacement d'un compte
 va dans la politique de confidentialité, avec une durée, et chez le juriste.
