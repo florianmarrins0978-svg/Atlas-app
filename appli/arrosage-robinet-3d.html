@@ -11,10 +11,11 @@
   maquette 3D ».
 
   LES NEUF : trois programmateurs en nez de robinet (Solem BL-NR, Rain Bird, Buddy) et trois départs
-  (Ø16 rigide, Ø16 souple, PEHD Ø25 ou Ø32, le même tuyau à l'oeil). CELLE-CI : son robinet, la double
-  sortie BRO3493 (l'arrosage sur la sortie gauche, son choix du 18 octobre), le Solem BL-NR SP1151, le
-  raccord femelle 25 x 3/4" OPL70302520 et le PEHD Ø25 de la nourrice. Au nez de robinet il n'y a pas
-  de nourrice (sa règle du 18 octobre 2026) : c'est une pile.
+  (Ø16 rigide, Ø16 souple, PEHD Ø25 ou Ø32, le même tuyau à l'oeil). La première montrée, le 22 au soir,
+  était le Solem et le Ø25 ; sa réponse : « Parfait, tu peux faire toutes les autres combinaisons
+  exactement comme tu viens de faire là ». Toutes partent de son robinet et de la double sortie
+  BRO3493 ; robinet-3d/composition.js dit laquelle de ses deux sorties porte l'arrosage, et pourquoi.
+  Au nez de robinet il n'y a pas de nourrice (sa règle du 18 octobre 2026) : c'est une pile.
 
   CE QUI EST REPRIS DE LA NOURRICE, sans une ligne changée : les formes (filetages en hélice, six
   pans, arrondis), les matières, le PEHD. CE QUI EST NEUF : robinet-3d/, ses pièces relevées sur ses
@@ -39,7 +40,9 @@
   .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:16px 16px 70px;min-height:100vh}
   h2{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
-  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  /* Deux lignes gardées même quand la phrase est courte : la vue ne saute pas d'une combinaison à l'autre. */
+  .sous{margin:4px 0 0;min-height:2.9em;font-size:13.5px;color:var(--atlas-muted)}
+  .caps{display:block;margin:16px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
   /* La vue : la couleur de fond est celle que rend la scène, pour que rien ne clignote à l'arrivée de l'image. */
   .vue{position:relative;margin-top:12px;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--atlas-line);background:#d6d5d2;aspect-ratio:4/5;max-height:76vh;width:100%}
   .vue canvas{display:block;width:100%;height:100%;touch-action:none;outline:0;-webkit-tap-highlight-color:transparent;cursor:grab}
@@ -65,7 +68,7 @@
 </div>
 <main class="ecran">
   <h2>Au nez de robinet</h2>
-  <p class="sous">Double sortie, programmateur Solem BL-NR, départ en PEHD Ø25.</p>
+  <p class="sous" id="sous-titre">Double sortie, programmateur Solem BL-NR, départ en PEHD Ø25 ou Ø32.</p>
   <div class="vue">
     <canvas id="scene" tabindex="0" role="img" aria-label="La pile du robinet en 3D. Un toucher l’éclate, un second la remonte."></canvas>
     <div class="attente" id="attente" role="status">Chargement</div>
@@ -75,6 +78,14 @@
   </div>
   <div class="voies" role="group" aria-label="Point de vue">
     <button type="button" data-vue="face" aria-pressed="true">De face</button><button type="button" data-vue="biais" aria-pressed="false">De biais</button>
+  </div>
+  <span class="caps" id="l-prog">Programmateur</span>
+  <div class="voies" role="group" aria-labelledby="l-prog">
+    <button type="button" data-prog="solem" aria-pressed="true">Solem</button><button type="button" data-prog="rainbird" aria-pressed="false">Rain Bird</button><button type="button" data-prog="buddy" aria-pressed="false">Buddy</button>
+  </div>
+  <span class="caps" id="l-depart">Départ</span>
+  <div class="voies" role="group" aria-labelledby="l-depart">
+    <button type="button" data-depart="r16" aria-pressed="false">Ø16 rigide</button><button type="button" data-depart="s16" aria-pressed="false">Ø16 souple</button><button type="button" data-depart="pe25" aria-pressed="true">Ø25 ou Ø32</button>
   </div>
 </main>
 <script>
@@ -98,32 +109,39 @@ window.addEventListener("unhandledrejection", function () { refuser(REFUS.charge
 </script>
 <script type="module">
 import { ouvrirRobinet } from "./robinet-3d/vue.js";
+import { PROGRAMMATEURS, DEPARTS } from "./robinet-3d/composition.js";
 
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene");
-var etat = { eclatee: false, vue: "face" }, V = null;
+var etat = { eclatee: false, vue: "face", prog: "solem", depart: "pe25" }, V = null;
 
 function boutons() {
   document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
   document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === etat.vue)); });
+  document.querySelectorAll("[data-prog]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.prog === etat.prog)); });
+  document.querySelectorAll("[data-depart]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.depart === etat.depart)); });
+  $("sous-titre").textContent = "Double sortie, programmateur " + PROGRAMMATEURS[etat.prog].nom + ", départ " + DEPARTS[etat.depart].nom + ".";
 }
+function reposer() { V.montrer(etat.prog, etat.depart); boutons(); }
 
 document.addEventListener("click", function (e) {
   if (!V) return;
   var b = e.target.closest("button"); if (!b) return;
   if (b.dataset.montage) V.eclater(b.dataset.montage === "eclatee");
   else if (b.dataset.vue) V.regarder(b.dataset.vue);
+  else if (b.dataset.prog) { etat.prog = b.dataset.prog; reposer(); }
+  else if (b.dataset.depart) { etat.depart = b.dataset.depart; reposer(); }
 });
 
 try {
   V = ouvrirRobinet(toile, { hdri: "vendor/hdri/studio.exr" });
   V.surEtat(function (e) { etat.eclatee = e.eclatee; etat.vue = e.vue; boutons(); });
-  boutons();
+  reposer();
   ROBINET_3D.prete = true; toile.style.visibility = "";
   var attente = $("attente"), premiere = false;
   attente.className = "attente"; attente.textContent = "Chargement";
   V.scene.surImage(function () { if (premiere) return; premiere = true; attente.classList.add("part"); setTimeout(function () { attente.hidden = true; }, 400); });
   // Pour les contrôles : l'état, la scène, la composition et ses erreurs.
-  window.__robinet3d = { etat: etat, scene: V.scene, erreurs: V.erreurs, compo: V.compo };
+  window.__robinet3d = { etat: etat, scene: V.scene, erreurs: V.erreurs, compo: V.compo, montrer: function (p, d) { etat.prog = p; etat.depart = d; reposer(); } };
 } catch (erreur) {
   refuser(/WebGL/.test(String(erreur && erreur.message)) ? REFUS.webgl : REFUS.charge);
   throw erreur;
