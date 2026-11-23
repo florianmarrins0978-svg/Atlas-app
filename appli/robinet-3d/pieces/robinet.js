@@ -22,14 +22,22 @@
 
 var L = 93;                 // la pointe du nez : y = 868, là où l'ellipse de sa face touche la silhouette
 // L'axe de la barre : y = 44,75 sur la photo (le milieu de sa silhouette, de bout en bout), soit 4,5 mm ;
-// 4,35 retenus, pour que le haut des cloches (4,33 mm de rayon) tombe sur z = 0.
-var AXE_POIGNEE = 4.35;
+// 4,33 retenus, le rayon des cloches, pour que leur haut tombe exactement sur z = 0.
+var AXE_POIGNEE = 4.33;
 
-// LE NEZ, de bas en haut.
-var FILET = { haut: 85.35, bas: L - 0.9 };   // la première crête sous la portée est en y = 804
-var PORTEE = { r: 13.22, haut: 83.55 };      // la portée lisse : 248 px, de y = 780 (son arête) à y = 793
-var EPAULE = { r: 12.45, z: 82.7 };          // le rebord brut du corps : 234 px en y = 772 à 780
-var COU = { r: 8.2, haut: 71.8, bas: 80.1 };  // le col du nez : 155 px, de y = 672 à y = 752
+// LE NEZ, de bas en haut. Le col tombe sur un épaulement PLAT, brut de fonderie, qui couvre le dessus
+// du collet fileté jusqu'à son arête. Sur la photo, son bord avant dessine une ellipse : 803 px au
+// milieu, 790 px en x = 400 (11,9 mm de l'axe), soit un cercle vu de 10 degrés, centré en y = 781,
+// donc à 83,7 mm du haut. Le contour gauche qui s'évase de y = 752 à 778 est l'arrière de cette
+// ellipse, pas un cône : lu comme un cône, il faisait au nez une jupe en trompette.
+// Sous l'arête, une bande lisse de 11 px (y = 801 à 812 au devant), puis quatre crêtes jusqu'à la
+// pointe : le filet part à 85,3 mm, sous la portée et son chanfrein.
+var FILET = { haut: 85.3, bas: L - 0.9 };
+var PORTEE = { r: 13.22 };                    // l'arête du collet : 248 px, le sommet des filets
+var EPAULE = { r: 12.75, z: 83.7 };           // le dessus brut ; le chanfrein tourné prend le dernier demi-millimètre
+// Le col : 155 px, de y = 672 à son pied. Il rejoint l'épaulement par un congé de 1,6 mm, estimé : à
+// son pied, devant, le grain passe du col à l'épaulement sans arête.
+var COU = { r: 8.2, haut: 71.8, conge: 1.6 };
 var PASSAGE = 6;                             // le passage de l'eau dans le nez : estimé (le col, moins 2 mm)
 // Le fond d'un passage ne reçoit pas la lumière : passé ses premiers millimètres, son laiton renvoyait
 // l'ambiance du studio comme une face au jour, et le trou se lisait comme un bouchon. Il est sombre au-delà.
@@ -55,13 +63,55 @@ var DEMI_POUCE = { d: 20.955, pas: 25.4 / 14 };
 
 // LES MÉPLATS : les deux pattes plates qu'on voit sur les flancs du corps, sous les oreilles (x = 397
 // et 627, de y = 445 à y = 548), où l'on tient le robinet à la clé pendant qu'on le visse dans le mur.
-// Elles dépassent la chambre de 0,8 mm. Leur profondeur ne se voit pas de face : ce sont les flancs
+// Elles dépassent la chambre de 0,7 mm (6 px sur la photo). Leur profondeur ne se voit pas de face : ce sont les flancs
 // d'un bloc de fonderie qui joint la chambre à la collerette (une patte posée seule sur le flanc se
 // lisait, de profil, comme une pastille collée ; deux joues séparées laissaient un creux sous le
 // bossage, vu d'en dessous).
-var MEPLATS = { x: 12.3, haut: 47.9, bas: 58.4, devant: 1.2, derriere: -13.2 };
+// Son dessus descend de 1,5 mm vers l'arrière (la dépouille d'une pièce moulée) : posé à plat, son
+// coin arrière, 13 mm derrière l'axe, montait de 2 mm à l'image (vue de 9 degrés au-dessus) et la patte
+// commençait en y = 428 au lieu de 440 à 450 sur la photo (agrandie quatre fois, ses deux flancs).
+var MEPLATS = { x: 12.3, haut: 47.9, bas: 58.4, devant: 1.2, derriere: -13.2, depouille: 1.5 };
 
 function degres(a) { return a * Math.PI / 180; }
+
+// UN SIX PANS DE FONDERIE, CHANFREINÉ À 30 DEGRÉS AUX DEUX BOUTS comme un écrou : le cône du chanfrein
+// coupe chaque plat en arc (on voit ces arcs au haut des deux six pans, sur la photo). C'est la forme
+// d'hexagone() (formes.js), à une différence près : chaque colonne porte un sommet EXACTEMENT sur
+// l'arête entre le plat et le cône, et chaque région sa vraie normale. Celle de formes.js, posée sur
+// des rangs fixes, laisse cette arête tomber entre deux rangs ; vue de près (zoom 2), l'ombrage de
+// l'écrou et du chapeau y faisait des dents de scie.
+// Les coins sont en 0, 60, 120 degrés... ; un plat regarde 30, 90, 150 degrés... (comme hexagone()).
+function sixPans(F, o) {
+  var THREE = F.THREE, a = o.surPlats / 2, h = o.z1 - o.z0, r0 = a * 0.97, pente = Math.tan(degres(30)), parFace = 16, n = parFace * 6;
+  var sr = Math.sin(degres(30)), sz = Math.cos(degres(30)), pos = [], nor = [];
+  function plat(th) { var m = th % (Math.PI / 3); return a / Math.cos(m - Math.PI / 6); }
+  function arete(th) { var d = Math.min((plat(th) - r0) * pente, h / 2); return { d: d, r: r0 + d / pente }; }
+  // Un quadrilatère p0 p1 p2 p3 (chacun [rayon, angle, z]) et la normale de chacun de ses sommets ;
+  // l'ordre des sommets se retourne s'il ne regarde pas du côté de sa normale.
+  function quad(p, nm) {
+    var v = p.map(function (q) { return new THREE.Vector3(q[0] * Math.cos(q[1]), q[0] * Math.sin(q[1]), q[2]); });
+    var c = new THREE.Vector3().subVectors(v[2], v[0]).cross(new THREE.Vector3().subVectors(v[3], v[1]));
+    var moy = new THREE.Vector3(); nm.forEach(function (m) { moy.add(m); });
+    var ordre = c.dot(moy) >= 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2];
+    ordre.forEach(function (i) { pos.push(v[i].x, v[i].y, v[i].z); nor.push(nm[i].x, nm[i].y, nm[i].z); });
+  }
+  function cone(th, haut) { return new THREE.Vector3(sr * Math.cos(th), sr * Math.sin(th), haut ? -sz : sz); }
+  var dessus = new THREE.Vector3(0, 0, -1), dessous = new THREE.Vector3(0, 0, 1);
+  for (var j = 0; j < n; j++) {
+    var t0 = Math.PI * 2 * j / n, t1 = Math.PI * 2 * (j + 1) / n, e0 = arete(t0), e1 = arete(t1);
+    var face = Math.floor(j / parFace), tf = Math.PI / 6 + face * Math.PI / 3, nf = new THREE.Vector3(Math.cos(tf), Math.sin(tf), 0);
+    // Le chanfrein du haut, le plat, le chanfrein du bas.
+    quad([[r0, t0, o.z0], [r0, t1, o.z0], [e1.r, t1, o.z0 + e1.d], [e0.r, t0, o.z0 + e0.d]], [cone(t0, true), cone(t1, true), cone(t1, true), cone(t0, true)]);
+    quad([[e0.r, t0, o.z0 + e0.d], [e1.r, t1, o.z0 + e1.d], [e1.r, t1, o.z1 - e1.d], [e0.r, t0, o.z1 - e0.d]], [nf, nf, nf, nf]);
+    quad([[e0.r, t0, o.z1 - e0.d], [e1.r, t1, o.z1 - e1.d], [r0, t1, o.z1], [r0, t0, o.z1]], [cone(t0, false), cone(t1, false), cone(t1, false), cone(t0, false)]);
+    // Les deux faces, du centre au départ du cône.
+    quad([[0.001, t0, o.z0], [0.001, t1, o.z0], [r0, t1, o.z0], [r0, t0, o.z0]], [dessus, dessus, dessus, dessus]);
+    quad([[0.001, t0, o.z1], [0.001, t1, o.z1], [r0, t1, o.z1], [r0, t0, o.z1]], [dessous, dessous, dessous, dessous]);
+  }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  return F.uvCube(g);
+}
 
 // LA POIGNÉE EN T : une barre tournée le long de X, d'une seule pièce. Son profil se relève colonne par
 // colonne (le haut et le bas de sa silhouette) et il est le même des deux côtés à un pixel près.
@@ -90,30 +140,30 @@ function tete(F, lot) {
   lot.ajouter("laiton", F.tourne([[TIGE, COLLET.haut], [COLLET.r, COLLET.haut, { c: 0.3 }], [COLLET.r, COLLET.bas]], { segments: 40 }));
   // L'écrou est tourné de 18,6 degrés : ses arêtes sont en x = 450, 458, 525 et 578 sur la photo, soit
   // des coins à 18,6, 78,6 et 138,6 degrés de l'axe X, vers celui qui regarde.
-  lot.ajouter("laitonBrut", F.hexagone({ surPlats: ECROU.plats, z0: ECROU.haut, z1: ECROU.bas }), { rz: degres(18.6) });
+  lot.ajouter("laitonBrut", sixPans(F, { surPlats: ECROU.plats, z0: ECROU.haut, z1: ECROU.bas }), { rz: degres(18.6) });
   // La bague : son arête du haut chanfreinée, et en bas un congé qui s'évase sur le dessus du chapeau
   // (de 134 à 141 px entre y = 287 et 300). Le dessus du chapeau est tourné : il est dans ce profil, à
   // 0,05 mm au-dessus du six pans, pour que les deux faces ne se battent pas.
   var dessus = CHAPEAU.plats / 2 * 0.97;
   lot.ajouter("laiton", F.tourne([[5.4, BAGUE.haut], [BAGUE.r, BAGUE.haut, { c: 0.35 }], [BAGUE.r, BAGUE.bas, { a: 1.2, fin: 0.25 }], [dessus, BAGUE.bas]], { segments: 56 }));
   // Le chapeau, une face vers celui qui regarde (le plat du milieu va de x = 468 à 548 sur la photo).
-  lot.ajouter("laitonBrut", F.hexagone({ surPlats: CHAPEAU.plats, z0: CHAPEAU.haut, z1: CHAPEAU.bas }));
+  lot.ajouter("laitonBrut", sixPans(F, { surPlats: CHAPEAU.plats, z0: CHAPEAU.haut, z1: CHAPEAU.bas }));
   // La bande tournée sur laquelle il serre, au sommet du corps.
   lot.ajouter("laiton", F.tourne([[8.5, BANDE.haut], [BANDE.r, BANDE.haut, { a: 0.45, fin: 0.3 }], [BANDE.r, BANDE.bas], [CORPS.r - 0.3, BANDE.bas]], { segments: 64 }));
 }
 
 // LE CORPS DE FONDERIE ET SON NEZ. La chambre descend droite, puis se resserre en cône arrondi jusqu'au
 // col (relevé tous les 8 px : 11,2 mm en y = 608, 10,2 en y = 632, 9,2 en y = 648, 8,4 en y = 664),
-// le col s'évase en un rebord (10,2 mm en y = 760, 11,9 en y = 768), et le nez est tourné : la portée,
-// puis le filet jusqu'à la pointe.
+// le col descend droit jusqu'à l'épaulement plat, et le collet est tourné : son arête chanfreinée, une
+// portée lisse, puis le filet jusqu'à la pointe.
 function corps(F, lot) {
   var fond = F.rayonDuFond({ gaz: "3/4" });
   lot.ajouter("laitonBrut", F.tourne([[CORPS.r - 0.3, BANDE.bas], [CORPS.r, BANDE.bas + 0.3], [CORPS.r, CORPS.bas, { a: 5, fin: 0.12 }],
-    [COU.r + 0.05, COU.haut, { a: 3.5, fin: 0.15 }], [COU.r, COU.bas, { a: 1.4, fin: 0.25 }], [EPAULE.r, EPAULE.z, { a: 0.5, fin: 0.4 }], [EPAULE.r, PORTEE.haut]], { segments: 96 }));
-  // Le nez tourné : le dessus de la portée (le rebord brut est plus étroit qu'elle, comme sur la photo),
-  // la portée, son chanfrein vers le fond du filet, puis, sous le filet, le chanfrein d'entrée, la face
-  // du bout (deux cercles sur le plan z = L, que la scène mesure) et le passage de l'eau.
-  lot.ajouter("laiton", F.tourne([[EPAULE.r - 0.1, PORTEE.haut], [PORTEE.r, PORTEE.haut, { c: 0.3 }], [PORTEE.r, FILET.haut - 0.45, { c: 0.4 }], [fond, FILET.haut]], { segments: 72 }));
+    [COU.r + 0.05, COU.haut, { a: 3.5, fin: 0.15 }], [COU.r, EPAULE.z, { a: COU.conge, fin: 0.2 }], [EPAULE.r, EPAULE.z]], { segments: 96 }));
+  // Le collet tourné, dans le prolongement exact de l'épaulement (même plan, sans marche) : le chanfrein
+  // de l'arête, la portée, son chanfrein vers le fond du filet, puis, sous le filet, le chanfrein
+  // d'entrée, la face du bout (deux cercles sur le plan z = L, que la scène mesure) et le passage.
+  lot.ajouter("laiton", F.tourne([[EPAULE.r, EPAULE.z], [PORTEE.r, EPAULE.z, { c: 0.35 }], [PORTEE.r, FILET.haut - 0.45, { c: 0.25 }], [fond, FILET.haut]], { segments: 72 }));
   lot.ajouter("laiton", F.filetage({ gaz: "3/4", z0: FILET.haut, z1: FILET.bas, entree: 0.9, sortie: 0.6, pointe: "z1", segments: 72 }));
   lot.ajouter("laiton", F.tourne([[fond, FILET.bas], [11.3, L, { a: 0.3, fin: 0.3 }], [PASSAGE + 0.5, L], [PASSAGE, L - 0.5], [PASSAGE, L - SOMBRE]], { segments: 72 }));
   lot.ajouter("creux", F.tourne([[PASSAGE, L - SOMBRE], [PASSAGE, COU.haut + 1], [0, COU.haut + 1]], { segments: 40 }));
@@ -139,7 +189,8 @@ function arrivee(F, lot) {
 // flancs en sortent, et son dessous, vu de biais.
 function meplats(F, lot) {
   var m = MEPLATS, demi = (m.bas - m.haut) / 2, milieu = (m.haut + m.bas) / 2, devant = { a: 3.2 }, derriere = { a: 0.6 };
-  var contour = [[-demi, m.derriere, derriere], [demi, m.derriere, derriere], [demi, m.devant, devant], [-demi, m.devant, devant]];
+  // Le contour se pose dans le plan (u, y), u = milieu - z : la rotation retourne l'axe.
+  var contour = [[-demi, m.derriere, derriere], [demi - m.depouille, m.derriere, derriere], [demi, m.devant, devant], [-demi, m.devant, devant]];
   lot.ajouter("laitonBrut", F.prisme(contour, -m.x, m.x, { arrondi: 0.7 }), { ry: Math.PI / 2, z: milieu });
 }
 
