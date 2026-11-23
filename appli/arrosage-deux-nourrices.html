@@ -154,9 +154,10 @@ var COULEURS_RESEAU = ["#2F6FB5", "#3E8F4E", "#D9A520", "#B5502F", "#7A4FA3", "#
 var NOMS = { "coude-mf": "Coude MF 1\"", mamelon: "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", pehd: "PEHD Ø25" };
 function nomDe(cle) { if (NOMS[cle]) return NOMS[cle]; var p = CAT.piece(cle) || CAT.piecesReseau[cle]; return p ? (p.marque ? p.marque + " " : "") + p.nom : cle; }
 
-// LE PARTAGE, tel que la liste le compte déjà : moitié-moitié, le goutte-à-goutte (numéroté en dernier) sur la seconde.
+// LE PARTAGE, celui que la liste compte (CATALOGUE.fichesNourrices dans le calcul) : moitié-moitié, le
+// goutte-à-goutte (numéroté en dernier) sur la seconde. Écrit ici pour que la planche se lise sans lui.
 function partage() {
-  var voies = CAT.voiesDesNourrices(etat.reseaux), reste = etat.goutte;
+  var a = Math.ceil(etat.reseaux / 2), voies = [a, etat.reseaux - a], reste = etat.goutte;
   var goutte = voies.slice().reverse().map(function (v) { var x = Math.min(v, reste); reste -= x; return x; }).reverse();
   return voies.map(function (v, i) { return { voies: v, goutte: goutte[i], premier: i ? voies[0] : 0 }; });
 }
@@ -237,7 +238,9 @@ function reposer() {
   // Ce que les deux fiches comptent et que la 3D ne pose pas : les regards, les programmateurs, les piles.
   var dans = {};
   cles.forEach(function (c) { dans[c] = true; });
-  $("avec").innerHTML = CAT.fichesNourrices(etat.reseaux, etat.goutte).pieces.filter(function (p) { return !dans[p.ref] && /^(regard|prog|pile)/.test(p.ref); })
+  var fusion = {};
+  nn.forEach(function (n) { CAT.ficheNourrice(n.voies, n.goutte).pieces.forEach(function (p) { fusion[p.ref] = (fusion[p.ref] || 0) + p.q; }); });
+  $("avec").innerHTML = Object.keys(fusion).map(function (ref) { return { ref: ref, q: fusion[ref] }; }).filter(function (p) { return !dans[p.ref] && /^(regard|prog|pile)/.test(p.ref); })
     .map(function (p) { return '<li><span class="q">' + p.q + "x</span> " + nomDe(p.ref) + "</li>"; }).join("");
   choisir();
   boutons();
