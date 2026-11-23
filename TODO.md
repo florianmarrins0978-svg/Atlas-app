@@ -3089,7 +3089,16 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      formule **Essentiel** (Starter, une deuxième, Essentiel, Premium ; toutes
      « sans engagement » ; prix non visibles sur la capture). Essentiel pris sur
      sa vraie entreprise ne donne pas pour autant où éprouver : un dépôt y
-     part pour de bon, d'où l'environnement d'essai demandé à Pennylane. Seconde capture, même soir : la
+     part pour de bon, d'où l'environnement d'essai demandé à Pennylane.
+     **Sa réaction, même soir** : *« les utilisateurs vont devoir payer 24 €
+     par mois plus mon abonnement »*. Vrai pour un artisan sur Pennylane avec
+     le jeton collé (2 A). Trois voies posées, **rien de tranché** : garder
+     2 A ; l'application partenaire (2 B, à demander à Pennylane si elle
+     marche sur Starter, l'onglet Intégrations y étant visible) ; une
+     plateforme agréée en marque blanche dans Cause, payée par Cause et
+     comprise dans son prix (revient en partie sur la décision du
+     26 septembre, devis à demander). **Ne pas coder le connecteur par jeton
+     avant ses réponses** : il ferait payer Essentiel à chaque artisan ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
