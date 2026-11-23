@@ -38602,3 +38602,88 @@ anciens gardent leur place, le compte et ses documents restent à l'entreprise.
 **Conditions générales version 4** : seul l'article 14.6 change, déduit de la
 page publiée. Elle ne dit pas encore Cause, ni les cases « Qui édite » : il
 voulait les faire dans une même version.
+
+## §615 : Le tuyau au plus court en PE, les parts égales, la pression au bout, deux nourrices
+
+**Ses corrections du 23 novembre 2026**, données devant son jardin de 12 × 12 et 8 × 8 recalculé,
+puis question par question le même soir. Le détail, mot pour mot, est dans
+`.claude/rules/arrosage.md` ; ici, ce qui fait tenir le code.
+
+**Le tracé (`tracerReseaux`, `trace.ts`).** *« Il faut pouvoir dépenser le moins de mètres linéaires
+possible de PE »*. Un segment déjà creusé par un autre réseau ne coûtait rien : le second réseau
+suivait la tranchée du premier même en doublant son tuyau (son réseau vert, 42 m ; son tracé, 18 m,
+pour la même tranchée de 72 m). Il coûte désormais son PE moins un millième (`DEPARTAGE`) : la
+tranchée ouverte départage à PE égal, et ne décide plus. La pénalité de la traversée ne s'applique
+qu'au segment neuf.
+
+**Deux modèles de turbine ne partagent jamais une vanne** (*« Non, jamais ensemble »*) : le modèle
+(`modeleDe`, la 3504, la 5004 Plus) entre dans la clé de groupe des turbines. Les buses d'un même
+modèle partagent toujours une vanne.
+
+**Au dernier arroseur, le minimum de la fiche, comme Rain Bird** (`seLeve`) : 1,7 bar pour la 3504
+et la 5000 Plus, sa décision du soir (*« tu prends la règle de Rainbird, si c'est 1,7 bar et pas 2 »*).
+Une marge de 0,3 bar (2,0 bar au bout) a vécu deux heures : à 2 bar au compteur, l'électrovanne 100-DV
+mange 0,23 bar à elle seule, et plus aucun jardin de turbines ne passait. L'alerte de pression propose
+désormais aussi le surpresseur, le remède de Rain Bird (`le-plan.ts`).
+
+**Les parts égales (`partsEgales`, `egaliser`).** Le remplissage (`couperEnVannes`) vise l'équilibre
+du GROUPE, et le reste tombait sur la dernière vanne (8 + 1). Deux partages s'essaient après lui :
+chaque parcelle sur ses vannes à elle, dès que le nombre de vannes ne change pas et qu'aucune ne
+dépasse la limite ; puis le groupe entier, d'un seul modèle, quand mêler deux parcelles économise
+une vanne, et seulement s'il ne charge ni ne perd plus que le remplissage. `egaliser` coupe au plus
+près de la moyenne, au carré des écarts.
+
+**La recherche juge le plan tel qu'il se pose (`chercherUnPlan`).** Chaque pression est essayée deux
+fois, remplie et partagée. Parmi les plans partagés qui tiennent, ceux où chaque pelouse partagée
+l'est à un arroseur près (`partageEgal`) passent devant ; entre eux, `avecLaPression` : le moins de
+vannes, et une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur (`GAIN_PAR_VANNE`, sa règle
+*« dès 0,1 bar gagné »*, devant son 16 × 10 et 8 × 8 qu'il voulait en 3 vannes de 3504 plutôt qu'en 2 de
+5000 Plus). Sans plan égal qui tienne, l'ancien choix reste.
+
+**Ce qui a été essayé et retiré le même soir, pour qu'on ne le refasse pas.**
+
+| | pourquoi c'est parti |
+|---|---|
+| partager seulement le plan retenu, à sa pression | le plan partagé perdait parfois plus, ses portées ne tenaient plus, et le 5 + 1 restait |
+| bloquer le nombre de vannes sur celui du remplissage | voulu pour la marge ; la marge est désormais tenue par ses deux règles de pression |
+| un seul modèle sur tout le jardin quand c'est possible | il avait dit oui, puis *« j'ai pas compris ta question »* ; sa raison était la pression |
+| la condition « aucune vanne plus chargée » pour chaque parcelle à part | elle refusait de rendre une pelouse à sa propre vanne ; la recherche vérifie de toute façon que le plan partagé tient |
+| 0,3 bar de marge au dernier arroseur (`MARGE_LEVEE`) | à 2 bar au compteur, rien ne passait ; il a choisi le minimum de Rain Bird |
+
+**Au-delà de six voies, deux nourrices (`fichesNourrices`, catalogue).** Ses fiches s'arrêtent à six :
+sept vannes faisaient perdre la nourrice et les électrovannes à la liste. Moitié-moitié, deux regards,
+chaque nourrice sa fiche, un té sur l'amenée et le tuyau jusqu'au second regard à mesurer
+(`piecesDuPlan`, `groupeNourrice`). **`ficheNourrice` reste la fiche d'une seule nourrice** : la 3D et la
+vue éclatée la dessinent pièce par pièce, et deux fiches fondues y dessineraient une nourrice de sept
+voies qui n'existe pas.
+
+**Ce que le balayage de 1 800 jardins dit de l'ensemble** (deux pelouses, quatre pressions) : aucune
+alerte de pression à aucune pression ; à 2 bar au compteur, 21 vannes de plus et 113 de moins, la
+pression au bout inchangée (1,71 → 1,72) ; à 2,5, 3 et 3,5 bar, 349 vannes de plus, 55 de moins, la
+pression au bout en hausse (2,09 → 2,24 à 3 bar). Les vannes à deux modèles passent de 362 à 0 ; les
+pelouses déséquilibrées, de 302 à 1. Un plan se calcule en 0,2 à 0,3 s, comme avant.
+
+**Ce qui le tient.** `scripts/test-regles-du-patron.ts` : sept règles datées du 23 novembre, chacune vue
+rouge sur le code d'avant (celle des 2,0 bar barrée le soir même, sa phrase de Rain Bird dessous) ; la règle du té égal au départ garde son fond, son compte barré se relit
+dans les lignes de chaque réseau. `scripts/test-arrosage-calcul.ts` et `appli/tests/essai-arrosage-detaille.cjs` :
+leurs jardins d'essai suivent le plan nouveau, chacun avec sa raison, comme ceux de
+`test-arrosage-postes.ts` (le seau en 15 s, pour garder ses quatre réseaux) et de
+`test-diametre-choisi.ts` (le 25 × 8 à 2,5 bar, où le Ø32 gagne encore un réseau).
+
+**Les deux nourrices à l'écran et sur le PDF**, sa planche `appli/arrosage-deux-nourrices.html` (sa
+consigne : *« ne refais pas un truc en 3D, tu la dupliques pour refaire une deuxième nourrice à côté »*),
+puis sa réponse : *« Sur la nourrice de gauche, il n'y a pas la flèche pour arriver d'eau. Tu peux la
+rajouter. Sinon après, c'est bon, tu peux coder. »*
+
+| | |
+|---|---|
+| le partage | `CATALOGUE.partageDesNourrices` (et sa copie) : moitié-moitié, le goutte-à-goutte sur la seconde. `fichesNourrices` le lit, la 3D et l'écran aussi : une seule règle |
+| la 3D | `appli/nourrice-3d/deux-nourrices.js`, `aCote` : la composition d'UNE nourrice, posée deux fois. Hors de `composition.js` exprès : l'empreinte des photos du PDF (`_nourrice-3d.ts`) lit ce qui dessine une nourrice, et poser la seconde n'en change aucune pièce |
+| les numéros | ils courent sur les deux ; la seconde ne porte que les siens (`vue.numeros`), sinon chaque numéro redoublait. La légende prend l'union des deux ordres (`ordreDesNourrices`), et `test-numeros-nourrice-3d.ts` les confronte pour 7 à 12 voies |
+| la flèche | `reperes.js` en posait une seule, sur la dernière colonne d'arrivée : une par arrivée |
+| les mots du bas | sa planche `appli/arrosage-nourrice-3d-gag.html` : « goutte-à-goutte » en entier sous la première voie, GAG sous les suivantes, sur une nourrice comme sur deux (`reperes.js`, et `Dessin` pour l'écran de secours). Les mots étroits se posent d'abord ; un mot qui en couvrirait un autre se décale sur le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchaient, plus aucune |
+| l'amenée | un schéma au-dessus de la nourrice (`Amenee`, `NourriceEclatee.tsx`) : le piquage, le té, un tuyau vers chaque regard, le second en tirets, « à mesurer » ; à la largeur du téléphone, un point du dessin pour un pixel |
+| le PDF | deux photos côte à côte, à la même hauteur (chacune est recadrée sur sa nourrice, aucune échelle commune), numérotées comme l'écran. **Avant, le PDF d'un plan à sept réseaux ne se composait pas** : il cherchait la photo d'une nourrice de sept voies, qui n'existe pas (`test-pdf-du-plan-arrosage.ts`, vu rouge) |
+
+**Ce qui n'est pas fait.** Le montage d'un devis de fournisseur (`montageDuDevis`) au-delà de six
+électrovannes ; les instantanés des planches d'arrosage (`TODO.md`).

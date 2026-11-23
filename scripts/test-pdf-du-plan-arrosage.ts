@@ -34,7 +34,7 @@ import { RETOUCHES_VIERGES } from "../src/lib/arrosage/retouches";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 import { composerLePdfDuPlan, disposerLeMilieu } from "../src/server/pdf/plan-arrosage-pdf";
 import { FICHIER_DES_PLACES, photoDeLaNourrice } from "../src/lib/arrosage/nourrice-en-photo";
-import { composerNourrice } from "../src/lib/arrosage/nourrice-eclatee";
+import { composerLesNourrices, composerNourrice, ordreDesNourrices } from "../src/lib/arrosage/nourrice-eclatee";
 import { voiesEnGoutte } from "../src/lib/arrosage/postes";
 import { empreinteDeLaNourrice3D, FICHIER_D_EMPREINTE } from "./_nourrice-3d";
 import { tracerSvg, type NoeudSvg } from "../src/server/pdf/svg-vers-pdf";
@@ -133,7 +133,7 @@ async function main() {
   await cas("aucun caractère sans glyphe dans les polices du PDF", () => {
     const textes = [
       donnees.entreprise, donnees.dossier, donnees.date, donnees.resume, "Plan d’arrosage", "LIRE LES PLANS", "LES PIÈCES", "UNE TÊTE, DE BAS EN HAUT", "LA LISTE DES PIÈCES, SUITE", "LA NOURRICE",
-      "SES PIÈCES", "AVEC LA NOURRICE",
+      "SES PIÈCES", "AVEC LA NOURRICE", "LES NOURRICES", "AVEC LES NOURRICES",
       ...(donnees.nourrice ? [donnees.nourrice.titre, donnees.nourrice.phrase, ...[...donnees.nourrice.numerotees, ...donnees.nourrice.avec].flatMap((l) => [l.quantite ?? "", l.nom])] : []),
       ...donnees.legende.flatMap((l) => l.texte.map((s) => s.texte)),
       ...donnees.reseaux.flatMap((r) => [r.titre, ...r.zones, ...r.lignes.flatMap((l) => [l.quantite ?? "", l.texte]), r.tuyau.texte, ...(r.chaine ?? []).map((m) => m.libelle), ...r.rail.map((p) => p.detail || p.nom)]),
@@ -215,7 +215,7 @@ async function main() {
     const doc = await pdfjs.getDocument({ data: new Uint8Array(octets), useSystemFonts: false }).promise;
     const ops = await (await doc.getPage(2)).getOperatorList();
     assert.ok(ops.fnArray.includes(pdfjs.OPS.paintImageXObject), "aucune image sur la page de la nourrice");
-    assert.ok(donnees.nourrice?.photo === photoDeLaNourrice(fige.nourrice.voies.length, voiesEnGoutte(fige.plan, fige.nourrice.voies)), "la photo n'est pas celle de ses voies");
+    assert.deepEqual(donnees.nourrice?.photos.map((x) => x.photo), [photoDeLaNourrice(fige.nourrice.voies.length, voiesEnGoutte(fige.plan, fige.nourrice.voies))], "la photo n'est pas celle de ses voies");
   });
 
   await cas("au nez de robinet, pas de nourrice, donc pas de page", async () => {
@@ -239,8 +239,9 @@ async function main() {
     const n = donnees.nourrice;
     assert.ok(n, "pas de nourrice : le contrôle ne mesure rien");
     const toutes = JSON.parse(readFileSync(path.join("public", FICHIER_DES_PLACES), "utf8")) as Record<string, { ref: string }[]>;
-    const places = toutes[n.places];
-    assert.ok(places?.length > 10, `pas de places relevées pour ${n.places}`);
+    assert.equal(n.photos.length, 1, "le jardin d'essai a une seule nourrice, donc une seule photo");
+    const places = toutes[n.photos[0].places];
+    assert.ok(places?.length > 10, `pas de places relevées pour ${n.photos[0].places}`);
     const numerotees = new Set(n.numerotees.map((l) => l.ref));
     for (const q of places) if (q.ref !== "pehd") assert.ok(numerotees.has(q.ref), `la photo montre ${q.ref} sans numéro`);
     for (const l of n.numerotees) assert.ok(places.some((q) => q.ref === l.ref), `le numéro ${l.numero} (${l.nom}) n'est sur aucune pièce de la photo`);
@@ -273,12 +274,48 @@ async function main() {
     }
   });
 
+  // AU-DELÀ DE SIX VOIES, DEUX NOURRICES (sa règle du 23 novembre 2026, sa planche « à côté ») : le
+  // PDF d'un jardin à sept vannes levait « Aucune place relevée pour la nourrice 7-0 », il n'existe de
+  // photo que d'une nourrice de six voies au plus. La page pose les deux photos côte à côte, numérotées
+  // comme l'écran : la légende suit l'union des deux ordres (`ordreDesNourrices`).
+  const SEPT = { ...JARDIN, zones: [
+    { id: 1, type: "gazon", nom: "P1", x: 0, y: 0, L: 30, l: 22 },
+    { id: 2, type: "gazon", nom: "P2", x: 32, y: 0, L: 20, l: 15 },
+    { id: 3, type: "gazon", nom: "P3", x: 54, y: 0, L: 12, l: 12 },
+  ], nourrice: { x: 31, y: 18 } } as unknown as ParametresPlan;
+  const s7: SaisieDuPlan = { ...saisie, parametres: SEPT, reservesDuCroquis: [] };
+  const f7 = figerLePlan(s7);
+  const d7 = donneesDuPdf({ entreprise: "Atelier Démo", dossier: "Sept réseaux", enregistreLe: new Date("2026-11-23T20:00:00Z"), saisie: s7, fige: f7 });
+  let o7: Uint8Array | null = null;
+  await cas("au-delà de six voies, la page porte les deux nourrices, côte à côte, numérotées comme l'écran", async () => {
+    assert.equal(f7.nourrice.voies.length, 7, `${f7.nourrice.voies.length} voies sur le jardin de sept : le contrôle ne mesure rien`);
+    const n = d7.nourrice;
+    assert.ok(n, "pas de nourrice sur le jardin de sept vannes");
+    const parts = composerLesNourrices(7, voiesEnGoutte(f7.plan, f7.nourrice.voies));
+    assert.ok(parts && parts.length === 2, "sept voies ne font pas deux nourrices");
+    assert.deepEqual(n.photos.map((x) => x.photo), parts.map((p) => photoDeLaNourrice(p.voies, p.goutte)), "les photos ne sont pas celles des deux nourrices");
+    assert.deepEqual(n.numerotees.map((l) => l.ref), ordreDesNourrices(parts).filter((r) => r !== "pehd"), "les numéros ne suivent pas la légende de l'écran");
+    const toutes = JSON.parse(readFileSync(path.join("public", FICHIER_DES_PLACES), "utf8")) as Record<string, { ref: string }[]>;
+    const vues = new Set(n.photos.flatMap((x) => (toutes[x.places] ?? []).map((q) => q.ref)));
+    for (const l of n.numerotees) assert.ok(vues.has(l.ref), `le numéro ${l.numero} (${l.nom}) n'est sur aucune des deux photos`);
+    o7 = await composerLePdfDuPlan(d7);
+    const p7 = await texteDuPdf(o7);
+    assert.ok(p7[1].includes(pourLePapier(f7.nourrice.nom).texte), `la page ne dit pas « ${f7.nourrice.nom} »`);
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const ops = await (await (await pdfjs.getDocument({ data: new Uint8Array(o7), useSystemFonts: false }).promise).getPage(2)).getOperatorList();
+    assert.equal(ops.fnArray.filter((x) => x === pdfjs.OPS.paintImageXObject).length, 2, "la page des nourrices ne porte pas deux photos");
+  });
+
   const i = process.argv.indexOf("--images");
   if (i > 0) {
     const dossier = process.argv[i + 1];
     mkdirSync(dossier, { recursive: true });
     writeFileSync(path.join(dossier, "plan.pdf"), octets);
     execFileSync("pdftoppm", ["-r", "70", "-png", path.join(dossier, "plan.pdf"), path.join(dossier, "page")]);
+    if (o7) {
+      writeFileSync(path.join(dossier, "sept.pdf"), o7);
+      execFileSync("pdftoppm", ["-r", "70", "-png", "-f", "2", "-l", "2", path.join(dossier, "sept.pdf"), path.join(dossier, "sept")]);
+    }
     console.log(`\n  ${pages.length} pages écrites dans ${dossier}`);
   }
 

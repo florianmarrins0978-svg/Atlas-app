@@ -521,11 +521,110 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
   // écartements de Rain Bird (sa décision), la pelouse arrière de 12 × 12 passe
   // sur deux réseaux, et chacun porte son té égal. La règle ne bouge pas ; le
   // compte se lit réseau par réseau. Le 2 reste.
-  const arriere = d.reseaux.filter((r) => p.secteurs[r.numero]?.nom === "Pelouse arrière").map((r) => r.tesEgaux);
-  exige(arriere.length === 2 && arriere.every((t) => t === 1), `Pelouse arrière : ${arriere.join(" et ")} tés égaux sur ${arriere.length} réseaux, il en faut 2 d'un té chacun`);
+  //
+  // ~~2 RÉSEAUX D'UN TÉ CHACUN~~ BARRÉ le 23 novembre 2026 : sa règle du tracé,
+  // *« il faut pouvoir dépenser le moins de mètres linéaires possible de PE »*,
+  // donnée sur ce jardin même, son réseau vert dessiné de sa main : *« je serais
+  // parti de la nourrice, je serais parti à gauche pour faire les 1, 2, 3, 4
+  // arroseurs »*. Ce réseau part d'un seul côté, et n'a plus de té au départ. La
+  // règle ne bouge pas : le té se pose là où la ligne part dans deux sens,
+  // l'arrivée comprise, et le compte se relit dans les lignes de chaque réseau.
+  const demande = (lignes: { x: number; y: number }[][]) => {
+    const k = (q: { x: number; y: number }) => `${q.x},${q.y}`, voisins = new Map<string, Set<string>>();
+    const relier = (a: string, b: string) => voisins.set(a, (voisins.get(a) ?? new Set<string>()).add(b));
+    for (const l of lignes) for (let i = 0; i + 1 < l.length; i++) { relier(k(l[i]), k(l[i + 1])); relier(k(l[i + 1]), k(l[i])); }
+    const entree = lignes[0]?.[0] ? k(lignes[0][0]) : "";
+    return [...voisins].reduce((t, [c, v]) => t + Math.max(0, v.size + (c === entree ? 1 : 0) - 2), 0);
+  };
+  const arriere = d.reseaux.filter((r) => p.secteurs[r.numero]?.nom === "Pelouse arrière");
+  const tes = arriere.map((r) => r.tesEgaux), demandes = arriere.map((r) => demande(r.lignes));
+  exige(arriere.length === 2 && tes.join(" et ") === demandes.join(" et ") && demandes.join(" et ") === "1 et 0", `Pelouse arrière : ${tes.join(" et ")} tés égaux sur ${arriere.length} réseaux, le tracé en demande ${demandes.join(" et ")} ; il en faut 2 réseaux, 1 té sur le bleu, qui part dans les deux sens, 0 sur le vert, qui part d'un seul côté`);
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
+
+regle("23 novembre 2026", "« faire une deuxième nourrice avec une nouvelle voie, et donc prévoir un Té de plus pour faire arriver l'eau dans la nouvelle nourrice », « moitié-moitié », « deux regards » : au-delà de six voies, deux nourrices", () => {
+  // 30 × 22, 20 × 15 et 12 × 12 à 3 bar : 7 vannes, donc 4 + 3. (Le 15 × 12 du premier jet ne
+  // demande plus que 6 vannes depuis la règle de Rain Bird du même soir, 1,7 bar au bout.)
+  const p = plan([
+    { id: 1, type: "gazon", nom: "P1", x: 0, y: 0, L: 30, l: 22 },
+    { id: 2, type: "gazon", nom: "P2", x: 32, y: 0, L: 20, l: 15 },
+    { id: 3, type: "gazon", nom: "P3", x: 54, y: 0, L: 12, l: 12 },
+  ]);
+  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte, voies: p.secteurs.length });
+  const q = (motif: RegExp, ou: string) => pieces.filter((x) => x.ou === ou && motif.test(x.ref ?? "")).reduce((s, x) => s + (x.q ?? 0), 0);
+  exige(p.secteurs.length === 7, `${p.secteurs.length} vannes sur ce jardin, l'exemple en demande 7`);
+  exige(q(/^electrovanne/, "regard") === 7 && q(/^regard-/, "regard") === 2, `${q(/^electrovanne/, "regard")} électrovannes et ${q(/^regard-/, "regard")} regards : il en faut 7 et 2`);
+  const te = pieces.filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25" && /deux nourrices/.test(x.detail ?? ""));
+  const tuyau = pieces.find((x) => x.ref === "pe-second-regard");
+  exige(te.length === 1 && te[0].q === 1 && tuyau && tuyau.q === null, `le té de l'amenée et le tuyau jusqu'au second regard, à mesurer : ${te.length} té, tuyau ${tuyau ? tuyau.q : "absent"}`);
+  exige(p.manquants.some((m: string) => /Deux nourrices de 4 et 3 voies/.test(m)), "le plan doit dire : deux nourrices de 4 et 3 voies");
+});
+
+regle("23 novembre 2026", "« comment ça lève ? J'ai l'impression qu'il faut une pression énorme », puis « 2,0 bar » : au dernier arroseur, 0,3 bar au-dessus du minimum de sa fiche, 2,0 pour la 3504 et la 5000 Plus", () => {
+  // ~~2,0 BAR AU DERNIER ARROSEUR~~ BARRÉ le 23 novembre 2026 au soir, sur sa décision : *« tu prends la
+  // règle de Rainbird, si c'est 1,7 bar et pas 2, tu prends leur règle »*. À 2 bar au compteur,
+  // l'électrovanne mange 0,23 bar à elle seule, et plus aucun jardin de turbines ne passait. La règle
+  // est celle de Rain Bird : le minimum de la fiche, 1,7 bar pour la 3504 et la 5000 Plus (leur plage
+  // va de 1,7 à 3,8 bar). Son exemple, 10 × 6 et 8 × 8 à 2 bar, passe donc, au-dessus de 1,7. Et à
+  // 3 bar, ses jardins gardent 2,0 bar au bout : c'est sa règle d'une vanne de plus dès 0,1 bar.
+  const juste = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 10, l: 6 }, { id: 2, type: "gazon", nom: "B", x: 12, y: 0, L: 8, l: 8 }], 2);
+  exige(juste.pressionTropBasse === false && juste.pressionAuxArroseurs >= 1.7 - 1e-9, `10 × 6 et 8 × 8 à 2 bar : ${juste.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en faut 1,7, et non plus 2,0`);
+  for (const [L, l, L2, l2] of [[12, 12, 8, 8], [16, 10, 8, 8], [20, 15, 12, 12], [16, 6, 15, 8]]) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: l2 }], 3);
+    exige(!p.pressionTropBasse && p.pressionAuxArroseurs >= 2.0 - 1e-9, `${L} × ${l} et ${L2} × ${l2} à 3 bar : ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, il en arrive au moins 2,0 par sa règle des 0,1 bar`);
+  }
+});
+
+regle("23 novembre 2026", "« plus de pression au bout », puis « dès 0,1 bar gagné » : une vanne de plus dès qu'elle donne 0,1 bar au dernier arroseur ; son 16 × 10 et 8 × 8 à 3 bar part en 3 vannes de 3504 (2,21 bar), pas en 2 vannes de 5000 Plus (2,06)", () => {
+  const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L: 16, l: 10 }, { id: 2, type: "gazon", nom: "B", x: 18, y: 0, L: 8, l: 8 }], 3);
+  const modeles = [...new Set((p.dessin as unknown as { buse: string | null }[]).map((z) => String(z.buse ?? "").split(" buse")[0]))];
+  exige(p.secteurs.length === 3 && modeles.join(" et ") === "3504" && p.pressionAuxArroseurs > 2.15, `${p.secteurs.length} vannes en ${modeles.join(" et ")}, ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur ; il en faut 3 en 3504, à 2,21 bar`);
+});
+
+regle("23 novembre 2026", "« les 3005 avec les 3005 ; s'il y a des 3005 et des 5000, tu peux pas diviser 3005 et 5000 », puis « Non, jamais ensemble » : une vanne ne porte qu'un seul modèle de turbine", () => {
+  // Son exemple : 10 × 6 et 8 × 8 à 2 bar, où une vanne portait deux 5000 Plus et trois 3504.
+  const CAS: [number, number, number, number, number][] = [[10, 6, 8, 8, 2], [16, 6, 15, 8, 3], [12, 12, 8, 8, 3], [20, 15, 12, 12, 3], [6, 5, 18, 7, 3]];
+  for (const [L, l, L2, l2, pression] of CAS) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: l2 }], pression);
+    const modeles = new Map<number, Set<string>>();
+    for (const z of p.dessin as unknown as { buse: string | null; points: { reseau?: number }[] }[]) {
+      for (const pt of z.points) if (pt.reseau !== undefined) modeles.set(pt.reseau, (modeles.get(pt.reseau) ?? new Set<string>()).add(String(z.buse ?? "").split(" buse")[0]));
+    }
+    const meles = [...modeles.entries()].filter(([, m]) => m.size > 1).map(([r, m]) => `réseau ${r + 1} : ${[...m].join(" et ")}`);
+    exige(meles.length === 0, `${L} × ${l} et ${L2} × ${l2} à ${pression} bar : ${meles.join(" ; ")} sur la même vanne`);
+  }
+});
+
+// ── Le tuyau au plus court, et les parts égales ─────────────────────────────
+// Ses deux corrections du 23 novembre 2026, données devant son jardin de
+// 12 × 12 et 8 × 8 recalculé (`appli/arrosage-rainbird-et-darcy.html`).
+regle("23 novembre 2026", "« il faut pouvoir dépenser le moins de mètres linéaires possible de PE » : son réseau vert passe de 42 à 18 m, la tranchée reste à 72 m", () => {
+  const p = plan([
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+  ]);
+  const d = dessine(p, { x: 13, y: 6 });
+  const tuyaux = d.reseaux.map((r) => r.metresTuyau);
+  exige(d.reseaux.length === 3, `${d.reseaux.length} réseaux sur son jardin, il en a validé 3`);
+  exige(tuyaux.join(" ; ") === "30 ; 18 ; 24", `${tuyaux.join(" ; ")} m de PE par réseau, son tracé en donne 30 ; 18 ; 24 (le vert passait par la tranchée du bleu, 42 m)`);
+  exige(d.metresTranchee === 72, `${d.metresTranchee} m de tranchée, son tracé en creuse 72 : moins de PE, pas plus de tranchée`);
+});
+
+regle("23 novembre 2026", "« ça sert à rien de faire un réseau à 6 arroseurs et un réseau à 4. Autant faire deux réseaux à 5 » : ses trois jardins, la même parcelle sur deux vannes se partage à un arroseur près, sans vanne de plus ni de moins", () => {
+  // Sa réponse devant ces trois-là : « Oui il faut ma règle pour les 3 exemples que tu as donnés ».
+  const CAS: [number, number, number, string, number][] = [
+    [16, 15, 12, "A 8 + 8, B 5 + 4", 4],
+    [20, 15, 12, "A 10 + 10, B 5 + 4", 4],
+    [16, 10, 8, "A 6 + 6, B 4", 3],
+  ];
+  for (const [L, l, L2, attendu, vannes] of CAS) {
+    const p = plan([{ id: 1, type: "gazon", nom: "A", x: 0, y: 0, L, l }, { id: 2, type: "gazon", nom: "B", x: L + 2, y: 0, L: L2, l: L2 }]);
+    const s = p.secteurs as unknown as { nom: string; points: unknown[] }[];
+    const lu = ["A", "B"].map((z) => `${z} ${s.filter((x) => x.nom === z).map((x) => x.points.length).join(" + ")}`).join(", ");
+    exige(lu === attendu && s.length === vannes, `${L} × ${l} et ${L2} × ${L2} à 3 bar : ${lu} sur ${s.length} vannes, il en faut ${attendu} sur ${vannes}`);
+  }
+});
 
 // ── Les écartements de Rain Bird, pour les turbines ────────────────────────
 // Ses réponses du 22 novembre 2026, devant le manuel de conception Rain Bird

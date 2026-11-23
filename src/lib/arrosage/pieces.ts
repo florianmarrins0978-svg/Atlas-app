@@ -52,6 +52,11 @@ export type Piece = {
   ou: Zone;
   /** D'où sort le chiffre — sa position, ou ce que chaque réseau apporte. */
   detail?: string;
+  /**
+   * Ce que la pièce fait, quand sa référence ne le dit pas : le té des deux nourrices est un té égal
+   * comme celui du compteur, et la liste de l'écran (`postes.ts`) doit les ranger à part.
+   */
+  role?: "te-nourrices" | "pe-second-regard";
 };
 
 export const TITRES_DES_ZONES: Record<Zone, string> = {
@@ -71,6 +76,7 @@ type Catalogue = {
   coudes: { ref: string; nom: string; detail: string; filetage: string }[];
   corps: { ref: string; nom: string; filetage: string }[];
   referenceDe(cle: string): string | null;
+  voiesDesNourrices(n: number): number[] | null;
 };
 const CAT = CATALOGUE as unknown as Catalogue;
 
@@ -120,6 +126,8 @@ export function piecesDuPlan(
     diametres?: (25 | 32)[];
     /** Le tuyau retenu pour l'amenée, choisi par lui ou proposé par l'outil. Absent : la règle du seuil. */
     diametreAmenee?: 25 | 32;
+    /** Le nombre de réseaux : au-delà de six, deux nourrices, et l'amenée se partage. Absent : une seule. */
+    voies?: number;
   }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
@@ -156,6 +164,18 @@ export function piecesDuPlan(
       ou: "amenee",
       detail: "coupe la ligne au compteur",
     });
+  }
+  // **Au-delà de six voies, deux nourrices dans deux regards** (sa règle du
+  // 23 novembre 2026, `CATALOGUE.fichesNourrices`) : *« prévoir un Té de plus
+  // pour faire arriver l'eau dans la nouvelle nourrice »*. Le té est du
+  // diamètre de l'amenée ; le tuyau jusqu'au second regard n'est sur aucun
+  // croquis, il se mesure.
+  if ((CAT.voiesDesNourrices(options.voies ?? 0)?.length ?? 0) > 1) {
+    const r = raccordsEn(options.diametreAmenee === 32 ? 32 : 25);
+    amenee.push(
+      { ref: r.egal, reference: CAT.referenceDe(r.egal), nom: nomDe(r.egal), q: 1, u: "u", ou: "amenee", detail: "partage l’amenée entre les deux nourrices", role: "te-nourrices" },
+      { ref: "pe-second-regard", nom: r.nomPe, q: null, u: "ml", ou: "amenee", detail: "du té au second regard, à mesurer", role: "pe-second-regard" },
+    );
   }
 
   // ── Dans le regard ────────────────────────────────────────────────────────

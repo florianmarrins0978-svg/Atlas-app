@@ -33,8 +33,14 @@ function cas(nom: string, corps: () => void) {
 }
 function exige(c: unknown, m: string) { if (!c) throw new Error(m); }
 
+// **Le seau se remplit en 15 s depuis le 23 novembre 2026, et non plus en 18.** Ses règles
+// du jour (une pelouse partagée en parts égales, une vanne de plus dès qu'elle donne 0,1 bar
+// au dernier arroseur) passaient la pelouse arrière sur deux réseaux, et le jardin à cinq ;
+// tout ce que cette suite éprouve est bâti sur quatre (le goutte-à-goutte en quatrième, une
+// nourrice qui passe de 4 à 3 voies). Un peu plus de débit les lui rend, sans toucher à
+// une seule zone.
 const PARAMETRES: ParametresPlan = {
-  seau: 10, temps: 18, pression: 3, compteur: "oui", regardVersZone: 0, amenee: 0,
+  seau: 10, temps: 15, pression: 3, compteur: "oui", regardVersZone: 0, amenee: 0,
   zones: [
     { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
     { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },

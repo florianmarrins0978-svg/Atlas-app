@@ -104,6 +104,21 @@ lui seul sait — un point d'eau existant, un passage de voiture, un massif qu'o
 ne rouvre pas, l'accès pour l'hivernage. Un outil qui le placerait ferait creuser
 au mauvais endroit, et une tranchée ne se déplace pas.
 
+**AU-DELÀ DE SIX VOIES, DEUX NOURRICES DANS DEUX REGARDS — sa règle du
+23 novembre 2026.** Ses fiches de nourrice s'arrêtent à six voies, et un jardin
+de sept vannes perdait sa nourrice et ses électrovannes dans la liste. Sa
+réponse : *« faire une deuxième nourrice avec une nouvelle voie, et donc prévoir
+un Té de plus pour faire arriver l'eau dans la nouvelle nourrice »*, puis
+*« moitié-moitié »* (4 + 3 pour 7, 4 + 4 pour 8) et *« deux regards »*. Chaque
+nourrice garde sa fiche, regard et programmateur compris ; le goutte-à-goutte,
+numéroté en dernier, va sur la seconde ; le té est du diamètre de l'amenée, et
+le tuyau jusqu'au second regard se mesure (`fichesNourrices`, `piecesDuPlan`).
+Au-delà de douze voies, rien n'est composé, et le plan le dit. **À l'écran et
+sur le PDF, les deux nourrices côte à côte**, sa planche choisie le même soir
+(*« c'est bon, tu peux coder »*) : la même nourrice dupliquée, une flèche
+d'arrivée sur chacune, les numéros qui courent sur les deux. Le second regard se
+place par lui, comme le premier.
+
 **Informer n'est pas proposer.** S'il demande ce que change tel ou tel
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
@@ -172,6 +187,18 @@ depuis le 17 août, mise par lui (« ça ne se mélange jamais ») ; il l'a reti
 23. **Ne pas la remettre** : deux turbines de buses différentes partagent
 désormais une vanne, avec des millimètres/heure différents pour une même durée
 d'ouverture, et c'est lui qui arbitre à l'arrosage.
+
+**DEUX MODÈLES DE TURBINE NE PARTAGENT JAMAIS UNE VANNE — sa décision du
+23 novembre 2026.** *« Les 3005 avec les 3005 ; s'il y a des 3005 et des 5000,
+tu peux pas diviser 3005 et 5000 »*, puis, devant 10 × 6 et 8 × 8 à 2 bar, où
+une vanne portait deux 5000 Plus et trois 3504 : *« Non, jamais ensemble »*. Le
+modèle entre dans la clé des turbines (`modeleDe`, `calcul.js`). Les buses d'un
+même modèle partagent toujours une vanne (la décision du 23 août ci-dessus). Un
+jardin peut garder deux modèles, chacun sur ses vannes. **Ce qui a été retiré
+le même soir** : « un seul modèle sur tout le jardin quand c'est possible ».
+Il avait répondu oui, puis : *« j'ai pas compris ta question »* ; sa vraie
+raison était la pression au bout (paragraphe « UNE VANNE DE PLUS DÈS QU'ELLE
+DONNE 0,1 BAR »). Ne pas la remettre sans lui.
 
 **Ce qui sépare, en revanche, c'est le MATÉRIEL.** Une turbine et une tuyère ne
 s'ouvrent jamais ensemble : l'une verse environ trois fois plus vite. Cette
@@ -402,6 +429,44 @@ valve? », rainbird.com). Le nombre de têtes d'un réseau est le débit disponi
 divisé par le débit d'une tête à sa pression, et c'est ce que fait déjà le
 découpage. Neuf buses 0,75 (0,16 m³/h) boivent autant que quatre buses 1,5.
 
+**UNE PARCELLE SUR PLUSIEURS VANNES SE PARTAGE EN PARTS ÉGALES — sa règle du
+23 novembre 2026 :** *« à partir du moment où il doit y avoir deux réseaux
+d'arroseurs sur la même parcelle, deux réseaux de 3005, ça sert à rien de faire
+un réseau à 6 arroseurs et un réseau à 4. Autant faire deux réseaux à 5. C'est
+plus safe. »* Puis, devant trois de ses jardins à 3 bar : *« Oui il faut ma
+règle pour les 3 exemples que tu as donnés »*.
+
+| son jardin | avant | sa règle |
+|---|---|---|
+| 16 × 15 et 12 × 12 | A 9 + 7, B 1 + 7 + 1 (une vanne mêle les deux) | A 8 + 8, B 5 + 4 |
+| 20 × 15 et 12 × 12 | A 10 + 10, B 8 + 1 | A 10 + 10, B 5 + 4 |
+| 16 × 10 et 8 × 8 | A 7 + 5, B 4 | A 6 + 6, B 4 |
+
+**Comment c'est tenu** (`partsEgales`, `chercherUnPlan`, `calcul.js`). Chaque
+pression essayée l'est aussi en parts égales, et c'est ce plan-là qui se juge,
+puisque c'est lui qui se pose. Un plan où chaque pelouse partagée l'est à un
+arroseur près passe devant tout autre ; il refuse aussi le 5 + 1 qu'un
+remplissage faisait pour gagner une vanne en mêlant deux pelouses. Chaque
+pelouse sur ses vannes à elle passe d'abord quand le nombre de vannes ne change
+pas. **Le nombre de vannes, lui, PEUT bouger** : une première version le
+bloquait, pour que la recherche ne trouve pas des plans à une vanne de moins,
+donc moins de marge. Depuis sa règle du même soir, une vanne de plus dès
+qu'elle donne 0,1 bar au dernier arroseur, la marge est tenue autrement, et le
+verrou est tombé.
+
+**Ce que ses règles du 23 novembre changent ensemble, sur 1 800 jardins** (deux
+pelouses, quatre pressions au compteur, l'outil d'avant contre celui-ci) :
+
+| au compteur | vannes en plus | en moins | pression moyenne au bout | alerte de pression |
+|---|---|---|---|---|
+| 2 bar | 21 | 113 | 1,71 → 1,72 | aucune |
+| 2,5 bar | 100 | 39 | 1,89 → 1,96 | aucune |
+| 3 bar | 155 | 5 | 2,09 → 2,24 | aucune |
+| 3,5 bar | 94 | 11 | 2,61 → 2,70 | aucune |
+
+Les vannes qui mêlaient deux modèles passent de 362 à 0 ; les pelouses à deux
+arroseurs d'écart ou plus entre leurs vannes, de 302 à 1.
+
 **LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
 21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
 goutte ; sur le plan, il n'en a compté qu'un, et pour les pièces aussi ; il n'a
@@ -565,6 +630,46 @@ ses raccords et l'antenne Ø16 — de l'ordre d'un demi à trois quarts de bar s
 un jardin ordinaire. Dimensionner sur la pression du compteur, c'est prêter aux
 arroseurs de bout de ligne une portée qu'ils n'ont pas.
 
+**AU DERNIER ARROSEUR, LE MINIMUM DE LA FICHE, COMME RAIN BIRD — sa décision
+du 23 novembre 2026 au soir** : *« tu prends la règle de Rainbird, si c'est
+1,7 bar et pas 2, tu prends leur règle »*. 1,7 bar pour la 3504 et la 5000 Plus
+(Aqua Plus 2026, p. 11 et 13 ; Rain Bird donne la 3504 de 1,7 à 3,8 bar et
+publie ses portées à 1,7), `seLeve`. La marge, quand il y en a, vient de sa
+règle d'une vanne de plus dès qu'elle donne 0,1 bar (paragraphe suivant).
+
+~~**0,3 BAR AU-DESSUS DU MINIMUM, 2,0 BAR POUR CES TURBINES**~~ (barré le même
+soir). Il l'avait posé après *« comment ça lève ? J'ai l'impression qu'il faut
+une pression énorme »*, devant 10 × 6 et 8 × 8 à 2 bar (1,72 bar au bout pour un
+minimum de 1,70). Ce qu'elle a coûté, et qui l'a fait revenir à Rain Bird : à
+2 bar au compteur, l'électrovanne 100-DV perd 0,23 bar à elle seule (sa fiche,
+au plus petit débit), il reste au mieux 1,77 bar, et plus aucun jardin de
+turbines ne passait, pas même avec un seul arroseur. Ne pas la remettre sans
+lui.
+
+**L'ALERTE DE PRESSION PROPOSE AUSSI LE SURPRESSEUR** (même soir, son « oui ») :
+*« Raccourcissez les lignes, ajoutez une vanne, piquez plus en amont, ou posez
+un surpresseur »* (`le-plan.ts`). C'est le remède de Rain Bird quand la pression
+reste trop basse après le reste ; les trois autres gestes ne suffisent pas à un
+compteur trop faible.
+
+**UNE VANNE DE PLUS DÈS QU'ELLE DONNE 0,1 BAR AU DERNIER ARROSEUR — sa règle
+du 23 novembre 2026.** Devant son 16 × 10 et 8 × 8 à 3 bar, trois plans : 3 vannes
+en 3504 (2,21 bar au bout), 2 vannes avec deux modèles (2,05), 2 vannes en
+5000 Plus (2,06). Il a choisi les 3 vannes en 3504, pour *« plus de pression au
+bout »*, et la limite : *« dès 0,1 bar gagné »*. Le moins de vannes reste le
+point de départ (sa règle du 16 octobre) ; chaque vanne ajoutée doit rapporter
+0,1 bar (`GAIN_PAR_VANNE`, `avecLaPression`). « Toujours le plus de pression »
+lui a été proposé et n'a pas été retenu : il ajouterait des vannes sans fin.
+
+**LA 3504 D'OFFICE, LA 5000 PLUS QUAND ELLE FAIT ÉCONOMISER UNE VANNE — sa
+réponse du même soir, « Comme aujourd'hui ».** Il avait ajouté : *« si on a
+atteint la longueur maximale pour les 3004, il faudra passer en 5000 »*. Mis
+devant le fait qu'une 3504 porte jusqu'à 10,1 m (buse 4,0) et couvre toujours en
+ajoutant des têtes, il a gardé la règle telle qu'elle était : la gamme la moins
+chère d'abord, la 5000 Plus quand elle économise une vanne (25 × 20 et 40 × 30
+à 3 bar), sauf si la vanne de plus en 3504 donne 0,1 bar au bout. Ne pas
+reposer la question.
+
 **Le débit DÉCROÎT le long de la ligne**, et c'est tout le calcul : entre la
 vanne et la première tête passe le débit du réseau entier, puis une tête de
 moins à chaque tronçon. Compter le débit total partout surestime la perte de
@@ -667,6 +772,17 @@ une longueur saisie oblige à la ressaisir trois fois pour trouver la bascule.
 Quand le débit interdit le Ø25, le seuil vaut **zéro**, jamais un nombre de
 mètres qu'on croirait.
 
+**LE COEFFICIENT DU PE RESTE À 150, ET DARCY N'ENTRE PAS — sa décision du
+23 novembre 2026.** Son 12 × 12 et 8 × 8 a été calculé trois fois devant lui
+(`appli/arrosage-rainbird-et-darcy.html`) : à C = 150, 3 réseaux ; à C = 140
+(la valeur de Rain Bird) comme en Darcy et Moody, 2 réseaux, dont un qui
+arrosait les deux pelouses. Ses réponses : *« Prends avec Rain Bird »*, puis
+*« pour être le plus safe possible, vaut mieux qu'il y ait 3 réseaux que 2.
+Parce que 2, on a un risque que ça lève pas »*, et *« Moi je pense qu'il faut
+l'actuel à 150 3 réseau »*. Le 140 et Darcy sont écartés : ne pas les
+reproposer. La branche Darcy (`claude/adoring-mendel-e8roex`) ne se fusionne
+pas.
+
 **LA PRESSION NE DONNE PAS LE DÉBIT, ET LE DÉBIT NE DONNE PAS LA PRESSION.**
 Les deux se calculent, mais séparément : le débit vient du diamètre (vitesse ×
 section) ou du seau chronométré ; la pression dit ce qui arrivera aux arroseurs
@@ -687,8 +803,30 @@ aller-retour au magasin avec la tranchée ouverte.
 qui est **dans le regard**, ce qui part **au jardin**. Les confondre a déjà fait
 compter un coude du regard comme une fin de ligne d'arroseur.
 
-**CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU.** Sa règle du 21 août,
-et elle prime sur tout le reste du tracé : *« le trait jaune, c'est une tranchée.
+**CE QU'ON MINIMISE, C'EST LE PE — sa correction du 23 novembre 2026 :** *« par
+où on passe le tuyau, ça c'est une règle qu'il faut que tu corriges. Il faut
+pouvoir dépenser le moins de mètres linéaires possible de PE. »* Il l'a donnée en
+retraçant de sa main le réseau vert de son 12 × 12 et 8 × 8 : *« je serais parti
+de la nourrice, je serais parti à gauche pour faire les 1, 2, 3, 4 arroseurs.
+Parce que comme ça, il y a moins de mètres linéaires de PE. En réutilisant la
+tranchée, certes tu réutilises la tranchée, mais du coup il y a 2 fois plus de
+mètres linéaires de PE. »* Son réseau vert passe de 42 à 18 m de PE, et la
+tranchée reste à 72 m. L'ordre, dans `tracerReseaux` (`trace.ts`) :
+
+1. tout part de la nourrice ;
+2. on ne coupe pas le jardin (le tour, tant qu'il ne double pas la longueur) ;
+3. **le moins de mètres de PE** ;
+4. à PE égal, la tranchée déjà ouverte (`DEPARTAGE`) : c'est ce qui reste de la
+   règle du 21 août ci-dessous, *« quand les deux solutions se valent, la
+   tranchée l'emporte »*.
+
+Ce qui suit, jusqu'à « Le critère est géométrique », est sa règle du 21 août.
+**Ce qui n'en tient plus** : que la tranchée prime sur le tuyau, et qu'un réseau
+ait raison de rallonger son tuyau pour rester dans une saignée ouverte. Ne pas
+les rétablir.
+
+**~~CE QU'ON MINIMISE, C'EST LA TRANCHÉE — PAS LE TUYAU~~** (barré le
+23 novembre 2026). Sa règle du 21 août : *« le trait jaune, c'est une tranchée.
 C'est une équipe qui va devoir creuser la terre. Donc l'idée, c'est de faire le
 moins de tranchée possible. Si on peut réutiliser une tranchée déjà faite et
 juste faire une petite antenne — un mètre par exemple — pour aller chercher
@@ -696,8 +834,9 @@ l'arroseur, c'est moins éprouvant que de faire tout le tour. »*
 
 **Deux tuyaux qui suivent le même chemin n'occupent qu'UNE tranchée.** Le mètre
 de tuyau se paie une fois ; le mètre de tranchée se paie en heures d'homme, et
-en gazon rouvert. Un réseau a donc raison de **rallonger son tuyau** pour rester
-dans une saignée déjà ouverte.
+en gazon rouvert. ~~Un réseau a donc raison de **rallonger son tuyau** pour rester
+dans une saignée déjà ouverte.~~ (barré le 23 novembre 2026 : le moins de PE
+d'abord.)
 
 Ce qu'il faut chercher, dans cet ordre :
 

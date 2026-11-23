@@ -129,6 +129,7 @@ type Cat = {
   materiel: { ref: string; nom: string; regle?: string }[];
   referenceDe(ref: string): string | null;
   ficheNourrice(n: number, goutte: number): { nom: string; pieces: { ref: string; q: number }[] } | null;
+  fichesNourrices(n: number, goutte: number): { nom: string; voies: number[]; pieces: { ref: string; q: number }[] } | null;
 };
 const CAT = CATALOGUE as unknown as Cat;
 
@@ -240,12 +241,21 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
     const metres = nez ? null : amenee !== null ? Math.ceil(amenee) : null;
     amenees.push(poser("am:pe", "pe25-amenee", `${tuyau}, ${nez ? "du robinet au réseau" : "du robinet à la nourrice"}`, metres !== null ? `${tuyau}, ${metres} m` : `${tuyau}, à mesurer`, metres ?? 0, "ml"));
   } else {
-    for (const l of plan.pieces.filter((p) => p.ou === "amenee")) {
+    for (const l of plan.pieces.filter((p) => p.ou === "amenee" && !p.role)) {
       if (l.ref === TE_EGAL || l.ref === TE_COMPTEUR_32) amenees.push(poser("am:te", l.ref, nomDe(l.ref, M), l.ref === TE_EGAL ? "Té égal au compteur" : "Té réduit au compteur", 1));
       else if (l.ref === "pe25-amenee") amenees.push(poser("am:pe", "pe25-amenee", l.nom, l.q !== null ? `${l.nom}, ${l.q} m` : `${l.nom}, à mesurer`, l.q ?? 0, "ml"));
     }
     // Le té égal d'abord, comme on pose : il coupe la ligne avant tout tuyau.
     amenees.sort((a, b) => (a.cle === "am:te" ? -1 : b.cle === "am:te" ? 1 : 0));
+  }
+  // **AU-DELÀ DE SIX VOIES, LE TÉ QUI PARTAGE L'AMENÉE ET LE TUYAU DU SECOND REGARD** (sa règle du
+  // 23 novembre 2026, `piecesDuPlan`) : au bout de l'amenée, qu'elle parte du compteur ou du robinet.
+  // Au nez de robinet, il n'y a pas de nourrice, donc rien.
+  if (!(robinet && !compteur && robinet.montage === "nez")) {
+    for (const l of plan.pieces.filter((p) => p.ou === "amenee" && p.role)) {
+      if (l.role === "te-nourrices") amenees.push(poser("am:te-nourrices", l.ref ?? TE_EGAL, nomDe(l.ref ?? TE_EGAL, M), "Té des deux nourrices", 1));
+      else amenees.push(poser("am:pe-regard", "pe-second-regard", l.nom, `${l.nom}, du té au second regard, à mesurer`, 0, "ml"));
+    }
   }
   // Le téflon entre avec le montage du départ : un rouleau (sa demande du 18 octobre 2026).
   let teflon: Poste | null = null;
@@ -457,13 +467,15 @@ export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { no
   const voies = voiesVivantes(plan, r);
   const nbGoutte = voiesEnGoutte(plan, voies);
   // La fiche des voies vivantes : un réseau de moins, c'est le collecteur de la gamme du dessous et une électrovanne de moins.
-  const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
+  // Au-delà de six voies, deux nourrices, chacune sa fiche (sa règle du 23 novembre 2026, `fichesNourrices`).
+  const fiche = CAT.fichesNourrices(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};
   for (const x of fiche?.pieces ?? []) (g[x.ref] = g[x.ref] ?? { nom: nomDe(x.ref, []), q: 0, u: "u" }).q += x.q;
   // **Un tuyau en Ø32 se visse par un raccord mâle 32 x 1"**, à la place du
   // 25 x 1" de la fiche (sa réponse du 20 octobre 2026) : un par voie vivante
   // en Ø32, et l'entrée quand l'amenée est en Ø32.
-  const en32 = voies.filter((i) => plan.diametres[i] === 32).length + (plan.tuyau.diametre === 32 ? 1 : 0);
+  // L'entrée de CHAQUE nourrice : deux au-delà de six voies.
+  const en32 = voies.filter((i) => plan.diametres[i] === 32).length + (plan.tuyau.diametre === 32 ? (fiche?.voies.length ?? 1) : 0);
   const q25 = g["raccord-male25"]?.q ?? 0;
   if (en32 > 0 && q25 > 0) {
     const n = Math.min(en32, q25);

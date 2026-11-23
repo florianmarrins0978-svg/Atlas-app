@@ -1,10 +1,18 @@
 # État du projet
 
-## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD
+## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
+
+Le tuyau au plus court en PE (`trace.ts`), les parts égales (`partsEgales`), un modèle de turbine par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, et le surpresseur proposé quand il manque), une vanne de plus dès qu'elle y donne 0,1 bar (`avecLaPression`), deux nourrices au-delà de six voies (`fichesNourrices`). `ARCHITECTURE.md` §615. Ses décisions notées dans `.claude/rules/arrosage.md` : le PE reste à 150, Darcy et le 140 n'entrent pas ; la 3504 d'office. Les deux nourrices à l'écran (3D à côté, une flèche chacune, l'amenée en schéma) et sur le PDF (deux photos), sur sa planche choisie `appli/arrosage-deux-nourrices.html`. Reste : la batterie, sur son accord.
+
+## ✅ LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD : SUR `main` (23 novembre 2026)
+
+Batterie complète au vert, complément d'après-fusion au vert. L'écran du plan au robinet n'a pas encore été regardé.
+
+## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, DEPUIS SUR `main`
 
 Sa demande : réunir les lots qui attendent une batterie, puis une seule batterie. Darcy et Moody en est sorti sur sa décision (*« Prends avec Rain Bird »*, devant `appli/arrosage-rainbird-et-darcy.html`) : réuni, il faisait passer son jardin de 3 réseaux à 2. `TODO.md` dit ce que coûte de le laisser de côté.
 
-## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR SA BRANCHE, PAS SUR `main`
+## LA PILE DU ROBINET EN 3D DANS L'ÉCRAN DU PLAN AU ROBINET : CODÉE (23 novembre 2026), SUR `main` LE MÊME JOUR
 
 Sa planche `appli/arrosage-robinet-3d.html` (les neuf combinaisons, ses photos dans `docs/robinet-3d-photos/`), puis son « Parfait, code ça ». `MontageAuRobinet` montre la pile en 3D (`Robinet3D.tsx`, module `appli/robinet-3d/vue.js`) au-dessus de la liste de ses pièces ; les photos ne sont plus que le repli. La scène de la nourrice a l'option `debout`, le toucher est commun (`nourrice-3d/toucher.js`). `scripts/test-robinet-3d.ts`. Niveau 3 (`robinet.ts`, 160 points d'entrée) ; sa réponse à la batterie : *« Pas de batterie »*. Le lot attend sur `claude/laughing-wright-xxntzg`. `ARCHITECTURE.md` §608.
 

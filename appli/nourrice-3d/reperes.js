@@ -40,7 +40,7 @@ var FEUILLE =
 var AUTOUR = [[0, 0], [0, 1], [0, -1], [-2.2, 0], [1, 0], [-2.2, 1], [-2.2, -1], [1, 1], [1, -1], [0, 2], [0, -2]];
 
 export function poserReperes(couche, v, o) {
-  var reglage = { quand: "eclatee", fil: false }, choisie = null, mots = [], fleche = null, pastilles = [], traits = [];
+  var reglage = { quand: "eclatee", fil: false }, choisie = null, mots = [], fleches = [], pastilles = [], traits = [];
   if (!document.getElementById(STYLE)) {
     var feuille = document.createElement("style"); feuille.id = STYLE; feuille.textContent = FEUILLE; document.head.appendChild(feuille);
   }
@@ -53,18 +53,40 @@ export function poserReperes(couche, v, o) {
   // tuyau : il suit la colonne quand on tourne, comme le numéro suit sa pièce. La flèche de l'arrivée monte
   // vers le tuyau, comme l'eau. Rend les places prises, qu'aucun numéro ne recouvrira.
   function placerLesMots(ecr, W, H) {
-    var cols = v.colonnes(), par = {}, pris = [];
+    var cols = v.colonnes(), par = {}, pris = [], boites = [];
+    function couvre(x, y, w, h) {
+      return boites.some(function (b) { return x - w / 2 < b.x1 + 3 && x + w / 2 > b.x0 - 3 && y < b.y1 + 2 && y + h > b.y0 - 2; });
+    }
     // Un mot reste dans le cadre : sa largeur mesurée, il glisse vers l'intérieur plutôt que d'être coupé.
+    // Il ne couvre jamais un mot déjà posé (sa demande du 23 novembre 2026 : « si les étiquettes
+    // s'empilent, peut-être que tu peux les décaler ; tu les mets en escalier »). Un mot large se décale
+    // d'abord sur le côté libre, son R4 resté sous sa colonne ; à défaut, il descend d'une marche (sa
+    // hauteur), et monte au bas du cadre.
     function poser(m, x, y) {
-      var w = m.offsetWidth, h = m.offsetHeight;
-      x = Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, x)); y = Math.max(6, Math.min(H - h - 6, y));
+      var w = m.offsetWidth, h = m.offsetHeight, cote = w > 40 ? w / 2 - 12 : 0;
+      var essais = [[0, 0, "center"], [-cote, 0, "right"], [cote, 0, "left"], [0, 1], [0, 2], [0, 3], [0, -1], [0, -2], [0, -3]];
+      var place = null;
+      for (var k = 0; k < essais.length && !place; k++) {
+        var e = essais[k];
+        if (k && k < 3 && !cote) continue;
+        var xx = Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, x + e[0])), yy = Math.max(6, Math.min(H - h - 6, y)) + e[1] * (h + 2);
+        if (yy >= 6 && yy <= H - h - 6 && !couvre(xx, yy, w, h)) place = [xx, yy, e[2] || "center"];
+      }
+      if (!place) place = [Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, x)), Math.max(6, Math.min(H - h - 6, y)), "center"];
+      x = place[0]; y = place[1]; m.style.textAlign = place[2];
+      boites.push({ x0: x - w / 2, x1: x + w / 2, y0: y, y1: y + h });
       m.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)";
       pris.push({ x: x, y: y + h / 2 });
     }
     ecr.forEach(function (e) { par[e.indice] = e; });
     while (mots.length < cols.length) { var m = document.createElement("span"); m.className = "n3d-mot"; couche.appendChild(m); mots.push(m); }
-    if (!fleche) { fleche = document.createElementNS(SVG, "g"); fleche.innerHTML = '<line class="n3d-fleche"/><path class="n3d-pointe"/>'; fils.appendChild(fleche); }
-    var voie = 0;
+    // UNE FLÈCHE PAR ARRIVÉE D'EAU : deux nourrices en ont deux (sa remarque du 23 novembre 2026 devant la
+    // planche des deux nourrices : « sur la nourrice de gauche, il n'y a pas la flèche »). Une seule flèche,
+    // reprise par chaque arrivée, ne restait que sur la dernière.
+    var arrivees = cols.filter(function (c) { return c.arrivee; }).length;
+    while (fleches.length < arrivees) { var f = document.createElementNS(SVG, "g"); f.innerHTML = '<line class="n3d-fleche"/><path class="n3d-pointe"/>'; fils.appendChild(f); fleches.push(f); }
+    fleches.forEach(function (f, i) { f.style.display = i < arrivees ? "" : "none"; });
+    var voie = 0, arrivee = 0, gag = 0, aPoser = [];
     mots.forEach(function (m, i) {
       var c = cols[i];
       if (!c) { m.style.display = "none"; return; }
@@ -75,19 +97,27 @@ export function poserReperes(couche, v, o) {
       var demi = Math.abs(dx) * (bas.droite - bas.gauche) / 2 + Math.abs(dy) * (bas.bas - bas.haut) / 2;
       var bx = bas.x + dx * demi, by = bas.y + dy * demi;
       if (c.arrivee) {
+        var fleche = fleches[arrivee++];
         var x0 = bx + dx * 34, y0 = by + dy * 34, x1 = bx + dx * 7, y1 = by + dy * 7, nx = -dy, ny = dx;
         fleche.firstChild.setAttribute("x1", x0); fleche.firstChild.setAttribute("y1", y0); fleche.firstChild.setAttribute("x2", x1 + dx * 5); fleche.firstChild.setAttribute("y2", y1 + dy * 5);
         fleche.lastChild.setAttribute("d", "M" + x1 + " " + y1 + " L" + (x1 + dx * 8 + nx * 5) + " " + (y1 + dy * 8 + ny * 5) + " L" + (x1 + dx * 8 - nx * 5) + " " + (y1 + dy * 8 - ny * 5) + " Z");
         m.style.color = ENCRE; m.innerHTML = "Arrivée<br>d’eau";
-        poser(m, x0 + dx * 4, y0 + Math.max(dy, 0) * 4);
+        aPoser.push([m, x0 + dx * 4, y0 + Math.max(dy, 0) * 4]);
       } else {
         var d = o.voie(voie++, c.goutte);
         m.style.color = d.couleur;
         m.textContent = d.nom;
-        if (c.goutte) { m.appendChild(document.createElement("br")); m.appendChild(document.createTextNode("goutte-à-goutte")); }
-        poser(m, bx + dx * 12, by + dy * 12 - 4);
+        // « Tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG » (sa planche du 23 novembre
+        // 2026, appli/arrosage-nourrice-3d-gag.html, puis « c'est bien », et « pareil pour 12 vannes ») :
+        // le mot en entier sous la première voie, GAG sous les suivantes, sur une nourrice comme sur deux.
+        if (c.goutte) { m.appendChild(document.createElement("br")); m.appendChild(document.createTextNode(gag++ ? "GAG" : "goutte-à-goutte")); }
+        aPoser.push([m, bx + dx * 12, by + dy * 12 - 4]);
       }
     });
+    // LES PLUS ÉTROITS D'ABORD : R1, GAG gardent leur place au bout de leur colonne, et c'est le mot large
+    // (goutte-à-goutte, l'arrivée d'eau) qui se décale quand il en couvrirait un.
+    aPoser.map(function (a) { return a.concat(a[0].offsetWidth); }).sort(function (a, b) { return a[3] - b[3]; })
+      .forEach(function (a) { poser(a[0], a[1], a[2]); });
     return pris;
   }
 
@@ -132,6 +162,6 @@ export function poserReperes(couche, v, o) {
     placer: placer,
     choisir: function (cle) { choisie = cle || null; placer(); },
     regler: function (r) { Object.assign(reglage, r); placer(); },
-    detruire: function () { couche.textContent = ""; mots = []; pastilles = []; traits = []; fleche = null; }
+    detruire: function () { couche.textContent = ""; mots = []; pastilles = []; traits = []; fleches = []; }
   };
 }

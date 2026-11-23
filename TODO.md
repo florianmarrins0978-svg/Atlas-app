@@ -1,6 +1,17 @@
 # Prochaines tâches
 
-## ⏳ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ SUR LA BRANCHE DES DEUX NOURRICES (23 novembre 2026)
+## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
+
+Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §615, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
+
+- **Reste** : la batterie (niveau 3), puis `main`.
+- ~~**La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : à lui de choisir sur la planche, puis coder.~~ **Choisie et codée le 23 novembre 2026** : *« Sur la nourrice de gauche, il n'y a pas la flèche pour arriver d'eau. Tu peux la rajouter. Sinon après, c'est bon, tu peux coder. Ne lance pas de batterie. »* À côté, une flèche par nourrice, l'amenée en schéma, et le PDF en deux photos (`ARCHITECTURE.md` §615). Comprise dans la batterie du lot.
+- **Le montage d'un devis de fournisseur au-delà de six électrovannes** (`montageDuDevis`, `devis-du-plan.ts`) : il ne compose qu'une nourrice, et sept électrovannes n'en montrent aucune (sans erreur, comme avant ce lot). À passer à `composerLesNourrices` dans un lot à lui ; vu le 23 novembre 2026.
+- ~~**Les mots « goutte-à-goutte » de deux voies voisines se chevauchent** sur la nourrice en 3D, à corriger dans le module.~~ Sa réponse du 23 novembre 2026 : GAG et l'escalier, planche `appli/arrosage-nourrice-3d-gag.html`, puis *« c'est bien »* et *« pareil pour 12 vannes »*. **Codé** (`reperes.js`, et l'écran de secours `Dessin`) : sa section plus haut.
+- **Le second regard se place par lui**, comme le premier : le croquis ne le porte pas encore, et le tuyau du té au second regard reste « à mesurer ».
+- **Les instantanés des planches d'arrosage** ne portent aucune de ces règles (ligne Rain Bird, plus bas).
+
+## ✅ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ AVEC LES DEUX NOURRICES (23 novembre 2026)
 
 Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
 en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
@@ -10,8 +21,8 @@ le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd
 ~~**À lui de choisir**~~ : *« C'est bien »*, puis *« pareil pour 12 vannes : une goutte à goutte et le
 reste GAG »*. La planche va désormais de 1 à 12 voies, toutes en goutte-à-goutte au besoin (elle
 s'arrêtait à six voies, celle des deux nourrices à quatre en goutte-à-goutte : des limites de planche,
-pas de l'appli). Codé dans `appli/nourrice-3d/reperes.js` sur la branche `claude/laughing-wright-xxntzg`,
-avec les deux nourrices : il arrive sur `main` avec leur batterie, sur son accord.
+pas de l'appli). Codé dans `appli/nourrice-3d/reperes.js`, et dans `Dessin` pour l'écran de secours, dans le
+lot des deux nourrices : il sort avec lui, et sa batterie.
 
 ## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
 
@@ -35,6 +46,10 @@ niveau 2 (`npm run verifier:avant-fusion`), qui attend son « oui ».
 --include='*.html' appli`), dont `identite-au-registre`, `planning-sans-fiche`,
 `abonnement-module-paysage`, `visite-guidee`. Elles se répareront en les
 recomposant, une fois l'outil corrigé.
+
+## ✅ DEUX LOTS RÉUNIS POUR UNE SEULE BATTERIE : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD, SUR `main` (23 novembre 2026)
+
+Batterie complète au vert, puis le complément d'après-fusion (types, lint), puis `main`.
 
 ## ⏳ CHANGER DE FORMULE : CODÉ LE 23 NOVEMBRE 2026 SUR `claude/ecstatic-einstein-g0dncn`, ATTEND SA BATTERIE
 
@@ -200,7 +215,7 @@ Le relevé : `docs/arrosage-manuel-rain-bird.md`. **Codé** : les turbines aux
 | ce qui reste | qui |
 |---|---|
 | **compter le dénivelé** (0,1 bar par mètre, rien dans le calcul aujourd'hui) : une saisie de la hauteur du dernier arroseur par rapport à la nourrice ; tant qu'il n'est pas compté, une réserve sous le plan. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
-| **le coefficient du PE à 140** (Rain Bird) au lieu de 150 (sans source) : 12 % de perte de ligne en plus. Recommandé, demandé le 22 novembre, sans réponse | lui, puis nous |
+| ~~**le coefficient du PE à 140**~~ TRANCHÉ le 23 novembre 2026 : il reste à 150, avec les 3 réseaux de son jardin (*« Moi je pense qu'il faut l'actuel à 150 3 réseau »*). Darcy écarté aussi. Ne pas le reproposer | |
 | **un réseau alimenté par le milieu** se calcule comme une seule file (`perteDuReseau`) : perte surestimée, un réseau de trop possible. Demandé le 22 novembre, sans réponse | lui, puis nous |
 | **la vitesse de 1,5 m/s** : son plafond retiré le 16 octobre était la règle écrite du fabricant ; le commentaire de `calcul.js` qui le dit « le nôtre » est faux. Une réserve qui n'ajoute aucune vanne serait l'entre-deux | lui |
 | **les instantanés des planches** (`appli/arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`, `arrosage-planche-calcul.js`, `arrosage-nourrice-calcul.js`) ne sont pas reconstruits : les planches posent encore les turbines à 80 % | nous, à la prochaine planche d'arrosage |
@@ -213,7 +228,7 @@ Proposé : poser une vraie question avant le plan quand le piquage est sur un ro
 `appli/arrosage-robinet-3d.html` et `appli/robinet-3d/`, rien dans `src/`. Sa demande : *« fais-moi qu'une seule des 9 combinaisons possibles pour l'instant pour voir si j'aime comment tu fais ; je veux la même qualité que la nourrice qui est dans l'appli en 3D ; on touche et on a l'éclaté, sans ombre »*, puis devant la première (Solem et Ø25) : *« Parfait, tu peux faire toutes les autres combinaisons exactement comme tu viens de faire là »*. Ses neuf photos : `docs/robinet-3d-photos/`.
 
 - **Les neuf** : trois programmateurs (Solem BL-NR SP1151, Rain Bird, Buddy AEV11401) fois trois départs (Ø16 rigide par le raccord Plasson taraudé, Ø16 souple par l'embout Palaplast MID6362, PEHD Ø25 ou Ø32 par le raccord femelle 25 OPL70302520 et le PEHD de la nourrice). Toutes partent de son robinet et de la double sortie BRO3493. Deux rangées de boutons sur la page.
-- **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Reste** : la batterie (niveau 3 : `src/lib/arrosage/robinet.ts` atteint 160 points d'entrée). Demandée le 23 novembre, sa réponse : *« Pas de batterie »*. **Le lot attend donc sur la branche `claude/laughing-wright-xxntzg`, PAS sur `main`** : son espace ne l'a pas. Le jour où il dit oui : la batterie, puis `main`, puis regarder l'écran du plan au robinet (jamais ouvert ici, faute de serveur) et l'essayer sur un iPhone.
+- **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Sur `main` depuis le 23 novembre 2026**, batterie au vert. **Reste** : regarder l'écran du plan au robinet (jamais ouvert ici) et l'essayer sur un iPhone.
 - **Une pièce changée ou supprimée ne se voit pas dans la 3D du robinet**, comme sur la nourrice : la liste dessous le dit. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer, pour les deux à la fois.
 - **Le Rain Bird et le Buddy ne sont que sur la planche** : le plan ne connaît que le Solem BL-NR (`src/lib/arrosage/robinet.ts`, `ROBINET.programmateur`). Les proposer dans le plan, c'est un choix de programmateur dans le plan, et leurs pièces dans la liste : à lui demander.
 - **Le Rain Bird prend la sortie DROITE** (décidé sans lui, et dit) : son boîtier part d'un seul côté de l'eau ; sur la sortie gauche il passait sous la sortie du client, et le tourner mettait son écran contre le mur. Le Solem et le Buddy restent sur la gauche (le Buddy s'arrête à 18 mm de la sortie droite, mesuré). Le Rain Bird n'est pas au catalogue Aqua Plus : il garde son nom de marque, sans référence.

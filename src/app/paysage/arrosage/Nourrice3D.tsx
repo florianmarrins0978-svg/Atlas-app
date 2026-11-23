@@ -31,13 +31,19 @@ import { CATALOGUE } from "@/lib/arrosage/catalogue.js";
  * nourrice s'éclate, les pièces de ce modèle gardent leur couleur, les autres
  * se voilent, et leurs numéros s'allument. Remonter la nourrice rend tout.
  *
+ * **Au-delà de six voies, deux nourrices** (sa règle du 23 novembre 2026) : la
+ * même nourrice, dupliquée et posée à côté (`seconde`), sa consigne devant la
+ * planche `appli/arrosage-deux-nourrices.html` : *« tu la dupliques pour refaire
+ * une deuxième nourrice à côté »*. Chacune a sa flèche d'arrivée d'eau ; R1, R2…
+ * se suivent de l'une à l'autre.
+ *
  * **Quand l'appareil ne sait pas afficher la 3D** (WebGL 2 absent, chargement
  * raté), l'écran montre le dessin d'avant (`repli`) : l'artisan garde sa
  * nourrice, plutôt qu'une phrase à la place.
  */
 type Vue = "biais" | "dessus" | "face" | "";
 type NourriceOuverte = {
-  montrer(voies: number, goutte: number): unknown;
+  montrer(voies: number, goutte: number, seconde?: { voies: number; goutte: number }): unknown;
   eclater(oui: boolean): void;
   regarder(vue: Vue): void;
   choisir(cle: string | null): void;
@@ -60,6 +66,7 @@ const VUES: { cle: Exclude<Vue, "">; nom: string }[] = [
 export default function Nourrice3D({
   voies,
   nbGoutte,
+  seconde,
   repli,
   reseaux,
   montree,
@@ -68,6 +75,8 @@ export default function Nourrice3D({
 }: {
   voies: number;
   nbGoutte: number;
+  /** La seconde nourrice, au-delà de six voies : posée à côté de la première. */
+  seconde?: { voies: number; nbGoutte: number };
   repli: ReactNode;
   reseaux: Reseau3D[];
   /** La pièce qu'il a demandé à voir (« Voir », dans sa feuille) ; un nouvel objet à chaque demande. */
@@ -88,7 +97,9 @@ export default function Nourrice3D({
   const [eclatee, setEclatee] = useState(false);
   const [vue, setVue] = useState<Vue>("biais");
   // Les dernières voies demandées : si elles changent pendant le chargement, c'est elles que la scène pose.
-  const demandees = useRef({ voies, nbGoutte });
+  // La seconde, en deux nombres : un objet neuf à chaque rendu relancerait la composition pour rien.
+  const voies2 = seconde?.voies ?? 0, goutte2 = seconde?.nbGoutte ?? 0;
+  const demandees = useRef({ voies, nbGoutte, voies2, goutte2 });
 
   useEffect(() => {
     const canvas = toile.current, calque = couche.current;
@@ -111,7 +122,8 @@ export default function Nourrice3D({
           setVue(e.vue);
           if (!e.eclatee) derniers.current.onRendre();
         });
-        v.montrer(demandees.current.voies, demandees.current.nbGoutte);
+        const d = demandees.current;
+        v.montrer(d.voies, d.nbGoutte, d.voies2 ? { voies: d.voies2, goutte: d.goutte2 } : undefined);
         let vue = false;
         v.scene.surImage(() => {
           if (vue) return;
@@ -159,17 +171,17 @@ export default function Nourrice3D({
   }, [etat, onPrete]);
 
   useEffect(() => {
-    demandees.current = { voies, nbGoutte };
+    demandees.current = { voies, nbGoutte, voies2, goutte2 };
     const v = ouverte.current;
     if (!v) return;
     // Par une promesse, comme l'ouverture : un refus de recomposer prend le même chemin vers le repli.
     Promise.resolve()
-      .then(() => v.montrer(voies, nbGoutte))
+      .then(() => v.montrer(voies, nbGoutte, voies2 ? { voies: voies2, goutte: goutte2 } : undefined))
       .catch((erreur: unknown) => {
         console.error("La nourrice en 3D ne se recompose pas, le dessin la remplace :", erreur);
         setEtat("repli");
       });
-  }, [voies, nbGoutte]);
+  }, [voies, nbGoutte, voies2, goutte2]);
 
   if (etat === "repli") return <>{repli}</>;
 

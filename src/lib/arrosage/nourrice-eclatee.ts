@@ -170,7 +170,7 @@ function tailleHaut(ref: string): { w: number; h: number } {
 }
 
 type Fiche = { nom: string; pieces: { ref: string; q: number }[] };
-const CAT = CATALOGUE as unknown as { ficheNourrice(n: number, goutte: number): Fiche | null };
+const CAT = CATALOGUE as unknown as { ficheNourrice(n: number, goutte: number): Fiche | null; partageDesNourrices(n: number, goutte: number): { voies: number; goutte: number }[] | null };
 
 /**
  * Composer la nourrice de `voies` voies, dont `nbGoutte` alimentent du
@@ -291,4 +291,43 @@ export function composerNourrice(voies: number, nbGoutte: number): NourriceCompo
   // (deux lignes, qui s'écartent quand deux voies de goutte-à-goutte sont voisines).
   const hauteur = fin + (nbGoutte ? 34 + (nbGoutte > 1 ? 50 : 22) : 34);
   return { nom: fiche.nom, largeur, hauteur, poses, ordre, reste, arrivee: { x: xL, bas: finArrivee }, etiquettes };
+}
+
+/** Une nourrice des deux : combien de voies, dont combien de goutte-à-goutte, et sa composition. */
+export type PartDeNourrice = { voies: number; goutte: number; n: NourriceComposee };
+
+/**
+ * LA NOURRICE, OU LES DEUX — au-delà de six voies (sa règle du 23 novembre 2026,
+ * `CATALOGUE.fichesNourrices`) : moitié-moitié, le goutte-à-goutte, numéroté en
+ * dernier, sur la seconde. Chaque part se compose comme une nourrice seule ;
+ * `null` quand une part n'a pas de fiche (au-delà de douze voies).
+ */
+export function composerLesNourrices(voies: number, nbGoutte: number): PartDeNourrice[] | null {
+  const parts = CAT.partageDesNourrices(voies, nbGoutte);
+  if (!parts) return null;
+  const out: PartDeNourrice[] = [];
+  for (const p of parts) {
+    const n = composerNourrice(p.voies, p.goutte);
+    if (!n) return null;
+    out.push({ ...p, n });
+  }
+  return out;
+}
+
+/**
+ * Les numéros des deux nourrices : ceux de la première, puis ce que la seconde a
+ * en propre, à la suite. C'est l'ordre de la 3D (`nourrice-3d/vue.js`, `numeros`),
+ * qui numérote la composition de gauche à droite.
+ */
+export function ordreDesNourrices(parts: PartDeNourrice[]): string[] {
+  const ordre: string[] = [];
+  for (const p of parts) for (const ref of p.n.ordre) if (!ordre.includes(ref)) ordre.push(ref);
+  return ordre;
+}
+
+/** Ce que les fiches comptent et que les dessins ne posent pas : le bac « Avec les nourrices ». */
+export function resteDesNourrices(parts: PartDeNourrice[]): Record<string, number> {
+  const reste: Record<string, number> = {};
+  for (const p of parts) for (const [ref, q] of Object.entries(p.n.reste)) reste[ref] = (reste[ref] ?? 0) + q;
+  return reste;
 }
