@@ -5,7 +5,7 @@ import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
-import { SiretMalFormeError, mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { SiretMalFormeError, mettreAJourEntreprise, reconfirmerLeSiret } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
 import { exigerProprietaire } from "@/server/autorisation";
 import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
@@ -80,6 +80,9 @@ export async function majEmetteurAction(data: {
   // d'erreur opaque (`AGENTS.md`, une exception d'action n'arrive jamais).
   try {
     await mettreAJourEntreprise(ctx, data);
+    // Un SIRET neuf se demande au registre tout de suite : connu, il ne
+    // retiendra aucun devis (migration 0196).
+    if (data.siret !== undefined) await reconfirmerLeSiret(ctx);
     return { ok: true };
   } catch (erreur) {
     if (erreur instanceof PreuveRecenteExigeeError) return { ok: false, raison: erreur.message, preuveExigee: true };

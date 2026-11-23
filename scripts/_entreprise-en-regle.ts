@@ -1,6 +1,9 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { enregistrerObjet } from "../src/server/storage";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
+import { eq } from "drizzle-orm";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { entreprises } from "../src/server/db/schema";
 
 /**
  * L'identité d'une entreprise EN RÈGLE, pour les suites qui envoient un devis
@@ -52,10 +55,18 @@ export async function attestationDEssai(entrepriseId: string): Promise<{ cle: st
 /**
  * Met l'entreprise en règle, attestation décennale comprise (C. ass. L243-2) :
  * depuis le 5 octobre 2026, un assureur nommé sans elle arrête la pièce.
+ *
+ * **Et son SIRET confirmé par le registre** (migration 0196) : écrit par la
+ * porte du patron, un SIRET neuf attend le registre, et la pièce s'arrête
+ * tant qu'il n'a pas répondu. Une entreprise en règle l'a eu ; les suites ne
+ * vont pas le demander au vrai registre, qui ne connaît pas ce numéro d'essai.
  */
 export async function mettreEnRegle(ctx: { utilisateurId: string; entrepriseId: string }): Promise<void> {
   await entreprisesRepo.mettreAJourEntreprise(ctx, {
     ...IDENTITE_EN_REGLE,
     attestationDecennale: await attestationDEssai(ctx.entrepriseId),
   });
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx.update(entreprises).set({ siretAConfirmer: false }).where(eq(entreprises.id, ctx.entrepriseId))
+  );
 }

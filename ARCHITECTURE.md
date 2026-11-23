@@ -38475,3 +38475,51 @@ serveur n'arrive jamais jusqu'à lui (`HANDOVER.md`, piège 0 ter).
 inscrits dans la table (aucun rattrapage : l'appli n'est pas encore vendue) ; le message avant la
 création du compte, le registre des entreprises et l'identité attachée au SIRET sont les tranches
 suivantes (`TODO.md`).
+
+## §613 : Le registre des entreprises confirme le SIRET ; ce qu'il ne confirme pas n'envoie rien
+
+**Le 23 novembre 2026**, sa question : *« il n'y a pas moyen de tricher, de taper un numéro au
+pif ? »*, et sa règle : *« il ne faut pas le bloquer ; il ne faut pas non plus qu'il puisse créer des
+comptes gratuits à tire-larigot »*. La clé de Luhn (§612) arrête neuf numéros inventés sur dix ; le
+registre public (« Recherche d'entreprises », `recherche-entreprises.api.gouv.fr`, gratuit, sans
+clé) arrête le dixième.
+
+**On ne bloque que ce qui a de la valeur.** Le compte se crée et l'essai démarre quoi que dise le
+registre ; le devis et la facture, eux, attendent sa confirmation : `entreprises.siret_a_confirmer`
+(migration 0196) devient un manque de l'émetteur dans `manquesDeLEmetteur`, la règle unique de
+l'écran d'envoi et du refus d'envoyer. Une entreprise toute neuve, que l'Insee publie avec un jour
+ou deux de retard, attend ; un numéro inventé n'envoie jamais rien.
+
+**Le drapeau se lève là où le SIRET s'écrit, et tombe quand le registre confirme.**
+`mettreAJourEntreprise` le lève à chaque SIRET neuf (la porte commune de Réglages et du devis) ;
+`creerSonCompte` le pose selon la réponse que l'action a demandée AVANT d'entrer (une demande
+réseau n'a rien à faire dans une transaction). `reconfirmerLeSiret` le redemande juste avant ce qui
+le réclame (l'écran d'envoi, l'envoi du devis, l'émission de la facture) et après un SIRET
+enregistré : hors transaction, et la confirmation ne s'écrit que si le SIRET n'a pas bougé.
+
+**Injoignable n'est jamais inconnu, et une forme inattendue n'est jamais inconnue.** Le registre
+qui se tait ou refuse rend `injoignable` : l'inscription continue, le drapeau reste levé, et la
+question revient au prochain envoi. Une réponse dont la forme a changé rend `illisible`, journalisé
+comme une erreur : on n'accuse personne d'avoir inventé son numéro parce qu'on ne sait plus lire.
+Seul l'établissement au SIRET EXACT compte (la recherche est plein texte) ; fermé, il n'est pas
+trouvé ; en diffusion partielle, ni nom ni adresse ne sont repris.
+
+**Les entreprises d'avant ce jour ne sont pas concernées** : la colonne naît à `false` et aucune
+ligne n'est réécrite (EXPAND seul). Leurs devis ne s'arrêtent pas pour un registre qu'on ne leur
+avait jamais demandé ; leur SIRET changé, lui, passera par le registre.
+
+**La question de l'inscription prévient, elle ne décide pas** (`etatDuSiretAction`). Elle dit, sans
+session, si une entreprise a déjà un compte Cause : un à un ce n'est rien (le SIRET est public,
+« Créer mon compte » le dirait), à la chaîne ce serait la liste des clients. D'où son limiteur
+(`questionSiren`, trente par quart d'heure et par source) ; atteint, elle se tait, et le compte se
+crée selon les mêmes règles. Toute panne rend « rien à dire » : un message n'a pas à faire tomber
+l'écran d'inscription.
+
+**Ce que la forme de la réponse doit au relevé du 23 novembre** : `results[]`, `siren`,
+`nom_complet`, `statut_diffusion` (« O » pour une entreprise publiée), `siege` et
+`matching_etablissements` avec `siret`, `adresse`, `etat_administratif` (« A » pour un
+établissement ouvert). Le sens documenté des autres valeurs n'a pas pu être lu (la documentation
+du service se rend en JavaScript) : le code ne retient que « A » et « O », et tient tout le reste
+pour fermé ou non publié, le côté sûr. Les suites parlent à un faux registre
+(`REGISTRE_ENTREPRISES_BASE`) ; seule la suite d'inscription, sur son espace, joint le vrai, et elle
+passe par « Mon entreprise vient d'être créée » quand il ne connaît pas son numéro d'essai.

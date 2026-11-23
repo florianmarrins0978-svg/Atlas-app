@@ -5,7 +5,7 @@ import { caseParDefaut, laCaseExiste } from "@/lib/services-a-la-personne";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe, reconfirmerLeSiret } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import { mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
@@ -779,9 +779,16 @@ async function dureeEstimeeDuChantier(tx: DbOrTx, chantierId: string): Promise<s
  * pour l'écran et pour l'envoi : `manquesDuDevis`.
  */
 export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise<Manque[]> {
+  await reconfirmerLeSiret(ctx);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) return [];
+    // Le registre parle du SIRET d'AUJOURD'HUI, pas de la photographie du devis.
+    const [drapeau] = await tx
+      .select({ siretAConfirmer: entreprises.siretAConfirmer })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
     return manquesDuDevis(
       {
         nom: d.entrepriseNom,
@@ -797,6 +804,7 @@ export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise
         telephone: d.entrepriseTelephone,
         email: d.entrepriseEmail,
         adresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
+        siretAConfirmer: drapeau?.siretAConfirmer ?? false,
         attestationDecennale: !!d.entrepriseAttestationDecennaleCle,
       },
       { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },

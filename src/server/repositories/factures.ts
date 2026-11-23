@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe, reconfirmerLeSiret } from "./entreprises";
 import { ecrireNumero, numeroDuDevisSurLePapier, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument } from "@/lib/preparation-devis";
 import type { DbOrTx } from "../db/client";
@@ -1821,10 +1821,16 @@ export async function majTvaClientFacture(
  * (`emetteurDuJour`), et sur le client figé sur la facture.
  */
 export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): Promise<Manque[]> {
+  await reconfirmerLeSiret(ctx);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!f) return [];
     const e = await emetteurDuJour(tx, ctx.entrepriseId);
+    const [drapeau] = await tx
+      .select({ siretAConfirmer: entreprises.siretAConfirmer })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
     const adresses = await adressesDuJour(tx, f);
     return manquesDeLaFacture(
       {
@@ -1841,6 +1847,7 @@ export async function manquesDeLaFactureAEmettre(ctx: Ctx, factureId: string): P
         telephone: e.entrepriseTelephone,
         email: e.entrepriseEmail,
         adresseAssureurDecennale: e.entrepriseAdresseAssureurDecennale,
+        siretAConfirmer: drapeau?.siretAConfirmer ?? false,
         attestationDecennale: !!e.entrepriseAttestationDecennaleCle,
       },
       { nom: f.clientNom, adresse: adresses.clientAdresse, adresseChantier: adresses.adresseChantier },

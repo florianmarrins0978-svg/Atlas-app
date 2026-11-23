@@ -105,9 +105,18 @@ const propre = (v: string | undefined) => (vide(v) ? undefined : v!.trim());
  * de passe. `messageSansLesValeurs` coupe à la ligne des valeurs : il ne reste
  * que la requête, qui dit ce qui a échoué et ne contient aucune donnée.
  */
-export async function creerSonCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
+/**
+ * `siretConfirme` : ce que le registre des entreprises a répondu, demandé par
+ * l'action AVANT d'entrer ici (une demande réseau n'a rien à faire dans la
+ * transaction). Absent, rien n'est confirmé : un SIRET tapé attend alors le
+ * registre, et c'est le côté sûr (migration 0196).
+ */
+export async function creerSonCompte(
+  saisie: SaisieCompte,
+  registre: { siretConfirme: boolean } = { siretConfirme: false }
+): Promise<ResultatCreation> {
   try {
-    return await ecrireLeCompte(saisie);
+    return await ecrireLeCompte(saisie, registre);
   } catch (erreur) {
     const cause = causeDeLaPanne(erreur);
     const codeSql = codeSqlDe(erreur);
@@ -120,7 +129,7 @@ export async function creerSonCompte(saisie: SaisieCompte): Promise<ResultatCrea
   }
 }
 
-async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
+async function ecrireLeCompte(saisie: SaisieCompte, registre: { siretConfirme: boolean }): Promise<ResultatCreation> {
   const email = adresseNormalisee(saisie.email);
 
   const [existant] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
@@ -193,6 +202,7 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
       .values({
         nom: saisie.entreprise.trim(),
         siret: propre(saisie.siret),
+        siretAConfirmer: propre(saisie.siret) !== undefined && !registre.siretConfirme,
         adresse: propre(saisie.adresse),
         telephone: propre(saisie.telephone),
         email: propre(saisie.emailPro),

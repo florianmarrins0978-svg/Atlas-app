@@ -71,6 +71,11 @@ export type EmetteurAVerifier = {
   attestationDecennale: boolean;
   /** Ce que l'IA y a lu au dépôt (`attestation-lue.ts`) ; absent : rien de lu. */
   attestationLue?: AttestationLue | null;
+  /**
+   * Le registre des entreprises n'a pas encore confirmé le SIRET tapé
+   * (migration 0196) ; absent : rien à confirmer.
+   */
+  siretAConfirmer?: boolean;
 };
 
 export type ClientAVerifier = {
@@ -111,6 +116,14 @@ function manquesDeLEmetteur(e: EmetteurAVerifier): Manque[] {
   if (vide(e.nom)) m.push({ cle: "nom", libelle: "Le nom de votre entreprise", ou: "entreprise" });
   if (vide(e.adresse)) m.push({ cle: "adresse", libelle: "L'adresse de votre entreprise", ou: "entreprise" });
   if (vide(e.siret)) m.push({ cle: "siret", libelle: "Votre SIRET", ou: "entreprise" });
+  // **Sa règle du 23 novembre 2026** : *« il ne faut pas le bloquer ; il ne
+  // faut pas non plus qu'il puisse créer des comptes gratuits à
+  // tire-larigot »*. Le compte et l'essai vivent ; ce qui a de la valeur, le
+  // devis et la facture, attend le registre. Une entreprise toute neuve
+  // attend un jour ou deux ; un numéro inventé n'envoie jamais rien.
+  else if (e.siretAConfirmer) {
+    m.push({ cle: "siret-registre", libelle: "Votre SIRET, que le registre des entreprises n'a pas encore confirmé", ou: "entreprise" });
+  }
   if (vide(e.formeJuridique)) {
     m.push({ cle: "forme", libelle: "Votre forme juridique (EI, SARL, SAS…)", ou: "entreprise" });
   } else if (formeADuCapital(e.formeJuridique)) {

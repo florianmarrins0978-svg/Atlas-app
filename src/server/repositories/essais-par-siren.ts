@@ -8,7 +8,7 @@ import { db } from "../db/client";
  * **Pas de `withEntreprise`, et c'est le but** : la question porte sur TOUTES
  * les entreprises (ce SIREN a-t-il déjà eu son essai ailleurs ?), ce qu'aucune
  * entreprise ne peut lire sous la RLS. Elle passe donc par deux fonctions de la
- * base, qui ne rendent qu'un oui ou un non : `atlas_app` n'a aucun droit sur la
+ * base, qui ne rendent qu'un mot : `atlas_app` n'a aucun droit sur la
  * table elle-même (le modèle de `verifier_mot_de_passe`, migration 0064).
  */
 type Executant = Pick<typeof db, "execute">;
@@ -19,8 +19,14 @@ export async function prendreLEssaiDuSiren(executant: Executant, siren: string, 
   return (r.rows[0] as { accorde: boolean } | undefined)?.accorde !== false;
 }
 
-/** Avant que le compte existe : ce SIREN a-t-il déjà eu son essai ? Ne prend rien. */
-export async function essaiDuSirenDejaPris(siren: string): Promise<boolean> {
-  const r = await db.execute(sql`SELECT public.essai_du_siren_deja_pris(${siren}) AS pris`);
-  return (r.rows[0] as { pris: boolean } | undefined)?.pris === true;
+/**
+ * Avant que le compte existe : ce SIREN a-t-il déjà eu son essai, et son
+ * compte est-il encore là ? Ne prend rien. `compte` et `essai` disent les deux
+ * phrases de sa planche ; `libre`, rien.
+ */
+export type EtatDuSiren = "libre" | "compte" | "essai";
+export async function etatDeLEssaiDuSiren(siren: string): Promise<EtatDuSiren> {
+  const r = await db.execute(sql`SELECT public.etat_de_l_essai_du_siren(${siren}) AS etat`);
+  const etat = (r.rows[0] as { etat: string } | undefined)?.etat;
+  return etat === "compte" || etat === "essai" ? etat : "libre";
 }

@@ -15,8 +15,8 @@
 --
 -- Aucune donnée d'entreprise n'y est lisible par l'appli : `atlas_app` n'a AUCUN
 -- droit sur la table, il ne fait que poser une question à une fonction
--- (`prendre_essai_du_siren`, `essai_du_siren_deja_pris`), qui ne rend qu'un oui
--- ou un non. Une injection ne pourrait donc jamais en tirer la liste des SIREN
+-- (`prendre_essai_du_siren`, `etat_de_l_essai_du_siren`), qui ne rendent qu'un
+-- mot. Une injection ne pourrait donc jamais en tirer la liste des SIREN
 -- des clients de Cause. C'est le modèle de la migration 0064 (le mot de passe).
 --
 -- **DEUX VERROUS, ET NON UN** : `atlas_app` n'a aucun droit sur la table, ET
@@ -79,25 +79,35 @@ $fn$;
 
 -- ─── 3. Le demander AVANT que le compte existe ──────────────────────────────
 --
--- Sur la question du SIRET, à la création du compte : *« Votre entreprise a déjà
--- eu ses 15 jours d'essai »* se dit avant « Créer mon compte ». Ne rend qu'un oui
--- ou un non, et ne prend rien.
-CREATE OR REPLACE FUNCTION public.essai_du_siren_deja_pris(p_siren text)
-RETURNS boolean
+-- Sur la question du SIRET, à la création du compte, sa planche dit deux choses
+-- différentes : « Un compte Cause existe déjà pour votre entreprise. » quand
+-- l'entreprise qui a eu l'essai est encore là, et « Votre entreprise a déjà eu
+-- ses 15 jours d'essai. » quand son compte a été effacé. Rend `libre`,
+-- `compte` ou `essai`, et ne prend rien. `entreprises` n'est pas sous RLS : la
+-- lecture voit la ligne sans contexte, et ne rend rien d'autre que son
+-- existence.
+CREATE OR REPLACE FUNCTION public.etat_de_l_essai_du_siren(p_siren text)
+RETURNS text
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $fn$
-  SELECT EXISTS (SELECT 1 FROM public.essais_par_siren e WHERE e.siren = p_siren)
+  SELECT CASE
+    WHEN e.siren IS NULL THEN 'libre'
+    WHEN EXISTS (SELECT 1 FROM public.entreprises x WHERE x.id = e.entreprise_id) THEN 'compte'
+    ELSE 'essai'
+  END
+  FROM (SELECT p_siren AS demande) d
+  LEFT JOIN public.essais_par_siren e ON e.siren = d.demande
 $fn$;
 
 -- `REVOKE … FROM PUBLIC` d'abord : PostgreSQL accorde `EXECUTE` à `PUBLIC` sur
 -- toute fonction neuve (migration 0064).
 REVOKE ALL ON FUNCTION public.prendre_essai_du_siren(text, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.essai_du_siren_deja_pris(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.etat_de_l_essai_du_siren(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.prendre_essai_du_siren(text, uuid) TO atlas_app;
-GRANT EXECUTE ON FUNCTION public.essai_du_siren_deja_pris(text) TO atlas_app;
+GRANT EXECUTE ON FUNCTION public.etat_de_l_essai_du_siren(text) TO atlas_app;
 
 -- ─── 4. L'abonnement dit POURQUOI l'essai est fini ──────────────────────────
 --
@@ -110,4 +120,4 @@ ALTER TABLE public.abonnements
   ADD COLUMN IF NOT EXISTS essai_deja_pris boolean NOT NULL DEFAULT false;
 
 COMMENT ON TABLE public.essais_par_siren IS
-  'Les SIREN qui ont eu leur essai gratuit, et l''entreprise qui l''a eu. Lu par prendre_essai_du_siren et essai_du_siren_deja_pris, jamais par atlas_app.';
+  'Les SIREN qui ont eu leur essai gratuit, et l''entreprise qui l''a eu. Lu par prendre_essai_du_siren et etat_de_l_essai_du_siren, jamais par atlas_app.';

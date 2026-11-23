@@ -6,6 +6,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
+import { reconfirmerLeSiret } from "./entreprises";
 import {
   creneauxParChantier,
   encoreEnCoursDepuis,
@@ -130,6 +131,8 @@ export async function preparerEnvoi(
    */
   dureeImposee?: number
 ): Promise<PreparationEnvoi> {
+  // Avant de dire ce qui manque : le registre a peut-être confirmé depuis.
+  await reconfirmerLeSiret(ctx);
   const fenetre = fenetreProposition(maintenant);
 
   // **Deux fenêtres, et les confondre ouvrirait le planning.** `fenetre` est
@@ -265,6 +268,7 @@ export async function preparerEnvoi(
         adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
         attestationDecennaleCle: entreprises.attestationDecennaleCle,
         attestationDecennaleLue: entreprises.attestationDecennaleLue,
+        siretAConfirmer: entreprises.siretAConfirmer,
         // Ses conditions générales, pour savoir si elles citent la décennale.
         conditionsGenerales: entreprises.conditionsGenerales,
       })

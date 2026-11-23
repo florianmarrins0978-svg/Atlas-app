@@ -24,7 +24,7 @@ import { colors, surPlein } from "@/lib/design-tokens";
 import PorteDeNuit, { SERIF } from "@/components/atlas/PorteDeNuit";
 import SaisieDuCode from "@/components/atlas/SaisieDuCode";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
-import { creerLeCompteAction } from "./actions";
+import { creerLeCompteAction, etatDuSiretAction, type QuestionDuSiret } from "./actions";
 import { renvoyerLeCodeAction, verifierLeCodeAction } from "@/app/verifier-email/actions";
 import { deconnexionAction } from "@/app/login/actions";
 import { deposerAttestationAction } from "@/app/reglages/identite/attestation-actions";
@@ -81,6 +81,12 @@ export default function CreerUnComptePage() {
   const [mdpVisible, setMdpVisible] = useState<Record<string, boolean>>({});
   const [autresFormes, setAutresFormes] = useState(false);
   /**
+   * Ce que la base dit du SIREN tapé, au premier « Continuer » : sa planche du
+   * 23 novembre (`appli/soignee/essai-par-entreprise.html`). Retenu avec les
+   * chiffres auxquels il répond : le SIRET corrigé, la note s'efface.
+   */
+  const [noteSiren, setNoteSiren] = useState<({ pour: string } & QuestionDuSiret) | null>(null);
+  /**
    * La photo de l'attestation, GARDÉE DANS LE TÉLÉPHONE jusqu'au code : rien
    * ne part avant « Créer mon compte », et un compte ouvert avec une adresse
    * inventée ne range aucun fichier.
@@ -110,6 +116,12 @@ export default function CreerUnComptePage() {
     envoyer(reponsesProposees(avec));
   }
 
+  const chiffresDuSiret = (vues.siret ?? "").replace(/\D/g, "");
+  const note = question?.id === "siret" && noteSiren?.pour === chiffresDuSiret ? noteSiren : null;
+  const essaiPris = note && note.essai !== "libre" ? note.essai : null;
+  const registreRefuse = note && !essaiPris && (note.registre.etat === "inconnu" || note.registre.etat === "ferme") ? note.registre.etat : null;
+  const auRegistre = note && !essaiPris && note.registre.etat === "trouve" ? note.registre : null;
+
   function avancer() {
     if (!question) return;
     const manque = refusDe(question, vues);
@@ -117,7 +129,40 @@ export default function CreerUnComptePage() {
       setRefus(manque);
       return;
     }
+    // **La question se pose une fois par numéro** : ce qu'elle dit montré, le
+    // second « Continuer » passe. Un numéro que le registre ne connaît pas ne
+    // passe que par « Mon entreprise vient d'être créée », ou par « Passer ».
+    if (question.id === "siret" && chiffresDuSiret) {
+      if (noteSiren?.pour !== chiffresDuSiret) {
+        const pour = chiffresDuSiret;
+        demarrer(async () => {
+          const reponse = await etatDuSiretAction(pour);
+          const aDire = reponse.essai !== "libre" || ["trouve", "inconnu", "ferme"].includes(reponse.registre.etat);
+          if (!aDire) {
+            suivante();
+            return;
+          }
+          setNoteSiren({ pour, ...reponse });
+          // L'adresse du siège, déjà remplie depuis le registre si elle ne l'est pas.
+          if (reponse.registre.etat === "trouve" && reponse.registre.adresse && !reponses.adresse) {
+            setReponses((avant) => ({ ...avant, adresse: (reponse.registre as { adresse: string }).adresse }));
+          }
+        });
+        return;
+      }
+      if (registreRefuse) {
+        setRefus(registreRefuse === "ferme" ? REFUS_FERME : REFUS_INCONNU);
+        return;
+      }
+    }
     suivante();
+  }
+
+  function corrigerLeSiret() {
+    setNoteSiren(null);
+    const champ = document.querySelector<HTMLInputElement>('input[name="siret"]');
+    champ?.focus();
+    champ?.select();
   }
 
   /** « Passer » efface les réponses de l'écran : ce qui est passé est vide, pas proposé. */
@@ -440,11 +485,27 @@ export default function CreerUnComptePage() {
           {/* La place du refus est réservée là où un refus peut tomber : un
               message qui apparaît pousserait « Continuer » au moment où le
               doigt se pose dessus. Une réponse déjà proposée n'en reçoit pas. */}
-          {question.propose === undefined && (
+          {question.propose === undefined && !essaiPris && !auRegistre && (
             <p className="mt-3 min-h-[22px] text-[14.5px] leading-[22px]" role="alert" aria-live="polite" style={{ color: colors.alert }}>
-              {refus ?? ""}
+              {refus ?? (registreRefuse === "ferme" ? REFUS_FERME : registreRefuse ? REFUS_INCONNU : "")}
             </p>
           )}
+          {/* Le registre ne le publie pas encore : l'entreprise toute neuve
+              passe, et n'enverra rien tant qu'il n'a pas confirmé. */}
+          {registreRefuse === "inconnu" && (
+            <button
+              type="button"
+              onClick={() => suivante()}
+              className="flex min-h-[44px] items-center text-left text-[15px] font-semibold underline underline-offset-4"
+              style={{ color: colors.ink }}
+            >
+              Mon entreprise vient d&apos;être créée
+            </button>
+          )}
+          {/* À la place du refus, là où l'œil va après « Continuer ». En or :
+              une information, pas une erreur. */}
+          {essaiPris && <EssaiDejaFait etat={essaiPris} onCorriger={corrigerLeSiret} />}
+          {auRegistre && <AuRegistre nom={auRegistre.nom} adresse={auRegistre.adresse} />}
         </div>
       </div>
 
@@ -480,6 +541,68 @@ export default function CreerUnComptePage() {
         )}
       </div>
     </PorteDeNuit>
+  );
+}
+
+const REFUS_INCONNU = "Ce SIRET n'est pas au registre des entreprises. Vérifiez les chiffres.";
+const REFUS_FERME = "Ce SIRET est fermé au registre des entreprises. Tapez celui de votre adresse actuelle.";
+
+/**
+ * CE QUE LE REGISTRE DIT DE CE SIRET, sous la case : sa planche du 23 novembre.
+ * C'est ce qui partira sur ses devis et ses factures. Une entreprise en
+ * diffusion partielle n'a ni nom ni adresse publiés : la carte n'en montre pas.
+ */
+function AuRegistre({ nom, adresse }: { nom: string | null; adresse: string | null }) {
+  return (
+    <div
+      className="mt-3 rounded-[18px] px-[18px] py-[14px]"
+      data-atlas="siret-au-registre"
+      role="status"
+      style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+    >
+      <p className="text-[13px] font-semibold" style={{ color: colors.muted }}>
+        Au registre des entreprises
+      </p>
+      {nom && (
+        <p className="mt-1 text-[17px] font-semibold leading-[1.35]" style={{ color: colors.ink }}>
+          {nom}
+        </p>
+      )}
+      {adresse && (
+        <p className="mt-[2px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+          {adresse}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * LE SIREN QUI A DÉJÀ EU SON ESSAI, sous la case du SIRET : sa planche du
+ * 23 novembre. Le lien de connexion vient en premier, sa remarque du même
+ * soir : *« ce qu'il faut qu'il fasse, c'est qu'il se connecte à son
+ * compte »*, un appui plutôt que sept « Retour ». « Ce n'est pas votre
+ * entreprise ? Écrivez-nous. » attend une adresse de Cause (`TODO.md`).
+ */
+function EssaiDejaFait({ etat, onCorriger }: { etat: "compte" | "essai"; onCorriger: () => void }) {
+  const lien = "flex min-h-[44px] items-center text-left text-[15px] font-semibold underline underline-offset-4";
+  return (
+    <div className="mt-3" data-atlas="essai-deja-fait" role="status">
+      <p className="text-[15.5px] font-semibold leading-[1.45]" style={{ color: colors.or }}>
+        {etat === "compte" ? "Un compte Cause existe déjà pour votre entreprise." : "Votre entreprise a déjà eu ses 15 jours d'essai."}
+      </p>
+      <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+        {etat === "compte"
+          ? "Demandez à son titulaire de vous ouvrir un accès, ou continuez avec un compte à vous, sans essai gratuit."
+          : "Votre compte se crée, et vous choisissez votre formule pour commencer."}
+      </p>
+      <a href="/login" className={`${lien} mt-1`} style={{ color: colors.ink }}>
+        J&apos;ai déjà un compte : me connecter
+      </a>
+      <button type="button" onClick={onCorriger} className={lien} style={{ color: colors.ink }}>
+        Corriger le SIRET
+      </button>
+    </div>
   );
 }
 

@@ -54,7 +54,9 @@ const REPONSES: Record<string, string> = {
   "1 000": "1000",
   "Versailles": "Versailles",
   // Une clé de Luhn juste : la porte refuse un SIRET qui ne peut pas exister.
-  "14 chiffres": "12345678200127",
+  // Un SIREN à cette suite seule (`essais_par_siren`) : celui des autres
+  // suites, pris par le compte de démonstration, lui ôterait son essai.
+  "14 chiffres": "71928374900013",
   "Adresse du siège": "3 rue des Tilleuls, 78000 Versailles",
   "FR…": "FR12345678901",
   "FR76 …": "FR7630001007941234567890185",
@@ -126,6 +128,19 @@ async function repondreATout(
     const sasu = page.getByRole("button", { name: /^SASU/ });
     if (await sasu.count()) {
       await sasu.click();
+      await page.waitForTimeout(400);
+      continue;
+    }
+
+    // **La question du SIRET demande au serveur** (son essai, le registre) :
+    // jusqu'à quatre secondes quand le registre tarde, « Un instant… » à la
+    // place de « Continuer ». On attend sa réponse, pas un délai.
+    await page.getByRole("button", { name: "Un instant…" }).waitFor({ state: "detached", timeout: 15_000 });
+    // Là où le registre est joignable, il ne connaît pas ce SIRET d'essai :
+    // l'entreprise toute neuve passe, comme chez lui. Ailleurs, rien ne s'affiche.
+    const neuve = page.getByRole("button", { name: "Mon entreprise vient d'être créée" });
+    if (await neuve.count()) {
+      await neuve.click();
       await page.waitForTimeout(400);
       continue;
     }

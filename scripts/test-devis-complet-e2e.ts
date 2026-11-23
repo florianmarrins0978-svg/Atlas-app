@@ -197,6 +197,18 @@ async function main() {
   }
   assert.equal(entreprise.rows[0].iban, "FR76 3000 1000 0100 0000 0000 123", "L'IBAN n'a pas été enregistré.");
   assert.equal(entreprise.rows[0].siret, "123 456 782 00010", "Le SIRET n'a pas été enregistré.");
+  // Un SIRET neuf attend le registre (migration 0196), qui ne connaît pas ce
+  // numéro d'essai : le drapeau se lève. On le rabat ensuite, sans quoi les
+  // suites qui envoient un devis depuis ce compte s'arrêteraient sur lui.
+  const drapeau = await pool.query(
+    `SELECT e.siret_a_confirmer AS a FROM entreprises e JOIN chantiers c ON c.entreprise_id = e.id WHERE c.id = $1`,
+    [chantierId]
+  );
+  assert.equal(drapeau.rows[0]?.a, true, "Le SIRET neuf n'attend pas le registre : ses devis partiraient sans lui.");
+  await pool.query(
+    `UPDATE entreprises SET siret_a_confirmer = false WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
+    [chantierId]
+  );
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
 
   // Une ligne complète : description, quantité, prix unitaire.

@@ -128,6 +128,8 @@ export const entreprises = pgTable("entreprises", {
   id: uuid("id").primaryKey().defaultRandom(),
   nom: text("nom").notNull(),
   siret: text("siret"),
+  // Migration 0196 : vrai tant que le registre n'a pas confirmé le SIRET tapé.
+  siretAConfirmer: boolean("siret_a_confirmer").notNull().default(false),
   /**
    * La mention du répertoire des métiers, libre et facultative (migration
    * 0128) : « RM 33 », ou ce que sa chambre des métiers demandera. Aucun texte

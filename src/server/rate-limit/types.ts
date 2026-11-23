@@ -87,6 +87,18 @@ export const LIMITES = {
    * un mandataire d'entreprise, plusieurs clients peuvent partager une adresse.
    * Même raisonnement que `rechercheAdresse` et `cleAppareil`.
    */
+  /**
+   * LA QUESTION DU SIREN, avant la création du compte (23 novembre 2026).
+   *
+   * **Ce qu'il borne, c'est le relevé** : elle dit, sans session, si une
+   * entreprise a déjà un compte Cause. Un à un, ce n'est rien (le SIRET est
+   * public, et « Créer mon compte » le dirait de toute façon) ; à la chaîne, ce
+   * serait la liste des clients de Cause. Trente par quart d'heure couvrent
+   * une inscription à tâtons, et restent larges pour un seau partagé quand la
+   * source n'est pas établie (`cleAppareil`). Au-delà, on ne bloque personne :
+   * la question se tait, et le compte se crée selon la même règle.
+   */
+  questionSiren: { max: 30, fenetreMs: 15 * 60 * 1000 },
   reponseDevis: { max: 10, fenetreMs: 60 * 1000 },
   reponseDevisParSource: { max: 60, fenetreMs: 60 * 1000 },
   /**

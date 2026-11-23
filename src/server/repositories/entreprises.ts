@@ -1,7 +1,8 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 import type { AttestationLue } from "@/lib/attestation-lue";
 import { db, type DbOrTx } from "../db/client";
-import { withEntreprise } from "../db/with-entreprise";
+import { LectureSeuleError, withEntreprise } from "../db/with-entreprise";
+import { demanderAuRegistre, type VerdictDuRegistre } from "../registre-entreprises";
 import { abonnements, entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import { siretBienForme, sirenDeLEssai } from "@/lib/siren";
 import { prendreLEssaiDuSiren } from "./essais-par-siren";
@@ -445,6 +446,10 @@ export async function mettreAJourEntreprise(
       if (chiffres(valeurs.siret) !== chiffres(avant?.siret)) siretTape = valeurs.siret;
     }
     if (siretTape !== null && !siretBienForme(siretTape)) throw new SiretMalFormeError();
+    // Un SIRET neuf attend le registre (migration 0196) ; effacé, il n'y a plus
+    // rien à confirmer (« Votre SIRET » manque alors, à sa place).
+    if (siretTape !== null) valeurs.siretAConfirmer = true;
+    else if (data.siret !== undefined && valeurs.siret === null) valeurs.siretAConfirmer = false;
     const [e] = await tx
       .update(entreprises)
       .set(valeurs)
@@ -618,4 +623,41 @@ export async function logoLu(
     });
     return null;
   }
+}
+
+/**
+ * REDEMANDER AU REGISTRE un SIRET qu'il n'a pas encore confirmé (migration
+ * 0196), juste avant ce qui le réclame : l'écran d'envoi, l'envoi du devis,
+ * l'émission de la facture. Rien à faire pour un SIRET déjà confirmé, ni pour
+ * une entreprise d'avant ce jour : `null`, sans appel.
+ *
+ * **Hors de toute transaction** : une demande au registre peut durer quatre
+ * secondes, et une transaction ouverte pendant ce temps tiendrait une
+ * connexion pour rien. La confirmation ne s'écrit que si le SIRET n'a pas
+ * bougé entre-temps.
+ */
+export async function reconfirmerLeSiret(ctx: Ctx): Promise<VerdictDuRegistre | null> {
+  const [e] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ siret: entreprises.siret, siretAConfirmer: entreprises.siretAConfirmer })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1)
+  );
+  if (!e?.siretAConfirmer || !e.siret) return null;
+  const verdict = await demanderAuRegistre(e.siret);
+  if (verdict.etat !== "trouve") return verdict;
+  try {
+    await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+      tx
+        .update(entreprises)
+        .set({ siretAConfirmer: false })
+        .where(and(eq(entreprises.id, ctx.entrepriseId), eq(entreprises.siret, e.siret as string)))
+    );
+  } catch (erreur) {
+    // Un compte en lecture seule n'envoie rien : la confirmation attendra le
+    // jour où il pourra, et l'écran qui l'a demandée ne doit pas tomber pour ça.
+    if (!(erreur instanceof LectureSeuleError)) throw erreur;
+  }
+  return verdict;
 }
