@@ -74,8 +74,9 @@ var CHANFREIN = { angle: 20, depart: 1.06, casse: 0.15 };
 //   droite 262 (rangée 438), là où le flanc les borde. C'est un LOSANGE entier, et non une ailette à bord
 //   droit (la version d'avant) : son bord de droite fait une pointe au milieu.
 // Ramenées au plan de l'axe par le grossissement de ce qui est devant (3 à 5 % : sa face est à 7 à 11 mm
-// de l'axe vers l'objectif), ces pointes sont, le long du plat, à 2,9 mm à gauche de son milieu, à 0,3 mm
-// en haut et en bas, à 1,75 mm à droite, de z = 19,8 à 26,6 : il déborde de 2 mm sur chaque collerette. Sa
+// de l'axe vers l'objectif), ces pointes sont, le long du plat, à 2,9 mm à gauche de son milieu (celle de
+// gauche), 0,3 mm à gauche (celles du haut et du bas) et 1,75 mm à droite (celle de droite), de z = 19,8 à
+// 26,6 : il déborde de 2 mm sur chaque collerette. Sa
 // pointe de gauche tombe ainsi à 17,9 mm de l'axe, ce que la silhouette donne dans la gorge (235 pixels,
 // rangées 422 à 440) ; posée à 2,45 mm, elle restait 0,4 mm en deçà (relevé à la revue).
 // Son contour [s, z] : s compté le long du plat, de son milieu vers son coin de droite (à 120 degrés de
