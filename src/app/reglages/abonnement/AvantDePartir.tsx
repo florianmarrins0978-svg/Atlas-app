@@ -6,7 +6,7 @@ import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { colors, font, voile } from "@/lib/design-tokens";
 import { formule, montantDu, type FormuleCode, type Periodicite } from "@/lib/abonnements";
 import { RAISONS_DEPART, TEXTE_DEPART_MAX, formuleMoinsChere, type RaisonDepart } from "@/lib/resiliation";
-import { changerDeFormuleAction, resilierAction } from "./actions";
+import { resilierAction } from "./actions";
 
 /**
  * « AVANT DE PARTIR » — planche du 18 octobre 2026
@@ -17,19 +17,22 @@ import { changerDeFormuleAction, resilierAction } from "./actions";
  * formule moins chère proposée d'abord, et une question facultative dont la
  * réponse lui revient, chez le prestataire. Un seul écran, puis c'est fait.
  *
- * **La formule moins chère change tout de suite, au prorata** : c'est le seul
- * changement de formule qu'Atlas sache faire (`changerLaFormule`, article
- * 14.6). La planche la montrait « à partir de l'échéance » ; cela demanderait
- * un calendrier chez le prestataire que le dépôt n'a pas.
+ * **La formule moins chère passe par la feuille du changement**
+ * (`ConfirmerLeChangement`, planche du 23 novembre 2026) : comme toute
+ * descente, elle commence à l'échéance, rien n'est débité, et les comptes qui
+ * partiraient sont annoncés. Une seule façon de descendre, d'où qu'on vienne.
  */
 export default function AvantDePartir({
   formuleActuelle,
   periodicite,
   fermer,
+  proposer,
 }: {
   formuleActuelle: FormuleCode;
   periodicite: Periodicite;
   fermer: () => void;
+  /** Ouvre la feuille du changement pour la formule moins chère. */
+  proposer: (code: FormuleCode) => void;
 }) {
   const [raison, setRaison] = useState<RaisonDepart | null>(null);
   const [texte, setTexte] = useState("");
@@ -61,7 +64,7 @@ export default function AvantDePartir({
         {moinsChere && actuelle && (
           <button
             type="button"
-            onClick={() => agir(() => changerDeFormuleAction(moinsChere.code, periodicite))}
+            onClick={() => proposer(moinsChere.code)}
             disabled={enCours}
             data-atlas="passer-a-moins-chere"
             className="mb-1 block w-full rounded-[6px] px-[18px] py-4 text-left disabled:opacity-60"

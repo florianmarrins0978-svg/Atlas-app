@@ -4151,6 +4151,10 @@ export const abonnements = pgTable(
     annulationDemandee: boolean("annulation_demandee").notNull().default(false),
     clientPrestataire: text("client_prestataire"),
     abonnementPrestataire: text("abonnement_prestataire"),
+    // La formule qui commence à l'échéance, quand il a confirmé une descente
+    // (migration 0197, `changementAVenir`). Les deux ensemble, ou aucune.
+    formulePrevue: text("formule_prevue", { enum: ["artisan", "entreprise", "illimite"] }),
+    periodicitePrevue: text("periodicite_prevue", { enum: ["mensuelle", "annuelle"] }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

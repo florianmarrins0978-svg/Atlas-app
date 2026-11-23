@@ -55,6 +55,7 @@ async function abonne(suffixe: string, abonnementPrestataire: string) {
     annulationDemandee: false,
     clientPrestataire: `cus_${suffixe}`,
     abonnementPrestataire,
+    changementPrevu: false,
   });
   return ctx;
 }

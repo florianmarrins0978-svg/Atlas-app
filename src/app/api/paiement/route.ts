@@ -4,6 +4,7 @@ import { verifierSignature } from "@/lib/signature-stripe";
 import { lireUnAbonnement, lireUneFacturePayee } from "@/server/paiement/stripe";
 import { emettreLaFactureDAbonnement } from "@/server/repositories/factures-atlas";
 import { appliquerDepuisLeCrochet } from "@/server/repositories/abonnements";
+import { supprimerObjet } from "@/server/storage";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
 import { idRequeteValideOuGenere, executerAvecContexte } from "@/server/request-context";
@@ -117,10 +118,16 @@ export async function POST(request: Request) {
     const etat = lireUnAbonnement(objet as Record<string, unknown>);
     if (!etat) return NextResponse.json({ recu: true });
 
-    const applique = await appliquerDepuisLeCrochet(id, type, etat);
+    const resultat = await appliquerDepuisLeCrochet(id, type, etat);
     // `false` = abonnement inconnu, ou événement déjà vu. Les deux valent un
     // 200 : il n'y a rien à refaire, et le redemander ne changerait rien.
-    if (!applique) logger.info("Crochet de paiement sans effet", { type });
+    if (!resultat.applique) logger.info("Crochet de paiement sans effet", { type });
+    // La descente confirmée a pris effet : les accès en trop sont partis, et
+    // leurs photos s'effacent, comme quand le patron retire un accès.
+    if (resultat.comptesRetires > 0) {
+      logger.info("Descente de formule : accès retirés", { comptes: resultat.comptesRetires, formule: etat.formule });
+      for (const photo of resultat.photosOrphelines) await supprimerObjet(photo);
+    }
 
     return NextResponse.json({ recu: true });
   });

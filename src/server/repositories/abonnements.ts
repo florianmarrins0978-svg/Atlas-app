@@ -12,13 +12,14 @@
 // migration 0084. Voir `appliquerDepuisLeCrochet`, et le long paragraphe de la
 // migration sur la raison pour laquelle ce n'est pas un affaiblissement.
 
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { abonnements, entreprises, evenementsPaiement, membresEntreprise } from "../db/schema";
 import { abonnementRouvreLeCompte } from "@/lib/fermeture-compte";
 import { roleFabrique, type FormuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
-import { ROLES } from "@/lib/acces-roles";
+import { lesComptesQuiPartent, type Choix } from "@/lib/changement-de-formule";
+import { ROLES, type Role } from "@/lib/acces-roles";
 import type { Ctx } from "./context";
 
 export type Abonnement = {
@@ -29,6 +30,9 @@ export type Abonnement = {
   annulationDemandee: boolean;
   clientPrestataire: string | null;
   abonnementPrestataire: string | null;
+  /** La formule qui commence à l'échéance (`changementAVenir`). */
+  formulePrevue: FormuleCode | null;
+  periodicitePrevue: Periodicite | null;
 };
 
 /**
@@ -48,6 +52,8 @@ export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | nu
         annulationDemandee: abonnements.annulationDemandee,
         clientPrestataire: abonnements.clientPrestataire,
         abonnementPrestataire: abonnements.abonnementPrestataire,
+        formulePrevue: abonnements.formulePrevue,
+        periodicitePrevue: abonnements.periodicitePrevue,
       })
       .from(abonnements)
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId))
@@ -104,6 +110,13 @@ export type EtatVenuDuPrestataire = {
   annulationDemandee: boolean;
   clientPrestataire: string;
   abonnementPrestataire: string;
+  /**
+   * Le prestataire tient un calendrier pour cet abonnement : un changement
+   * attend l'échéance. Sans calendrier, plus rien n'est prévu, et la ligne
+   * l'oublie ; avec, elle garde ce que l'action y a noté
+   * (`noterLeChangementPrevu`), que le prestataire ne redit pas.
+   */
+  changementPrevu: boolean;
 };
 
 function versLaLigne(etat: EtatVenuDuPrestataire) {
@@ -115,8 +128,36 @@ function versLaLigne(etat: EtatVenuDuPrestataire) {
     annulationDemandee: etat.annulationDemandee,
     clientPrestataire: etat.clientPrestataire,
     abonnementPrestataire: etat.abonnementPrestataire,
+    ...(etat.changementPrevu ? {} : { formulePrevue: null, periodicitePrevue: null }),
     updatedAt: new Date(),
   };
+}
+
+/**
+ * NOTER CE QUI COMMENCE À L'ÉCHÉANCE — après qu'il a confirmé une descente,
+ * ou `null` quand il la retire (« Garder Entreprise »). C'est ce que l'état
+ * affiche, et ce que le crochet reconnaîtra le jour où elle prend effet.
+ */
+export async function noterLeChangementPrevu(ctx: Ctx, prevu: Choix | null): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(abonnements)
+      .set({ formulePrevue: prevu?.formule ?? null, periodicitePrevue: prevu?.periodicite ?? null, updatedAt: new Date() })
+      .where(eq(abonnements.entrepriseId, ctx.entrepriseId));
+  });
+}
+
+/**
+ * Les adhésions de l'entreprise, avec ce qu'il faut pour savoir lesquelles
+ * partiraient avec une descente (`lesComptesQuiPartent`).
+ */
+export async function equipeDeLEntreprise(ctx: Ctx): Promise<{ id: string; role: Role; depuis: Date }[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ id: membresEntreprise.id, role: membresEntreprise.role, depuis: membresEntreprise.createdAt })
+      .from(membresEntreprise)
+      .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId))
+  );
 }
 
 /**
@@ -162,19 +203,35 @@ export async function enregistrerLAbonnement(ctx: Ctx, etat: EtatVenuDuPrestatai
  *  3. l'événement est consigné dans `evenements_paiement`, et **un événement
  *     déjà vu ne fait rien** : Stripe répète tant qu'il n'a pas reçu de 200.
  *
- * @returns `false` quand l'abonnement est inconnu ou l'événement déjà traité —
- *          les deux valent un 200 pour le prestataire (rien à refaire).
+ * **ET LA DESCENTE QU'IL A CONFIRMÉE PREND EFFET ICI**, le jour de l'échéance
+ * (sa décision du 23 novembre 2026) : les accès en trop pour la formule qui
+ * commence partent (`lesComptesQuiPartent`). Seulement quand la formule qui
+ * arrive est celle qu'il avait notée en confirmant, sur la feuille qui le lui
+ * annonçait : un premier abonnement, un retour de paiement ou une formule mal
+ * lue ne retirent jamais personne.
+ *
+ * @returns `applique: false` quand l'abonnement est inconnu ou l'événement déjà
+ *          traité : les deux valent un 200 pour le prestataire (rien à refaire).
+ *          `photosOrphelines` : celles des accès retirés, à effacer du stockage
+ *          une fois la transaction faite, comme `retirerUnAccesAction`.
  */
 export async function appliquerDepuisLeCrochet(
   evenementId: string,
   typeEvenement: string,
   etat: EtatVenuDuPrestataire
-): Promise<boolean> {
+): Promise<{ applique: boolean; comptesRetires: number; photosOrphelines: string[] }> {
+  const rien = { applique: false, comptesRetires: 0, photosOrphelines: [] };
   return db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.abonnement_prestataire', ${etat.abonnementPrestataire}, true)`);
 
     const [ligne] = await tx
-      .select({ entrepriseId: abonnements.entrepriseId })
+      .select({
+        entrepriseId: abonnements.entrepriseId,
+        formule: abonnements.formule,
+        periodicite: abonnements.periodicite,
+        formulePrevue: abonnements.formulePrevue,
+        periodicitePrevue: abonnements.periodicitePrevue,
+      })
       .from(abonnements)
       .where(eq(abonnements.abonnementPrestataire, etat.abonnementPrestataire))
       .limit(1);
@@ -183,7 +240,7 @@ export async function appliquerDepuisLeCrochet(
     // seule chose que le crochet sait alors, c'est un identifiant que nous
     // n'avons jamais vu. Créer une entreprise ou en deviner une à partir de là
     // serait exactement l'inverse de l'isolation.
-    if (!ligne) return false;
+    if (!ligne) return rien;
 
     // Le contexte d'entreprise, DÉDUIT de la ligne — jamais d'une valeur
     // envoyée par le prestataire. Il ouvre l'écriture sur `evenements_paiement`,
@@ -199,7 +256,7 @@ export async function appliquerDepuisLeCrochet(
 
     // Déjà vu : on ne rejoue rien. C'est ce qui empêche un même paiement de
     // prolonger trois fois la période.
-    if (consigne.length === 0) return false;
+    if (consigne.length === 0) return rien;
 
     await tx
       .update(abonnements)
@@ -209,7 +266,32 @@ export async function appliquerDepuisLeCrochet(
     // puis fermer l'onglet, et seul le crochet saura alors qu'il est revenu.
     await rouvrirSiRepris(tx, ligne.entrepriseId, etat);
 
-    return true;
+    const descenteQuiPrendEffet =
+      etat.statut === "actif" &&
+      ligne.formulePrevue === etat.formule &&
+      ligne.periodicitePrevue === etat.periodicite &&
+      (ligne.formule !== etat.formule || ligne.periodicite !== etat.periodicite);
+    if (!descenteQuiPrendEffet) return { applique: true, comptesRetires: 0, photosOrphelines: [] };
+
+    const equipe = await tx
+      .select({ id: membresEntreprise.id, role: membresEntreprise.role, depuis: membresEntreprise.createdAt })
+      .from(membresEntreprise)
+      .where(eq(membresEntreprise.entrepriseId, ligne.entrepriseId))
+      .orderBy(asc(membresEntreprise.createdAt));
+    const partent = lesComptesQuiPartent(equipe, etat.formule);
+    if (partent.length === 0) return { applique: true, comptesRetires: 0, photosOrphelines: [] };
+
+    // L'ADHÉSION seulement, comme `retirerUnAcces` : le compte, ses devis et
+    // ses factures restent à l'entreprise.
+    const retires = await tx
+      .delete(membresEntreprise)
+      .where(and(eq(membresEntreprise.entrepriseId, ligne.entrepriseId), inArray(membresEntreprise.id, partent)))
+      .returning({ photo: membresEntreprise.photoStorageKey });
+    return {
+      applique: true,
+      comptesRetires: retires.length,
+      photosOrphelines: retires.map((r) => r.photo).filter((p): p is string => typeof p === "string"),
+    };
   });
 }
 

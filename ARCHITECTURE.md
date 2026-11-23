@@ -38421,3 +38421,53 @@ codé** : le catalogue, la liaison (un bouton OAuth à la place des deux cases,
 planche d'abord), un état « vérification en cours ». Garder la norme commune
 est ce qui rend la plateforme remplaçable : changer de plateforme coûte un
 contrat et deux adresses.
+
+## §611 : Changer de formule débite ce que la feuille annonce, et descendre attend l'échéance
+
+*23 novembre 2026, ses décisions après un vrai paiement de test.* L'ancien
+changement (`changerLaFormule`, `proration_behavior=create_prorations`) passait
+la formule d'un appui, sans rien débiter avant l'échéance : monter puis
+résilier offrait la formule du dessus. La descente, elle, prenait effet tout de
+suite, contre l'article 14.6. Planche `appli/soignee/changer-de-formule.html`.
+
+**Une règle pure, deux lecteurs** (`src/lib/changement-de-formule.ts`,
+`changementDeFormule`) : la feuille (`ConfirmerLeChangement.tsx`) y lit le
+montant qu'elle annonce, l'action (`changerDeFormuleAction`) ce qu'elle fait
+exécuter. Monter au mois : le prix entier, l'échéance remise au jour du
+changement. Monter à l'année : la différence entière des deux prix annuels,
+jamais au prorata, l'échéance gardée. Du mois à l'année, même formule ou
+au-dessus : l'année entière, l'échéance remise. Descendre, ou de l'année au
+mois : à l'échéance, rien de dû avant. **Déduit, pas dit par lui** : de l'année
+au mois attend l'échéance, et du mois à l'année vers une formule moins chère
+est une descente.
+
+**Chez le prestataire** (`stripe.ts`). La montée part avec
+`payment_behavior=error_if_incomplete` : un paiement refusé (402) laisse
+l'abonnement intact, et l'écran dit « Carte refusée » ou « Votre banque demande
+une confirmation ». Au mois, `billing_cycle_anchor=now` et
+`proration_behavior=none` ; à l'année, `always_invoice` et `proration_date` au
+début de la période, qui crédite l'ancienne année en entier et doit la nouvelle
+en entier. La descente pose un **calendrier** (subscription schedule) :
+changer le prix de l'abonnement lui-même ne convient pas, Stripe remettant
+l'échéance à aujourd'hui quand le rythme change. Les étiquettes de la phase
+suivante passent sur l'abonnement le jour venu, et le crochet relit la
+formule ; la TVA est redonnée à chaque phase. Garder et résilier libèrent le
+calendrier. **Rien de cela n'a reçu de réponse de Stripe** : sa documentation
+n'est pas joignable d'ici, les appels sont éprouvés contre un faux prestataire
+(`test-paiement-stripe.ts`), et le premier essai réel se fait sur son espace.
+
+**En base** (migration 0197, expand seul) : `formule_prevue` et
+`periodicite_prevue`, notées quand il confirme une descente, effacées quand il
+la retire ou quand le prestataire n'a plus de calendrier. `changementAVenir`
+les lit, et l'état dit « Jusqu'au 23 décembre 2026, puis Artisan ».
+
+**Les accès en trop partent par le crochet, et par lui seul**, le jour où la
+descente prend effet (`appliquerDepuisLeCrochet`) : seulement quand la formule
+qui arrive est celle qu'il a notée en confirmant, sur la feuille qui les
+annonçait. Un premier abonnement ou une formule mal lue ne retirent personne.
+Ce qui part est l'ADHÉSION (`lesComptesQuiPartent`) : le patron reste, les plus
+anciens gardent leur place, le compte et ses documents restent à l'entreprise.
+
+**Conditions générales version 4** : seul l'article 14.6 change, déduit de la
+page publiée. Elle ne dit pas encore Cause, ni les cases « Qui édite » : il
+voulait les faire dans une même version.

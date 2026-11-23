@@ -33,7 +33,41 @@ niveau 2 (`npm run verifier:avant-fusion`), qui attend son « oui ».
 `abonnement-module-paysage`, `visite-guidee`. Elles se répareront en les
 recomposant, une fois l'outil corrigé.
 
-## ⏳ UNE PLANCHE À REGARDER : CHANGER DE FORMULE (23 novembre 2026)
+## ⏳ CHANGER DE FORMULE : CODÉ LE 23 NOVEMBRE 2026 SUR `claude/ecstatic-einstein-g0dncn`, ATTEND SA BATTERIE
+
+**Codé sur son « tu peux coder et ne lance pas de batterie »** (`ARCHITECTURE.md`
+§611). Niveau 3 (argent, migration 0197) : rien ne part sur `main` sans la
+batterie entière, sur son « oui ». Joué ici, sans base : types, style, les
+suites pures (`test-changement-de-formule`, `test-feuille-du-changement`,
+`test-paiement-stripe` contre un faux Stripe, 61 cas), la migration sur la base
+locale habitée, le cloisonnement. **Écrites, pas jouées** (elles vident la
+base) : les trois descentes de `test-abonnement-db`. **L'écran n'a pas été
+ouvert** : il faut un serveur, donc son accord.
+
+**À jouer sur son espace avec sa clé de test, avant de livrer** :
+
+| | ce qui n'a jamais reçu de réponse de Stripe |
+|---|---|
+| monter au mois | 59 € débités, l'échéance au jour même |
+| monter à l'année | `proration_date` au début de la période : la différence ENTIÈRE (200 €), et non un prorata |
+| la carte refusée | avec `4000 0000 0000 0341` : la formule ne bouge pas, la feuille le dit |
+| la banque qui confirme | avec `4000 0027 6000 3184` (3D Secure) : la forme exacte du refus, et si « Votre banque demande une confirmation » suffit, faute de page pour confirmer |
+| descendre | le calendrier accepté, la TVA sur la phase d'Artisan, et le crochet qui relit Artisan à l'échéance (l'horloge de test de Stripe avance le temps) |
+| garder, résilier | le calendrier libéré |
+
+**À trancher par lui** : publier la version 4 des conditions seule (une
+acceptation de plus), ou y mettre aussi Cause et les cases « Qui édite » (voir
+« CAUSE : CE QUI ATTEND ») ; et son `enVigueurLe` (le 4 janvier 2027 posé ici)
+se recale sur le jour de la livraison. **Aucun abonné réel aujourd'hui** : si
+un compte avait accepté la version 3, il paierait la montée au prix entier
+avant la fin de son préavis ; la feuille lui annonce le montant avant qu'il
+confirme.
+
+**Deux lots touchent le même écran** : celui du module Paysage
+(`claude/happy-cannon-2rci5s`) aussi. Celui qui part second refusionne, et une
+seule version 4 des conditions doit en sortir.
+
+### La planche et ses décisions (pour mémoire)
 
 **Trouvé par lui le 23 novembre, en payant pour de vrai avec une clé Stripe de
 test** : « Passer à Entreprise » change la formule sans rien dire du montant
