@@ -1,11 +1,11 @@
 ---
 version: 1
-slug: "appli-vente-cause-2-html"
-primary_target: "appli/vente/cause-2.html"
+slug: "appli-vente-cause-2-visite-html"
+primary_target: "appli/vente/cause-2-visite.html"
 related_targets: ["appli/vente/outils.html"]
 ---
 
-# Surface : planche « Cause, en mouvement », le site de vente rejoué en cinéma (appli/vente/cause-2.html)
+# Surface : planche « Cause, en mouvement », le site de vente rejoué en cinéma (appli/vente/cause-2-visite.html)
 
 Mode : Persuade. Planche essayable posée à côté de `appli/vente/cause.html`, qui ne bouge pas : sa demande du 17 novembre 2026, « une maquette de la version améliorée, des animations plus jolies, plus spectaculaires, je te laisse toutes les libertés, ne modifie pas cette version, crée une autre maquette pour pouvoir comparer ». Aucun code dans `src/`.
 

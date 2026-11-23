@@ -3,7 +3,7 @@
 # Le film de l'ouverture du site de vente en mouvement, recoupé :
 # vente/images/nov-creer-un-devis-vif.mp4 et .webm.
 #
-# Sa remarque du 19 novembre 2026, sur vente/cause-2.html : « un léger bug
+# Sa remarque du 19 novembre 2026, sur vente/cause-2-visite.html : « un léger bug
 # sur la première cinématique quand on clique sur créer le devis et que la
 # fiche client apparaît [...] comme si elle freezait une demi-seconde. »
 #

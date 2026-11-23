@@ -1,6 +1,6 @@
 /* =======================================================================
    LE MONTAGE DU FILM « LE CLIENT SIGNE SON DEVIS » (site de vente, planche
-   vente/cause-2.html, chapitre Envoyez).
+   vente/cause-2-visite.html, chapitre Envoyez).
 
    Ce script ne se charge pas seul : film-envoi-signe.cjs l'injecte dans
    rushes/envoi-signe/etats.html, puis photographie le résultat image par

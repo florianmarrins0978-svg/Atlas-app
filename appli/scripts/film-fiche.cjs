@@ -1,6 +1,6 @@
 /* =======================================================================
    Le film de la fiche d'intervention du site de vente : du trajet au retour
-   du soir (chapitre Planifiez de vente/cause-2.html).
+   du soir (chapitre Planifiez de vente/cause-2-visite.html).
 
    Ses demandes : le 18 novembre 2026, Maps puis l'appel au client depuis la
    fiche ; le 19, réunir dans la même cinématique les travaux cochés et le

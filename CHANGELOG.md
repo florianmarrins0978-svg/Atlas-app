@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-23
 
-- **La visite guidée est sur le site, à ses trois places** (`appli/vente/cause-2.html`, sa phrase du 23 : *« On est censé avoir la visite guidée installée sur le site à 3 endroits. »*). La planche du 22 reportée telle quelle : la carte sous l'ouverture, la bande « Voyez l'appli en vrai. » avant les prix, et la carte sous l'option des outils. Vu à 390 px : les trois places s'affichent, la page ne déborde pas, chaque bouton ouvre la visite, aucune erreur. La planche `cause-2-visite.html` et son script sont effacés, pour qu'il n'y ait plus deux pages à tenir pareilles.
+- **La visite guidée est sur le site, à ses trois places** (`appli/vente/cause-2.html`, sa phrase du 23 : *« On est censé avoir la visite guidée installée sur le site à 3 endroits. »*). La planche du 22 reportée telle quelle : la carte sous l'ouverture, la bande « Voyez l'appli en vrai. » avant les prix, et la carte sous l'option des outils. Vu à 390 px : les trois places s'affichent, la page ne déborde pas, chaque bouton ouvre la visite, aucune erreur. Puis, sa phrase suivante : *« Le lien que je t'ai envoyé est le site final. Le seul qu'on garde »*, sur `vente/cause-2-visite.html`. Le site vit donc à cette adresse (`git mv`), `cause-2.html` y renvoie avec son ancre, et chaque lien du site, de ses pages et de ses contrôles suit. Une seule page à tenir, à l'adresse qu'il a donnée. Le script de la planche est effacé.
 
 ## 2026-11-22
 

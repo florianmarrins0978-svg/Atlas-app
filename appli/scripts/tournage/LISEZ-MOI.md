@@ -1,6 +1,6 @@
 # Tourner dans l'appli
 
-Les films du site de vente (`appli/vente/cause-2.html`) montrent les écrans de
+Les films du site de vente (`appli/vente/cause-2-visite.html`) montrent les écrans de
 l'appli. Ce dossier dit comment on les prend **dans l'appli elle-même**, sur
 une base d'essai de ce poste, et les range pour le montage.
 

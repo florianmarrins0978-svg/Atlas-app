@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <!--
   LES OUTILS DE PAYSAGE, LA PAGE DERRIÈRE LA PORTE. Planche posée le
-  20 novembre 2026 à côté de cause-2.html. Sa demande, depuis son téléphone :
+  20 novembre 2026 à côté de cause-2-visite.html. Sa demande, depuis son téléphone :
   « sur le site internet, il faudrait rajouter l'abonnement de 6 € pour les
   outils. [...] qu'on puisse cliquer sur l'abonnement de 6 € pour les
   outils, et que ça soit une porte pour ensuite arriver sur une autre page
@@ -21,7 +21,7 @@
   il y aurait le plan d'arrosage, il y aurait le diagnostic végétal, et il y
   aurait les fiches de fin de passage. [...] en respectant bien la DA du
   site. » La porte est la carte « Les outils de paysage », sous les trois
-  formules de cause-2.html. Rien n'est codé dans l'application.
+  formules de cause-2-visite.html. Rien n'est codé dans l'application.
 
   REPRISE LE 20 NOVEMBRE 2026 AU SOIR, sa demande devant la page : « j'aimerais
   que tu améliores ce qu'il a fait [...] dans le même esprit que ce qu'on a
@@ -31,7 +31,7 @@
       grands titres (« Le plan d'arrosage. », puis « Le plan, de bout en
       bout. ») : douze fois le même cadre sable, à la suite. Les films
       suivent maintenant la scène de leur outil, dans la même bande, comme le
-      récit de Dictez dans cause-2.html : son nom, sa phrase, ce qu'on
+      récit de Dictez dans cause-2-visite.html : son nom, sa phrase, ce qu'on
       apporte et ce qui en sort, puis les vrais écrans, geste après geste ;
     · ON VOIT D'ABORD. Sur téléphone, trois faits et leurs explications
       passaient avant la première image. La scène vient juste sous la phrase,
@@ -98,7 +98,7 @@
       « Ranger cette photo » et le bas de la fiche, qui valent pour toute
       fiche (film-outils.cjs dit comment).
 
-  LE MONDE EST CELUI DE cause-2.html, sans un écart : crème, vert nuit, vert
+  LE MONDE EST CELUI DE cause-2-visite.html, sans un écart : crème, vert nuit, vert
   feuille, or ; Instrument Serif et Hanken Grotesk ; les titres qui montent
   mot à mot et le point d'or qui tombe ; les objets qui se tournent vers le
   lecteur en descendant ; les bandes nuit qui montent comme des feuilles ; le
@@ -489,7 +489,7 @@ html.anime .reseau.blanche.ecrite{-webkit-mask-position:0 0;mask-position:0 0;tr
    haut de la première carte, où « 20 m » va se poser. */
 .scene-croquis .zone-depart{position:absolute;left:0;right:0;top:18px;aspect-ratio:1/.8;pointer-events:none}
 /* Le mot porté : une étiquette, un seul objet, dont le fond de papier
-   apparaît quand elle se soulève (cause-2.html, Dictez). */
+   apparaît quand elle se soulève (cause-2-visite.html, Dictez). */
 .porte{position:absolute;left:0;top:0;z-index:6;padding:.02em .14em .06em;font:italic 400 30px/1.12 var(--display);color:var(--or);white-space:nowrap;pointer-events:none;transform-origin:0 0;opacity:0;will-change:transform,opacity}
 .porte .fond{position:absolute;inset:0;border-radius:.22em;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.08),0 14px 26px -14px rgba(var(--ombre),.55);opacity:0}
 .porte .texte{position:relative}
@@ -549,7 +549,7 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 .plan-vue{display:contents}
 .scene-plan{order:1;margin-top:18px;display:flex;justify-content:center;padding:26px 16px 30px}
 /* Le téléphone d'un film tient ENTIER à l'écran, entre la barre du haut et
-   le bouton d'essai (cause-2.html, la fiche d'intervention) : sa largeur se
+   le bouton d'essai (cause-2-visite.html, la fiche d'intervention) : sa largeur se
    déduit de la hauteur libre. Plus haut, la fin du geste se jouerait sous le
    bouton. */
 .scene-plan .socle{width:min(72vw,300px,calc((100vh - 218px) * .5873 + 18px));width:min(72vw,300px,calc((100svh - 218px) * .5873 + 18px))}
@@ -589,7 +589,7 @@ html.anime .scene-fiche.envoye .duo-legende span:last-child{opacity:1}
 .nourrice-fig figcaption{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13.5px;color:rgba(28,28,26,.62);pointer-events:none}
 .plan .nourrice-fig{order:-1;width:min(100%,460px);justify-self:center;margin-bottom:30px}
 /* Le film d'un écran : sa première image dessous avant qu'il parte, sa
-   dernière par-dessus quand il a fini, lui entre les deux (cause-2.html). */
+   dernière par-dessus quand il a fini, lui entre les deux (cause-2-visite.html). */
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
@@ -715,7 +715,7 @@ html.anime .geant.vu span{transform:none}
 
 <header class="barre" id="barre">
   <div class="large">
-    <a class="marque" href="cause-2.html">Cause</a>
+    <a class="marque" href="cause-2-visite.html">Cause</a>
     <nav class="liens" aria-label="Rubriques">
       <a href="#arrosage">Le plan d'arrosage</a>
       <a href="#diagnostic">Le diagnostic végétal</a>
@@ -736,7 +736,7 @@ html.anime .geant.vu span{transform:none}
   <a href="#diagnostic" style="--i:1">Le diagnostic végétal</a>
   <a href="#fiches" style="--i:2">Les fiches de chantier</a>
   <a href="#prix-outils" style="--i:3">Le prix</a>
-  <a href="cause-2.html" style="--i:4">Tout Cause</a>
+  <a href="cause-2-visite.html" style="--i:4">Tout Cause</a>
   <a class="bouton" href="#essayer" style="--i:5">Essayer 15 jours gratuits</a>
 </nav>
 
@@ -964,7 +964,7 @@ html.anime .geant.vu span{transform:none}
       </ul>
       <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
     </article>
-    <p class="essai-note"><a href="cause-2.html#prix">Voir les trois formules</a></p>
+    <p class="essai-note"><a href="cause-2-visite.html#prix">Voir les trois formules</a></p>
   </div>
 </section>
 
@@ -985,7 +985,7 @@ html.anime .geant.vu span{transform:none}
     <h2 data-monte>Le jardin, en plus.</h2>
     <div class="actions">
       <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
-      <a class="bouton clair" href="cause-2.html#prix">Voir les formules</a>
+      <a class="bouton clair" href="cause-2-visite.html#prix">Voir les formules</a>
     </div>
     <p class="rassure">Sans carte bancaire. Sans engagement.</p>
   </div>
@@ -999,13 +999,13 @@ html.anime .geant.vu span{transform:none}
   <div class="large">
     <div class="pied-grille">
       <div>
-        <a class="marque" href="cause-2.html">Cause</a>
+        <a class="marque" href="cause-2-visite.html">Cause</a>
         <p class="devise">Le logiciel des artisans.</p>
       </div>
       <nav aria-label="Pied de page">
         <div><h3>Cause</h3><ul>
-          <li><a href="cause-2.html#fonctionnement">Comment ça marche</a></li>
-          <li><a href="cause-2.html#prix">Les prix</a></li>
+          <li><a href="cause-2-visite.html#fonctionnement">Comment ça marche</a></li>
+          <li><a href="cause-2-visite.html#prix">Les prix</a></li>
           <li><a href="#essayer">Essai gratuit</a></li>
         </ul></div>
         <div><h3>Les outils</h3><ul>
@@ -1105,7 +1105,7 @@ html.anime .geant.vu span{transform:none}
   // Le mois ou l'année : 6 € HT par mois, 72 € HT à l'année. Sa décision
   // du 20 novembre 2026 : « il n'y a pas 2 mois offerts. C'est 6 euros par
   // mois sur 12 mois » (docs/abonnement-module-paysage.md). Même
-  // geste que cause-2.html : le curseur glisse, l'ancien prix sort par le
+  // geste que cause-2-visite.html : le curseur glisse, l'ancien prix sort par le
   // haut pendant que le nouveau monte.
   var bascule = un(".bascule"), boutonsPeriode = tous("button", bascule), carte = un("#prix-outils .formule");
   var curseur = document.createElement("span"); curseur.className = "curseur"; curseur.setAttribute("aria-hidden", "true");
@@ -1117,7 +1117,7 @@ html.anime .geant.vu span{transform:none}
   var ecrirePrix = function(f, p){
     un(".montant", f).textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
     un(".rythme", f).textContent = p === "an" ? "HT par an" : "HT par mois";
-    // Les mois offerts se lisent dans les prix (comme dans cause-2.html) :
+    // Les mois offerts se lisent dans les prix (comme dans cause-2-visite.html) :
     // l'année des outils vaut douze mois, elle n'en annonce aucun.
     var an = Number(f.getAttribute("data-an")), auMois = an / 12, offre = an < 12 * Number(f.getAttribute("data-mois"));
     un(".offert", f).textContent = p === "an" && offre ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
@@ -1210,7 +1210,7 @@ html.anime .geant.vu span{transform:none}
   // ── LE MOUVEMENT ───────────────────────────────────────────────────────
 
   // Sur téléphone, le bouton d'essai couvre le bas de l'écran : ce qui ne
-  // se joue qu'une fois attend d'être au-dessus de lui (cause-2.html).
+  // se joue qu'une fois attend d'être au-dessus de lui (cause-2-visite.html).
   var grand = window.matchMedia && matchMedia("(min-width:960px)").matches;
   var sousLePouce = grand ? "-40px" : "-104px";
 
@@ -1300,7 +1300,7 @@ html.anime .geant.vu span{transform:none}
   // Un film se joue quand son téléphone est assez à l'écran ; le quitter
   // l'arrête, y revenir le rejoue depuis le début. Rien ne se charge avant
   // l'approche : il prépare ses images à 900 px de l'écran, ou en arrivant, si
-  // l'on arrive d'un coup (cause-2.html).
+  // l'on arrive d'un coup (cause-2-visite.html).
   var scene = function(el, seuil, prete, jouerLa, arreter){
     var tour = 0, chargee = false;
     var charger = function(){ if (!chargee){ chargee = true; prete(); } };
@@ -1430,13 +1430,13 @@ html.anime .geant.vu span{transform:none}
   // LA SUITE. Chaque geste est un film de l'appli, qui se joue seul quand son
   // téléphone est au tiers à l'écran, et se rejoue quand on y revient. Un film
   // refusé (économie d'énergie) ou introuvable montre sa dernière image.
-  // C'est la mécanique de cause-2.html, recopiée.
+  // C'est la mécanique de cause-2-visite.html, recopiée.
   var bobine = function(cadre){
     var nom = "images/nov-film-" + cadre.dataset.film, video = null, fin = null, quand = null, casse = false;
     var rendre = function(){ if (quand){ var q = quand; quand = null; q(); } };
     // La dernière image se pose PAR-DESSUS le film, qui reste dessous, arrêté
     // sur sa dernière image : caché au même instant, il laissait voir un
-    // éclair de sa première (cause-2.html, 19 novembre 2026).
+    // éclair de sa première (cause-2-visite.html, 19 novembre 2026).
     var finir = function(){ fin.classList.add("vue"); rendre(); };
     return {
       preparer: function(){
@@ -1459,7 +1459,7 @@ html.anime .geant.vu span{transform:none}
       arreter: function(){ rendre(); video.pause(); }
     };
   };
-  // Un seul écran bouge à la fois (cause-2.html : « pour qu'on ne regarde pas
+  // Un seul écran bouge à la fois (cause-2-visite.html : « pour qu'on ne regarde pas
   // deux écrans à la fois »). Sur un grand écran, deux téléphones peuvent être
   // au tiers visibles ensemble : le second attend que le premier ait fini, ou
   // qu'on l'ait quitté.

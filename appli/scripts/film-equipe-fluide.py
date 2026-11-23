@@ -28,7 +28,7 @@ plus sombres, et le film se serait vu changer de teinte à l'instant où il cèd
 la place à sa dernière image.
 
 Le film de cause.html et de chapitres-6.html n'est pas touché : celui-ci porte
-un autre nom, et seule cause-2.html le joue.
+un autre nom, et seule cause-2-visite.html le joue.
 
     python3 appli/scripts/film-equipe-fluide.py appli/vente/images
     python3 appli/scripts/film-equipe-fluide.py appli/vente/images --planches /tmp/pellicules --sans-film

@@ -1165,17 +1165,23 @@ redéploie une fois de lui-même.
 
 Sa phrase du 23, devant l'adresse du site : *« C'est pas le bon. On est censé
 avoir la visite guidée installée sur le site à 3 endroits. »* Lue comme son
-oui à la planche du 22. `appli/vente/cause-2.html` porte maintenant ce qu'elle
-montrait, à l'identique : la carte (le petit téléphone qui gigote « 1, 2, 3,
+oui à la planche du 22 : la carte (le petit téléphone qui gigote « 1, 2, 3,
 il s'arrête ») sous l'ouverture **et** sous l'option des outils à 6 €, et la
-bande « Voyez l'appli en vrai. » avant les prix. La planche
-(`cause-2-visite.html`) et son script sont effacés : une retouche de la visite
-sur le site se fait dans `cause-2.html`, et nulle part ailleurs.
+bande « Voyez l'appli en vrai. » avant les prix.
+
+**Puis, le même matin, l'adresse du site** : *« Le lien que je t'ai envoyé est
+le site final. Le seul qu'on garde »*, et le lien était
+`vente/cause-2-visite.html`. Le site vit donc dans
+**`appli/vente/cause-2-visite.html`**, et une retouche se fait là, nulle part
+ailleurs. `cause-2.html` n'est plus qu'un renvoi vers lui (l'ancre suit) : son
+iPhone et les pages d'avant y menaient. Le script de la planche est effacé.
+Payé en chemin : la planche avait d'abord été effacée après report, et son lien
+serait tombé en erreur au déploiement suivant.
 
 **Reste une question, posée le 23** : la bande sert-elle encore, avec deux
 cartes ? Sans réponse, elle reste.
 
-## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2.html` (sa décision du 22 novembre 2026) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
+## ⏳ LE SITE DE VENTE, C'EST `appli/vente/cause-2-visite.html` (sa décision du 22 novembre 2026, son adresse du 23) ; restent le nom de domaine, trois points vus dans l'appli, et ce qui manque pour vendre
 
 **Sa décision du 22 novembre 2026.** À ma question « quelle page devient le
 site ? » : *« Bah c'est la dernière page qu'on a faite en date là. Bah c'est
@@ -1186,7 +1192,7 @@ même jour, dans une autre session, il l'appelle lui-même « le site Cause 2 »
 
 | | |
 |---|---|
-| la référence du site | `appli/vente/cause-2.html`, et elle seule : une retouche du site se fait là |
+| la référence du site | `appli/vente/cause-2-visite.html` depuis le 23 novembre (*« le seul qu'on garde »*), et elle seule : une retouche du site se fait là. `cause-2.html` y renvoie |
 | `cause.html`, `chapitres-6.html` | s'arrêtent là, plus rien ne s'y reporte (ni l'ordre des métiers, ni les films). **Conséquence tirée par moi**, il n'a parlé que de la page qui reste. `cause.html` reste en ligne telle quelle : c'est la maquette faite pour la demande de l'Afnic, et son en-tête (« chapitres-6 reste la référence ») n'est plus vrai |
 | les pages que le site ouvre | `outils.html` et `mentions-legales-cause.html` y ramènent. « Retour au site », dans les mentions, menait encore à `cause.html` : corrigé le 22, et `appli/tests/e2e.js` (« le site retenu ») refuse tout lien du site vers une version passée |
 | son iPhone | vu par lui le 22 novembre, la fiche jusqu'au retour : « Tout est bon. » C'était le contrôle Safari qui manquait. Il n'a pas dit quelles autres scènes il a regardées |
