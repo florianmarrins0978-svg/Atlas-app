@@ -19,7 +19,7 @@
  */
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import { MOYENS_ACCEPTES } from "@/lib/modalites-paiement";
-import { afficherTelephone } from "@/lib/telephone";
+import { analyserTelephone, composerTelephone } from "@/lib/telephone";
 import { phraseDeCeQuiManque } from "@/lib/creation-compte";
 
 export type EntreprisePourRecap = {
@@ -112,7 +112,10 @@ export function recapitulatifDuCompte(
 
   const mediateur = manques([[vide(e.mediateurNom), "le médiateur", "Médiateur à compléter"]]);
 
-  const telephone = vide(e.telephone) ? "" : afficherTelephone(e.telephone).affiche;
+  // Tel qu'il s'imprime sur ses devis (`composerTelephone`), son zéro compris :
+  // le format du champ, derrière l'indicatif, perdait le zéro ici.
+  const lu = analyserTelephone(e.telephone);
+  const telephone = vide(e.telephone) ? "" : composerTelephone(lu.pays, lu.national);
   const moyens = MOYENS_ACCEPTES.find((m) => m.valeur === e.moyensPaiement)?.titre ?? null;
 
   const lignes: LigneRecap[] = [

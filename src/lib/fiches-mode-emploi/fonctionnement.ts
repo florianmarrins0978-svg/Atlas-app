@@ -54,10 +54,9 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     motsCles: ["deviennent", "arret", "arreter", "resiliation", "apres", "recuperer", "perdre", "quitte"],
     geste:
       "Avant d'arrêter, téléchargez tout : Mes données, « Télécharger mes données ». Le fichier se lit sans " +
-      "Cause. Les pièces comptables restent gardées dix ans, comme la loi l'impose.",
-    reserve: "Le délai pendant lequel vos données restent récupérables après la fin de l'abonnement n'est pas encore fixé.",
+      "Cause. Vos données restent récupérables 30 jours après la fin de l'abonnement ; les pièces comptables, dix ans, comme la loi l'impose.",
     source: CONDITIONS,
-    preuves: ["restent récupérables par ce moyen pendant [À COMPLÉTER", "dans un format exploitable sans Atlas"],
+    preuves: ["restent récupérables par ce moyen pendant 30 jours", "dans un format exploitable sans Cause"],
     ailleurs: [{ source: "src/app/reglages/donnees/BoutonTelecharger.tsx", preuves: ["Télécharger mes données"] }],
   },
   {

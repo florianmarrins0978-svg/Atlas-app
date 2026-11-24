@@ -58,6 +58,9 @@ test("tout rempli : aucune phrase de manque, aucune ligne en or", () => {
   assert.equal(r.phrase, null);
   assert.ok(r.lignes.every((l) => l.manque === null));
   assert.equal(ligne(r, "Votre équipe").valeur, "2 chantiers par jour");
+  // Le téléphone tel qu'il s'imprime, son zéro compris : « C'est fait » lisait
+  // « 2 41 00 00 00 », le numéro du champ derrière l'indicatif (23 novembre 2026).
+  assert.equal(ligne(r, "Vous joindre").valeur, "02 41 00 00 00");
 });
 
 test("SANS MÉDIATEUR, LA FIN LE DIT — le défaut du 26 octobre 2026", () => {

@@ -25,21 +25,23 @@ import path from "node:path";
 import { sansCommentaires } from "./_sans-commentaires";
 
 const RACINE = path.join(__dirname, "..", "src");
-const VIEUX_NOM = /\bAtlas\b/;
+// Avec une majuscule ou tout en capitales, jamais en minuscules : `atlas-`,
+// `data-atlas` et les noms internes gardent atlas (`ARCHITECTURE.md` §581).
+const VIEUX_NOM = /\b(?:Atlas|ATLAS)\b/;
 
 const AUTORISES: { fichier: string; motif?: RegExp; pourquoi: string }[] = [
+  {
+    fichier: "src/lib/ics.ts",
+    motif: /"X-ATLAS-CHANTIER:1"/,
+    pourquoi:
+      "une propriété technique du rendez-vous envoyé aux agendas, qu'il ne lit jamais : un nom " +
+      "interne, qui garde atlas comme `atlas-` et `data-atlas` (`ARCHITECTURE.md` §581)",
+  },
   {
     fichier: "src/server/documents-legaux/versions.ts",
     pourquoi:
       "les conditions générales publiées ne se modifient jamais : le nom changera par une " +
       "version nouvelle, que chaque compte acceptera de nouveau (sa décision, TODO.md)",
-  },
-  {
-    fichier: "src/lib/fiches-mode-emploi/fonctionnement.ts",
-    motif: /"dans un format exploitable sans Atlas"/,
-    pourquoi:
-      "la preuve cite les conditions générales mot pour mot (test-mode-emploi.ts) : " +
-      "elle suivra leur version nouvelle",
   },
 ];
 
@@ -62,6 +64,9 @@ console.log("=== L'application s'appelle Cause ===\n");
    vu, un commentaire et un nom interne ne le sont pas. */
 assert.deepEqual(lignesAuVieuxNom(`const a = 1;\nconst t = "Ouvrir Atlas";`), [2], "un libellé au vieux nom n'est pas vu");
 assert.deepEqual(lignesAuVieuxNom(`<p>\n  Atlas prépare le devis…\n</p>`), [2], "un texte d'écran au vieux nom n'est pas vu");
+// Le nom tout en capitales : la porte (`/bienvenue`) le portait en grand, et
+// le contrôle ne le voyait pas (23 novembre 2026).
+assert.deepEqual(lignesAuVieuxNom(`<span>\n  ATLAS\n</span>`), [2], "le vieux nom en capitales n'est pas vu");
 assert.deepEqual(lignesAuVieuxNom(`// Atlas range ici\nconst x = 2;`), [], "un commentaire est pris pour un libellé");
 assert.deepEqual(lignesAuVieuxNom(`const r = "atlas-" + id; estEvenementAtlas(r);`), [], "un nom interne est pris pour un libellé");
 console.log("✅ Le contrôle sait échouer : un libellé au vieux nom est vu, un commentaire et un nom interne ne le sont pas");

@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 // de le rassembler pour en calculer la longueur.
 export const revalidate = 0;
 
-const LISEZ_MOI = (donnees: ExportEntreprise, nomEntreprise: string) => `SAUVEGARDE ATLAS, ${nomEntreprise}
+const LISEZ_MOI = (donnees: ExportEntreprise, nomEntreprise: string) => `SAUVEGARDE CAUSE, ${nomEntreprise}
 Exportée le ${donnees.exporteLe}
 
 CE QU'IL Y A DANS CE FICHIER

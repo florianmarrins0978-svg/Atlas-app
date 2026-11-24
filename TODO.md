@@ -1577,7 +1577,7 @@ n'a pas confirmé n'envoie ni devis ni facture, migration 0196,
 `ARCHITECTURE.md` §613). L'écran d'inscription a été regardé dans ses cinq
 états, sur son oui. Le registre écrit en majuscules : l'adresse qu'il remplit
 part ainsi sur les devis tant qu'il ne la retape pas. « Ce n'est pas votre entreprise ?
-Écrivez-nous. » n'est pas posé : Cause n'a pas encore d'adresse où écrire.
+Écrivez-nous. » est posé le 24 novembre, vers son adresse de contact provisoire (`src/lib/contact-cause.ts`).
 Reste : l'identité attachée au SIRET. Ses mots : *« on part sur le SIREN comme tu as dit »*,
 et sur la carte de paiement : *« pas une bonne idée, parce que si un patron
 décide de payer l'abonnement à quelqu'un d'autre, il va être bloqué ; il faut
@@ -1634,7 +1634,7 @@ donne que des devis au nom de cet autre. Reste : la diffusion partielle (nom non
 publié : il le tape). Planche sur le vrai écran Mon entreprise, sur son « oui » du même soir :
 `appli/soignee/identite-au-registre.html`. Rien n'est codé.
 
-**Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**
+~~**Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**~~ **Corrigés le 24 novembre 2026, sur son « 1 oui corrige »** : la porte dit CAUSE, et `test-nom-cause.ts` voit maintenant le vieux nom en capitales (il a trouvé aussi le mode d'emploi de l'export et deux consignes de l'assistant) ; « C'est fait » écrit le téléphone tel qu'il s'imprime, zéro compris (`test-recapitulatif-compte.ts`).
 
 | | |
 |---|---|

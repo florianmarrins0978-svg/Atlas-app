@@ -58,7 +58,7 @@ export default async function BienvenuePage() {
 
       {/* **Deux voiles, et ils ne font pas le même travail** — planche, en
           commentaire : le premier assombrit l'ensemble, sans quoi le rai de
-          soleil mange le mot ATLAS ; le second noircit le bas, seule zone où
+          soleil mange le nom ; le second noircit le bas, seule zone où
           un texte de 11,5 px doit rester lisible dehors, sur un chantier. */}
       <div
         aria-hidden="true"
@@ -79,7 +79,7 @@ export default async function BienvenuePage() {
             textShadow: "0 2px 18px rgba(0,0,0,.55)",
           }}
         >
-          ATLAS
+          CAUSE
         </span>
       </div>
 

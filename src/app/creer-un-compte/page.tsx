@@ -25,6 +25,7 @@ import PorteDeNuit, { SERIF } from "@/components/atlas/PorteDeNuit";
 import SaisieDuCode from "@/components/atlas/SaisieDuCode";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import { creerLeCompteAction, etatDuSiretAction, type QuestionDuSiret } from "./actions";
+import { ecrireACause } from "@/lib/contact-cause";
 import { renvoyerLeCodeAction, verifierLeCodeAction } from "@/app/verifier-email/actions";
 import { deconnexionAction } from "@/app/login/actions";
 import { deposerAttestationAction } from "@/app/reglages/identite/attestation-actions";
@@ -504,7 +505,7 @@ export default function CreerUnComptePage() {
           )}
           {/* À la place du refus, là où l'œil va après « Continuer ». En or :
               une information, pas une erreur. */}
-          {essaiPris && <EssaiDejaFait etat={essaiPris} onCorriger={corrigerLeSiret} />}
+          {essaiPris && <EssaiDejaFait etat={essaiPris} siret={vues.siret ?? ""} onCorriger={corrigerLeSiret} />}
           {auRegistre && <AuRegistre nom={auRegistre.nom} adresse={auRegistre.adresse} />}
         </div>
       </div>
@@ -582,9 +583,10 @@ function AuRegistre({ nom, adresse }: { nom: string | null; adresse: string | nu
  * 23 novembre. Le lien de connexion vient en premier, sa remarque du même
  * soir : *« ce qu'il faut qu'il fasse, c'est qu'il se connecte à son
  * compte »*, un appui plutôt que sept « Retour ». « Ce n'est pas votre
- * entreprise ? Écrivez-nous. » attend une adresse de Cause (`TODO.md`).
+ * entreprise ? Écrivez-nous. » ouvre un message à Cause, le SIRET dedans : il
+ * est public, quelqu'un a pu le prendre ; on vérifie, et l'essai est rendu.
  */
-function EssaiDejaFait({ etat, onCorriger }: { etat: "compte" | "essai"; onCorriger: () => void }) {
+function EssaiDejaFait({ etat, siret, onCorriger }: { etat: "compte" | "essai"; siret: string; onCorriger: () => void }) {
   const lien = "flex min-h-[44px] items-center text-left text-[15px] font-semibold underline underline-offset-4";
   return (
     <div className="mt-3" data-atlas="essai-deja-fait" role="status">
@@ -602,6 +604,13 @@ function EssaiDejaFait({ etat, onCorriger }: { etat: "compte" | "essai"; onCorri
       <button type="button" onClick={onCorriger} className={lien} style={{ color: colors.ink }}>
         Corriger le SIRET
       </button>
+      <a
+        href={ecrireACause("Mon SIRET est déjà utilisé", `Mon SIRET : ${siret}\nCe n'est pas mon entreprise qui a eu l'essai.`)}
+        className={lien}
+        style={{ color: colors.ink }}
+      >
+        Ce n&apos;est pas votre entreprise ? Écrivez-nous.
+      </a>
     </div>
   );
 }

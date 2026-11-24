@@ -105,7 +105,7 @@ async function main() {
     execFileSync("unzip", ["-q", archive, "-d", path.join(dossier, "sortie")]);
 
     const modeEmploi = readFileSync(path.join(dossier, "sortie", "LISEZ-MOI.txt"), "utf8");
-    assert.match(modeEmploi, /SAUVEGARDE ATLAS/, "Le mode d'emploi manque ou ne se présente pas.");
+    assert.match(modeEmploi, /SAUVEGARDE CAUSE/, "Le mode d'emploi manque ou ne se présente pas.");
     assert.match(
       modeEmploi,
       /CE QU'IL CONTIENT DE SENSIBLE/,

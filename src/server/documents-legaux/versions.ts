@@ -1073,7 +1073,7 @@ ARTICLE 13 : Récupérer vos données
 
 Pendant toute la durée du contrat, vous pouvez exporter l’intégralité des données de votre entreprise depuis Réglages, puis Mes données, dans un format exploitable sans Cause.
 
-À compter de la fin du contrat, vos données restent récupérables par ce moyen pendant [À COMPLÉTER, un délai, 30 jours étant l’usage]. Passé ce délai, elles sont supprimées, à l’exception de ce que la loi impose de conserver : notamment les pièces comptables, conservées dix ans en application de l’article L.123-22 du Code de commerce.
+À compter de la fin du contrat, vos données restent récupérables par ce moyen pendant 30 jours. Passé ce délai, elles sont supprimées, à l’exception de ce que la loi impose de conserver : notamment les pièces comptables, conservées dix ans en application de l’article L.123-22 du Code de commerce.
 
 Aucune prestation de reprise, de conversion ou d’accompagnement à la migration n’est incluse ; elle peut faire l’objet d’un devis distinct.
 
@@ -1105,7 +1105,7 @@ L’abonnement peut être précédé d’un essai gratuit de quinze jours, sans 
 
 14.3, Paiement
 
-Le paiement s’effectue par carte bancaire ou par prélèvement SEPA, à la souscription puis à chaque échéance, par l’intermédiaire du prestataire de paiement [À COMPLÉTER : nom du prestataire]. L’éditeur ne collecte ni ne conserve aucune donnée de carte bancaire : elles sont saisies sur les pages sécurisées du prestataire, qui en assure seul la conservation.
+Le paiement s’effectue par carte bancaire ou par prélèvement SEPA, à la souscription puis à chaque échéance, par l’intermédiaire du prestataire de paiement Stripe (Stripe Payments Europe, Limited). L’éditeur ne collecte ni ne conserve aucune donnée de carte bancaire : elles sont saisies sur les pages sécurisées du prestataire, qui en assure seul la conservation.
 
 La facture correspondante est mise à disposition dans Réglages, puis Abonnement, à chaque échéance.
 
