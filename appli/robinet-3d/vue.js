@@ -21,7 +21,7 @@ import { creerMatieres } from "../nourrice-3d/matieres.js";
 import { brancherToucher } from "../nourrice-3d/toucher.js";
 import { ajouterMatieres } from "./matieres.js";
 import { creerPieces } from "./pieces/index.js";
-import { composer, pile } from "./composition.js";
+import { composer, pile, piecesDesRoles } from "./composition.js";
 
 export function ouvrirRobinet(toile, o) {
   var essai = document.createElement("canvas").getContext("webgl2");
@@ -39,6 +39,8 @@ export function ouvrirRobinet(toile, o) {
     if (neuve.erreurs.length) throw new Error("La pile du robinet ne se compose pas : " + neuve.erreurs.join(" ; "));
     compo = neuve;
     S.poser(compo, pieces);
+    // `choix.retirees` : les étages supprimés de la liste, par leur rôle ; ils restent dessinés, grisés.
+    S.griser(piecesDesRoles(choix, choix.retirees));
     if (etat.vue) S.regarder(etat.vue, false); else S.recadrer();
   }
 

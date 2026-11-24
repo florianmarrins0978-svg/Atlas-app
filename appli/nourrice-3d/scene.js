@@ -112,7 +112,7 @@ export function creerScene(toile, o) {
 
   // LES PIÈCES, EN INSTANCES. Une couche (une matière d'un modèle de pièce) se dessine une seule fois
   // pour toutes les pièces de ce modèle ; une pièce retournée bout pour bout reste le même modèle.
-  var etat = { compo: null, definitions: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0, choisie: null };
+  var etat = { compo: null, definitions: null, t: 0, vue: "biais", lots: [], boite: new THREE.Box3(), bas: 0, choisie: null, grisees: {} };
   var M = new THREE.Matrix4(), demiTour = new THREE.Matrix4().makeRotationY(Math.PI), T = new THREE.Matrix4();
   function matrice(pose, t, sortie) {
     var p = place(pose, t);
@@ -150,15 +150,21 @@ export function creerScene(toile, o) {
   // passent sous le voile (sa demande du 22 novembre 2026 : « les pièces qu'on a sélectionnées restent en
   // couleur et toutes les autres se grisent »). `null` rend la couleur à tout. Le choix survit à une
   // nouvelle fiche : les lots se refont, le voile se repose sur eux.
+  //
+  // UNE PIÈCE SUPPRIMÉE de la liste passe sous le même voile, et y reste (sa réponse du 24 novembre 2026,
+  // devant la double sortie supprimée qui restait en couleur sur la pile du robinet : « grise-la »). Par
+  // modèle : tout le modèle sort. C'est juste sur la pile du robinet, où chaque pièce est seule ; une
+  // nourrice dont une électrovanne sur cinq sort demanderait une matière par pose.
   function voiler() {
     etat.lots.forEach(function (l) {
       var m = l.maille;
       if (!m.userData.matiere) m.userData.matiere = m.material;
-      m.material = etat.choisie && l.cle !== etat.choisie ? matieres.voile : m.userData.matiere;
+      m.material = (etat.choisie && l.cle !== etat.choisie) || etat.grisees[l.cle] ? matieres.voile : m.userData.matiere;
     });
     demander();
   }
   function choisir(cle) { etat.choisie = cle || null; voiler(); }
+  function griser(cles) { etat.grisees = {}; (cles || []).forEach(function (c) { etat.grisees[c] = true; }); voiler(); }
   var boitePiece = new THREE.Box3();
   function boiteA(t, sortie) {
     sortie.makeEmpty();
@@ -448,7 +454,7 @@ export function creerScene(toile, o) {
   }
 
   return {
-    pret: pret, detruire: detruire, poser: poser, choisir: choisir, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, ecran: ecran, mesurer: mesurer, demander: demander,
+    pret: pret, detruire: detruire, poser: poser, choisir: choisir, griser: griser, regler: regler, eclater: eclater, regarder: regarder, recadrer: function () { if (!mouvement || mouvement.pieces) { regarderSansBouger(); commandes.update(); demander(); } }, touche: touche, ecran: ecran, mesurer: mesurer, demander: demander,
     surVue: function (f) { ecoutes.vue.push(f); }, surImage: function (f) { ecoutes.image.push(f); },
     etat: function () {
       var tri = 0; etat.lots.forEach(function (l) { tri += l.maille.count * l.maille.geometry.index.count / 3; });

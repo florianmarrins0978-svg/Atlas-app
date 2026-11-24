@@ -127,6 +127,18 @@ export function departEn3D(d: Depart): "r16" | "s16" | "pe25" {
   return d === 16 ? "r16" : d === "16s" ? "s16" : "pe25";
 }
 
+/**
+ * L'étage de la pile que tient une ligne de la liste, pour la 3D : une pièce
+ * supprimée y reste dessinée, grisée (sa réponse du 24 novembre 2026 : « grise-la »).
+ * La 3D sait quelle pièce tient ce rôle dans sa combinaison
+ * (`appli/robinet-3d/composition.js`, `piecesDesRoles`). Une ligne ajoutée, ou le
+ * té du compteur, n'est pas un étage de la pile : rien.
+ */
+export type RoleEn3D = "double" | "programmateur" | "raccord" | "tuyau";
+export function roleEn3D(cle: string): RoleEn3D | null {
+  return cle === "am:double" ? "double" : cle === "am:prog" ? "programmateur" : cle === "am:raccord" ? "raccord" : cle === "am:pe" ? "tuyau" : null;
+}
+
 /** Le nom du tuyau qui part, tel que la liste l'écrit. */
 export function nomDuTuyau(d: Depart): string {
   return d === 16 ? "PEBD rigide Ø16" : d === "16s" ? "Ø16 souple" : `PEHD Ø${d}`;

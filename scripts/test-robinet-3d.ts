@@ -1,7 +1,7 @@
-import { composer, pile, PROGRAMMATEURS, DEPARTS } from "../appli/robinet-3d/composition.js";
+import { composer, pile, piecesDesRoles, PROGRAMMATEURS, DEPARTS } from "../appli/robinet-3d/composition.js";
 import { creerPieces } from "../appli/robinet-3d/pieces/index.js";
 import { centreDuBout, GAZ } from "../appli/nourrice-3d/formes.js";
-import { departEn3D, type Depart } from "../src/lib/arrosage/robinet";
+import { departEn3D, roleEn3D, type Depart } from "../src/lib/arrosage/robinet";
 
 /**
  * LA PILE DU ROBINET EN 3D SE MONTE COMME ELLE SE VISSE — sa planche
@@ -24,6 +24,10 @@ import { departEn3D, type Depart } from "../src/lib/arrosage/robinet";
  *    il se visse, son boîtier ne doit pas atteindre la colonne de l'autre
  *    sortie (`composition.js`, `PROGRAMMATEURS`). C'est ce qui a envoyé le Rain
  *    Bird sur la sortie droite.
+ * 5. **Une pièce supprimée de la liste se grise dans la 3D, et elle seule**
+ *    (sa réponse du 24 novembre 2026 : « grise-la ») : chaque ligne de la pile
+ *    (`roleEn3D`) désigne une pièce qui est bien dans la pile de l'écran
+ *    (`piecesDesRoles`), jamais une autre, et rien quand l'étage n'y est pas.
  *
  * Et le contrôle sait échouer : un bout décalé d'un millimètre, une pile qui
  * ne se visse pas, un boîtier élargi doivent le faire rougir.
@@ -112,6 +116,40 @@ console.log("\n4. Aucun programmateur ne bouche la sortie du client");
   const rb = PIECES[(PROGRAMMATEURS as unknown as Record<string, { cle: string }>).rainbird.cle], bx = boiteX(rb);
   const marge = ecart - filet - bx.max;
   dire(marge < 0, `il sait échouer : le Rain Bird sur la sortie gauche passerait de ${(-marge).toFixed(1)} mm sous la sortie du client`);
+}
+
+console.log("\n5. Une pièce supprimée de la liste se grise dans la 3D, et elle seule");
+{
+  const desRoles = piecesDesRoles as unknown as (o: Choix, roles: string[]) => string[];
+  const LIGNES = ["am:double", "am:prog", "am:raccord", "am:pe"];
+  const cleDe = (e: Element) => (typeof e === "string" ? e : e.cle);
+  let piles = 0, faux = 0;
+  for (const programmateur of [null, ...Object.keys(PROGRAMMATEURS as object)]) {
+    for (const double of [true, false]) {
+      for (const depart of Object.keys(DEPARTS as object)) {
+        const o: Choix = { programmateur, double, depart };
+        const dans = pileDe(o).map(cleDe);
+        piles++;
+        const vues: string[] = [];
+        for (const ligne of LIGNES) {
+          const role = roleEn3D(ligne);
+          const cles = role ? desRoles(o, [role]) : [];
+          const present = ligne === "am:double" ? double : ligne === "am:prog" ? programmateur !== null : true;
+          // Présent : une pièce, de la pile, qu'aucune autre ligne ne désigne. Absent : rien à griser.
+          const bon = present ? cles.length === 1 && dans.includes(cles[0]) && !vues.includes(cles[0]) : cles.length === 0;
+          if (!bon) { faux++; console.log(`      ${programmateur ?? "sans"} ${double ? "double" : "simple"} ${depart} ${ligne} : ${cles.join(", ") || "rien"}`); }
+          vues.push(...cles);
+        }
+        // Toute la pile sauf le robinet se grise par une ligne : aucun étage n'échappe à la liste.
+        if (dans.filter((c) => c !== "robinet-laiton").some((c) => !vues.includes(c))) { faux++; console.log(`      ${programmateur ?? "sans"} ${depart} : un étage sans ligne`); }
+      }
+    }
+  }
+  dire(faux === 0 && piles >= 24, `${piles} piles, chaque ligne supprimée grise sa pièce et elle seule`);
+  dire(roleEn3D("am:te") === null && roleEn3D("aj:1") === null, "le té du compteur et une pièce ajoutée ne sont pas des étages de la pile");
+  // Il sait échouer : une ligne qui désignerait la mauvaise pièce griserait le raccord à la place du tuyau.
+  const o: Choix = { programmateur: "solem", double: true, depart: "pe25" };
+  dire(desRoles(o, ["tuyau"])[0] !== desRoles(o, ["raccord"])[0], "il sait échouer : le raccord et le tuyau ne se confondent pas");
 }
 
 console.log(echecs ? `\n${echecs} échec(s)\n` : "\nTout est vert.\n");
