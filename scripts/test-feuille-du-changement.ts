@@ -32,6 +32,8 @@ function test(nom: string, fn: () => void) {
 
 const N = " ";
 const LE_23_DEC = "2026-12-23T12:00:00.000Z";
+// Dix-neuf jours avant l'échéance : le nombre que la feuille doit dire perdus.
+const LE_4_DEC = "2026-12-04T09:00:00.000Z";
 const rien = () => {};
 
 function feuille(props: Partial<React.ComponentProps<typeof ConfirmerLeChangement>>): string {
@@ -43,6 +45,7 @@ function feuille(props: Partial<React.ComponentProps<typeof ConfirmerLeChangemen
       comptesQuiPartent: 0,
       fermer: rien,
       changerDeCarte: rien,
+      maintenant: LE_4_DEC,
       ...props,
     })
   );
@@ -54,7 +57,9 @@ test("MONTER : 59 € HT débités aujourd'hui, 70,80 € TTC, avant tout geste"
   assert.match(html, /Débité aujourd’hui/);
   assert.ok(html.includes(`>59${N}€<`), "le montant HT n'est pas celui de la grille");
   assert.ok(html.includes(`70,80${N}€ TTC`), "le TTC manque");
-  assert.match(html, /Les jours restants d’Artisan ne sont pas remboursés\./);
+  assert.match(html, /Les 19 jours restants d’Artisan sont perdus\./);
+  // Le prochain paiement, en toutes lettres, l'année comprise.
+  assert.ok(html.includes(`59${N}€ HT, le 4 janvier 2027.`), "le prochain paiement n'est pas daté en toutes lettres");
   assert.match(html, />Prochain paiement</);
   assert.match(html, /data-atlas="confirmer"[^>]*>Confirmer</);
   assert.match(html, />Annuler</);
@@ -68,9 +73,36 @@ test("MONTER À L'ANNÉE : la différence, 200 € HT, et la phrase qui le dit",
   });
   assert.ok(html.includes(`>200${N}€<`), "ce n'est pas la différence des deux années");
   assert.match(html, /La différence avec Artisan, pour l’année en cours\./);
-  assert.ok(html.includes(`590${N}€ HT par an`), "le prochain paiement n'est pas l'année d'Entreprise");
+  assert.ok(html.includes(`590${N}€ HT, le 23 décembre 2026.`), "le prochain paiement n'est pas l'année d'Entreprise, à l'échéance");
   // L'échéance ne bouge pas : le carré porte le 23 décembre.
   assert.match(html, />23<\/span><span[^>]*>déc\.</);
+});
+
+test("PASSER À L'ANNÉE : les jours perdus comptés, l'année qui commence aujourd'hui, le paiement d'après", () => {
+  // Son exemple du 24 novembre 2026 : Artisan au mois jusqu'au 3 janvier,
+  // l'année prise le 15 décembre. Même formule, puis une au-dessus.
+  const memeFormule = feuille({
+    voulu: { formule: "artisan", periodicite: "annuelle" },
+    echeance: "2027-01-03T12:00:00.000Z",
+    maintenant: "2026-12-15T09:00:00.000Z",
+  });
+  assert.match(memeFormule, /Les 19 jours restants du mois sont perdus\. Votre année commence aujourd’hui, le 15 décembre\./);
+  assert.ok(memeFormule.includes(`390${N}€ HT, le 15 décembre 2027.`), "le prochain paiement de l'année n'est pas daté");
+  const auDessus = feuille({
+    voulu: { formule: "illimite", periodicite: "annuelle" },
+    echeance: "2027-01-03T12:00:00.000Z",
+    maintenant: "2026-12-15T09:00:00.000Z",
+  });
+  assert.match(auDessus, /Les 19 jours restants d’Artisan sont perdus\. Votre année commence aujourd’hui, le 15 décembre\./);
+  // Le dernier jour : au singulier. L'échéance du jour : rien de perdu, rien à dire.
+  const veille = feuille({ voulu: { formule: "artisan", periodicite: "annuelle" }, maintenant: "2026-12-22T09:00:00.000Z" });
+  assert.match(veille, /Le dernier jour du mois est perdu\./);
+  const jourMeme = feuille({ voulu: { formule: "artisan", periodicite: "annuelle" }, maintenant: "2026-12-23T09:00:00.000Z" });
+  assert.ok(!/perdu/.test(jourMeme), "un changement le jour de l'échéance annonce des jours perdus");
+  assert.match(jourMeme, /Votre année commence aujourd’hui, le 23 décembre\./);
+  // Échéance inconnue : le nombre ne se devine pas.
+  const sansEcheance = feuille({ voulu: { formule: "artisan", periodicite: "annuelle" }, echeance: null });
+  assert.match(sansEcheance, /Les jours restants du mois sont perdus\./);
 });
 
 test("DESCENDRE : 0 € aujourd'hui, Artisan commence le 23 décembre, il garde Entreprise", () => {

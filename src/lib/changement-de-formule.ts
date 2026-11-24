@@ -121,6 +121,23 @@ export function prochaineEcheance(
 }
 
 /**
+ * LES JOURS PERDUS quand le changement part tout de suite et remet
+ * l'échéance (monter au mois, passer à l'année) : ceux qui restaient à la
+ * période payée. Sa demande du 24 novembre 2026 : *« l'application doit
+ * prévenir qu'il reste 15 jours et que ces 15 jours-là seront perdus »*.
+ *
+ * Comptés en jours du calendrier, au jour près, comme `jourEnLettres` les
+ * écrit (UTC) : un mois payé jusqu'au 3 janvier, changé le 15 décembre,
+ * en perd 19. `null` quand rien ne se perd par ce changement, ou quand
+ * l'échéance n'est pas connue : un nombre ne se devine pas.
+ */
+export function joursPerdus(changement: Changement, echeanceEnCours: Date | null, maintenant: Date): number | null {
+  if (changement.genre !== "tout-de-suite" || !changement.echeanceRemise || !echeanceEnCours) return null;
+  const jour = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  return Math.max(0, Math.round((jour(echeanceEnCours) - jour(maintenant)) / 86_400_000));
+}
+
+/**
  * LES COMPTES QUI PARTENT avec la descente — sa décision du 23 novembre :
  * *« faut lui dire que tous ses autres comptes vont être supprimés »*. Ceux
  * qui fabriquent des devis ou des factures au-delà du plafond de la formule

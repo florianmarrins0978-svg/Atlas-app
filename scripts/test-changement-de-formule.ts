@@ -7,6 +7,7 @@ import {
   plusUnePeriode,
   prochaineEcheance,
   ttcEnCentimes,
+  joursPerdus,
 } from "../src/lib/changement-de-formule";
 
 // CHANGER DE FORMULE : ce qui est débité, et quand. La règle pure, éprouvée
@@ -194,6 +195,24 @@ cas("l'état dit « Jusqu'au 23 décembre 2026, puis Artisan à 39 € HT par mo
 cas("sans rien de prévu, l'état ne change pas", () => {
   const e = etatAffiche({ ...ENTREPRISE_MOIS, statut: "actif", periodeFin: LE_23_DEC, annulationDemandee: false }, LE_23_NOV);
   assert.equal(e.detail, "59 € HT par mois. Prochain paiement le 23 décembre 2026.");
+});
+
+cas("les jours perdus : 19 du 15 décembre au 3 janvier, rien quand l'échéance ne bouge pas (sa demande du 24 novembre)", () => {
+  const le15 = new Date("2026-12-15T09:00:00Z");
+  const le3 = new Date("2027-01-03T12:00:00Z");
+  const versLAnnee = changementDeFormule({ formule: "artisan", periodicite: "mensuelle" }, { formule: "artisan", periodicite: "annuelle" });
+  assert.equal(joursPerdus(versLAnnee, le3, le15), 19);
+  const auMois = changementDeFormule({ formule: "artisan", periodicite: "mensuelle" }, { formule: "entreprise", periodicite: "mensuelle" });
+  assert.equal(joursPerdus(auMois, le3, le15), 19);
+  // Monter à l'année garde l'échéance : rien ne se perd.
+  const aLAnnee = changementDeFormule({ formule: "artisan", periodicite: "annuelle" }, { formule: "entreprise", periodicite: "annuelle" });
+  assert.equal(joursPerdus(aLAnnee, le3, le15), null);
+  // Descendre attend l'échéance : rien ne se perd.
+  const descente = changementDeFormule({ formule: "entreprise", periodicite: "mensuelle" }, { formule: "artisan", periodicite: "mensuelle" });
+  assert.equal(joursPerdus(descente, le3, le15), null);
+  // Échéance inconnue : le nombre ne se devine pas. Échéance passée : zéro, jamais négatif.
+  assert.equal(joursPerdus(versLAnnee, null, le15), null);
+  assert.equal(joursPerdus(versLAnnee, new Date("2026-12-10T12:00:00Z"), le15), 0);
 });
 
 if (echecs > 0) {

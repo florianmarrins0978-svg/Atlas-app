@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { formule, jourEnLettres, moisAbrege, montantDu } from "@/lib/abonnements";
-import { changementDeFormule, prochaineEcheance, ttcEnCentimes, type Choix } from "@/lib/changement-de-formule";
+import { formule, jourEnLettres, jourEtMoisEnLettres, moisAbrege, montantDu } from "@/lib/abonnements";
+import { changementDeFormule, joursPerdus, prochaineEcheance, ttcEnCentimes, type Choix } from "@/lib/changement-de-formule";
 import { enEuros, enEurosEntiers } from "@/lib/euros";
 import { changerDeFormuleAction } from "./actions";
 import { CarreDeDate } from "./EtatDeLAbonnement";
@@ -36,6 +36,7 @@ export default function ConfirmerLeChangement({
   comptesQuiPartent,
   fermer,
   changerDeCarte,
+  maintenant,
 }: {
   actuel: Choix;
   voulu: Choix;
@@ -45,6 +46,8 @@ export default function ConfirmerLeChangement({
   comptesQuiPartent: number;
   fermer: () => void;
   changerDeCarte: () => void;
+  /** Aujourd'hui, en ISO ; absent, l'heure de l'appareil. Les contrôles le fixent. */
+  maintenant?: string;
 }) {
   const [message, setMessage] = useState<string | null>(null);
   const [paiementRefuse, setPaiementRefuse] = useState(false);
@@ -55,7 +58,10 @@ export default function ConfirmerLeChangement({
   if (!a || !v) return null;
 
   const changement = changementDeFormule(actuel, voulu);
-  const prochaine = prochaineEcheance(changement, voulu, echeance ? new Date(echeance) : null, new Date());
+  const aujourdhui = maintenant ? new Date(maintenant) : new Date();
+  const echeanceEnCours = echeance ? new Date(echeance) : null;
+  const prochaine = prochaineEcheance(changement, voulu, echeanceEnCours, aujourdhui);
+  const perdus = joursPerdus(changement, echeanceEnCours, aujourdhui);
   const debitHT = changement.genre === "tout-de-suite" ? changement.debitHT : 0;
   const memeFormule = actuel.formule === voulu.formule;
   const titre = memeFormule ? (voulu.periodicite === "annuelle" ? "Passer à l’année" : "Passer au mois") : `Passer à ${v.nom}`;
@@ -69,9 +75,9 @@ export default function ConfirmerLeChangement({
         : `Jusque-là, vous gardez ${a.nom}.`
       : changement.genre === "tout-de-suite" && changement.facon === "monter-a-l-annee"
         ? `La différence avec ${a.nom}, pour l’année en cours.`
-        : memeFormule
-          ? "Les jours restants du mois ne sont pas remboursés."
-          : `Les jours restants ${de(a.nom)} ne sont pas remboursés.`;
+        : [phraseDesJoursPerdus(perdus, memeFormule ? "du mois" : de(a.nom)), voulu.periodicite === "annuelle" ? `Votre année commence aujourd’hui, le ${jourEtMoisEnLettres(aujourdhui)}.` : ""]
+            .filter(Boolean)
+            .join(" ");
   const comptes = changement.genre === "a-l-echeance" ? comptesQuiPartent : 0;
 
   function confirmer() {
@@ -129,7 +135,12 @@ export default function ConfirmerLeChangement({
                 {suivant}
               </span>
               <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                {enEurosEntiers(montantDu(v, voulu.periodicite))} HT {rythme}
+                {/* Le prochain paiement se date en toutes lettres, l'année comprise : le
+                    carré seul, « 15 déc. », se lisait comme aujourd'hui (sa remarque du
+                    24 novembre 2026). */}
+                {changement.genre === "tout-de-suite" && prochaine
+                  ? `${enEurosEntiers(montantDu(v, voulu.periodicite))} HT, le ${jourEnLettres(prochaine)}.`
+                  : `${enEurosEntiers(montantDu(v, voulu.periodicite))} HT ${rythme}`}
               </span>
             </span>
           </div>
@@ -185,6 +196,18 @@ export default function ConfirmerLeChangement({
 }
 
 /** « d’Artisan », « de Cause » : l'élision devant une voyelle, ou un h. */
+/**
+ * Les jours perdus, dits par leur nombre : « Les 19 jours restants du mois
+ * sont perdus. » Sa demande du 24 novembre 2026. Échéance inconnue, le nombre
+ * ne se devine pas et la phrase le tait ; rien de perdu, rien à dire.
+ */
+function phraseDesJoursPerdus(perdus: number | null, quoi: string): string {
+  if (perdus === null) return `Les jours restants ${quoi} sont perdus.`;
+  if (perdus === 0) return "";
+  if (perdus === 1) return `Le dernier jour ${quoi} est perdu.`;
+  return `Les ${perdus} jours restants ${quoi} sont perdus.`;
+}
+
 function de(nom: string): string {
   return /^[aeiouyhàâéèêëîïôûù]/i.test(nom) ? `d’${nom}` : `de ${nom}`;
 }

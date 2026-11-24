@@ -697,3 +697,8 @@ export function moisAbrege(d: Date): string {
 export function jourEnLettres(d: Date): string {
   return `${d.getUTCDate()} ${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
+
+/** « 15 décembre », quand l'année va de soi : celle d'aujourd'hui. */
+export function jourEtMoisEnLettres(d: Date): string {
+  return `${d.getUTCDate()} ${MOIS[d.getUTCMonth()]}`;
+}
