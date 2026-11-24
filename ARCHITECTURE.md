@@ -38422,6 +38422,11 @@ planche d'abord), un état « vérification en cours ». Garder la norme commune
 est ce qui rend la plateforme remplaçable : changer de plateforme coûte un
 contrat et deux adresses.
 
+**Et ensuite, Cause agréée elle-même** (sa suite du même soir). Ce n'est pas
+contradictoire : Super PDP d'abord, la candidature ensuite. Les exigences
+officielles sont relevées dans `TODO.md` ; la première qui pèse est la
+certification ISO 27001 (ou SecNumCloud).
+
 ## §611 : Changer de formule débite ce que la feuille annonce, et descendre attend l'échéance
 
 *23 novembre 2026, ses décisions après un vrai paiement de test.* L'ancien

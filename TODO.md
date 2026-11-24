@@ -1,14 +1,66 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D (23 novembre 2026)
+## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
+
+Sa demande, après avoir vu qu'Entreprise ouvrait encore les outils de paysage :
+*« va chercher s'il n'y a pas des lots pareils qui se sont égarés, qu'on n'a pas
+mis dans l'application, qui attendent de jouer une batterie »*.
+
+**Comment c'est relevé, et comment le refaire.** Sur un historique COMPLET
+(`git fetch --unshallow origin` d'abord : un clone de session est superficiel,
+et c'est lui qui faisait croire « aucune histoire commune ») : pour chaque
+branche `claude/*`, les commits que `git cherry origin/main` dit absents ; pour
+chacun, son code (`src/`, `drizzle/`) appliqué à l'envers sur `main`, puis à
+l'endroit ; et la part de ses lignes ajoutées qu'on retrouve dans `main`. Une
+part haute veut dire « arrivé, retouché depuis » ; une part nulle, « jamais
+arrivé ».
+
+**Codés, jamais sur `main`, et rien ne le disait sur `main` :**
+
+| Branche | Date | Ce que c'est | Où il en est |
+|---|---|---|---|
+| `claude/happy-cannon-2rci5s` | 19 nov. | le module Paysage à 6 € pour les trois formules, Artisan un seul accès, un plan et un diagnostic offerts | son « oui » du 24 novembre : réuni au lot du changement de formule, une seule version 4 des conditions |
+| `claude/vigilant-ramanujan-kxr0np` | 19 et 20 nov. | la fiche de diagnostic soignée, les dossiers des diagnostics avec leurs notes, les photos de référence qui défilent | sa branche dit « codé, pas sur `main` » ; `main` disait « pas codé » (corrigé) |
+| `claude/upbeat-pascal-mzremi` | 21 nov. | la nourrice de l'outil dessinée avec ses photos vues du dessus (sept commits) | rien sur `main` ; la nourrice en 3D est arrivée depuis, à lui de dire si ce dessin sert encore |
+
+**En route, dans la batterie commune de la session du SIREN**
+(`claude/modest-pascal-l7ma19`) : l'essai par SIREN et le registre, la carte de
+la visite guidée, l'arrosage des deux nourrices (`claude/laughing-wright-xxntzg` :
+le PE au plus court, 0,3 bar au dernier arroseur, GAG, une vanne de plus), et
+le changement de formule. **Gardé hors de `main` par sa décision** : Darcy et
+Moody (`claude/adoring-mendel-e8roex`, « Prends avec Rain Bird »).
+
+**Plus anciens, à lui de dire s'ils servent encore** (le code de `main` a bougé
+depuis, aucun ne se fusionne tel quel) :
+
+| Branche | Date | Ce que c'est | Ce qu'on en sait |
+|---|---|---|---|
+| `claude/intervention-filter-month-year-vo4q29` | 22 et 23 sept. | filtrer les retours d'intervention au mois, avec la roue | moins d'un tiers de son code sur `main` |
+| `claude/unites-dictees` | 29 sept. | une dictée n'écrit que ses unités : « 2 u », jamais « 2 souche » | sa branche attendait sa réponse sur le prix à la bûche |
+| `claude/travaux-supplementaires-facture-0ffzq7` | 1er sept. | les travaux en plus sur la facture, chacun son taux de TVA | refait autrement sur `main` le 4 novembre, probablement dépassé |
+| `claude/legal-quote-terms-25aceo` | 30 août | la forme juridique et le n° de TVA sur le devis | en partie sur `main` ; attendait sa décision sur le capital et le RCS |
+| `claude/green-rounded-send-button-gqxt0c` | 18 août | l'envoi au client plus visible | les écrans ont été refaits depuis, probablement dépassé |
+| `claude/load-testing-model-selection-wtkrgh` | 30 août au 11 oct. | un établi de qualification hors de l'appli | un outil, pas un écran |
+
+**Écartés par lui, rien à faire** : « Payé par » en bouts ronds (non repris le
+29 octobre). **Arrivés sur `main`, retouchés depuis** (plus des trois quarts de
+leurs lignes s'y retrouvent) : la fiche de chantier soignée, « Solde », le
+répertoire des métiers, « J'ai reçu le paiement », la date d'un chantier
+terminé, la visionneuse des retours, l'assistant hors métier, les tubes
+d'arrosage, Jours travaillés.
+
+## ⏳ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ SUR LA BRANCHE DES DEUX NOURRICES (23 novembre 2026)
 
 Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
 en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
 `appli/arrosage-nourrice-3d-gag.html`, la vraie nourrice, « Aujourd'hui » et « Proposé ». Le mot
 entier sous la première voie, GAG sous les suivantes ; un mot qui en couvrirait un autre se décale sur
 le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd'hui, aucune proposée.
-**À lui de choisir**, puis porter les deux changements dans `appli/nourrice-3d/reperes.js` (la
-planche en garde la copie, prête à recopier), que l'écran du plan emploie.
+~~**À lui de choisir**~~ : *« C'est bien »*, puis *« pareil pour 12 vannes : une goutte à goutte et le
+reste GAG »*. La planche va désormais de 1 à 12 voies, toutes en goutte-à-goutte au besoin (elle
+s'arrêtait à six voies, celle des deux nourrices à quatre en goutte-à-goutte : des limites de planche,
+pas de l'appli). Codé dans `appli/nourrice-3d/reperes.js` sur la branche `claude/laughing-wright-xxntzg`,
+avec les deux nourrices : il arrive sur `main` avec leur batterie, sur son accord.
 
 ## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
 
@@ -149,7 +201,7 @@ Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fus
 
 - **Darcy et Moody n'y sont pas, sur sa décision.** Réuni aux écartements de Rain Bird, Darcy faisait rougir la règle du té égal (18 octobre) : sur son jardin de 12 × 12 et 8 × 8, la pression au dernier arroseur tombait de 2,21 à 1,80 bar, et le plan passait de 3 réseaux à 2, dont un qui arrosait les deux pelouses. Devant la planche qui le montre (`appli/arrosage-rainbird-et-darcy.html`), sa réponse : *« Prends avec Rain Bird »*. Le lot reste sur `claude/adoring-mendel-e8roex`.
 - **Ce que cela coûte, et qu'il doit savoir le jour où il y revient** : sans Darcy, le calcul garde Hazen-Williams, que la session Darcy a trouvé trop optimiste de 4 à 25 % sur la perte du tuyau (le dernier arroseur reçoit un peu moins que ce que l'outil annonce). Le reprendre, c'est accepter le plan réuni de la planche, ou trancher autrement.
-- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : sa branche n'a plus d'histoire commune avec `main`, et son sujet est l'argent.
+- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : son sujet est l'argent. ~~sa branche n'a plus d'histoire commune avec `main`~~ **faux, corrigé le 24 novembre 2026** : c'était une copie partielle de l'historique (clone superficiel). Sa base commune avec `main` est `d495de84`, et il ne lui manque que trois commits.
 
 ## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
 ## LE MANUEL RAIN BIRD : LES TURBINES CODÉES LE 22 NOVEMBRE 2026, CE QUI RESTE
@@ -1269,7 +1321,7 @@ même (`CHANGELOG.md`). **Il n'a pas encore vu cette version.**
   film « Une photo. » la montrent), et le film se retourne. Le lien vers la
   licence (creativecommons.org) n'a pas pu être ouvert depuis ce poste, son
   mandataire le refuse ; celui de la photo répond.
-- **Les dossiers ne sont pas codés.** Le film « Vos dossiers. » est tourné
+- ~~**Les dossiers ne sont pas codés.**~~ **Faux, relevé le 24 novembre 2026** : ils sont codés le 20 novembre sur `claude/vigilant-ramanujan-kxr0np`, jamais arrivés sur `main` (voir « LES LOTS ÉGARÉS », en tête). Le film « Vos dossiers. » est tourné
   sur sa planche du 20 novembre (`appli/soignee/diagnostic-dossiers.html`,
   posée par une autre session, qui n'en a rien écrit ici) ; sa réponse à
   cette planche n'est écrite nulle part, et ses deux questions restent
@@ -3140,7 +3192,24 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      publics, marque grise) ; secours Iopole. **À lui** : écrire à Super PDP
      et à Iopole (messages prêts dans le document). **À nous, à son « go »
      avec l'accès d'essai** : planche de la liaison par bouton, puis le lot
-     (catalogue, OAuth, « vérification en cours »), niveau 3 ; Seconde capture, même soir : la
+     (catalogue, OAuth, « vérification en cours »), niveau 3 ;
+   - **sa suite, même soir** : *« on va commencer avec Super PDP et ensuite
+     on va essayer de faire agréer Cause »*. Exigences relevées sur la fiche
+     officielle de la DGFiP (`fiche-pdp.pdf`, septembre 2025) : dossier fiscal
+     et technique, **ISO 27001 ou SecNumCloud**, double authentification
+     dont un facteur dynamique (Cause a déjà le code TOTP), données dans
+     l'Union européenne, interconnexion aux autres plateformes, tests avec
+     le portail public, audit de conformité par un organisme indépendant,
+     agrément de 3 ans renouvelable. Rien n'est lancé ; le travail fait
+     pour Super PDP (Factur-X, norme commune) resservira ;
+   - **recherche du même soir** (`docs/faire-agreer-cause.md`) : le guide
+     officiel prévoit l'agrément **en marque blanche** sur une plateforme
+     déjà agréée (cas n° 1, page 20 : contrat, serveurs, liaison, la doc de
+     la plateforme support, et l'ISO 27001 du candidat). Iopole a le dossier
+     prêt, prérequis ISO 27001. Ordre de grandeur, confiance faible : 10 000
+     à 30 000 € la première année. **Trois questions à la DGFiP avant tout
+     achat** : périmètre de l'ISO 27001 en marque blanche, SecNumCloud pour
+     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
