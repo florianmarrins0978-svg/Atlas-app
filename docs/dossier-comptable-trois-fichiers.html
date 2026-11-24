@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le dossier du comptable en trois fichiers : la planche et ses vérifications</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-dossier-du-comptable-en-trois-fichiers--la-planche-et-ses-vérifications">Le dossier du comptable en trois fichiers : la planche et ses vérifications</h1>
+<p>Demande du 24 novembre 2026. Planche : https://florianmarrins0978-svg.github.io/Atlas-app/soignee/comptable-trois-fichiers.html (fichier <code>appli/soignee/comptable-trois-fichiers.html</code>). <strong>Rien n'est codé dans <code>src/</code>.</strong></p>
+<h2 id="ce-que-la-planche-montre">Ce que la planche montre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Demandé</th>
+<th>Sur la planche</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Les pages du PDF</td>
+<td>la première page, le registre des ventes, chaque catégorie (choisie dans une liste), les salaires ; « Imprimer le PDF d'essai » sort les 34 pages</td>
+<td>onglet Le PDF</td>
+</tr>
+<tr>
+<td>L'Excel à quatre onglets</td>
+<td>Ventes, Achats, Banque, Comptes, tels qu'Excel les ouvre ; « Télécharger l'Excel d'essai » écrit un vrai <code>.xlsx</code> (totaux en formules, dates en dates, filtres, première ligne figée)</td>
+<td>onglet L'Excel</td>
+</tr>
+<tr>
+<td>Le FEC</td>
+<td>lu en colonnes ou tel quel (la tabulation montrée par un trait d'or) ; « Télécharger le FEC d'essai » écrit le vrai fichier</td>
+<td>onglet Le FEC</td>
+</tr>
+<tr>
+<td>Le réglage des numéros</td>
+<td>l'écran Réglages dans le téléphone : chaque ligne s'ouvre, le numéro se change, l'intitulé du plan comptable s'affiche, une classe inattendue est signalée ; le numéro changé se retrouve dans le PDF, l'Excel et le FEC</td>
+<td>onglet Numéros de compte</td>
+</tr>
+<tr>
+<td>Un numéro par pièce, le même partout</td>
+<td>A 181 à A 205 pour octobre ; toucher un numéro le surligne et donne sa page, sa ligne d'onglet, sa ligne de banque et ses lignes de FEC</td>
+<td>partout</td>
+</tr>
+<tr>
+<td>Le FEC officiel reste celui du comptable</td>
+<td>écrit au dessus du FEC, et en bas de la première page du PDF</td>
+<td>onglet Le FEC</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun texte gris</strong> (sa demande du 24 novembre, après la première version) : les trois documents s'écrivent en noir, et ce qui doit ressortir passe par le gras ou la serif. Le vrai PDF (<code>src/server/pdf/dossier-comptable-pdf.ts</code>) écrit encore en gris : à reprendre au codage.</p>
+<p><strong>Un seul jeu de données</strong> (octobre 2026, inventé) nourrit les trois fichiers. Vérifié sur les fichiers téléchargés, pas sur l'écran :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>FEC : 18 colonnes à chaque ligne</td>
+<td>122 lignes sur 122</td>
+</tr>
+<tr>
+<td>FEC : chaque écriture équilibrée</td>
+<td>48 écritures sur 48 ; débit 44 957,83 € = crédit 44 957,83 €</td>
+</tr>
+<tr>
+<td>FEC : numéros d'écriture continus et dans l'ordre des dates, par journal</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>FEC : compte fournisseurs soldé (tout est lettré)</td>
+<td>401 à 0,00</td>
+</tr>
+<tr>
+<td>Excel ouvert par openpyxl et recalculé par LibreOffice</td>
+<td>Ventes 12 030,00 HT, TVA 458,00 + 1 490,00, TTC 13 978,00, reste dû 6 258,00 ; balance à 0</td>
+</tr>
+<tr>
+<td>Chaque geste de la planche touché dans Chromium à 390 px</td>
+<td>aucun muet, aucune erreur de console, aucun débordement</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-numéros-de-compte--verdict-source-confiance">Les numéros de compte : verdict, source, confiance</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Source principale : le plan de comptes PCG 2025 de l'ANC (https://www.anc.gouv.fr/files/anc/files/1_Normes_fran%C3%A7aises/Plans%20comptables/Plan-de-comptes-PCG-2025.pdf), lu par extraits (le site de l'ANC est bloqué depuis ce poste). <strong>À faire relire par un comptable avant le codage</strong>, comme <code>TODO.md</code> le demandait déjà.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Catégorie</th>
+<th>Proposé</th>
+<th>Pourquoi, et ce que disent les sources</th>
+<th>Confiance</th>
+</tr></thead><tbody>
+<tr>
+<td>Ventes</td>
+<td><strong>706</strong></td>
+<td>704 (Travaux) pour la création, 706 pour l'entretien : c'est l'usage, aucun texte ne tranche pour un paysagiste. 707 seulement pour des plants revendus sans pose. Réglable.</td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>Matériaux et plants</td>
+<td><strong>601</strong></td>
+<td>Le BOFiP (BOI-BIC-CHG-40-10 § 10) définit le <strong>605</strong> comme ce qui est « incorporé directement aux ouvrages » ; l'usage le plus courant reste 601. Les deux se défendent, le comptable choisit et garde.</td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>Petit outillage</td>
+<td><strong>6063</strong></td>
+<td>Confirmé. Le seuil de 500 € HT par outil est la tolérance de BOI-BIC-CHG-20-30-10 § 20.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Sous-traitance</td>
+<td><strong>604</strong></td>
+<td>Ce qui entre dans l'ouvrage du client va au 604 ; le <strong>611</strong> sert au reste. Brouillon précédent : 611, corrigé.</td>
+<td>moyenne à haute</td>
+</tr>
+<tr>
+<td>Matériel de plus de 500 €</td>
+<td><strong>2154</strong></td>
+<td>« Matériels industriels » (pluriel en 2025, même numéro). Une remorque ou un camion va au 2182 quel que soit son prix : le matériel de transport est exclu de la tolérance.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Carburant</td>
+<td><strong>6061</strong></td>
+<td><strong>Le 60622 n'existe pas dans le PCG</strong> (il n'y a pas de compte 6062) : c'est un sous compte de logiciel. Du carburant stocké dans une cuve irait au 60221.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Repas</td>
+<td><strong>6256</strong></td>
+<td>Repas sur un chantier : 6256 (Missions). Avec un client : 6257 (Réceptions). <strong>Le 6251 n'est pas le bon compte pour un repas.</strong> Pratique, pas texte.</td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>Hôtel</td>
+<td><strong>6256</strong></td>
+<td>Brouillon précédent : 6251, corrigé. Sa TVA ne se déduit pas (CGI ann. II art. 206 IV 2 3°, BOI-TVA-DED-30-30-10) : l'appli le fait déjà.</td>
+<td>haute (TVA), moyenne (compte)</td>
+</tr>
+<tr>
+<td>Train, taxi</td>
+<td><strong>6251</strong></td>
+<td>Voyages et déplacements.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Loyer</td>
+<td><strong>6132</strong></td>
+<td>Locations immobilières.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Assurances</td>
+<td><strong>616</strong></td>
+<td>Le 6168 de certains logiciels n'est pas dans le PCG.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Téléphone et internet</td>
+<td><strong>626</strong></td>
+<td></td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Frais de banque</td>
+<td><strong>627</strong></td>
+<td></td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Impôts et taxes</td>
+<td><strong>635</strong></td>
+<td>CFE au 63511.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>TVA versée</td>
+<td><strong>44551</strong></td>
+<td><strong>Ajoutée.</strong> Jamais au 635 : la TVA n'est pas une charge.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Salaires</td>
+<td><strong>421</strong></td>
+<td>Sa décision, confirmée : le virement solde le 421 que le cabinet a crédité depuis la fiche de paie (641).</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Cotisations sociales</td>
+<td><strong>431</strong></td>
+<td>URSSAF des salariés. Les cotisations du patron vont au <strong>646</strong> : voir « ce qui reste ».</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Emprunt</td>
+<td><strong>164</strong></td>
+<td>La part d'intérêts (6611) se lit sur le tableau d'amortissement.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Prélèvement personnel</td>
+<td><strong>108</strong> ou <strong>4551</strong></td>
+<td>108 en entreprise individuelle, compte courant d'associé (4551) en société : lu dans Mon entreprise, jamais deviné.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>À classer</td>
+<td><strong>471</strong></td>
+<td>Compte d'attente, toujours dans le PCG 2025.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Aide, subvention</td>
+<td><strong>741</strong></td>
+<td>PCG 2025 : 741 « Subventions d'exploitation » (le 74 seul ne suffit plus).</td>
+<td>moyenne à haute</td>
+</tr>
+<tr>
+<td>Entre mes comptes</td>
+<td><strong>580</strong></td>
+<td>Le PCG ne définit que le 58 ; 580 est l'usage, et le FEC veut trois chiffres au début du compte.</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>TVA en attente du paiement</td>
+<td><strong>44574</strong></td>
+<td><strong>Absent du PCG</strong>, mais d'usage (Qonto, Dougs) ; d'autres prennent un 4458x. Le comptable a peut être le sien : réglable.</td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>TVA due, déductible, sur immobilisations</td>
+<td><strong>44571, 44566, 44562</strong></td>
+<td></td>
+<td>haute</td>
+</tr>
+</tbody></table></div>
+<h3 id="ajoutées-après-sa-question--est-ce-quil-ne-manque-rien---24-novembre-au-soir">Ajoutées après sa question « est-ce qu'il ne manque rien ? » (24 novembre au soir)</h3>
+<p><strong>Non, il en manquait.</strong> La première liste reprenait ses catégories ; elle oubliait des dépenses que presque tout artisan paie. Quatorze de plus, rangées dans Réglages par familles (le chantier, le camion et la route, l'entreprise, vos salariés, les impôts, prêt et argent perso) :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Catégorie</th>
+<th>Proposé</th>
+<th>Pourquoi, et la source</th>
+<th>Confiance</th>
+</tr></thead><tbody>
+<tr>
+<td>Vêtements de travail, protection</td>
+<td><strong>6063</strong></td>
+<td>petit équipement non stocké ; 6068 ou 6022 (stocké) chez d'autres. <a href="https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/comment-comptabiliser-les-vetement-de-travail-liste-de-compte-comptable-a" target="_blank" rel="noopener">Pennylane</a></td>
+<td>moyenne à haute</td>
+</tr>
+<tr>
+<td>Location de matériel (mini pelle, nacelle, benne)</td>
+<td><strong>6135</strong></td>
+<td>Locations mobilières (PCG)</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Évacuation des déchets verts</td>
+<td><strong>6288</strong></td>
+<td>usage de praticiens, <strong>absent du PCG</strong> (628 n'y porte que 6281 et 6284) ; d'autres prennent le 611. <a href="https://copeps.fr/actualites/comptabilisation-decontamination-produits/" target="_blank" rel="noopener">Copeps</a></td>
+<td>basse</td>
+</tr>
+<tr>
+<td>Entretien et réparations (garage, pneus, tondeuse)</td>
+<td><strong>6155</strong></td>
+<td>Entretien et réparations sur biens mobiliers (PCG)</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Leasing du camion</td>
+<td><strong>6122</strong></td>
+<td>Crédit bail mobilier ; une location longue durée sans achat va au 6135</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Électricité, eau, gaz du dépôt</td>
+<td><strong>6061</strong></td>
+<td>Fournitures non stockables, comme le carburant</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Fournitures de bureau</td>
+<td><strong>6064</strong></td>
+<td>Fournitures administratives ; les timbres au 626</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Logiciels et abonnements</td>
+<td><strong>6135</strong></td>
+<td>les sources hésitent (613, 6135, parfois 6281) ; le 651 est pour une licence, pas un abonnement. <a href="https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/compte-6135-locations-mobilieres" target="_blank" rel="noopener">Pennylane, 6135</a>, <a href="https://finom.co/fr-fr/blog/comptabiliser-abonnement-logiciel/" target="_blank" rel="noopener">Finom</a></td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>Publicité</td>
+<td><strong>623</strong></td>
+<td>Publicité, publications, relations publiques</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Honoraires (comptable, avocat)</td>
+<td><strong>6226</strong></td>
+<td>Honoraires</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Cotisations professionnelles</td>
+<td><strong>6281</strong></td>
+<td>Concours divers, cotisations</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Formation (CACES, Certiphyto)</td>
+<td><strong>6228</strong></td>
+<td>facture de l'organisme ; la contribution OPCO va au 6333. <a href="https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/comment-comptabiliser-les-frais-de-formation-professionnelle" target="_blank" rel="noopener">Pennylane</a></td>
+<td>moyenne</td>
+</tr>
+<tr>
+<td>Retraite, prévoyance, mutuelle des salariés</td>
+<td><strong>437</strong></td>
+<td>Autres organismes sociaux</td>
+<td>haute</td>
+</tr>
+<tr>
+<td>Impôt prélevé sur les salaires</td>
+<td><strong>4421</strong></td>
+<td>Prélèvements à la source ; la DGFiP le prélève chaque mois. <strong>Sans cette catégorie, il tombait dans Impôts et taxes (635), comme une charge.</strong> <a href="https://www.dougs.fr/ressources/pcg/classe-4/compte-4421/" target="_blank" rel="noopener">Dougs</a>, <a href="https://www.net-entreprises.fr/media/documentation/guide-dsn-pas.pdf" target="_blank" rel="noopener">net-entreprises</a></td>
+<td>haute</td>
+</tr>
+</tbody></table></div>
+<p>Retouchés dans la même passe : « Petit outillage » devient <strong>« Petit outillage, petites fournitures »</strong> (vis, colliers, ficelle : même 6063) ; « Train, taxi » couvre aussi <strong>péages et parking</strong> (6251) ; les <strong>agios</strong> d'un découvert vont au <strong>6615</strong>, pas avec les frais de banque.</p>
+<p><strong>Le paysage cotise à la MSA, pas à l'URSSAF</strong> (code rural, L. 722-1 et L. 722-2 ; <a href="https://questions.assemblee-nationale.fr/dyn/12/questions/QANR5L12QE33996.pdf" target="_blank" rel="noopener">réponse ministérielle</a>) : la ligne d'essai de la planche était fausse pour un paysagiste, elle est corrigée. Le compte (431) ne change pas.</p>
+<p><strong>Toujours pas couvert, et dit tel quel :</strong> des plants revendus sans pose (achat 607, vente 707), les cadeaux aux clients (6234), les amendes (non déductibles). Ils tombent en À classer, et le comptable les range.</p>
+<h2 id="le-fec--ce-qui-est-normé-et-ce-que-cause-en-fait">Le FEC : ce qui est normé, et ce que Cause en fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Textes : article A47 A-1 du LPF, BOI-CF-IOR-60-40-20 (lu en entier).</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>La norme</th>
+<th>Le fichier de Cause</th>
+</tr></thead><tbody>
+<tr>
+<td>Colonnes</td>
+<td>18, dans cet ordre : JournalCode, JournalLib, EcritureNum, EcritureDate, CompteNum, CompteLib, CompAuxNum, CompAuxLib, PieceRef, PieceDate, EcritureLib, Debit, Credit, EcritureLet, DateLet, ValidDate, Montantdevise, Idevise</td>
+<td>les 18</td>
+</tr>
+<tr>
+<td>Séparateur</td>
+<td>tabulation ou barre verticale, un seul par fichier ; noms des champs en première ligne</td>
+<td>tabulation, en-tête</td>
+</tr>
+<tr>
+<td>Dates</td>
+<td>AAAAMMJJ</td>
+<td>AAAAMMJJ</td>
+</tr>
+<tr>
+<td>Montants</td>
+<td>virgule décimale, aucun séparateur de milliers ; Debit et Credit tous deux remplis</td>
+<td>« 1284,00 » et « 0,00 »</td>
+</tr>
+<tr>
+<td>Champ vide</td>
+<td>reste vide, jamais « 0 » ni une espace</td>
+<td>Montantdevise, Idevise vides</td>
+</tr>
+<tr>
+<td>Encodage</td>
+<td>ASCII, ISO 8859-15 ou EBCDIC. Pennylane dit UTF-8 : les sources divergent</td>
+<td><strong>ISO 8859-15</strong>, le texte légal</td>
+</tr>
+<tr>
+<td>Nom</td>
+<td><code>SirenFECAAAAMMJJ</code>, la date étant la clôture de l'exercice</td>
+<td><strong><code>123456789_import_FEC_2026-10.txt</code></strong>, exprès : voir ci-dessous</td>
+</tr>
+<tr>
+<td>ValidDate</td>
+<td>la date de validation de l'écriture</td>
+<td><strong>vide</strong> : les écritures se valident dans le logiciel du comptable, pas dans Cause</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi le fichier de Cause n'est pas « le » FEC.</strong> Le BOFiP (§ 40) définit le FEC comme le livre journal unique de l'exercice, couvrant tous les journaux du système comptable, avec les à nouveaux et les écritures d'inventaire (§ 50). Une appli de facturation n'en tient qu'une partie et ne fait aucune clôture. Pennylane l'écrit pour ses propres exports : ils « n'ont pas la valeur réglementaire d'un FEC ». Le fichier de Cause est donc un <strong>fichier d'import au format FEC</strong>. Lui donner le nom légal l'aurait fait passer pour le FEC de l'exercice : il porte un nom à lui.</p>
+<p><strong>Les écritures.</strong> Trois journaux : VT les ventes (client au 411, TVA en attente au 44574), HA les achats qui ont une pièce de fournisseur (lettrés avec leur paiement), BQ la banque. Au paiement d'un client, la TVA de ce qui est payé passe du 44574 au 44571, au prorata pour un paiement partiel : c'est la règle de l'exigibilité aux encaissements que <code>src/lib/exigibilite-tva.ts</code> applique déjà.</p>
+<h2 id="ce-que-font-les-autres">Ce que font les autres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Outil</th>
+<th>Ce qui en est retenu</th>
+</tr></thead><tbody>
+<tr>
+<td>Pennylane</td>
+<td>export FEC en <code>.txt</code> tabulé dans un ZIP, avec en option les pièces <strong>nommées par leur PieceRef</strong>. Ses exports vers d'autres logiciels n'ont pas valeur de FEC, le logiciel d'arrivée produit le légal.</td>
+</tr>
+<tr>
+<td>Qonto</td>
+<td>CSV, XLSX, FEC ; les pièces jointes dans un ZIP, leur nom dans une colonne ; plan de comptes réglable par l'utilisateur (ajout à la main ou import CSV).</td>
+</tr>
+<tr>
+<td>Tiime</td>
+<td>le comptable travaille dans Tiime Expert ; vers Quadra, <strong>un numéro de pièce de 8 caractères au plus, sans « / »</strong>.</td>
+</tr>
+<tr>
+<td>Indy</td>
+<td>FEC, grand livre et journal téléchargeables ; le réglage des comptes par l'utilisateur n'a pas pu être confirmé.</td>
+</tr>
+</tbody></table></div>
+<p>Les quatre se rejoignent : un fichier d'écritures, les pièces à côté nommées par leur numéro, une correspondance catégorie et compte que l'utilisateur règle, et le FEC légal laissé au logiciel comptable.</p>
+<h2 id="fait-autrement-que-demandé-et-pourquoi">Fait autrement que demandé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Demandé ou supposé</th>
+<th>Fait</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>« Matériel » reste une catégorie</td>
+<td>partagé en trois : matériaux et plants, petit outillage, matériel de plus de 500 €</td>
+<td>ses trois nouvelles catégories le recouvrent en entier</td>
+</tr>
+<tr>
+<td>Hôtel au 6251 (brouillon d'une session précédente)</td>
+<td>6256</td>
+<td>usage des sources lues</td>
+</tr>
+<tr>
+<td>Sous-traitance au 611 (même brouillon)</td>
+<td>604</td>
+<td>BOFiP : ce qui entre dans l'ouvrage</td>
+</tr>
+<tr>
+<td>Le fichier s'appelle « le FEC »</td>
+<td>il garde ce nom à l'écran, mais son nom de fichier n'imite pas le légal</td>
+<td>ne jamais laisser croire au FEC de l'exercice</td>
+</tr>
+</tbody></table></div>
+<h2 id="ajouté-sans-demande">Ajouté sans demande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>TVA versée (44551).</strong> Sans elle, le paiement de la TVA tombait dans Impôts et taxes (635) et passait pour une charge.</li>
+<li><strong>Les autres entrées</strong> (apport, prêt reçu, aide, entre mes comptes, remboursement) : le FEC ne peut pas laisser une ligne de banque sans compte, et l'appli connaît déjà ces motifs (<code>MOTIFS_RECUS</code>).</li>
+<li><strong>La TVA en attente du paiement (44574)</strong>, pour suivre l'exigibilité aux encaissements.</li>
+</ul>
+<h2 id="ce-qui-reste-ouvert-et-qui-le-tranche">Ce qui reste ouvert, et qui le tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La liste des numéros, relue une fois</td>
+<td>son comptable</td>
+</tr>
+<tr>
+<td>Cotisations du patron (646) et des salariés (431) dans une seule catégorie : le comptable sépare, ou Cause en fait deux</td>
+<td>lui</td>
+</tr>
+<tr>
+<td>L'autoliquidation d'un sous-traitant (clôture, terrassement) : facture sans TVA, le FEC doit l'ajouter des deux côtés. Aucun texte ne nomme l'aménagement paysager ; l'élagage seul n'y est pas soumis (rescrit BOI-RES-TVA-000269 du 9 septembre 2026)</td>
+<td>à vérifier avec son comptable avant le codage</td>
+</tr>
+<tr>
+<td>Les photos des pièces nommées A 189, A 190, en plus des trois fichiers, comme Pennylane</td>
+<td>lui</td>
+</tr>
+<tr>
+<td>Un numéro de facture comme <code>F-2026-041</code> fait 10 caractères : Quadra en refuse plus de 8</td>
+<td>à vérifier si son comptable est sur Quadra</td>
+</tr>
+<tr>
+<td>Où se posent les trois fichiers dans Pour mon comptable</td>
+<td>la planche suivante, sur son vrai écran</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vu en lisant les sources, hors de ce lot :</strong> l'appli ne déduit pas la TVA d'un repas sans client (<code>src/lib/achat-tva.ts</code>, « repas perso, 0 % »). Le repas d'un salarié sur un chantier n'est ni « perso » ni « d'affaires » : la règle peut faire perdre une TVA déductible. Non tranché ici, à regarder avec son comptable.</p>
+<h2 id="limites-de-la-vérification">Limites de la vérification</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Légifrance, l'ANC, impots.gouv.fr et les sites de Pennylane et des cabinets étaient bloqués depuis ce poste : seul le BOFiP a été lu en entier. Le reste vient d'extraits de moteur de recherche de ces pages. Les verdicts « moyenne » sont ceux où les sources se contredisent.</p>
+</main>
+</body>
+</html>

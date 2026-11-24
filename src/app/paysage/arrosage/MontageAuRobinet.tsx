@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { colors } from "@/lib/design-tokens";
 import Robinet3D from "./Robinet3D";
 import type { Poste } from "@/lib/arrosage/postes";
-import { DOSSIER_PHOTOS_ROBINET, ROBINET, type Depart, type PieceDuRobinet } from "@/lib/arrosage/robinet";
+import { DOSSIER_PHOTOS_ROBINET, ROBINET, roleEn3D, type Depart, type PieceDuRobinet, type RoleEn3D } from "@/lib/arrosage/robinet";
 
 /**
  * LE MONTAGE AU ROBINET, PIÈCE SOUS PIÈCE — éclaté comme la nourrice, sa
@@ -49,12 +49,15 @@ export default function MontageAuRobinet({
   const [repli, setRepli] = useState(false);
   const surPrete = useCallback((oui: boolean) => setRepli(!oui), []);
   const double = postes.some((p) => p.cle === "am:double");
+  // Une pièce supprimée reste dans la pile, grisée dans la 3D comme dans la liste.
+  const retirees = postes.filter((p) => p.retiree).map((p) => roleEn3D(p.cle)).filter((r): r is RoleEn3D => r !== null);
   const etages = (photos: boolean) => postes.map((p, i) => <Etage key={p.cle} p={p} premier={i === 0} photos={photos} depart={depart} nez={nez} manque={manque} onPiece={onPiece} />);
   return (
     <div data-atlas="montage-robinet">
       <Robinet3D
         nez={nez}
         double={double}
+        retirees={retirees}
         depart={depart}
         onPrete={surPrete}
         repli={

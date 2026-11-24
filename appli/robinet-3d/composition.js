@@ -62,6 +62,17 @@ export function pile(o) {
   return liste.concat(d.pieces);
 }
 
+// LES PIÈCES SUPPRIMÉES DE LA LISTE, que la scène grise (sa réponse du 24 novembre 2026 : « grise-la ») :
+// l'écran dit le rôle de l'étage dans la pile (« double », « programmateur », « raccord », « tuyau »),
+// la composition sait quelle pièce le tient dans cette combinaison. Un rôle absent de la pile (la double
+// sortie éteinte, pas de programmateur) ne donne rien.
+//   piecesDesRoles({ programmateur: "solem", double: true, depart: "pe25" }, ["double"])  // ["double-sortie-BRO3493"]
+export function piecesDesRoles(o, roles) {
+  var p = o.programmateur ? PROGRAMMATEURS[o.programmateur] : null, d = DEPARTS[o.depart];
+  var de = { double: o.double ? "double-sortie-BRO3493" : null, programmateur: p ? p.cle : null, raccord: d ? d.pieces[0] : null, tuyau: d ? d.pieces[1] : null };
+  return (roles || []).map(function (r) { return de[r]; }).filter(Boolean);
+}
+
 // Deux bouts se vissent-ils ? Un mâle dans une femelle, du même filetage.
 function accord(a, b) { return !!(a && b && a.genre !== b.genre && a.gaz === b.gaz); }
 

@@ -1,5 +1,97 @@
 # Prochaines tâches
 
+## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
+
+Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §615, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
+
+- **Reste** : la batterie (niveau 3), puis `main`.
+- ~~**La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : à lui de choisir sur la planche, puis coder.~~ **Choisie et codée le 23 novembre 2026** : *« Sur la nourrice de gauche, il n'y a pas la flèche pour arriver d'eau. Tu peux la rajouter. Sinon après, c'est bon, tu peux coder. Ne lance pas de batterie. »* À côté, une flèche par nourrice, l'amenée en schéma, et le PDF en deux photos (`ARCHITECTURE.md` §615). Comprise dans la batterie du lot.
+- **Le montage d'un devis de fournisseur au-delà de six électrovannes** (`montageDuDevis`, `devis-du-plan.ts`) : il ne compose qu'une nourrice, et sept électrovannes n'en montrent aucune (sans erreur, comme avant ce lot). À passer à `composerLesNourrices` dans un lot à lui ; vu le 23 novembre 2026.
+- ~~**Les mots « goutte-à-goutte » de deux voies voisines se chevauchent** sur la nourrice en 3D, à corriger dans le module.~~ Sa réponse du 23 novembre 2026 : GAG et l'escalier, planche `appli/arrosage-nourrice-3d-gag.html`, puis *« c'est bien »* et *« pareil pour 12 vannes »*. **Codé** (`reperes.js`, et l'écran de secours `Dessin`) : sa section plus haut.
+- **Le second regard se place par lui**, comme le premier : le croquis ne le porte pas encore, et le tuyau du té au second regard reste « à mesurer ».
+- **Les instantanés des planches d'arrosage** ne portent aucune de ces règles (ligne Rain Bird, plus bas).
+
+## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE (24 novembre 2026)
+
+**Ses choix du 24 novembre, à ne pas lui redemander :** trois fichiers séparés
+dans le même envoi (PDF, Excel, FEC), le comptable prend celui qu'il veut ; le
+registre des ventes d'abord (numéro, date, client, chantier, HT, TVA par taux,
+TTC, payée le, reste dû) ; puis chaque catégorie de dépense sur sa page, par
+date, avec le côte à côte du dossier actuel (ligne de banque à gauche, pièce
+réécrite à droite, total surligné bleu gris) ; un numéro de compte à côté de
+chaque catégorie, proposé par Cause, modifiable dans Réglages et repris dans les
+trois fichiers ; les salaires : le comptable calcule la paie (jours travaillés,
+paniers) et envoie la fiche, l'entreprise vire, le virement va en Salaires au
+**421** (jamais 641 : compté deux fois) avec la fiche comme pièce ; chaque pièce
+porte un numéro (A 189), le même dans les trois fichiers, renvoyant à sa ligne
+de banque. Catégories : matériaux et plants, petit outillage, sous-traitance,
+loyer, assurances, téléphone et internet, frais de banque, impôts et taxes,
+salaires, cotisations sociales, matériel de plus de 500 €, emprunt, prélèvement
+personnel, et À classer (471) à la place d'Autre.
+
+**Planche :** `appli/soignee/comptable-trois-fichiers.html` (les quatre pages
+du PDF, l'Excel à quatre onglets, le FEC, le réglage des numéros ; l'Excel et le
+FEC se téléchargent pour de vrai). Elle remplace le brouillon du même nom laissé
+sur `claude/determined-sagan-62y464`. Les numéros, leurs sources et ce qui a été
+corrigé (hôtel 6256, sous-traitance 604, aides 741, 60622 hors PCG) :
+`docs/dossier-comptable-trois-fichiers.md`.
+
+**Le fichier FEC de Cause est un fichier d'import, jamais le FEC de
+l'exercice** (BOI-CF-IOR-60-40-20 § 40) : il ne prend pas le nom légal
+`SirenFECAAAAMMJJ` (`123456789_import_FEC_2026-10.txt`), et son ValidDate reste
+vide. Planche et PDF le disent.
+
+**Sa règle du 24 novembre, pour les trois fichiers : aucun texte gris.** *« Vu
+que c'est des documents comptables, il faut que ça soit lisible facilement. Tout
+ce qui est gris clair, tu le mets en noir. Ce que tu veux faire ressortir, soit
+tu modifies la police, soit tu mets en gras. »* Appliqué à la planche le jour
+même. **Au codage**, `src/server/pdf/dossier-comptable-pdf.ts` écrit encore en
+`DOUX` et en `GRIS` (dates, sous-lignes, pied de page, étiquettes) : tout passe
+en `ENCRE`.
+
+**Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
+tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.
+Non : quatorze catégories manquaient (location de matériel 6135, garage 6155,
+leasing 6122, électricité 6061, bureau 6064, logiciels 6135, publicité 623,
+honoraires 6226, cotisations professionnelles 6281, formation 6228, déchets
+verts 6288, vêtements de travail 6063, retraite et mutuelle des salariés 437,
+impôt prélevé sur les salaires 4421). Ajoutées, rangées par familles. Le paysage
+cotise à la **MSA**, pas à l'URSSAF : la ligne d'essai est corrigée.
+
+**Ce qu'il avait compris de travers, et qu'il ne faut pas lui laisser croire :**
+les trois fichiers ne s'allument pas entre eux. Le surlignage est un geste de la
+planche pour montrer où le numéro de pièce est imprimé ; chez le comptable, ce
+sont trois fichiers séparés que relie ce numéro. **Où ils se rangent, proposé :**
+dans Mes dossiers, sous le dossier arrêté, à la place du PDF seul
+(`MesDossiers.tsx`, `pdfDuDossier`), et sur la page du lien du comptable
+(`src/app/comptable/[jeton]`). Cette planche se fige sur ses vrais écrans, ce
+qui demande de lancer l'appli ici : son « oui » d'abord (`CLAUDE.md` §5).
+
+**À trancher par lui :** cotisations du patron (646) et des salariés (431) dans
+une seule catégorie ou deux ; les photos des pièces nommées par leur numéro en
+plus des trois fichiers. **Par son comptable, avant le codage :** la liste des
+numéros ; l'autoliquidation d'un sous-traitant en travaux immobiliers (le FEC
+doit alors porter la TVA des deux côtés, pas encore dessiné). Rien dans `src/`
+avant son choix. Avant de la lui redemander, chercher `comptable-trois-fichiers`
+dans `src/`.
+
+## ✅ LE ROBINET SANS PROGRAMMATEUR : C'EST LE ROBINET AVEC REGARD (24 novembre 2026)
+
+Sa remarque : *« on a oublié de faire un montage. C'est sans programmateur [...] juste une double
+sortie d'arrosage. Ou pas, si le client n'en veut pas. Et ensuite, tout de suite, le 25 taraudé 3/4 ou
+le 32 taraudé 3/4 [...] et le 25 ou le 32. »* Planche : `appli/arrosage-robinet-3d.html`, « Sans » au
+programmateur, et la double sortie Avec ou Sans. L'écran du plan au robinet montre déjà cette pile
+quand le programmateur est à la nourrice (`Robinet3D`, `programmateur: null`). ~~**À lui de dire** si ce
+montage doit aussi exister sans aucun programmateur dans le plan (un arrosage ouvert à la main).~~ Sa
+réponse : *« en fait, à quoi ça sert ? »* ; au robinet, c'est avec regard (nourrice et BL-IP) ou sans
+regard (programmateur en nez de robinet), et au compteur toujours un regard. Ses mots : *« si on se
+repique après compteur, il faut forcément un regard. Mais si on se repique sur un robinet, on peut soit
+avoir un regard, soit ne pas avoir de regard et du coup avoir un programmateur en [nez de robinet] »*,
+et *« les programmateurs en [nez de robinet], c'est seulement si on n'a pas de regard »*. Le choix
+existe déjà à l'écran (« Le montage » : « Programmateur en nez de robinet » ou « Avec la nourrice »).
+**Sa règle attend d'entrer dans `.claude/rules/arrosage.md`** : c'est de l'outillage (niveau 2), écrit
+sur la branche `claude/laughing-wright-xxntzg`, en attente de son accord pour le contrôle.
+
 ## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
 
 Sa demande, après avoir vu qu'Entreprise ouvrait encore les outils de paysage :
@@ -48,17 +140,6 @@ leurs lignes s'y retrouvent) : la fiche de chantier soignée, « Solde », le
 répertoire des métiers, « J'ai reçu le paiement », la date d'un chantier
 terminé, la visionneuse des retours, l'assistant hors métier, les tubes
 d'arrosage, Jours travaillés.
-
-## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
-
-Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §615, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
-
-- **Reste** : la batterie (niveau 3), puis `main`.
-- ~~**La nourrice en 3D et la vue éclatée du PDF avec deux nourrices** : à lui de choisir sur la planche, puis coder.~~ **Choisie et codée le 23 novembre 2026** : *« Sur la nourrice de gauche, il n'y a pas la flèche pour arriver d'eau. Tu peux la rajouter. Sinon après, c'est bon, tu peux coder. Ne lance pas de batterie. »* À côté, une flèche par nourrice, l'amenée en schéma, et le PDF en deux photos (`ARCHITECTURE.md` §615). Comprise dans la batterie du lot.
-- **Le montage d'un devis de fournisseur au-delà de six électrovannes** (`montageDuDevis`, `devis-du-plan.ts`) : il ne compose qu'une nourrice, et sept électrovannes n'en montrent aucune (sans erreur, comme avant ce lot). À passer à `composerLesNourrices` dans un lot à lui ; vu le 23 novembre 2026.
-- ~~**Les mots « goutte-à-goutte » de deux voies voisines se chevauchent** sur la nourrice en 3D, à corriger dans le module.~~ Sa réponse du 23 novembre 2026 : GAG et l'escalier, planche `appli/arrosage-nourrice-3d-gag.html`, puis *« c'est bien »* et *« pareil pour 12 vannes »*. **Codé** (`reperes.js`, et l'écran de secours `Dessin`) : sa section plus haut.
-- **Le second regard se place par lui**, comme le premier : le croquis ne le porte pas encore, et le tuyau du té au second regard reste « à mesurer ».
-- **Les instantanés des planches d'arrosage** ne portent aucune de ces règles (ligne Rain Bird, plus bas).
 
 ## ✅ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ AVEC LES DEUX NOURRICES (23 novembre 2026)
 
@@ -295,7 +376,7 @@ Proposé : poser une vraie question avant le plan quand le piquage est sur un ro
 
 - **Les neuf** : trois programmateurs (Solem BL-NR SP1151, Rain Bird, Buddy AEV11401) fois trois départs (Ø16 rigide par le raccord Plasson taraudé, Ø16 souple par l'embout Palaplast MID6362, PEHD Ø25 ou Ø32 par le raccord femelle 25 OPL70302520 et le PEHD de la nourrice). Toutes partent de son robinet et de la double sortie BRO3493. Deux rangées de boutons sur la page.
 - **Les neuf lui ont plu, et c'est CODÉ le 23 novembre 2026** sur son « Parfait, code ça » (`ARCHITECTURE.md` §608) : `MontageAuRobinet` montre la pile en 3D (`Robinet3D`) au-dessus de la liste de ses pièces ; la pile en photos n'est plus que le repli. **Sur `main` depuis le 23 novembre 2026**, batterie au vert. **Reste** : regarder l'écran du plan au robinet (jamais ouvert ici) et l'essayer sur un iPhone.
-- **Une pièce changée ou supprimée ne se voit pas dans la 3D du robinet**, comme sur la nourrice : la liste dessous le dit. Le poser dans la 3D demande une matière par pose dans `scene.js` : à lui proposer, pour les deux à la fois.
+- ~~**Une pièce changée ou supprimée ne se voit pas dans la 3D du robinet**, comme sur la nourrice.~~ **Supprimée : grisée dans la 3D du robinet**, sur sa réponse du 24 novembre 2026 (*« grise-la »*), par le voile de « Voir » (`scene.js`, `griser` ; `piecesDesRoles`, `roleEn3D`). Sur la pile chaque pièce est seule, le voile par modèle suffit. **Reste** : une pièce changée (dessinée telle qu'elle était proposée), et la nourrice, où une électrovanne sur cinq peut sortir : il y faut une matière par pose.
 - **Le Rain Bird et le Buddy ne sont que sur la planche** : le plan ne connaît que le Solem BL-NR (`src/lib/arrosage/robinet.ts`, `ROBINET.programmateur`). Les proposer dans le plan, c'est un choix de programmateur dans le plan, et leurs pièces dans la liste : à lui demander.
 - **Le Rain Bird prend la sortie DROITE** (décidé sans lui, et dit) : son boîtier part d'un seul côté de l'eau ; sur la sortie gauche il passait sous la sortie du client, et le tourner mettait son écran contre le mur. Le Solem et le Buddy restent sur la gauche (le Buddy s'arrête à 18 mm de la sortie droite, mesuré). Le Rain Bird n'est pas au catalogue Aqua Plus : il garde son nom de marque, sans référence.
 - **Ce qui est estimé faute de photo, et la photo qui le rendrait exact** (il les a proposées le 23, puis « fais avec ce que tu as ») : le robinet de profil (le relief en V du corps, le départ vers le mur), le Solem de face (son épaisseur), le Buddy et le Rain Bird de côté (leur épaisseur, le dos du Rain Bird), la double sortie de dessus (l'épaisseur du corps).

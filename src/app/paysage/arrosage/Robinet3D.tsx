@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { colors } from "@/lib/design-tokens";
-import { departEn3D, type Depart } from "@/lib/arrosage/robinet";
+import { departEn3D, type Depart, type RoleEn3D } from "@/lib/arrosage/robinet";
 
 /**
  * LA PILE DU ROBINET EN 3D, À L'ÉCRAN DU PLAN — sa planche
@@ -19,16 +19,17 @@ import { departEn3D, type Depart } from "@/lib/arrosage/robinet";
  * nourrice reste), la double sortie (son interrupteur) et le départ. Le
  * programmateur de l'écran est le Solem BL-NR, le seul que le plan connaît.
  *
- * **Ce que la 3D ne montre pas** : une pièce changée ou supprimée dans la liste
- * reste dessinée telle qu'elle était proposée, comme sur la nourrice
- * (`TODO.md`). La liste dessous dit ce qui part.
+ * **Une pièce supprimée de la liste se grise dans la 3D** (sa réponse du
+ * 24 novembre 2026 : « grise-la »), sous le voile de « Voir », et reste à sa
+ * place dans la pile. **Une pièce changée**, elle, reste dessinée telle qu'elle
+ * était proposée (`TODO.md`) : la liste dessous dit laquelle part.
  *
  * **Quand l'appareil ne sait pas afficher la 3D** (WebGL 2 absent, chargement
  * raté, une pile qui ne se compose pas), l'écran montre la pile en photos d'avant
  * (`repli`) : l'artisan garde son montage, plutôt qu'une phrase à la place.
  */
 type Vue = "face" | "biais" | "";
-type Choix = { programmateur: string | null; double: boolean; depart: "r16" | "s16" | "pe25" };
+type Choix = { programmateur: string | null; double: boolean; depart: "r16" | "s16" | "pe25"; retirees: RoleEn3D[] };
 type RobinetOuvert = {
   montrer(choix: Choix): void;
   eclater(oui: boolean): void;
@@ -46,6 +47,7 @@ const VUES: { cle: Exclude<Vue, "">; nom: string }[] = [
 export default function Robinet3D({
   nez,
   double,
+  retirees,
   depart,
   repli,
   onPrete,
@@ -53,6 +55,8 @@ export default function Robinet3D({
   /** Au nez de robinet : le programmateur se visse sous le robinet. Sinon la nourrice reste, et rien ne s'y visse que le départ. */
   nez: boolean;
   double: boolean;
+  /** Les étages supprimés de la liste : ils restent dans la pile, grisés. */
+  retirees: RoleEn3D[];
   depart: Depart;
   repli: ReactNode;
   /** La 3D s'affiche, ou la pile en photos la remplace. */
@@ -65,7 +69,9 @@ export default function Robinet3D({
   const [vue, setVue] = useState<Vue>("face");
   // Le dernier montage demandé : s'il change pendant le chargement, c'est lui que la scène pose.
   const programmateur = nez ? "solem" : null, depart3D = departEn3D(depart);
-  const demande = useRef<Choix>({ programmateur, double, depart: depart3D });
+  // En un mot : un tableau neuf à chaque rendu recomposerait la pile pour rien.
+  const grisees = retirees.join(",");
+  const demande = useRef<Choix>({ programmateur, double, depart: depart3D, retirees });
 
   useEffect(() => {
     const canvas = toile.current;
@@ -108,7 +114,7 @@ export default function Robinet3D({
   }, [etat, onPrete]);
 
   useEffect(() => {
-    demande.current = { programmateur, double, depart: depart3D };
+    demande.current = { programmateur, double, depart: depart3D, retirees: grisees ? (grisees.split(",") as RoleEn3D[]) : [] };
     const v = ouverte.current;
     if (!v) return;
     // Par une promesse, comme l'ouverture : un refus de recomposer prend le même chemin vers le repli.
@@ -118,7 +124,7 @@ export default function Robinet3D({
         console.error("La pile du robinet en 3D ne se recompose pas, les photos la remplacent :", erreur);
         setEtat("repli");
       });
-  }, [programmateur, double, depart3D]);
+  }, [programmateur, double, depart3D, grisees]);
 
   if (etat === "repli") return <>{repli}</>;
 
