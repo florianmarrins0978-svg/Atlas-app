@@ -1,5 +1,35 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE TICKET LISIBLE (24 novembre 2026)
+
+**Sa remarque :** *« quand je prenais un ticket en photo et que tu le recréais
+dans l'application, on voyait quasiment rien »*, puis *« garder seulement le
+ticket, c'est faisable ? Beaucoup de tickets vont être pris sur les genoux ou
+dans une main. Ça coûte de l'IA ou pas ? »*
+
+**Lu dans le code :** le dossier PDF réécrit le ticket en Courier de 7,6 points
+(`dossier-comptable-pdf.ts`, `rang`, police standard à trait fin) dans une
+colonne de 186 points ; sur un téléphone, environ 5 pixels. La page du
+comptable (`Reconstituee`, `Verification.tsx`) l'écrit en 11,5 px. Où il l'a
+vu au juste n'a pas été regardé sur son écran (question posée, sans réponse :
+le PDF supposé).
+
+**Planche :** `appli/soignee/ticket-lisible.html`. Le recadrage y tourne pour
+de vrai, dans le navigateur, sans IA : le papier est clair et peu coloré, la
+plus grande tache claire est gardée, ses bords prolongés retrouvent un coin
+caché sous le pouce, une homographie redresse, une division par le fond efface
+les ombres. 20 à 40 ms sur la photo d'essai ; il peut l'essayer sur ses photos.
+Puis le ticket du dossier : A (réécrit lisible, écriture pleine, total plus
+grand), B (A, plus la photo nettoyée dessous).
+
+**Refusé, et dit :** une photo « réaliste » générée par l'IA (faux
+justificatif dans un dossier comptable, et un coût par image). **Gardé :** la
+photo d'origine telle quelle, c'est la pièce ; la version nettoyée sert à lire.
+
+**À trancher par lui :** A ou B ; ajuster les coins à chaque photo ou seulement
+quand la détection doute. Rien dans `src/` avant son choix. Au codage, le même
+calcul (fonction pure, `src/lib/`) sert au téléphone et au serveur.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE (24 novembre 2026)
 
 **Ses choix du 24 novembre, à ne pas lui redemander :** trois fichiers séparés
