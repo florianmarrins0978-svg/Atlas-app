@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { PDFDocument, rgb } from "pdf-lib";
 import { composerDossierComptable, type DonneesDossier, type LignePourLeDossier } from "../src/server/pdf/dossier-comptable-pdf";
+import { textesGris } from "./_couleurs-du-texte-pdf";
 
 // POUR MON COMPTABLE, LOT 3 — le PDF du dossier, ouvert et relu.
 //
@@ -120,40 +121,6 @@ async function lirePages(octets: Uint8Array): Promise<PageLue[]> {
   return pages;
 }
 
-/**
- * La couleur de chaque texte écrit, relue dans les opérations de la page : la
- * dernière couleur de remplissage posée avant chaque « écrire ». Rend, pour
- * chaque couleur en #rrggbb, le nombre de textes écrits avec elle.
- */
-async function couleursDuTexte(octets: Uint8Array): Promise<Map<string, number>> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const standardFontDataUrl = `${pathToFileURL(path.resolve("node_modules/pdfjs-dist/standard_fonts")).href}/`;
-  const doc = await pdfjs.getDocument({ data: octets.slice(), standardFontDataUrl }).promise;
-  const { OPS } = pdfjs;
-  const ecrire = new Set([OPS.showText, OPS.showSpacedText, OPS.nextLineShowText, OPS.nextLineSetSpacingShowText]);
-  const hex = (a: unknown[]): string =>
-    typeof a[0] === "string" ? a[0].toLowerCase() : `#${(a as number[]).slice(0, 3).map((v) => Math.round(v <= 1 ? v * 255 : v).toString(16).padStart(2, "0")).join("")}`;
-  const vu = new Map<string, number>();
-  for (let i = 1; i <= doc.numPages; i++) {
-    const ops = await (await doc.getPage(i)).getOperatorList();
-    let courante = "#000000";
-    const pile: string[] = [];
-    ops.fnArray.forEach((fn, k) => {
-      if (fn === OPS.save) pile.push(courante);
-      else if (fn === OPS.restore) courante = pile.pop() ?? "#000000";
-      else if (fn === OPS.setFillRGBColor) courante = hex(ops.argsArray[k] as unknown[]);
-      else if (ecrire.has(fn)) vu.set(courante, (vu.get(courante) ?? 0) + 1);
-    });
-  }
-  return vu;
-}
-
-/** Un gris : les trois teintes presque égales, et plus clair que l'encre (#1c1c1a). */
-function estGris(hexa: string): boolean {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hexa.slice(i, i + 2), 16));
-  return Math.max(r, g, b) - Math.min(r, g, b) <= 24 && Math.max(r, g, b) > 0x30;
-}
-
 const tout = (pages: PageLue[]) => pages.map((p) => p.texte).join("\n");
 const liensVers = (pages: PageLue[], texte: RegExp) => pages.flatMap((p) => p.liens.filter((k) => texte.test(k.texte)).map((k) => ({ depuis: p.numero, ...k })));
 const COLONNES = /DATE LIGNE DE BANQUE MONTANT JUSTIFICATIF/;
@@ -212,11 +179,10 @@ async function main() {
   // facilement ; tout ce qui est gris clair, tu le mets en noir ; ce que tu
   // veux faire ressortir, soit tu modifies la police, soit tu mets en gras ».
   await test("aucun texte n'est écrit en gris : un document comptable se lit en noir", async () => {
-    const couleurs = await couleursDuTexte(octets);
+    const { total, encre, grises } = await textesGris(octets);
     // Une relecture qui ne trouverait aucun texte ne prouverait rien.
-    assert.ok([...couleurs.values()].reduce((a, n) => a + n, 0) > 50, "presque aucun texte relu : le contrôle ne mesure rien");
-    assert.ok(couleurs.has("#1c1c1a"), "l'encre du document n'a pas été relue");
-    const grises = [...couleurs].filter(([c]) => estGris(c)).map(([c, n]) => `${c} (${n} textes)`);
+    assert.ok(total > 50, "presque aucun texte relu : le contrôle ne mesure rien");
+    assert.ok(encre, "l'encre du document n'a pas été relue");
     assert.deepEqual(grises, [], `des textes sont écrits en gris : ${grises.join(", ")}`);
   });
 
