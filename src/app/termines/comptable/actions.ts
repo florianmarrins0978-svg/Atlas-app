@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ecartDeMontant, estMotif } from "@/lib/pour-mon-comptable";
+import { estCleCompta } from "@/lib/categories-comptables";
 import { enEuros } from "@/lib/euros";
 import { montantSaisi } from "@/lib/achat-tva";
 import { enCentimes, montantANoter } from "@/lib/rapprochement-bancaire";
@@ -23,6 +24,7 @@ import { logger } from "@/server/logger";
 import {
   appliquerCheckUp,
   delier,
+  poserCategorie,
   joindreFactureHorsAtlas,
   joindreFactureRecue,
   ligneDeposable,
@@ -119,6 +121,18 @@ export async function delierAction(mouvementId: string): Promise<Fait> {
   if (!UUID.test(mouvementId)) return ADRESSE_INVALIDE;
   const ctx = await contexte("défaire la justification d'une ligne");
   return apres(await delier(ctx, mouvementId));
+}
+
+/**
+ * La catégorie du comptable d'une ligne (sa demande du 24 novembre 2026).
+ * `null` la rend à celle que sa pièce dit. Les mêmes droits que justifier une
+ * ligne : c'est la même ligne, au même écran.
+ */
+export async function poserCategorieAction(mouvementId: string, cle: string | null): Promise<Fait> {
+  if (!UUID.test(mouvementId)) return ADRESSE_INVALIDE;
+  if (cle !== null && !estCleCompta(cle)) return { ok: false, raison: "Cette catégorie n'existe pas." };
+  const ctx = await contexte("ranger une ligne dans une catégorie");
+  return apres(await poserCategorie(ctx, mouvementId, cle));
 }
 
 // ─── Un virement reçu se règle dans sa carte (25 octobre 2026) ───────────────

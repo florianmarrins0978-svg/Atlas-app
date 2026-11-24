@@ -114,6 +114,9 @@ const FERME_AU_COMMERCIAL = [
   // qui reste à facturer. Le commercial ne voit pas les factures ; la
   // facturation, elle, la lit (`REGLAGES_DE_LA_FACTURATION`).
   "/reglages/mon-annee",
+  // **Numéros de compte** (24 novembre 2026) : la catégorie de chaque dépense
+  // et de chaque vente, c'est la comptabilité, qu'il ne voit pas.
+  "/reglages/comptes",
   // ───────────────────────────────────────────────────────────────────────
   // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
   //
@@ -255,7 +258,7 @@ const REGLAGES_A_TOUS = [
  * poser l'objectif et allumer la ligne de Terminés restent au patron
  * (`exigerProprietaire` dans `reglages/mon-annee/actions.ts`).
  */
-const REGLAGES_DE_LA_FACTURATION = ["/reglages/mon-annee"] as const;
+const REGLAGES_DE_LA_FACTURATION = ["/reglages/mon-annee", "/reglages/comptes"] as const;
 
 /**
  * CE QUE LA FACTURATION ATTEINT, ET RIEN D'AUTRE.

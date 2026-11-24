@@ -6,7 +6,8 @@ import { colors, font } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
 import type { Categorie } from "@/lib/pour-mon-comptable";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { delierAction } from "../actions";
+import { delierAction, poserCategorieAction } from "../actions";
+import { FAMILLES, NOM_FAMILLE, type CleCompta, type Famille } from "@/lib/categories-comptables";
 import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
 import CarteARegarder from "../CarteARegarder";
 import type { ARegarder, Facture } from "../a-regarder";
@@ -27,7 +28,15 @@ export type LigneAffichee = {
   defaisable: boolean;
   /** Une ligne à justifier porte ses gestes dessous (sa demande du 27 octobre, option B). */
   carte: ARegarder | null;
+  /**
+   * Sa catégorie du comptable et son numéro (24 novembre 2026), `null` pour un
+   * paiement de client : sa facture le range.
+   */
+  compta: { cle: CleCompta; nom: string; numero: string; choisie: boolean } | null;
 };
+
+/** Une catégorie qu'une ligne peut prendre, avec le numéro qui partira chez le comptable. */
+export type ChoixDeCategorie = { cle: CleCompta; nom: string; numero: string; famille: Famille };
 
 type Filtre = "tout" | "manque" | Categorie;
 
@@ -46,17 +55,39 @@ const SIGNE: Record<LigneAffichee["preuve"]["genre"], NomIcone> = { ok: "coche",
  * dois pouvoir voir la photo du ticket »), avec « Ce n'est pas le bon ticket » :
  * la ligne repasse à justifier (« s'il se trompe, je peux annuler ? »).
  */
-export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; factures: Facture[] }) {
+export default function Releve({
+  lignes,
+  factures,
+  choix,
+}: {
+  lignes: LigneAffichee[];
+  factures: Facture[];
+  choix: Record<"sortie" | "entree", ChoixDeCategorie[]>;
+}) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [filtre, setFiltre] = useState<Filtre>("tout");
   const [ouverte, setOuverte] = useState<LigneAffichee | null>(null);
   const [refus, setRefus] = useState<string | null>(null);
+  /** La ligne qu'on range dans une catégorie : la feuille des catégories est ouverte. */
+  const [rangee, setRangee] = useState<LigneAffichee | null>(null);
 
   // Les couleurs sont celles des dépenses : un virement reçu n'a pas de filtre à lui.
   const presentes = useMemo(() => ORDRE_CATEGORIES.filter((c) => lignes.some((l) => l.sens === "sortie" && l.categorie === c)), [lignes]);
   const visibles = lignes.filter((l) => (filtre === "tout" ? true : filtre === "manque" ? l.aJustifier : l.sens === "sortie" && l.categorie === filtre));
 
+  function ranger(l: LigneAffichee, cle: CleCompta | null) {
+    setRefus(null);
+    demarrer(async () => {
+      const r = await poserCategorieAction(l.id, cle);
+      if (!r.ok) {
+        setRefus(r.raison);
+        return;
+      }
+      setRangee(null);
+      router.refresh();
+    });
+  }
   function defaire(l: LigneAffichee) {
     setRefus(null);
     demarrer(async () => {
@@ -108,8 +139,11 @@ export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; 
                 <span className="mt-1.5 inline-block h-2.5 w-2.5 flex-none rounded-full" style={{ backgroundColor: COULEUR_CATEGORIE[l.categorie] }} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-[16px] font-medium [overflow-wrap:anywhere]">{l.libelle}</span>
-                  <span className="mt-px block text-[14px]" style={{ color: colors.inkSoft }}>
-                    {NOM_CATEGORIE[l.categorie]}
+                  {/* La catégorie du comptable et son numéro, à la place du mot de
+                      la couleur : une demande d'affichage change le texte, jamais
+                      la place (`CLAUDE.md` §3). */}
+                  <span className="mt-px block text-[14px]" style={{ color: colors.inkSoft }} data-atlas="categorie-de-la-ligne">
+                    {l.compta ? `${l.compta.nom}, ${l.compta.numero}` : NOM_CATEGORIE[l.categorie]}
                   </span>
                   <span
                     className={`mt-[5px] flex items-start gap-1.5 text-[14.5px] leading-[1.35] ${l.preuve.genre === "perdu" ? "italic" : ""} ${["ticket", "manque", "ecart"].includes(l.preuve.genre) ? "font-semibold" : ""}`}
@@ -146,6 +180,11 @@ export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; 
                 )}
                 {l.piece ? (
                   <button type="button" onClick={() => setOuverte(l)} className={`flex w-full items-start gap-3 pb-3 text-left ${pas}`} style={nouveauJour ? undefined : { boxShadow: `inset 0 1px 0 ${colors.line}` }} data-atlas="ligne-avec-ticket">
+                    {contenu}
+                  </button>
+                ) : l.compta ? (
+                  // Une ligne sans pièce à ouvrir s'ouvre sur ses catégories.
+                  <button type="button" onClick={() => setRangee(l)} className={`flex w-full items-start gap-3 pb-3 text-left ${pas}`} style={nouveauJour ? undefined : { boxShadow: `inset 0 1px 0 ${colors.line}` }} data-atlas="ligne-du-releve">
                     {contenu}
                   </button>
                 ) : (
@@ -188,6 +227,23 @@ export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; 
             <p className="mb-3 mt-3.5 text-center text-[15px]" style={{ color: colors.inkSoft }}>
               {ouverte.preuve.texte}
             </p>
+            {ouverte.compta && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRangee(ouverte);
+                  setOuverte(null);
+                }}
+                className="mb-2 flex min-h-[52px] w-full items-center justify-between gap-3 rounded-[14px] px-4 text-left text-[15.5px]"
+                style={{ backgroundColor: colors.card, color: colors.ink }}
+                data-atlas="changer-la-categorie"
+              >
+                <span>
+                  {ouverte.compta.nom}, <b className="tabular-nums" style={{ color: colors.orTexte }}>{ouverte.compta.numero}</b>
+                </span>
+                <Icone nom="suivant" taille={18} />
+              </button>
+            )}
             {ouverte.defaisable && (
               <button type="button" disabled={enCours} onClick={() => defaire(ouverte)} className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full text-[16px] font-medium disabled:opacity-60" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="pas-le-bon-ticket">
                 <Icone nom="annuler" taille={21} />
@@ -200,6 +256,69 @@ export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; 
               </p>
             )}
             <button type="button" onClick={() => setOuverte(null)} className="mt-0.5 min-h-[48px] w-full text-[16px] font-medium" style={{ color: colors.inkSoft }}>
+              Fermer
+            </button>
+          </div>
+        )}
+      </BottomSheet>
+
+      <BottomSheet open={rangee !== null} onBackdropClick={() => setRangee(null)}>
+        {rangee?.compta && (
+          <div role="dialog" aria-modal="true" aria-label="La catégorie de la ligne" data-atlas="feuille-categories">
+            <p className="text-[22px] leading-[1.25]" style={{ fontFamily: font.display }}>
+              {rangee.libelle}
+            </p>
+            <p className="mt-1 text-[15px]" style={{ color: colors.inkSoft }}>
+              {rangee.jour}, {rangee.montant}
+            </p>
+            {FAMILLES.map((famille) => {
+              const cles = choix[rangee.sens].filter((c) => c.famille === famille);
+              if (cles.length === 0) return null;
+              return (
+                <div key={famille} className="mt-5">
+                  <p className="mb-1.5 text-[13px] font-semibold uppercase" style={{ color: colors.or, letterSpacing: "0.12em" }}>
+                    {NOM_FAMILLE[famille]}
+                  </p>
+                  <ul>
+                    {cles.map((c, i) => {
+                      const pris = rangee.compta?.cle === c.cle;
+                      return (
+                        <li key={c.cle} style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
+                          <button
+                            type="button"
+                            disabled={enCours}
+                            aria-pressed={pris}
+                            onClick={() => ranger(rangee, c.cle)}
+                            className={`flex min-h-[52px] w-full items-center justify-between gap-3 text-left text-[16px] ${pris ? "font-semibold" : ""}`}
+                            style={{ color: colors.ink }}
+                            data-atlas={`categorie-${c.cle}`}
+                          >
+                            <span className="flex items-center gap-2.5">
+                              {pris && <Icone nom="coche" taille={18} epaisseur={2.2} />}
+                              {c.nom}
+                            </span>
+                            <span className="tabular-nums" style={{ color: colors.orTexte }}>
+                              {c.numero}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+            {refus && (
+              <p role="alert" className="mt-3 rounded-[12px] px-3.5 py-2.5 text-center text-[14px]" style={{ backgroundColor: colors.carteRougeFond, color: colors.carteRougeTexte }}>
+                {refus}
+              </p>
+            )}
+            {rangee.compta.choisie && (
+              <button type="button" disabled={enCours} onClick={() => ranger(rangee, null)} className="mt-4 min-h-[48px] w-full text-[16px] font-semibold" style={{ color: colors.orTexte }} data-atlas="categorie-de-la-piece">
+                Reprendre celle que dit la pièce
+              </button>
+            )}
+            <button type="button" onClick={() => setRangee(null)} className="mt-0.5 min-h-[48px] w-full text-[16px] font-medium" style={{ color: colors.inkSoft }}>
               Fermer
             </button>
           </div>

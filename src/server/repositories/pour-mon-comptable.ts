@@ -5,6 +5,7 @@ import { achatsTva, devisRecus, factures, mouvementsBancaires, societesAchat, vi
 import type { NatureAchat } from "@/lib/achat-tva";
 import type { LigneImprimee } from "@/lib/ticket-imprime";
 import { checkUp, ecartDeMontant, estMotif, type Ecart, type Justification, type Motif, type Verdict } from "@/lib/pour-mon-comptable";
+import { categoriesDuSens, estCleCompta, type CleCompta } from "@/lib/categories-comptables";
 import type { Ctx } from "./context";
 
 /**
@@ -27,6 +28,8 @@ export type TicketDeLaLigne = {
   tvaDeductible: string;
   /** Le ticket recopié ligne par ligne (migration 0146), `null` pour un ticket d'avant. */
   lignesImprimees: LigneImprimee[] | null;
+  /** La photo recadrée et nettoyée au téléphone (migration 0198), `null` pour un ticket d'avant. */
+  photoNetteCle: string | null;
 };
 
 export type LigneDuReleve = {
@@ -44,7 +47,7 @@ export type LigneDuReleve = {
   reliePar: "atlas" | "patron" | null;
   motif: Motif | null;
   ticket: TicketDeLaLigne | null;
-  factureRecue: { id: string; nom: string; societe: string; totalTtc: string | null; fichierCle: string; nature: "photo" | "pdf" | "tableur" } | null;
+  factureRecue: { id: string; nom: string; societe: string; totalHt: string | null; totalTtc: string | null; fichierCle: string; nature: "photo" | "pdf" | "tableur" } | null;
   /** Pour une entrée : la facture d'Atlas qu'il a confirmée, sur l'accueil ou dans sa carte. */
   factureEmise: { numero: string; totalTtc: string } | null;
   /** Pour une entrée : la facture faite hors d'Atlas qu'il a jointe (migration 0150). */
@@ -57,6 +60,8 @@ export type LigneDuReleve = {
   ecart: Ecart;
   /** Quand sa justification a été posée : le verdict du comptable s'y rapporte. */
   justifieLe: Date | null;
+  /** La catégorie du comptable que le patron a choisie (migration 0198), `null` s'il n'a rien choisi. */
+  categorieChoisie: CleCompta | null;
 };
 
 /**
@@ -135,7 +140,7 @@ export async function lireLesLignes(tx: DbOrTx, du: string, au: string): Promise
   const idsFactures = lignes.flatMap((l) => (l.factureRecueId ? [l.factureRecueId] : []));
   const recues = idsFactures.length
     ? await tx
-        .select({ id: devisRecus.id, nom: devisRecus.nom, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom, fichierCle: devisRecus.fichierCle, nature: devisRecus.nature })
+        .select({ id: devisRecus.id, nom: devisRecus.nom, totalHt: devisRecus.totalHt, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom, fichierCle: devisRecus.fichierCle, nature: devisRecus.nature })
         .from(devisRecus)
         .innerJoin(societesAchat, eq(societesAchat.id, devisRecus.societeId))
         .where(and(inArray(devisRecus.id, idsFactures), isNull(devisRecus.deletedAt)))
@@ -187,15 +192,16 @@ export async function lireLesLignes(tx: DbOrTx, du: string, au: string): Promise
       reliePar: tient ? l.reliePar : null,
       motif: tient ? l.motif : null,
       ticket: t
-        ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null }
+        ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null, photoNetteCle: t.photoNetteCle }
         : null,
-      factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
+      factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalHt: f.totalHt, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
       factureEmise: emise,
       pieceJointe: tient ? jointe : null,
       // Ticket perdu, motif : pas de pièce, donc rien à comparer. Ne pas savoir
       // n'est pas un écart.
       ecart: totalDeLaPiece === null ? { genre: "inconnu" as const } : ecartDeMontant(l.montant, totalDeLaPiece),
       justifieLe: tient ? l.justifieLe : null,
+      categorieChoisie: estCleCompta(l.categorieComptable) ? l.categorieComptable : null,
     };
   });
 }
@@ -218,7 +224,7 @@ export async function ticketsLibres(ctx: Ctx, du: string, au: string): Promise<T
       .orderBy(asc(achatsTva.dateAchat));
     return lignes
       .filter((t) => !dejaPris.has(t.id))
-      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null }));
+      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null, photoNetteCle: t.photoNetteCle }));
   });
 }
 
@@ -411,6 +417,26 @@ export function poserMotif(ctx: Ctx, mouvementId: string, motif: Motif): Promise
 async function factureConfirmee(tx: DbOrTx, cle: string): Promise<boolean> {
   const [v] = await tx.select({ id: virementsRecus.id }).from(virementsRecus).where(and(eq(virementsRecus.cle, cle), eq(virementsRecus.etat, "confirme"))).limit(1);
   return Boolean(v);
+}
+
+/**
+ * LA CATÉGORIE DU COMPTABLE qu'il choisit pour une ligne (sa demande du
+ * 24 novembre 2026). `null` la rend à celle que sa pièce dit. Une catégorie
+ * d'entrée ne va pas sur une sortie, ni l'inverse : le refus se dit.
+ *
+ * Elle ne touche pas à la justification : la pièce reste la pièce, la
+ * catégorie dit seulement où le comptable la range.
+ */
+export async function poserCategorie(ctx: Ctx, mouvementId: string, cle: CleCompta | null): Promise<Fait> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select({ sens: mouvementsBancaires.sens }).from(mouvementsBancaires).where(eq(mouvementsBancaires.id, mouvementId)).limit(1);
+    if (!ligne) return { ok: false, raison: "Cette ligne n'existe pas." };
+    if (cle !== null && !categoriesDuSens(ligne.sens).includes(cle)) {
+      return { ok: false, raison: ligne.sens === "sortie" ? "Cette catégorie va à l'argent qui entre." : "Cette catégorie va à l'argent qui sort." };
+    }
+    await tx.update(mouvementsBancaires).set({ categorieComptable: cle }).where(eq(mouvementsBancaires.id, mouvementId));
+    return { ok: true };
+  });
 }
 
 /** Défaire : la ligne revient « à justifier », le ticket redevient libre. */

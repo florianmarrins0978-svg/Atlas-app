@@ -135,6 +135,11 @@ export const entreprises = pgTable("entreprises", {
   /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
   /**
+   * Les numéros de compte changés dans Réglages, par catégorie (migration
+   * 0198). Vide : ceux que Cause propose. Relus par `lireNumerosChoisis`.
+   */
+  numerosComptes: jsonb("numeros_comptes").$type<Record<string, string>>().notNull().default({}),
+  /**
    * Le capital social et le RCS (migration 0072) — n'ont de sens que pour une
    * société, jamais une EI ou une micro-entreprise (`formeADuCapital`).
    * Le RCS n'a pas de second numéro : c'est le SIREN, déjà dans le SIRET.
@@ -3287,6 +3292,8 @@ export const achatsTva = pgTable("achats_tva", {
   tvaDeductible: numeric("tva_deductible", { precision: 12, scale: 2 }).notNull(),
   /** Le ticket photographié, dans le stockage. `null` pour une saisie à la main. */
   photoCle: text("photo_cle"),
+  /** La photo recadrée et nettoyée dans le téléphone (migration 0198). L'originale reste la pièce. */
+  photoNetteCle: text("photo_nette_cle"),
   /** Chaque ligne imprimée du ticket (migration 0146), `null` pour les tickets d'avant. */
   lignesImprimees: jsonb("lignes_imprimees").$type<LigneImprimee[]>(),
   /** Par où il est entré. Sert le jour où une lecture automatique se révèle
@@ -4752,6 +4759,12 @@ export const mouvementsBancaires = pgTable("mouvements_bancaires", {
   pieceTotal: numeric("piece_total", { precision: 12, scale: 2 }),
   reliePar: text("relie_par", { enum: ["atlas", "patron"] }),
   justifieLe: timestamp("justifie_le", { withTimezone: true }),
+  /**
+   * La catégorie que le patron a CHOISIE pour la ligne (migration 0198). Vide,
+   * elle prend celle que sa pièce dit (`categorieProposee`). Relue par
+   * `estCleCompta` : la liste vit dans `src/lib/categories-comptables.ts`.
+   */
+  categorieComptable: text("categorie_comptable"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -4772,6 +4785,9 @@ export const dossiersComptables = pgTable("dossiers_comptables", {
   fichierCle: text("fichier_cle").notNull(),
   tailleOctets: integer("taille_octets").notNull(),
   empreinte: text("empreinte").notNull(),
+  /** L'Excel et le FEC d'import, rangés au même instant que le PDF (migration 0198). Vides pour un dossier d'avant. */
+  excelCle: text("excel_cle"),
+  fecCle: text("fec_cle"),
   gardeJusquAu: date("garde_jusqu_au").notNull(),
   arretePar: uuid("arrete_par").references(() => users.id),
   arreteLe: timestamp("arrete_le", { withTimezone: true }).notNull().defaultNow(),

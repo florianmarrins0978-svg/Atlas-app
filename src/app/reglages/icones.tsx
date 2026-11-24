@@ -59,7 +59,9 @@ export type NomIcone =
    */
   | "feuille_envoyee"
   /** Mon année, 8 novembre 2026 : l'euro, celui de `IconeTrait`. */
-  | "euro";
+  | "euro"
+  /** Numéros de compte, 24 novembre 2026 : le registre du comptable, ses lignes et sa colonne. */
+  | "registre";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
   carton: (
@@ -171,6 +173,13 @@ const TRACES: Record<NomIcone, React.ReactNode> = {
   banque: <path d="M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17" />,
   // Mon année : l'euro de `IconeTrait`, au trait de cette famille.
   euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5 10.5h8M5 13.5h8" />,
+  // Numéros de compte : le registre, ses lignes, et la colonne des numéros.
+  registre: (
+    <>
+      <path d="M5.5 3.5h13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z" />
+      <path d="M9.5 3.5v17M12 8h5M12 12h5M12 16h5" />
+    </>
+  ),
   feuille_envoyee: (
     <>
       <path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h5.4" />

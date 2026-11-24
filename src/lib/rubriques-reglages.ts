@@ -333,6 +333,10 @@ export function rubriquesReglages(
         // choisie le jour même (« tu peux coder ça »). Ma banque reste en tête
         // quand elle est reliée, sa place du 1er novembre.
         { nom: "Mon année", icone: "euro" as const, href: "/reglages/mon-annee" },
+        // **Numéros de compte, sous Mon année** : sa demande du 24 novembre 2026,
+        // « un numéro de compte à côté de chaque catégorie, proposé par Cause et
+        // modifiable dans Réglages ». Le patron change, la facturation lit.
+        { nom: "Numéros de compte", icone: "registre" as const, href: "/reglages/comptes" },
         ...ENTREPRISE,
       ]),
     },

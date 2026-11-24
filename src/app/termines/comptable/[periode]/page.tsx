@@ -11,6 +11,9 @@ import { garderLaPage } from "@/server/garde-page";
 import { facturesARapprocher } from "@/server/banque/questions";
 import { facturesRecuesLibres } from "@/server/repositories/pour-mon-comptable";
 import { carteDeLaLigne, facturesAffichees } from "../a-regarder";
+import { numerosDesComptes } from "@/server/repositories/entreprises";
+import { categorieDeLaLigneComptable, categoriesDuSens, familleDe, nomCategorie, numeroDuCompte, type CleCompta } from "@/lib/categories-comptables";
+import type { ChoixDeCategorie } from "./Releve";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +31,15 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
   if (!bornes) notFound();
 
   const ctx = await getCurrentCtx();
-  const [lignes, factures, enAttente] = await Promise.all([lignesDuReleve(ctx, bornes.du, bornes.au), facturesRecuesLibres(ctx), facturesARapprocher(ctx)]);
+  const [lignes, factures, enAttente, comptes] = await Promise.all([
+    lignesDuReleve(ctx, bornes.du, bornes.au),
+    facturesRecuesLibres(ctx),
+    facturesARapprocher(ctx),
+    numerosDesComptes(ctx),
+  ]);
+  // Ce qu'une ligne peut choisir, avec le numéro qui partira chez le comptable.
+  const choix = (sens: "entree" | "sortie"): ChoixDeCategorie[] =>
+    categoriesDuSens(sens).map((cle) => ({ cle, nom: nomCategorie(cle), numero: numeroDuCompte(cle, comptes.situation, comptes.choisis), famille: familleDe(cle) }));
 
   // La plus récente en haut, comme sur la planche (écran 3).
   const affichees: LigneAffichee[] = [...lignes].reverse().map((l) => {
@@ -47,6 +58,7 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
       // confirmée, elle, porte un règlement noté, qui se retire sur la facture.
       defaisable: l.justification !== null,
       carte: ligneAJustifier(l) ? carteDeLaLigne(l, [], enAttente) : null,
+      compta: comptaDe(l, (cle) => numeroDuCompte(cle, comptes.situation, comptes.choisis)),
     };
   });
 
@@ -80,7 +92,7 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
             </span>
           ))}
         </div>
-        <Releve lignes={affichees} factures={facturesAffichees(factures)} />
+        <Releve lignes={affichees} factures={facturesAffichees(factures)} choix={{ sortie: choix("sortie"), entree: choix("entree") }} />
       </div>
     </div>
   );
@@ -91,6 +103,23 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
  * les mêmes règles que le dossier et la page du comptable (`suiteDeLaPiece`) :
  * une pièce jointe malgré l'écart le porte, partout pareil.
  */
+/**
+ * La catégorie du comptable de la ligne : celle qu'il a choisie, sinon celle
+ * que sa pièce dit. Un paiement de client n'en choisit pas : sa facture le range.
+ */
+function comptaDe(l: LigneDuReleve, numero: (cle: CleCompta) => string): LigneAffichee["compta"] {
+  const cle = categorieDeLaLigneComptable({
+    sens: l.sens,
+    justification: l.justification,
+    motif: l.motif,
+    natureDuTicket: l.ticket?.nature ?? null,
+    factureEmise: l.factureEmise !== null,
+    choisie: l.categorieChoisie,
+  });
+  if (cle === "clients") return null;
+  return { cle, nom: nomCategorie(cle), numero: numero(cle), choisie: l.categorieChoisie !== null };
+}
+
 function preuveDe(l: LigneDuReleve): LigneAffichee["preuve"] {
   const suite = suiteDeLaPiece(l.ecart, l.sens);
   const genre = (base: "ok" | "ticket") => (ecartSignale(l.ecart, l.sens) ? "ecart" : base);

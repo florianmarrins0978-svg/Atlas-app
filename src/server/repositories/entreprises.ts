@@ -29,6 +29,7 @@ import type { AttestationDocument, LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
 import { exigerPreuveRecente } from "../preuve-recente";
 import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
+import { compteSuggere, lireNumeroDeCompte, lireNumerosChoisis, situationDe, type CleCompta, type NumerosChoisis, type Situation } from "@/lib/categories-comptables";
 
 /**
  * Où chaque message s'écrit en base — une seule table de correspondance.
@@ -566,4 +567,60 @@ export async function logoLu(
     });
     return null;
   }
+}
+
+/**
+ * LES NUMÉROS DE COMPTE de l'entreprise (migration 0198) : ceux qu'il a
+ * changés dans Réglages, et la situation qui décide des autres (une société
+ * met l'argent du patron au 4551, une entreprise individuelle au 108).
+ */
+export async function numerosDesComptes(ctx: Ctx): Promise<{ situation: Situation; choisis: NumerosChoisis }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx
+      .select({ formeJuridique: entreprises.formeJuridique, numerosComptes: entreprises.numerosComptes })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    return { situation: situationDe({ formeJuridique: e?.formeJuridique ?? null }), choisis: lireNumerosChoisis(e?.numerosComptes ?? {}) };
+  });
+}
+
+/**
+ * Change le numéro d'une catégorie, ou le rend à celui de Cause (`null`, ou le
+ * numéro proposé lui-même : garder une copie du proposé figerait un numéro
+ * qui changerait avec la forme de l'entreprise).
+ */
+export async function poserNumeroDeCompte(
+  ctx: Ctx,
+  cle: CleCompta,
+  saisie: string | null
+): Promise<{ ok: true; numero: string } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx
+      .select({ formeJuridique: entreprises.formeJuridique, numerosComptes: entreprises.numerosComptes })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    if (!e) return { ok: false, raison: "Entreprise introuvable." };
+    const situation = situationDe({ formeJuridique: e.formeJuridique });
+    const choisis = lireNumerosChoisis(e.numerosComptes);
+    let numero = compteSuggere(cle, situation);
+    if (saisie === null) delete choisis[cle];
+    else {
+      const lu = lireNumeroDeCompte(saisie);
+      if (!lu.ok) return lu;
+      numero = lu.numero;
+      if (numero === compteSuggere(cle, situation)) delete choisis[cle];
+      else choisis[cle] = numero;
+    }
+    await tx.update(entreprises).set({ numerosComptes: choisis }).where(eq(entreprises.id, ctx.entrepriseId));
+    return { ok: true, numero };
+  });
+}
+
+/** Tous les numéros rendus à ceux de Cause. */
+export async function rendreLesNumerosProposes(ctx: Ctx): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx.update(entreprises).set({ numerosComptes: {} }).where(eq(entreprises.id, ctx.entrepriseId));
+  });
 }
