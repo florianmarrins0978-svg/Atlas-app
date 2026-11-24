@@ -1,5 +1,43 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE (24 novembre 2026)
+
+**Ses choix du 24 novembre, à ne pas lui redemander :** trois fichiers séparés
+dans le même envoi (PDF, Excel, FEC), le comptable prend celui qu'il veut ; le
+registre des ventes d'abord (numéro, date, client, chantier, HT, TVA par taux,
+TTC, payée le, reste dû) ; puis chaque catégorie de dépense sur sa page, par
+date, avec le côte à côte du dossier actuel (ligne de banque à gauche, pièce
+réécrite à droite, total surligné bleu gris) ; un numéro de compte à côté de
+chaque catégorie, proposé par Cause, modifiable dans Réglages et repris dans les
+trois fichiers ; les salaires : le comptable calcule la paie (jours travaillés,
+paniers) et envoie la fiche, l'entreprise vire, le virement va en Salaires au
+**421** (jamais 641 : compté deux fois) avec la fiche comme pièce ; chaque pièce
+porte un numéro (A 189), le même dans les trois fichiers, renvoyant à sa ligne
+de banque. Catégories : matériaux et plants, petit outillage, sous-traitance,
+loyer, assurances, téléphone et internet, frais de banque, impôts et taxes,
+salaires, cotisations sociales, matériel de plus de 500 €, emprunt, prélèvement
+personnel, et À classer (471) à la place d'Autre.
+
+**Planche :** `appli/soignee/comptable-trois-fichiers.html` (les quatre pages
+du PDF, l'Excel à quatre onglets, le FEC, le réglage des numéros ; l'Excel et le
+FEC se téléchargent pour de vrai). Elle remplace le brouillon du même nom laissé
+sur `claude/determined-sagan-62y464`. Les numéros, leurs sources et ce qui a été
+corrigé (hôtel 6256, sous-traitance 604, aides 741, 60622 hors PCG) :
+`docs/dossier-comptable-trois-fichiers.md`.
+
+**Le fichier FEC de Cause est un fichier d'import, jamais le FEC de
+l'exercice** (BOI-CF-IOR-60-40-20 § 40) : il ne prend pas le nom légal
+`SirenFECAAAAMMJJ` (`123456789_import_FEC_2026-10.txt`), et son ValidDate reste
+vide. Planche et PDF le disent.
+
+**À trancher par lui :** cotisations du patron (646) et des salariés (431) dans
+une seule catégorie ou deux ; les photos des pièces nommées par leur numéro en
+plus des trois fichiers. **Par son comptable, avant le codage :** la liste des
+numéros ; l'autoliquidation d'un sous-traitant en travaux immobiliers (le FEC
+doit alors porter la TVA des deux côtés, pas encore dessiné). Rien dans `src/`
+avant son choix. Avant de la lui redemander, chercher `comptable-trois-fichiers`
+dans `src/`.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE ROBINET SANS PROGRAMMATEUR (24 novembre 2026)
 
 Sa remarque : *« on a oublié de faire un montage. C'est sans programmateur [...] juste une double
