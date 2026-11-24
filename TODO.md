@@ -46,15 +46,22 @@ doit alors porter la TVA des deux côtés, pas encore dessiné). Rien dans `src/
 avant son choix. Avant de la lui redemander, chercher `comptable-trois-fichiers`
 dans `src/`.
 
-## ⏳ UNE PLANCHE À REGARDER : LE ROBINET SANS PROGRAMMATEUR (24 novembre 2026)
+## ✅ LE ROBINET SANS PROGRAMMATEUR : C'EST LE ROBINET AVEC REGARD (24 novembre 2026)
 
 Sa remarque : *« on a oublié de faire un montage. C'est sans programmateur [...] juste une double
 sortie d'arrosage. Ou pas, si le client n'en veut pas. Et ensuite, tout de suite, le 25 taraudé 3/4 ou
 le 32 taraudé 3/4 [...] et le 25 ou le 32. »* Planche : `appli/arrosage-robinet-3d.html`, « Sans » au
 programmateur, et la double sortie Avec ou Sans. L'écran du plan au robinet montre déjà cette pile
-quand le programmateur est à la nourrice (`Robinet3D`, `programmateur: null`). **À lui de dire** si ce
-montage doit aussi exister sans aucun programmateur dans le plan (un arrosage ouvert à la main), ce
-que le plan ne propose pas aujourd'hui.
+quand le programmateur est à la nourrice (`Robinet3D`, `programmateur: null`). ~~**À lui de dire** si ce
+montage doit aussi exister sans aucun programmateur dans le plan (un arrosage ouvert à la main).~~ Sa
+réponse : *« en fait, à quoi ça sert ? »* ; au robinet, c'est avec regard (nourrice et BL-IP) ou sans
+regard (programmateur en nez de robinet), et au compteur toujours un regard. Ses mots : *« si on se
+repique après compteur, il faut forcément un regard. Mais si on se repique sur un robinet, on peut soit
+avoir un regard, soit ne pas avoir de regard et du coup avoir un programmateur en [nez de robinet] »*,
+et *« les programmateurs en [nez de robinet], c'est seulement si on n'a pas de regard »*. Le choix
+existe déjà à l'écran (« Le montage » : « Programmateur en nez de robinet » ou « Avec la nourrice »).
+**Sa règle attend d'entrer dans `.claude/rules/arrosage.md`** : c'est de l'outillage (niveau 2), écrit
+sur la branche `claude/laughing-wright-xxntzg`, en attente de son accord pour le contrôle.
 
 ## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
 
