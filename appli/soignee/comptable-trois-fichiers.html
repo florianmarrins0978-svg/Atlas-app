@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trois fichiers pour le comptable</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, sa demande du 24 novembre 2026 :
+  « il faut faire plusieurs documents différents. Un FEC, un PDF et un Excel.
+  Comme ça, l'expert comptable choisira celui qu'il veut. »
+
+  Ses choix du même jour (TODO.md) : le registre des ventes d'abord, puis les
+  achats par catégorie ; un numéro de compte à côté de chaque catégorie,
+  proposé et modifiable ; les salaires viennent du comptable (fiche de paie),
+  l'entreprise vire, le virement se range en Salaires avec la fiche comme pièce.
+
+  Base : appli/soignee/comptable-dossier.html (le PDF soigné du 26 octobre) ;
+  ce qui y était choisi est gardé, côte à côte et bleu gris sur le total.
+
+  POURQUOI le compte des salaires est 421 et celui des cotisations 431 : le
+  virement au salarié paie un salaire que le comptable a déjà passé en 641
+  depuis la fiche de paie. Proposer 641 sur la ligne de banque lui ferait
+  compter le salaire deux fois.
+
+  Les numéros proposés ne sont pas tranchés partout (repas 6256 ou 6251,
+  carburant 6061 ou 60622 selon les sources) : ils se font valider par un
+  comptable avant d'entrer dans l'appli.
+
+  Données inventées. Un document part en papier : couleurs d'Origine, quelle
+  que soit la charte.
+*/
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.pl-notes { margin: 8px auto 0 !important; }
+.scene { display: grid; gap: 14px; max-width: 980px; margin: 0 auto; }
+.sous-choix:empty { display: none; }
+.capture-quoi { margin: 0; text-align: center; font-size: 14px; color: #4a4a44; }
+.capture-quoi b { color: #1c1c1a; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.bouton-doux { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px;
+               font-weight: 600; color: #2f3b2f; background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.12); cursor: pointer; }
+.bouton-doux[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
+.bouton-doux:focus-visible, .pl-etats button:focus-visible, .compte-num:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+.dit { min-height: 20px; margin: 0; text-align: center; font-size: 14px; color: #2f4a26; font-weight: 600; }
+
+.bureau { height: min(76vh, 960px); overflow: auto; overscroll-behavior: contain; padding: 14px; border-radius: 14px; background: #d9d5cc; }
+.bureau .a4 + .a4 { margin-top: 14px; }
+@media (max-width: 480px) { .pl-scene { padding: 0 var(--gouttiere) !important; } .bureau { height: 72svh; padding: 10px; } }
+
+/* ─── La page A4 : 595 × 842 points, comme comptable-dossier.html ─────── */
+.a4 { position: relative; width: 595px; height: 842px; overflow: hidden; background: #fff; color: #1c1c1a;
+      font: 400 9.5px/1.4 var(--sans); box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); zoom: var(--echelle, 1); }
+.bureau.grand .a4 { zoom: 1; }
+.a4-dedans { position: absolute; inset: 40px 42px 46px; display: flex; flex-direction: column; }
+.a4-pied { position: absolute; left: 42px; right: 42px; bottom: 22px; display: flex; justify-content: space-between; font-size: 7.5px; color: #6b6b5c; }
+.a4 .s { color: #b3392b; } .a4 .e { color: #1f7a45; }
+.chiffres { font-variant-numeric: tabular-nums lining-nums; }
+.a4-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid #1c1c1a; }
+.a4-tete h2 { margin: 0; font: 400 21px/1.1 var(--serif); }
+.a4-tete .compte { font: 600 10px/1 var(--sans); color: #8b6835; margin-left: 8px; letter-spacing: 0.02em; }
+.a4-tete .bilan { display: flex; gap: 12px; font-size: 9.5px; white-space: nowrap; }
+.a4-tete .bilan b { font-weight: 600; }
+.etiq { font-size: 7.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b5c; }
+.couv-titre { margin: 8px 0 0; font: 400 30px/1.05 var(--serif); }
+.couv-periode { margin: 6px 0 0; font: 400 15px/1.3 var(--serif); color: #4a4a44; }
+.couv-qui { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #e4e0d6; }
+.couv-qui p { margin: 3px 0 0; font-size: 9.5px; line-height: 1.45; }
+.atteste { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 9px 14px; border-radius: 3px; background: #e1e8da; font-size: 11px; font-weight: 600; color: #2f4a26; }
+.atteste svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.quatre { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 10px; border-top: 1px solid #e4e0d6; border-bottom: 1px solid #e4e0d6; }
+.quatre div { padding: 7px 10px 8px 0; }
+.quatre div + div { padding-left: 12px; border-left: 1px solid #e4e0d6; }
+.quatre b { display: block; margin-top: 3px; font: 400 15px/1.1 var(--serif); }
+.titre-table { margin: 14px 0 6px; font: 400 12.5px/1.3 var(--serif); }
+.tdoc { width: 100%; border-collapse: collapse; font-size: 9px; }
+.tdoc th { padding: 0 4px 4px 0; text-align: left; border-bottom: 1px solid #1c1c1a; }
+.tdoc td { padding: 4px 4px 4px 0; border-bottom: 1px solid #efece5; vertical-align: top; }
+.tdoc .d { text-align: right; }
+.tdoc .num { color: #8b6835; font-weight: 600; }
+.tdoc i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; vertical-align: 1px; }
+.tdoc a { color: #8b6835; text-decoration: none; font-weight: 600; }
+.tdoc tr.total td { border-bottom: 0; border-top: 1px solid #1c1c1a; font-weight: 600; }
+.du { color: #b3392b; font-weight: 600; }
+.mot { margin: 10px 0 0; font-size: 9px; color: #4a4a44; }
+
+/* Une catégorie : la pièce numérotée devant, puis le côte à côte gardé */
+.cols, .rang-doc { display: grid; grid-template-columns: 38px 42px minmax(0, 1fr) 64px 178px; gap: 0 10px; }
+.cols { margin-top: 12px; padding-bottom: 4px; border-bottom: 1px solid #1c1c1a; }
+.cols .d { text-align: right; }
+.rang-doc { padding: 8px 0; border-bottom: 1px solid #efece5; align-items: start; }
+.rang-doc .piece-n { font-size: 9px; font-weight: 700; color: #8b6835; padding-top: 1px; }
+.rang-doc .jour { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.rang-doc .lib { font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; }
+.rang-doc .ht { margin-top: 2px; font-size: 8.5px; color: #4a4a44; }
+.rang-doc .mt { text-align: right; font: 400 11px/1.2 var(--serif); }
+.piece-doc { border: 1px solid #e4e0d6; border-radius: 2px; padding: 6px 8px; background: #faf9f5; }
+.piece-doc .mono { font: 400 7.6px/1.42 ui-monospace, "Courier New", monospace; }
+.piece-doc .r { display: flex; justify-content: space-between; gap: 6px; padding: 0 2px; }
+.piece-doc .tot { background: #ebf0f4; font-weight: 700; border-radius: 1px; }
+.piece-doc .nom { font: 400 10.5px/1.2 var(--serif); }
+.piece-doc .sous { margin-top: 1px; font-size: 8px; color: #6b6b5c; }
+.piece-doc .tt { display: flex; justify-content: space-between; margin-top: 5px; padding: 2px 4px; background: #ebf0f4; font-weight: 700; font-size: 8.5px; }
+.voir { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 8px; font-weight: 600; color: #8b6835; }
+.voir svg { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2; }
+.simple { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.simple b { color: #1c1c1a; font-weight: 600; }
+.sous-titre { margin: 22px 0 0; }
+
+/* ─── Le tableur : ce qu'il voit en l'ouvrant dans Excel ─────────────────── */
+.classeur { display: inline-block; min-width: 100%; background: #fff; font: 400 12px/1.3 "Segoe UI", system-ui, sans-serif; color: #1c1c1a;
+            box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
+.classeur-barre { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #1f6e43; color: #fff; font-size: 12px; font-weight: 600; }
+.grille { border-collapse: collapse; white-space: nowrap; }
+.grille th, .grille td { border: 1px solid #d6d6d6; padding: 3px 8px; height: 20px; }
+.grille thead th { background: #f0f0f0; color: #555; font-weight: 400; text-align: center; }
+.grille tbody th { background: #f0f0f0; color: #555; font-weight: 400; text-align: center; width: 30px; }
+.grille tr.entete td { font-weight: 700; background: #f7f7f2; }
+.grille td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.grille tr.total td { font-weight: 700; border-top: 2px solid #1c1c1a; }
+.feuilles-du-classeur { display: flex; gap: 2px; padding: 0 10px; background: #f0f0f0; border-top: 1px solid #d6d6d6; }
+.feuilles-du-classeur button { min-height: 32px; padding: 0 14px; font: inherit; font-size: 12px; color: #444; background: transparent; border: 0; cursor: pointer; }
+.feuilles-du-classeur button[aria-pressed="true"] { background: #fff; color: #1f6e43; font-weight: 700; box-shadow: inset 0 -2px 0 #1f6e43; }
+
+/* ─── Le FEC : le fichier texte, tel qu'il s'ouvre ───────────────────────── */
+.fichier-texte { display: inline-block; min-width: 100%; background: #fff; box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
+.fichier-texte .nom-fichier { padding: 6px 10px; background: #ecebe6; font: 600 12px/1.3 var(--sans); color: #4a4a44; }
+.fichier-texte pre { margin: 0; padding: 10px 12px; font: 400 11px/1.6 ui-monospace, "Courier New", monospace; color: #1c1c1a; white-space: pre; }
+.fichier-texte pre b { color: #8b6835; }
+.fec-col { border-collapse: collapse; font: 400 11px/1.4 var(--sans); white-space: nowrap; }
+.fec-col th, .fec-col td { padding: 4px 8px; border-bottom: 1px solid #efece5; text-align: left; }
+.fec-col th { font-weight: 700; border-bottom: 1px solid #1c1c1a; background: #faf9f5; }
+.fec-col td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.fec-col td.c { color: #8b6835; font-weight: 600; }
+
+/* ─── Les numéros de compte, dans Réglages ───────────────────────────────── */
+.reglage { max-width: 520px; margin: 0 auto; padding: 18px 18px 8px; border-radius: 14px; background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.1); }
+.reglage h3 { margin: 0 0 4px; font: 400 22px/1.2 var(--serif); }
+.reglage .famille-comptes { margin: 18px 0 4px; font-size: 13px; font-weight: 600; color: #6b6b5c; }
+.compte-rang { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; border-top: 1px solid rgba(28,28,26,0.09); }
+.compte-rang label { font-size: 16px; color: #1c1c1a; }
+.compte-num { width: 96px; min-height: 44px; padding: 0 10px; border: 0; border-bottom: 1.5px solid rgba(28,28,26,0.2); background: transparent;
+              font: 600 17px/1 var(--sans); font-variant-numeric: tabular-nums; color: #8b6835; text-align: right; }
+.compte-num[aria-invalid="true"] { border-bottom-color: #b3392b; color: #b3392b; }
+.compte-num.change { border-bottom-color: #8b6835; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <h1 class="pl-titre">Trois fichiers pour le comptable</h1>
+  <p class="pl-verdict">Le même dossier, en <b>PDF</b> pour le lire, en <b>Excel</b> pour trier, en <b>FEC</b> pour son logiciel. Il prend celui qu'il veut. Les ventes d'abord, puis chaque dépense dans sa catégorie, <b>avec son numéro de compte</b>.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="scene">
+    <div class="pl-etats" id="docs">
+      <button type="button" data-doc="pdf" aria-pressed="true">Le PDF</button>
+      <button type="button" data-doc="excel" aria-pressed="false">L'Excel</button>
+      <button type="button" data-doc="fec" aria-pressed="false">Le FEC</button>
+      <button type="button" data-doc="comptes" aria-pressed="false">Les numéros de compte</button>
+    </div>
+    <div class="pl-etats sous-choix" id="sous"></div>
+    <p class="capture-quoi" id="quoi"></p>
+    <div class="actions" id="actions"></div>
+    <p class="dit" id="dit" aria-live="polite"></p>
+    <div class="bureau" id="bureau"></div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Trois fichiers au lieu d'un : le PDF, un Excel à quatre onglets (Ventes, Achats, Banque, Comptes) et le FEC.</li>
+      <li>Le registre des ventes ouvre le dossier : chaque facture, son client, son chantier, sa TVA, et ce qui reste dû.</li>
+      <li>Les dépenses se rangent par catégorie, chacune sur sa page avec son total hors taxe, sa TVA et son numéro de compte.</li>
+      <li>Chaque pièce porte un numéro (A 041), le même dans les trois fichiers, et renvoie à sa ligne de banque.</li>
+      <li>Nouvelles catégories : salaires, cotisations, sous-traitance, assurances, loyer, matériel de plus de 500 €, emprunt, prélèvement personnel. Ce qui ne se range pas va en À classer, jamais en Autre.</li>
+      <li>Le virement d'un salaire porte sa fiche de paie, celle que le cabinet a faite.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La ligne de banque à gauche, sa pièce réécrite à droite, le total surligné bleu gris.</li>
+      <li>Les photos tout au bout, les tickets perdus sur leur page, les sorties en rouge et les entrées en vert.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Les numéros proposés, par votre comptable : dix minutes pour lui. Les sources ne s'accordent pas sur les repas (6256 ou 6251) ni sur le carburant (6061 ou 60622).</li>
+      <li>Vos ventes en 706 (prestations) ou en 704 (travaux) : c'est lui qui choisit.</li>
+      <li>Le FEC de Cause sert à remplir son logiciel. Le FEC officiel de fin d'année, celui des impôts, reste fait par son logiciel.</li>
+      <li>Où se posent les trois fichiers sur votre écran Pour mon comptable : ce sera la planche suivante, sur votre vrai écran.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <a href="comptable-dossier.html">Le dossier d'octobre<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ═══ Les comptes : proposés, modifiables (onglet Les numéros de compte) ═ */
+  var PROPOSES = {
+    ventes: ["Ventes, travaux et prestations", "706", "entree"],
+    clients: ["Clients", "411", "tiers"], fournisseurs: ["Fournisseurs", "401", "tiers"], banque: ["Banque", "512", "tiers"],
+    tvaCollectee: ["TVA collectée", "44571", "tva"], tvaDeductible: ["TVA déductible", "44566", "tva"],
+    materiaux: ["Matériaux et plants", "601", "sortie"], outillage: ["Petit outillage", "6063", "sortie"],
+    carburant: ["Carburant", "6061", "sortie"], repas: ["Repas", "6256", "sortie"], hotel: ["Hôtel", "6256", "sortie"],
+    transport: ["Train, taxi", "6251", "sortie"], soustraitance: ["Sous-traitance", "611", "sortie"], loyer: ["Loyer", "6132", "sortie"],
+    assurances: ["Assurances", "616", "sortie"], telephone: ["Téléphone, internet", "626", "sortie"], frais: ["Frais de banque", "627", "sortie"],
+    impots: ["Impôts et taxes", "635", "sortie"], salaires: ["Salaires versés", "421", "sortie"], cotisations: ["Cotisations sociales", "431", "sortie"],
+    investissement: ["Matériel de plus de 500 €", "2154", "sortie"], emprunt: ["Emprunt", "164", "sortie"],
+    personnel: ["Prélèvement personnel", "108", "sortie"], aClasser: ["À classer", "471", "sortie"]
+  };
+  var COMPTES = {};
+  function remettre() { Object.keys(PROPOSES).forEach(function (k) { COMPTES[k] = PROPOSES[k][1]; }); }
+  remettre();
+  function c(k) { return COMPTES[k]; }
+  function nom(k) { return PROPOSES[k][0]; }
+
+  var COULEUR = { materiaux: "#9c6123", outillage: "#b98a3e", carburant: "#3d6e9e", repas: "#477c36", hotel: "#7a5aa6", transport: "#277a7a",
+                  soustraitance: "#a0522d", loyer: "#5d6b8a", assurances: "#6b4f7a", telephone: "#4f7a74", frais: "#8a7f5a", impots: "#7a4a4a",
+                  salaires: "#4f5d75", cotisations: "#8a6f2a", investissement: "#6e5a3a", emprunt: "#5a5a6e", personnel: "#7a6a5a", aClasser: "#736f64" };
+
+  /* ═══ Les données d'essai ═════════════════════════════════════════════ */
+  var VENTES = [
+    ["F-2026-001", "12/01/2026", "Mme Bernard", "Taille de haies", 10, 850.00, "30/01/2026"],
+    ["F-2026-002", "03/02/2026", "SCI du Parc", "Entretien annuel", 20, 1200.00, "20/02/2026"],
+    ["F-2026-003", "17/03/2026", "M. Lefèvre", "Création de massif", 10, 2340.00, "02/04/2026"],
+    ["F-2026-004", "08/04/2026", "Mairie de Cholet", "Élagage", 20, 3150.00, "15/05/2026"],
+    ["F-2026-005", "22/05/2026", "Mme Garnier", "Pose de gazon", 10, 1680.00, "05/06/2026"],
+    ["F-2026-006", "19/06/2026", "M. Roux", "Arrosage automatique", 10, 2900.00, "01/07/2026"],
+    ["F-2026-007", "24/07/2026", "SCI Les Hauts", "Entretien", 20, 980.00, "10/08/2026"],
+    ["F-2026-008", "28/08/2026", "M. Petit", "Abattage", 10, 1450.00, "12/09/2026"],
+    ["F-2026-009", "30/09/2026", "Mme Moreau", "Clôture et haie", 10, 2200.00, null],
+    ["F-2026-010", "13/10/2026", "SCI du Parc", "Taille d’automne", 20, 2450.00, "20/10/2026"]
+  ];
+  function tvaDe(v) { return Math.round(v[5] * v[4]) / 100; }
+  function ttcDe(v) { return Math.round((v[5] + tvaDe(v)) * 100) / 100; }
+
+  /* [pièce, date, ligne de banque, catégorie, TTC, TVA, fournisseur, pièce montrée] */
+  var ACHATS = [
+    ["A 031", "08/09/2026", "CB GAMM VERT CHOLET", "materiaux", 156.40, 26.07, "Gamm Vert", "ticket"],
+    ["A 034", "18/09/2026", "VIR TERREAUX DE L'OUEST", "materiaux", 642.00, 107.00, "Terreaux de l’Ouest", "facture"],
+    ["A 041", "02/10/2026", "VIR PEPINIERES RIVIERE", "materiaux", 1284.00, 116.73, "Pépinières Rivière", "facture"],
+    ["A 044", "13/10/2026", "CB POINT P ANGERS", "materiaux", 412.30, 68.72, "Point P", "ticket"],
+    ["A 049", "23/10/2026", "CB LEROY MERLIN", "materiaux", 48.90, 8.15, "Leroy Merlin", "ticket"],
+    ["A 042", "06/10/2026", "CB TOTAL ENERGIES ANGERS", "carburant", 72.40, 12.07, "Total Energies", "ticket"],
+    ["A 046", "15/10/2026", "CB RESTAURANT LE RELAIS", "repas", 56.00, 5.09, "Le Relais", "ticket"],
+    ["A 047", "21/10/2026", "CB IBIS BUDGET NANTES", "hotel", 89.00, 14.83, "Ibis Budget", "ticket"],
+    ["A 043", "05/10/2026", "PRLV SEPA SCI LES HAUTS", "loyer", 650.00, 0, "SCI Les Hauts", "nature"],
+    ["A 048", "22/10/2026", "CB TOTAL ENERGIES CHOLET", "carburant", 67.89, 11.31, "Total Energies", "ticket"],
+    ["A 050", "24/10/2026", "VIR SARL MOTOCULTURE OUEST", "investissement", 1450.00, 241.67, "Motoculture Ouest", "facture"]
+  ];
+  /* [pièce, date, ligne de banque, catégorie, montant, ce qui la justifie] */
+  var PAIE = [
+    ["A 039", "30/09/2026", "VIR SALAIRE SEPT A. DUPONT", "salaires", 1698.20, "Fiche de paie de septembre"],
+    ["A 045", "16/10/2026", "PRLV URSSAF PAYS DE LA LOIRE", "cotisations", 1120.00, "Avis de l’URSSAF, octobre"],
+    ["A 052", "31/10/2026", "VIR SALAIRE OCT A. DUPONT", "salaires", 1712.40, "Fiche de paie d’octobre"]
+  ];
+
+  function fr(n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function somme(t, f) { return Math.round(t.reduce(function (s, x) { return s + f(x); }, 0) * 100) / 100; }
+  var COCHE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var PHOTO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="13" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  var TOTAL_PAGES = 24;
+
+  /* ═══ LE PDF ═════════════════════════════════════════════════════════ */
+  function page(n, contenu) {
+    return '<section class="a4"><div class="a4-dedans">' + contenu + '</div><div class="a4-pied"><span>Dossier justifié, Atelier Démo, du 1er janvier au 31 octobre 2026</span><span>Page ' + n + " sur " + TOTAL_PAGES + "</span></div></section>";
+  }
+  var SOMMAIRE = [["materiaux", 3, 9842.18], ["outillage", 5, 612.40], ["carburant", 6, 998.99], ["repas", 7, 484.55], ["hotel", 7, 296.84],
+                  ["transport", 7, 311.30], ["soustraitance", 8, 1800.00], ["loyer", 8, 6500.00], ["assurances", 8, 1240.00], ["telephone", 8, 396.00],
+                  ["frais", 8, 144.60], ["salaires", 9, 17102.60], ["cotisations", 9, 10985.00], ["investissement", 10, 1450.00], ["aClasser", 10, 18.50]];
+
+  function couverture() {
+    var ht = somme(VENTES, function (v) { return v[5]; }), ttc = somme(VENTES, ttcDe);
+    var du = somme(VENTES.filter(function (v) { return !v[6]; }), ttcDe);
+    var dep = somme(SOMMAIRE, function (s) { return s[2]; });
+    return page(1,
+      '<span class="etiq">Pour mon comptable</span><h2 class="couv-titre">Dossier justifié</h2><p class="couv-periode">Du 1er janvier 2026 au 31 octobre 2026</p>' +
+      '<div class="couv-qui"><div><span class="etiq">Entreprise</span><p><b>Atelier Démo</b><br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
+      '<div><span class="etiq">Relevé lu</span><p>Crédit Agricole,<br>par Enable Banking</p></div>' +
+      '<div><span class="etiq">Aussi en</span><p>Excel et FEC,<br>dans le même envoi</p></div></div>' +
+      '<div class="atteste">' + COCHE + "Chaque ligne de la banque a son justificatif, ou sa mention de ticket perdu.</div>" +
+      '<div class="quatre chiffres"><div><span class="etiq">Facturé hors taxe</span><b>' + fr(ht) + ' €</b></div><div><span class="etiq">Encaissé</span><b class="e">+' + fr(ttc - du) + ' €</b></div>' +
+      '<div><span class="etiq">Reste dû</span><b class="s">' + fr(du) + ' €</b></div><div><span class="etiq">Dépenses</span><b class="s">−' + fr(dep) + " €</b></div></div>" +
+      '<h3 class="titre-table">Ce que range le dossier</h3>' +
+      '<table class="tdoc chiffres"><thead><tr><th class="etiq">Compte</th><th class="etiq">Catégorie</th><th class="etiq d">Montant</th><th class="etiq d">Page</th></tr></thead><tbody>' +
+      '<tr><td class="num">' + c("ventes") + "</td><td><b>Registre des ventes</b>, 10 factures</td><td class=\"d e\">+" + fr(ttc) + ' €</td><td class="d"><a href="#">2</a></td></tr>' +
+      SOMMAIRE.map(function (s) {
+        return '<tr><td class="num">' + c(s[0]) + '</td><td><i style="background:' + COULEUR[s[0]] + '"></i>' + nom(s[0]) + '</td><td class="d s">−' + fr(s[2]) + ' €</td><td class="d"><a href="#">' + s[1] + "</a></td></tr>";
+      }).join("") +
+      '<tr><td></td><td>Tickets perdus</td><td class="d">3</td><td class="d"><a href="#">11</a></td></tr><tr><td></td><td>Photos et factures</td><td class="d">51</td><td class="d"><a href="#">12</a></td></tr>' +
+      "</tbody></table>");
+  }
+
+  function registre() {
+    var parTaux = [10, 20].map(function (t) {
+      var l = VENTES.filter(function (v) { return v[4] === t; });
+      return [t, somme(l, function (v) { return v[5]; }), somme(l, tvaDe)];
+    });
+    return page(2,
+      '<div class="a4-tete"><h2>Registre des ventes<span class="compte">' + c("ventes") + " et " + c("clients") + '</span></h2><div class="bilan chiffres"><span>10 factures</span></div></div>' +
+      '<table class="tdoc chiffres" style="margin-top:10px"><thead><tr><th class="etiq">N°</th><th class="etiq">Date</th><th class="etiq">Client, chantier</th><th class="etiq d">HT</th><th class="etiq d">TVA</th><th class="etiq d">TTC</th><th class="etiq d">Payée le</th></tr></thead><tbody>' +
+      VENTES.map(function (v) {
+        return '<tr><td class="num">' + v[0] + "</td><td>" + v[1].slice(0, 5) + "</td><td><b>" + v[2] + "</b><br>" + v[3] + '</td><td class="d">' + fr(v[5]) + '</td><td class="d">' + fr(tvaDe(v)) + "<br><span style=\"color:#6b6b5c\">" + v[4] + ' %</span></td><td class="d">' + fr(ttcDe(v)) + '</td><td class="d">' +
+          (v[6] ? v[6].slice(0, 5) : '<span class="du">reste ' + fr(ttcDe(v)) + "</span>") + "</td></tr>";
+      }).join("") +
+      '<tr class="total"><td></td><td></td><td>Total</td><td class="d">' + fr(somme(VENTES, function (v) { return v[5]; })) + '</td><td class="d">' + fr(somme(VENTES, tvaDe)) + '</td><td class="d">' + fr(somme(VENTES, ttcDe)) + "</td><td></td></tr></tbody></table>" +
+      '<h3 class="titre-table">La TVA collectée, par taux<span class="compte" style="font:600 10px var(--sans);color:#8b6835;margin-left:8px">' + c("tvaCollectee") + "</span></h3>" +
+      '<table class="tdoc chiffres"><thead><tr><th class="etiq">Taux</th><th class="etiq d">Base hors taxe</th><th class="etiq d">TVA</th></tr></thead><tbody>' +
+      parTaux.map(function (p) { return "<tr><td>" + p[0] + ' %</td><td class="d">' + fr(p[1]) + '</td><td class="d">' + fr(p[2]) + "</td></tr>"; }).join("") +
+      "</tbody></table>" +
+      '<p class="mot">Chaque facture est jointe au dossier, page 12 et suivantes, et se retrouve sous son numéro dans l’Excel et le FEC.</p>');
+  }
+
+  function recopie(nomCaisse, ttc, tva, lignes) {
+    return '<div class="piece-doc"><div class="mono"><div class="r"><span>' + nomCaisse.toUpperCase() + "</span></div>" + (lignes || []).map(function (r) { return '<div class="r"><span>' + r[0] + "</span><span>" + r[1] + "</span></div>"; }).join("") +
+      '<div class="r tot"><span>TOTAL TTC</span><span>' + fr(ttc) + '</span></div><div class="r"><span>DONT TVA</span><span>' + fr(tva) + "</span></div></div></div>" +
+      '<span class="voir">' + PHOTO + "Voir la photo</span>";
+  }
+  function factureRecue(soc, ttc) {
+    return '<div class="piece-doc"><div class="nom">' + soc + '</div><div class="sous">Facture reçue</div><div class="tt"><span>Total TTC</span><span>' + fr(ttc) + " €</span></div></div>" +
+      '<span class="voir">' + PHOTO + "Voir la facture</span>";
+  }
+  var LIGNES_TICKET = { "A 044": [["BORDURE BETON 100X20", "186,00"], ["SAC CIMENT 35KG x4", "38,40"], ["GRAVIER 0/20 BIG BAG", "187,90"]],
+                        "A 031": [["TERREAU 70L x4", "59,60"], ["PAILLAGE 50L x4", "96,80"]] };
+  function rangAchat(a) {
+    var ht = Math.round((a[4] - a[5]) * 100) / 100;
+    var piece = a[7] === "ticket" ? recopie(a[6], a[4], a[5], LIGNES_TICKET[a[0]]) : a[7] === "facture" ? factureRecue(a[6], a[4]) : '<div class="simple">Justifié par sa nature : <b>un loyer</b></div>';
+    return '<div class="rang-doc chiffres"><span class="piece-n">' + a[0] + '</span><span class="jour">' + a[1].slice(0, 5) + '</span><div><div class="lib">' + a[2] + '</div><div class="ht">HT ' + fr(ht) + ", TVA " + fr(a[5]) + "</div></div>" +
+      '<div class="mt s">−' + fr(a[4]) + " €</div><div>" + piece + "</div></div>";
+  }
+  var COLS = '<div class="cols etiq"><span>Pièce</span><span>Date</span><span>Ligne de banque</span><span class="d">TTC</span><span>Justificatif</span></div>';
+
+  function pageCategorie() {
+    var l = ACHATS.filter(function (a) { return a[3] === "materiaux"; });
+    var ttc = somme(l, function (a) { return a[4]; }), tva = somme(l, function (a) { return a[5]; });
+    return page(4,
+      '<div class="a4-tete"><h2>Matériaux et plants<span class="compte">' + c("materiaux") + '</span></h2><div class="bilan chiffres"><span>HT <b>' + fr(ttc - tva) + "</b></span><span>TVA <b>" + fr(tva) + '</b></span><span>TTC <b class="s">−' + fr(ttc) + " €</b></span></div></div>" +
+      '<p class="mot" style="margin-top:6px">Septembre et octobre ; janvier à août page 3. La TVA va au ' + c("tvaDeductible") + ".</p>" +
+      COLS + l.map(rangAchat).join(""));
+  }
+
+  function rangPaie(p) {
+    var piece = p[3] === "salaires"
+      ? '<div class="piece-doc"><div class="nom">' + p[5] + '</div><div class="sous">Faite par le cabinet, M. Antoine Dupont</div><div class="tt"><span>Net à payer</span><span>' + fr(p[4]) + ' €</span></div></div><span class="voir">' + PHOTO + "Voir la fiche</span>"
+      : '<div class="piece-doc"><div class="nom">' + p[5] + '</div><div class="tt"><span>Prélevé</span><span>' + fr(p[4]) + " €</span></div></div>";
+    return '<div class="rang-doc chiffres"><span class="piece-n">' + p[0] + '</span><span class="jour">' + p[1].slice(0, 5) + '</span><div><div class="lib">' + p[2] + "</div></div>" +
+      '<div class="mt s">−' + fr(p[4]) + " €</div><div>" + piece + "</div></div>";
+  }
+  function pageSalaires() {
+    var sal = PAIE.filter(function (p) { return p[3] === "salaires"; }), cot = PAIE.filter(function (p) { return p[3] === "cotisations"; });
+    return page(9,
+      '<div class="a4-tete"><h2>Salaires versés<span class="compte">' + c("salaires") + '</span></h2><div class="bilan chiffres"><span>Septembre et octobre <b class="s">−' + fr(somme(sal, function (p) { return p[4]; })) + " €</b></span></div></div>" +
+      '<p class="mot" style="margin-top:6px">Le virement de chaque salaire, avec la fiche de paie que votre cabinet a faite. Janvier à août page 9.</p>' +
+      COLS.replace("TTC", "Net") + sal.map(rangPaie).join("") +
+      '<div class="a4-tete sous-titre"><h2>Cotisations sociales<span class="compte">' + c("cotisations") + '</span></h2><div class="bilan chiffres"><span>Octobre <b class="s">−' + fr(somme(cot, function (p) { return p[4]; })) + " €</b></span></div></div>" +
+      COLS.replace("TTC", "Montant") + cot.map(rangPaie).join(""));
+  }
+
+  /* ═══ L'EXCEL ════════════════════════════════════════════════════════ */
+  function feuilles() {
+    var achats = ACHATS.concat(PAIE.map(function (p) { return [p[0], p[1], p[2], p[3], p[4], 0, p[5], "paie"]; }))
+      .sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
+    return {
+      Ventes: [["N° de facture", "Date", "Client", "Chantier", "Compte", "HT", "Taux", "TVA", "TTC", "Payée le", "Reste dû"]].concat(
+        VENTES.map(function (v) { return [v[0], v[1], v[2], v[3], c("ventes"), v[5], v[4] + " %", tvaDe(v), ttcDe(v), v[6] || "", v[6] ? 0 : ttcDe(v)]; }),
+        [["Total", "", "", "", "", somme(VENTES, function (v) { return v[5]; }), "", somme(VENTES, tvaDe), somme(VENTES, ttcDe), "", somme(VENTES.filter(function (v) { return !v[6]; }), ttcDe)]]),
+      Achats: [["Pièce", "Date", "Fournisseur", "Catégorie", "Compte", "HT", "TVA", "TTC", "Ligne de banque"]].concat(
+        achats.map(function (a) { return [a[0], a[1], a[6], nom(a[3]), c(a[3]), Math.round((a[4] - a[5]) * 100) / 100, a[5], a[4], a[2]]; })),
+      Banque: [["Date", "Libellé de la banque", "Débit", "Crédit", "Pièce", "Compte"]].concat(
+        [["13/10/2026", "CB POINT P ANGERS", 412.30, "", "A 044", c("fournisseurs")],
+         ["16/10/2026", "PRLV URSSAF PAYS DE LA LOIRE", 1120.00, "", "A 045", c("cotisations")],
+         ["20/10/2026", "VIR SCI DU PARC", "", 2940.00, "F-2026-010", c("clients")],
+         ["22/10/2026", "CB TOTAL ENERGIES CHOLET", 67.89, "", "A 048", c("fournisseurs")],
+         ["24/10/2026", "VIR SARL MOTOCULTURE OUEST", 1450.00, "", "A 050", c("fournisseurs")],
+         ["31/10/2026", "VIR SALAIRE OCT A. DUPONT", 1712.40, "", "A 052", c("salaires")]]),
+      Comptes: [["Compte", "Intitulé", "Total de la période"]].concat(
+        [["ventes", somme(VENTES, function (v) { return v[5]; })]].concat(SOMMAIRE.map(function (s) { return [s[0], s[2]]; })).map(function (x) { return [c(x[0]), nom(x[0]), x[1]]; }))
+    };
+  }
+  var LETTRES = "ABCDEFGHIJK";
+  var feuilleVue = "Ventes";
+  function classeur() {
+    var f = feuilles()[feuilleVue];
+    var n = f[0].length;
+    return '<div class="classeur"><div class="classeur-barre">Atelier Démo, dossier du 1er janvier au 31 octobre 2026.xlsx</div>' +
+      '<table class="grille"><thead><tr><th></th>' + LETTRES.slice(0, n).split("").map(function (l) { return "<th>" + l + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      f.map(function (r, i) {
+        var cls = i === 0 ? "entete" : (r[0] === "Total" ? "total" : "");
+        return '<tr class="' + cls + '"><th>' + (i + 1) + "</th>" + r.map(function (v) { return typeof v === "number" ? '<td class="n">' + fr(v) + "</td>" : "<td>" + v + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody></table>" +
+      '<div class="feuilles-du-classeur" id="onglets-classeur">' + ["Ventes", "Achats", "Banque", "Comptes"].map(function (o) { return '<button type="button" data-feuille="' + o + '" aria-pressed="' + (o === feuilleVue) + '">' + o + "</button>"; }).join("") + "</div></div>";
+  }
+
+  /* ═══ LE FEC : 18 colonnes, partie double, séparées par une tabulation ═ */
+  var COLONNES_FEC = ["JournalCode", "JournalLib", "EcritureNum", "EcritureDate", "CompteNum", "CompteLib", "CompAuxNum", "CompAuxLib", "PieceRef", "PieceDate", "EcritureLib", "Debit", "Credit", "EcritureLet", "DateLet", "ValidDate", "Montantdevise", "Idevise"];
+  function ecritures() {
+    function j(d) { return d.slice(6) + d.slice(3, 5) + d.slice(0, 2); }
+    var E = [];
+    function e(jc, jl, num, date, compte, lib, aux, auxLib, piece, libelle, debit, credit) {
+      E.push([jc, jl, num, j(date), compte, lib, aux, auxLib, piece, j(date), libelle, debit ? fr(debit).replace(/\s/g, "") : "0,00", credit ? fr(credit).replace(/\s/g, "") : "0,00", "", "", "", "", ""]);
+    }
+    var f = VENTES[9];
+    e("VE", "Ventes", "VE0010", f[1], c("clients"), "Clients", "411SCIPARC", "SCI du Parc", f[0], "Facture " + f[0], ttcDe(f), 0);
+    e("VE", "Ventes", "VE0010", f[1], c("ventes"), nom("ventes"), "", "", f[0], "Facture " + f[0], 0, f[5]);
+    e("VE", "Ventes", "VE0010", f[1], c("tvaCollectee"), "TVA collectée 20 %", "", "", f[0], "Facture " + f[0], 0, tvaDe(f));
+    var a = ACHATS[3];
+    e("AC", "Achats", "AC0044", a[1], c("materiaux"), nom("materiaux"), "", "", a[0], "Point P", Math.round((a[4] - a[5]) * 100) / 100, 0);
+    e("AC", "Achats", "AC0044", a[1], c("tvaDeductible"), "TVA déductible", "", "", a[0], "Point P", a[5], 0);
+    e("AC", "Achats", "AC0044", a[1], c("fournisseurs"), "Fournisseurs", "401POINTP", "Point P", a[0], "Point P", 0, a[4]);
+    e("BQ", "Banque", "BQ0101", a[1], c("fournisseurs"), "Fournisseurs", "401POINTP", "Point P", a[0], "CB POINT P ANGERS", a[4], 0);
+    e("BQ", "Banque", "BQ0101", a[1], c("banque"), "Banque", "", "", a[0], "CB POINT P ANGERS", 0, a[4]);
+    e("BQ", "Banque", "BQ0104", "20/10/2026", c("banque"), "Banque", "", "", f[0], "VIR SCI DU PARC", ttcDe(f), 0);
+    e("BQ", "Banque", "BQ0104", "20/10/2026", c("clients"), "Clients", "411SCIPARC", "SCI du Parc", f[0], "VIR SCI DU PARC", 0, ttcDe(f));
+    var s = PAIE[2];
+    e("BQ", "Banque", "BQ0109", s[1], c("salaires"), nom("salaires"), "", "", s[0], s[2], s[4], 0);
+    e("BQ", "Banque", "BQ0109", s[1], c("banque"), "Banque", "", "", s[0], s[2], 0, s[4]);
+    return E;
+  }
+  var fecBrut = false;
+  function fec() {
+    var E = ecritures();
+    if (fecBrut) {
+      return '<div class="fichier-texte"><div class="nom-fichier">123456789FEC20261031.txt</div><pre>' +
+        "<b>" + COLONNES_FEC.join("\t") + "</b>\n" + E.map(function (r) { return r.join("\t"); }).join("\n") + "</pre></div>";
+    }
+    var montrees = [2, 3, 4, 5, 6, 8, 10, 11, 12];
+    return '<div class="fichier-texte"><div class="nom-fichier">123456789FEC20261031.txt, lu en colonnes</div><table class="fec-col"><thead><tr>' +
+      montrees.map(function (i) { return "<th>" + COLONNES_FEC[i] + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      E.map(function (r) { return "<tr>" + montrees.map(function (i) { return '<td class="' + (i === 4 ? "c" : (i >= 11 ? "n" : "")) + '">' + r[i] + "</td>"; }).join("") + "</tr>"; }).join("") +
+      "</tbody></table></div>";
+  }
+
+  /* ═══ LES NUMÉROS DE COMPTE ══════════════════════════════════════════ */
+  function reglage() {
+    var groupes = [["Vos ventes", "entree"], ["Vos dépenses", "sortie"], ["Les comptes de passage", "tiers"], ["La TVA", "tva"]];
+    return '<div class="reglage"><h3>Numéros de compte</h3>' +
+      groupes.map(function (g) {
+        return '<p class="famille-comptes">' + g[0] + "</p>" + Object.keys(PROPOSES).filter(function (k) { return PROPOSES[k][2] === g[1]; }).map(function (k) {
+          return '<div class="compte-rang"><label for="compte-' + k + '">' + nom(k) + '</label><input class="compte-num' + (COMPTES[k] !== PROPOSES[k][1] ? " change" : "") + '" id="compte-' + k + '" data-compte="' + k + '" inputmode="numeric" maxlength="8" value="' + COMPTES[k] + '"></div>';
+        }).join("");
+      }).join("") + "</div>";
+  }
+
+  /* ═══ Ce que montre chaque fichier ═══════════════════════════════════ */
+  var PAGES_PDF = { couverture: ["La première page", couverture, "Les chiffres, puis chaque catégorie avec son compte et sa page"],
+                    ventes: ["Les ventes", registre, "Le registre des ventes, page 2"],
+                    categorie: ["Une catégorie", pageCategorie, "Matériaux et plants : chaque pièce numérotée, son hors taxe et sa TVA"],
+                    salaires: ["Les salaires", pageSalaires, "Le virement de chaque salaire, avec sa fiche de paie"] };
+  var doc = "pdf", pagePdf = "couverture", grand = false;
+  var bureau = document.getElementById("bureau"), sous = document.getElementById("sous"), quoi = document.getElementById("quoi");
+  var actions = document.getElementById("actions"), dit = document.getElementById("dit");
+
+  function echelle() {
+    var l = bureau.clientWidth - (window.matchMedia("(max-width: 480px)").matches ? 20 : 28);
+    bureau.style.setProperty("--echelle", Math.max(0.3, Math.min(1.4, l / 595)).toFixed(4));
+  }
+  function bouton(id, texte, presse) { return '<button type="button" class="bouton-doux" id="' + id + '"' + (presse === undefined ? "" : ' aria-pressed="' + presse + '"') + ">" + texte + "</button>"; }
+
+  function rendre(garderDefilement) {
+    var haut = bureau.scrollTop;
+    document.querySelectorAll("#docs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-doc") === doc)); });
+    bureau.classList.toggle("grand", doc === "pdf" && grand);
+    if (doc === "pdf") {
+      sous.innerHTML = Object.keys(PAGES_PDF).map(function (k) { return '<button type="button" data-page="' + k + '" aria-pressed="' + (k === pagePdf) + '">' + PAGES_PDF[k][0] + "</button>"; }).join("");
+      quoi.innerHTML = "<b>" + PAGES_PDF[pagePdf][2] + "</b>";
+      actions.innerHTML = bouton("lire-grand", grand ? "Voir la page entière" : "Lire en grand", grand);
+      bureau.innerHTML = PAGES_PDF[pagePdf][1]();
+      echelle();
+    } else if (doc === "excel") {
+      sous.innerHTML = "";
+      quoi.innerHTML = "<b>Ce qu’il voit en l’ouvrant</b>, quatre onglets en bas";
+      actions.innerHTML = bouton("telecharger-feuille", "Télécharger l’onglet " + feuilleVue);
+      bureau.innerHTML = classeur();
+    } else if (doc === "fec") {
+      sous.innerHTML = "";
+      quoi.innerHTML = "<b>Le fichier que son logiciel importe</b>, ici une vente, un achat, leur banque et un salaire";
+      actions.innerHTML = bouton("fec-brut", fecBrut ? "Lire en colonnes" : "Voir le fichier tel quel", fecBrut) + bouton("telecharger-fec", "Télécharger l’essai");
+      bureau.innerHTML = fec();
+    } else {
+      sous.innerHTML = "";
+      quoi.innerHTML = "<b>Dans Réglages</b>, proposés par Cause, corrigés par vous ou votre comptable";
+      actions.innerHTML = bouton("remettre", "Revenir aux numéros proposés");
+      bureau.innerHTML = reglage();
+    }
+    bureau.scrollTop = garderDefilement ? haut : 0;
+  }
+
+  function telecharger(nomFichier, texte, type) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([texte], { type: type }));
+    a.download = nomFichier;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+
+  document.getElementById("docs").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-doc]"); if (!b) return;
+    doc = b.getAttribute("data-doc"); dit.textContent = ""; rendre(false);
+  });
+  sous.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-page]"); if (!b) return;
+    pagePdf = b.getAttribute("data-page"); rendre(false);
+  });
+  actions.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.id === "lire-grand") { grand = !grand; rendre(true); }
+    if (b.id === "fec-brut") { fecBrut = !fecBrut; rendre(true); }
+    if (b.id === "telecharger-fec") {
+      telecharger("123456789FEC20261031.txt", COLONNES_FEC.join("\t") + "\r\n" + ecritures().map(function (r) { return r.join("\t"); }).join("\r\n") + "\r\n", "text/plain;charset=utf-8");
+      dit.textContent = "Le fichier d’essai est dans vos téléchargements.";
+    }
+    if (b.id === "telecharger-feuille") {
+      /* Un .csv au point-virgule, qu'Excel ouvre tel quel ; l'appli produira un vrai .xlsx à quatre onglets. */
+      var lignes = feuilles()[feuilleVue].map(function (r) { return r.map(function (v) { return typeof v === "number" ? fr(v).replace(/\s/g, "") : '"' + String(v).replace(/"/g, '""') + '"'; }).join(";"); });
+      telecharger(feuilleVue.toLowerCase() + ".csv", "﻿" + lignes.join("\r\n"), "text/csv;charset=utf-8");
+      dit.textContent = "L’onglet " + feuilleVue + " est dans vos téléchargements, il s’ouvre dans Excel.";
+    }
+    if (b.id === "remettre") { remettre(); dit.textContent = "Les numéros proposés sont revenus partout."; rendre(true); }
+  });
+  bureau.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-feuille]"); if (!b) return;
+    feuilleVue = b.getAttribute("data-feuille"); dit.textContent = ""; rendre(false);
+  });
+  /* Un numéro changé se reporte dans le PDF, l'Excel et le FEC : c'est le même réglage pour les trois. */
+  bureau.addEventListener("input", function (e) {
+    var champ = e.target.closest("input[data-compte]"); if (!champ) return;
+    var k = champ.getAttribute("data-compte"), v = champ.value.replace(/\D/g, "");
+    if (v !== champ.value) champ.value = v;
+    var juste = v.length >= 3;
+    champ.setAttribute("aria-invalid", String(!juste));
+    if (!juste) { dit.textContent = "Un numéro de compte a au moins trois chiffres."; return; }
+    COMPTES[k] = v;
+    champ.classList.toggle("change", v !== PROPOSES[k][1]);
+    dit.textContent = nom(k) + " passe au " + v + " dans le PDF, l’Excel et le FEC.";
+  });
+  window.addEventListener("resize", function () { if (doc === "pdf") echelle(); });
+  rendre(false);
+})();
+</script>
+</body>
+</html>
