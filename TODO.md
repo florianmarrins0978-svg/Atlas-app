@@ -30,6 +30,14 @@ l'exercice** (BOI-CF-IOR-60-40-20 § 40) : il ne prend pas le nom légal
 `SirenFECAAAAMMJJ` (`123456789_import_FEC_2026-10.txt`), et son ValidDate reste
 vide. Planche et PDF le disent.
 
+**Sa règle du 24 novembre, pour les trois fichiers : aucun texte gris.** *« Vu
+que c'est des documents comptables, il faut que ça soit lisible facilement. Tout
+ce qui est gris clair, tu le mets en noir. Ce que tu veux faire ressortir, soit
+tu modifies la police, soit tu mets en gras. »* Appliqué à la planche le jour
+même. **Au codage**, `src/server/pdf/dossier-comptable-pdf.ts` écrit encore en
+`DOUX` et en `GRIS` (dates, sous-lignes, pied de page, étiquettes) : tout passe
+en `ENCRE`.
+
 **À trancher par lui :** cotisations du patron (646) et des salariés (431) dans
 une seule catégorie ou deux ; les photos des pièces nommées par leur numéro en
 plus des trois fichiers. **Par son comptable, avant le codage :** la liste des

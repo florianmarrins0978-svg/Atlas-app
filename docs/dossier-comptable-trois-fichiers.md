@@ -15,6 +15,8 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/comptable-trois-fichi
 | Un numéro par pièce, le même partout | A 181 à A 202 pour octobre ; toucher un numéro le surligne et donne sa page, sa ligne d'onglet, sa ligne de banque et ses lignes de FEC | partout |
 | Le FEC officiel reste celui du comptable | écrit au dessus du FEC, et en bas de la première page du PDF | onglet Le FEC |
 
+**Aucun texte gris** (sa demande du 24 novembre, après la première version) : les trois documents s'écrivent en noir, et ce qui doit ressortir passe par le gras ou la serif. Le vrai PDF (`src/server/pdf/dossier-comptable-pdf.ts`) écrit encore en gris : à reprendre au codage.
+
 **Un seul jeu de données** (octobre 2026, inventé) nourrit les trois fichiers.
 Vérifié sur les fichiers téléchargés, pas sur l'écran :
 
