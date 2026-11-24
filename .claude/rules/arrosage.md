@@ -538,6 +538,17 @@ souple**. Et un losange par té égal sur le plan, côte à côte.
 **DÈS QU'IL Y A DES ARROSEURS, LE DÉPART EST EN Ø25 OU EN Ø32** (même jour) : le
 Ø16, rigide ou souple, ne sert qu'au goutte-à-goutte.
 
+**LE REGARD : TOUJOURS AU COMPTEUR, AU CHOIX SUR UN ROBINET — sa règle du 24 novembre 2026 :** *« si
+on se repique après compteur, il faut forcément un regard. Mais si on se repique sur un robinet, on peut
+soit avoir un regard, soit ne pas avoir de regard et du coup avoir un programmateur en [nez de
+robinet] »*. Avec regard, on se repique sur le robinet, on va au regard et on y fait la nourrice (1, 2,
+3, 6 voies…) avec un programmateur BL-IP ; au robinet il n'y a alors que la double sortie (ou pas) et le
+raccord femelle 25 ou 32 x 3/4". *« Les programmateurs en [nez de robinet], c'est seulement si on n'a
+pas de regard. »* C'est le choix « Le montage » du piquage sur un robinet (`LePlanDuJardin.tsx` :
+« Programmateur en nez de robinet » ou « Avec la nourrice ») ; au compteur, il n'y a pas de choix. Un
+montage sans aucun programmateur (un arrosage ouvert à la main) ne s'ajoute pas : sa réponse à la
+question, le même jour, *« en fait, à quoi ça sert ? »*.
+
 **PLUS DE RÉSEAUX QUE DE VOIES AU NEZ DE ROBINET : ON LE GARDE ET ON PRÉVIENT —
 sa réponse du 18 octobre 2026 :** *« si le programmateur est en nez de robinet,
 il le garde et il prévient qu'il manque des voies »*. L'outil ne bascule pas de
