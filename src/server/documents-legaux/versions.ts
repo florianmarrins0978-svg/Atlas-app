@@ -825,10 +825,15 @@ ARTICLE 19 : Dispositions diverses
      * de la version 3, mot pour mot, déduit de la page publiée
      * (`scripts/generer-version-cgu.ts`).
      *
-     * **Le nom Cause et les cases « Qui édite » n'y sont pas, et c'est à lui** :
-     * il voulait les faire dans une même version, pour une seule acceptation
-     * (`TODO.md`, « CAUSE : CE QUI ATTEND »). Publier celle-ci seule en coûte
-     * une de plus à chaque compte.
+     * **Le nom Cause et la case « Qui édite » y sont, sur sa décision du
+     * 24 novembre 2026** (une seule acceptation pour tout) : son extrait Kbis
+     * (entrepreneur individuel, RCS Versailles 133 027 037, nom commercial
+     * Cause), l'adresse qu'il garde, son téléphone, une adresse de contact
+     * provisoire en attendant celle d'OVH, et Scaleway relevé sur ses mentions
+     * légales. Le numéro de TVA est celui que les impôts attribuent à son SIREN
+     * (FR37133027037) : il opte pour la TVA, et VIES doit le dire valide avant
+     * que cette version parte sur `main`. Reste à compléter le téléphone de
+     * Scaleway, absent de ses mentions.
      *
      * `enVigueurLe` : trente jours au moins après sa publication (article 15).
      * À recaler sur le jour où elle part sur `main`.
@@ -837,38 +842,36 @@ ARTICLE 19 : Dispositions diverses
     version: "4",
     titre: "Conditions générales d'utilisation",
     resume:
-      "Ce qu'Atlas fait, ce qu'il ne fait pas, vos données, et le prix de l'abonnement.",
+      "Ce que Cause fait, ce qu'il ne fait pas, vos données, et le prix de l'abonnement.",
     acceptationRequise: true,
     enVigueurLe: "2027-01-04",
-    contenu: `ARTICLE 1 : Qui édite Atlas
+    contenu: `ARTICLE 1 : Qui édite Cause
 
-Atlas est édité par :
+Cause est édité par :
 
-Dénomination sociale : [À COMPLÉTER]
+Éditeur : Florian Martins, entrepreneur individuel, sous le nom commercial Cause
 
-Forme juridique : [À COMPLÉTER]
+Forme juridique : Entreprise individuelle (micro-entreprise)
 
-Capital social : [À COMPLÉTER]
+Adresse : 10 rue Denfert Rochereau, 78200 Mantes-la-Jolie
 
-Siège social : [À COMPLÉTER]
+RCS et numéro SIREN : RCS Versailles 133 027 037
 
-RCS et numéro SIREN : [À COMPLÉTER]
+Numéro de TVA intracommunautaire : FR37133027037
 
-Numéro de TVA intracommunautaire : [À COMPLÉTER]
+Directeur de la publication : Florian Martins
 
-Directeur de la publication : [À COMPLÉTER]
+Téléphone : 06 79 98 45 14
 
-Téléphone : [À COMPLÉTER]
+Contact : florian.martins0978@laposte.net
 
-Contact : [À COMPLÉTER, adresse e-mail dédiée]
+Hébergeur : Scaleway SAS, 8 rue de la Ville-l’Évêque, 75008 Paris, RCS Paris 433 115 904, téléphone [À COMPLÉTER]
 
-Hébergeur : [À COMPLÉTER, dénomination, adresse, téléphone]
-
-Pourquoi ces cases sont vides et le restent. Ces mentions sont imposées par l’article 1-1 de la loi pour la confiance dans l’économie numérique, depuis la loi SREN du 21 mai 2024, qui a remplacé l’ancien article 6-III. Les omettre est puni d’un an d’emprisonnement et de 75 000 € d’amende, portés à 375 000 € pour une personne morale (article 1-2 de la même loi). Les remplir au plausible serait donc pire que les laisser vides.
+Pourquoi ces mentions. Elles sont imposées par l’article 1-1 de la loi pour la confiance dans l’économie numérique, depuis la loi SREN du 21 mai 2024, qui a remplacé l’ancien article 6-III. Les omettre est puni d’un an d’emprisonnement et de 75 000 € d’amende (article 1-2 de la même loi).
 
 ARTICLE 2 : Ce que ce document engage
 
-Les présentes conditions régissent l’accès à Atlas et son utilisation. Elles forment un contrat entre l’éditeur et vous, professionnel agissant dans le cadre de votre activité. Atlas n’est pas destiné aux consommateurs.
+Les présentes conditions régissent l’accès à Cause et son utilisation. Elles forment un contrat entre l’éditeur et vous, professionnel agissant dans le cadre de votre activité. Cause n’est pas destiné aux consommateurs.
 
 Vous les acceptez en créant un compte. Si vous n’en acceptez pas un point, n’utilisez pas le service.
 
@@ -880,31 +883,31 @@ Deux documents s’y ajoutent et en font partie intégrante :
 
 • le contrat de sous-traitance au sens de l’article 28 du RGPD, qui régit les données de vos clients : [À COMPLÉTER : document distinct, à faire rédiger].
 
-ARTICLE 3 : Ce qu’Atlas fait, et ce qu’il ne fait pas
+ARTICLE 3 : Ce que Cause fait, et ce qu’il ne fait pas
 
-Atlas est un outil d’aide à la préparation du travail administratif d’un artisan : transcription d’une note dictée, rédaction de propositions de lignes de devis, planning, préparation de factures et de relevés de TVA, et outils de métier (plan d’arrosage, diagnostic végétal, fiches d’entretien), selon la formule souscrite (article 14).
+Cause est un outil d’aide à la préparation du travail administratif d’un artisan : transcription d’une note dictée, rédaction de propositions de lignes de devis, planning, préparation de factures et de relevés de TVA, et outils de métier (plan d’arrosage, diagnostic végétal, fiches d’entretien), selon la formule souscrite (article 14).
 
-Ce qu’Atlas n’est pas
+Ce que Cause n’est pas
 
-• Atlas n’est pas un logiciel de comptabilité, et ne se substitue à aucune obligation comptable, fiscale ou déclarative. Il prépare des éléments destinés à être transmis aux outils et aux professionnels dont c’est le métier.
+• Cause n’est pas un logiciel de comptabilité, et ne se substitue à aucune obligation comptable, fiscale ou déclarative. Il prépare des éléments destinés à être transmis aux outils et aux professionnels dont c’est le métier.
 
-• Atlas ne fournit aucun conseil comptable, fiscal, juridique, technique ou d’assurance.
+• Cause ne fournit aucun conseil comptable, fiscal, juridique, technique ou d’assurance.
 
-• Atlas n’émet aucun document en votre nom sans votre geste. Aucun devis, aucune facture, aucun envoi ne part sans que vous l’ayez validé.
+• Cause n’émet aucun document en votre nom sans votre geste. Aucun devis, aucune facture, aucun envoi ne part sans que vous l’ayez validé.
 
 Les outils de métier sont des aides au dimensionnement
 
 Les calculs de métier, en particulier le plan d’arrosage, sont des aides à la décision fondées sur les informations que vous saisissez. Ils ne constituent ni une étude d’exécution, ni une note de calcul opposable, ni un document de conception au sens des règles de l’art.
 
-Vous demeurez seul responsable du dimensionnement, du choix du matériel, de la conformité de l’installation et de sa mise en œuvre. Il vous appartient de vérifier chaque valeur avant d’engager un chantier. Atlas signale à l’écran ce qu’il n’a pas pu calculer ; l’absence de réserve ne vaut pas garantie d’exactitude.
+Vous demeurez seul responsable du dimensionnement, du choix du matériel, de la conformité de l’installation et de sa mise en œuvre. Il vous appartient de vérifier chaque valeur avant d’engager un chantier. Cause signale à l’écran ce qu’il n’a pas pu calculer ; l’absence de réserve ne vaut pas garantie d’exactitude.
 
 ARTICLE 4 : L’assistance par intelligence artificielle
 
-Atlas utilise des modèles d’intelligence artificielle fournis par des tiers pour transcrire vos dictées, en extraire des informations et proposer des lignes de devis.
+Cause utilise des modèles d’intelligence artificielle fournis par des tiers pour transcrire vos dictées, en extraire des informations et proposer des lignes de devis.
 
 L’intelligence artificielle prépare ; vous décidez.
 
-Tout résultat produit par ces modèles est une proposition, susceptible d’être inexacte, incomplète ou inadaptée. Vous vous engagez à la relire et à la corriger avant tout usage. Vous demeurez seul auteur et seul responsable des devis, factures, prix, durées, quantités et documents que vous émettez à partir d’Atlas, ainsi que de leur conformité.
+Tout résultat produit par ces modèles est une proposition, susceptible d’être inexacte, incomplète ou inadaptée. Vous vous engagez à la relire et à la corriger avant tout usage. Vous demeurez seul auteur et seul responsable des devis, factures, prix, durées, quantités et documents que vous émettez à partir de Cause, ainsi que de leur conformité.
 
 L’éditeur ne garantit ni l’exactitude, ni la pertinence, ni la complétude des propositions générées, et n’est pas responsable des conséquences d’un contenu généré que vous auriez validé sans vérification.
 
@@ -922,7 +925,7 @@ ARTICLE 5 : Votre compte et vos accès
 
 ARTICLE 6 : Ce que vous vous engagez à ne pas faire
 
-• utiliser Atlas à des fins illicites, ou en violation des droits d’un tiers ;
+• utiliser Cause à des fins illicites, ou en violation des droits d’un tiers ;
 
 • y verser des contenus dont vous n’avez pas le droit de disposer ;
 
@@ -938,7 +941,7 @@ ARTICLE 6 : Ce que vous vous engagez à ne pas faire
 
 ARTICLE 7 : Vos contenus vous appartiennent
 
-Vous demeurez propriétaire de tout ce que vous versez dans Atlas : clients, chantiers, dictées, photos, prix, devis et factures.
+Vous demeurez propriétaire de tout ce que vous versez dans Cause : clients, chantiers, dictées, photos, prix, devis et factures.
 
 Vous concédez à l’éditeur une licence non exclusive, limitée à la durée du contrat et strictement nécessaire à l’exécution du service : héberger, afficher, sauvegarder, transmettre aux sous-traitants listés, et générer les documents que vous demandez.
 
@@ -962,7 +965,7 @@ Le détail est dans la politique de confidentialité.
 
 ARTICLE 9 : Disponibilité du service
 
-L’éditeur est tenu d’une obligation de moyens quant à la disponibilité et au bon fonctionnement d’Atlas.
+L’éditeur est tenu d’une obligation de moyens quant à la disponibilité et au bon fonctionnement de Cause.
 
 Aucun taux de disponibilité n’est garanti en l’absence de convention de service (SLA) souscrite séparément. Le service peut être interrompu, notamment :
 
@@ -982,7 +985,7 @@ ARTICLE 10 : Sauvegarde et perte de données
 
 L’essentiel en une phrase.
 
-Atlas met en œuvre des moyens raisonnables pour conserver vos données, mais il vous appartient d’en conserver votre propre copie : et le service vous en donne le moyen à tout moment.
+Cause met en œuvre des moyens raisonnables pour conserver vos données, mais il vous appartient d’en conserver votre propre copie : et le service vous en donne le moyen à tout moment.
 
 Ce que l’éditeur s’engage à faire
 
@@ -992,7 +995,7 @@ Il s’agit d’une obligation de moyens renforcée, non d’une obligation de r
 
 Ce que vous vous engagez à faire
 
-Atlas met à votre disposition, en permanence et sans frais, une fonction d’export de l’ensemble des données de votre entreprise, dans un fichier qui s’ouvre sans Atlas : Réglages, puis Mes données.
+Cause met à votre disposition, en permanence et sans frais, une fonction d’export de l’ensemble des données de votre entreprise, dans un fichier qui s’ouvre sans Cause : Réglages, puis Mes données.
 
 Vous vous engagez à en faire usage régulièrement et à conserver ces copies sur un support dont vous avez la maîtrise. Cette copie est votre sauvegarde de référence.
 
@@ -1068,7 +1071,7 @@ Hors urgence ou illicéité manifeste, la suspension est précédée d’un aver
 
 ARTICLE 13 : Récupérer vos données
 
-Pendant toute la durée du contrat, vous pouvez exporter l’intégralité des données de votre entreprise depuis Réglages, puis Mes données, dans un format exploitable sans Atlas.
+Pendant toute la durée du contrat, vous pouvez exporter l’intégralité des données de votre entreprise depuis Réglages, puis Mes données, dans un format exploitable sans Cause.
 
 À compter de la fin du contrat, vos données restent récupérables par ce moyen pendant [À COMPLÉTER, un délai, 30 jours étant l’usage]. Passé ce délai, elles sont supprimées, à l’exception de ce que la loi impose de conserver : notamment les pièces comptables, conservées dix ans en application de l’article L.123-22 du Code de commerce.
 
@@ -1078,7 +1081,7 @@ ARTICLE 14 : Prix, abonnement et paiement
 
 14.1 : Les formules
 
-Atlas est proposé par abonnement, en trois formules. Les tarifs s’entendent hors taxes ; la TVA française au taux en vigueur s’y ajoute.
+Cause est proposé par abonnement, en trois formules. Les tarifs s’entendent hors taxes ; la TVA française au taux en vigueur s’y ajoute.
 
 Formule, Par mois, Par an, Comptes
 
@@ -1132,7 +1135,7 @@ L’éditeur peut réviser ses tarifs. Toute hausse est notifiée par un moyen d
 
 14.8, Droit de rétractation
 
-Atlas est destiné aux professionnels. Le droit de rétractation de quatorze jours prévu à l’article L.221-18 du Code de la consommation ne s’applique pas lorsque le souscripteur agit pour les besoins de son activité professionnelle et que son entreprise emploie plus de cinq salariés, ou lorsque l’objet du contrat entre dans le champ de son activité principale. [À COMPLÉTER, à faire confirmer : l’article L.221-3 étend la rétractation aux professionnels de cinq salariés au plus dont l’objet du contrat n’entre pas dans le champ de l’activité principale. Le doute doit se trancher en faveur de l’accorder.]
+Cause est destiné aux professionnels. Le droit de rétractation de quatorze jours prévu à l’article L.221-18 du Code de la consommation ne s’applique pas lorsque le souscripteur agit pour les besoins de son activité professionnelle et que son entreprise emploie plus de cinq salariés, ou lorsque l’objet du contrat entre dans le champ de son activité principale. [À COMPLÉTER, à faire confirmer : l’article L.221-3 étend la rétractation aux professionnels de cinq salariés au plus dont l’objet du contrat n’entre pas dans le champ de l’activité principale. Le doute doit se trancher en faveur de l’accorder.]
 
 ARTICLE 15 : Modification des présentes conditions
 
