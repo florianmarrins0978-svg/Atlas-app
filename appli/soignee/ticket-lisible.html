@@ -481,10 +481,16 @@ input[type="file"] { display: none; }
         return '<circle class="poignee" data-coin="' + i + '" cx="' + p[0] * W + '" cy="' + p[1] * H + '" r="' + r + '" fill="rgba(28,28,26,0.35)" stroke="#fff" stroke-width="' + (r / 4) + '"/>';
       }).join("");
   }
+  /* La photo d'exemple nettoyée, gardée à part : « Dans le dossier » montre
+     le ticket d'exemple, son texte ET sa photo. Sa remarque du 24 novembre :
+     votre photo Leclerc était posée sous le texte du Leroy Merlin d'exemple,
+     et le montant de l'un passait pour celui de l'autre. */
+  var exemple = { actif: true, photo: "" };
   function garder() {
     if (!quad) return;
     redresser(image, quad, rendu, garde);
     window.__mesure = mesure;
+    if (exemple.actif) exemple.photo = garde.toDataURL("image/jpeg", 0.85);
   }
   /* Ce que la photo ne pourra jamais donner, dit avant de la garder : une
      photo floue ne devient pas nette sans inventer, et une pièce inventée
@@ -515,6 +521,7 @@ input[type="file"] { display: none; }
     if (avis) { dit.className = "dit doute"; dit.textContent = avis; }
   }
   function charger(src) {
+    exemple.actif = src === "ticket-sur-le-genou.jpg";
     image = new Image();
     image.onload = function () { dessinerPhoto(); chercher(); };
     image.onerror = function () { dit.className = "dit doute"; dit.textContent = "Cette image ne s'ouvre pas ici."; };
@@ -605,7 +612,7 @@ input[type="file"] { display: none; }
     document.getElementById("bande-aujourdhui").innerHTML = rangDoc(courier());
     document.getElementById("bande-a").innerHTML = rangDoc(lisible());
     /* B : la photo nettoyée SOUS le ticket réécrit, pour ne pas tasser ses lignes. */
-    var vignette = garde.width ? '<img class="photo-nette" alt="La photo nettoyée du ticket" src="' + garde.toDataURL("image/jpeg", 0.85) + '">' : "";
+    var vignette = exemple.photo ? '<img class="photo-nette" alt="La photo nettoyée du ticket d\'exemple" src="' + exemple.photo + '">' : "";
     document.getElementById("bande-b").innerHTML = rangDoc(lisible().replace('<span class="voir">Voir la photo</span>', vignette + '<span class="voir">Voir la photo en grand</span>'));
     echelle();
   }
@@ -620,6 +627,7 @@ input[type="file"] { display: none; }
     document.getElementById("quoi-dossier").innerHTML = taille === "tel"
       ? "<b>La page A4 entière dans la largeur d'un téléphone.</b> Le Courier d'aujourd'hui ne se lit plus ; la proposition se lit d'un coup de zoom."
       : "<b>À la taille du papier imprimé.</b> Faites glisser pour lire la ligne entière.";
+    document.getElementById("quoi-dossier").innerHTML += "<br>Ici, le ticket d'exemple Leroy Merlin. Dans l'appli, le texte réécrit vient de la lecture de votre photo par l'IA, faite une seule fois.";
   }
   document.querySelectorAll("[data-taille]").forEach(function (b) {
     b.addEventListener("click", function () {

@@ -35,6 +35,11 @@ vérifiée sur sa photo floutée (2,4 et 1,9 contre 9,9 nette, seuil 6). Et les
 bords parallèles à leur vis-à-vis, qui retrouvent un coin sous le pouce.
 **À vérifier dans l'appli au codage :** que la photo du ticket part en pleine
 taille (aucune réduction trouvée côté téléphone dans `AchatsTva.tsx`).
+**Sa remarque suivante : « le montant c'est pas 85, c'est 47 ».** Le 85,50 €
+était le ticket d'exemple (Leroy Merlin, inventé), mais la variante B posait
+SA photo Leclerc sous ce texte : corrigé, « Dans le dossier » ne montre plus que
+l'exemple, texte et photo. La planche ne lit pas les tickets (aucune IA ici).
+Son ticket : total 57,82 € TTC, dont 47,63 € HT à 5,5 % et 6,31 € HT à 20 %.
 Puis le ticket du dossier : A (réécrit lisible, écriture pleine, total plus
 grand), B (A, plus la photo nettoyée dessous).
 
