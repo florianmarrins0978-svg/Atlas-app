@@ -37,6 +37,11 @@
   son comptable et lui demander si cela lui va.
 
   Les numéros proposés et leurs sources : docs/dossier-comptable-trois-fichiers.md.
+  AUCUN TEXTE GRIS DANS UN DOCUMENT COMPTABLE, sa demande du 24 novembre :
+  « tout ce qui est gris clair, tu le mets en noir ; ce que tu veux faire
+  ressortir, tu modifies la police ou tu mets en gras ». Les trois fichiers
+  s'écrivent en encre (#1c1c1a) ; la hiérarchie tient au gras et à la serif.
+
   Données inventées. Un document part en papier : couleurs d'Origine, quelle
   que soit la charte (PRODUCT.md) ; seul l'écran des Réglages suit la charte.
 */
@@ -48,7 +53,7 @@
 .pl-etats { justify-content: center; }
 .choix-cat { min-height: 40px; padding: 0 12px; border: 0; border-radius: 20px; font: 600 14px/1 var(--sans); color: #1c1c1a;
              background: rgba(28,28,26,0.06); max-width: 100%; }
-.quoi { margin: 0; text-align: center; font-size: 14px; line-height: 1.45; color: #4a4a44; }
+.quoi { margin: 0; text-align: center; font-size: 14px; line-height: 1.45; color: #1c1c1a; }
 .quoi b { color: #1c1c1a; }
 .quoi.fec-officiel { max-width: 34em; margin: 0 auto; padding: 10px 14px; border-radius: 10px; background: #ede3d2; color: #6b4f25; }
 .quoi.fec-officiel b { color: #4f3a1a; }
@@ -82,7 +87,7 @@
       font: 400 9.5px/1.4 var(--sans); box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); zoom: var(--echelle, 1); }
 .bureau.grand .a4 { zoom: 1; }
 .a4-dedans { position: absolute; inset: 40px 42px 46px; display: flex; flex-direction: column; }
-.a4-pied { position: absolute; left: 42px; right: 42px; bottom: 22px; display: flex; justify-content: space-between; font-size: 7.5px; color: #6b6b5c; }
+.a4-pied { position: absolute; left: 42px; right: 42px; bottom: 22px; display: flex; justify-content: space-between; font-size: 7.5px; color: #1c1c1a; }
 .a4 .s { color: #b3392b; } .a4 .e { color: #1f7a45; }
 .chiffres { font-variant-numeric: tabular-nums lining-nums; }
 .a4-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid #1c1c1a; }
@@ -91,10 +96,10 @@
 .compte { font: 700 11px/1 var(--sans); color: #8b6835; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 .a4-tete .bilan { display: flex; gap: 12px; font-size: 9.5px; white-space: nowrap; }
 .a4-tete .bilan b { font-weight: 600; }
-.etiq { font-size: 7.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b5c; }
-.mot { margin: 6px 0 0; font-size: 9px; color: #4a4a44; }
+.etiq { font-size: 7.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1c1c1a; }
+.mot { margin: 6px 0 0; font-size: 9px; color: #1c1c1a; }
 .couv-titre { margin: 8px 0 0; font: 400 30px/1.05 var(--serif); }
-.couv-periode { margin: 6px 0 0; font: 400 15px/1.3 var(--serif); color: #4a4a44; }
+.couv-periode { margin: 6px 0 0; font: 400 15px/1.3 var(--serif); color: #1c1c1a; }
 .couv-qui { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #e4e0d6; }
 .couv-qui p { margin: 3px 0 0; font-size: 9.5px; line-height: 1.45; }
 .atteste { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 9px 14px; border-radius: 3px; background: #e1e8da; font-size: 11px; font-weight: 600; color: #2f4a26; }
@@ -111,33 +116,33 @@
 .tdoc .num { color: #8b6835; font-weight: 700; white-space: nowrap; }
 .tdoc i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; vertical-align: 1px; }
 .tdoc tr.total td { border-bottom: 0; border-top: 1px solid #1c1c1a; font-weight: 600; }
-.tdoc .doux { color: #6b6b5c; }
+.tdoc .doux { color: #1c1c1a; }
 .du { color: #b3392b; font-weight: 600; }
 .registre td:nth-child(3) { line-height: 1.3; }
-.registre .chantier { color: #4a4a44; }
+.registre .chantier { color: #1c1c1a; }
 
 /* Une catégorie : la pièce numérotée devant, puis le côte à côte gardé */
 .cols, .rang-doc { display: grid; grid-template-columns: 38px 34px minmax(0, 1fr) 66px 184px; gap: 0 9px; }
 .cols { margin-top: 12px; padding-bottom: 4px; border-bottom: 1px solid #1c1c1a; }
 .cols .d { text-align: right; }
 .rang-doc { padding: 8px 0; border-bottom: 1px solid #efece5; align-items: start; }
-.rang-doc .jour-doc { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.rang-doc .jour-doc { font-size: 9px; color: #1c1c1a; padding-top: 1px; }
 .rang-doc .lib { font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; overflow-wrap: anywhere; }
-.rang-doc .ht { margin-top: 2px; font-size: 8.5px; color: #4a4a44; }
+.rang-doc .ht { margin-top: 2px; font-size: 8.5px; color: #1c1c1a; }
 .rang-doc .mt { text-align: right; font: 400 11px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
 .piece-doc { border: 1px solid #e4e0d6; border-radius: 2px; padding: 6px 8px; background: #faf9f5; }
 .piece-doc .mono { font: 400 7.6px/1.42 ui-monospace, "Courier New", monospace; }
 .piece-doc .r { display: flex; justify-content: space-between; gap: 6px; padding: 0 2px; }
 .piece-doc .tot { background: #ebf0f4; font-weight: 700; border-radius: 1px; }
 .piece-doc .nom { font: 400 10.5px/1.2 var(--serif); }
-.piece-doc .sous { margin-top: 1px; font-size: 8px; color: #6b6b5c; }
+.piece-doc .sous { margin-top: 1px; font-size: 8px; color: #1c1c1a; }
 .piece-doc .tt { display: flex; justify-content: space-between; margin-top: 5px; padding: 2px 4px; background: #ebf0f4; font-weight: 700; font-size: 8.5px; }
-.piece-doc .rl { display: flex; justify-content: space-between; margin-top: 3px; font-size: 8px; color: #4a4a44; }
+.piece-doc .rl { display: flex; justify-content: space-between; margin-top: 3px; font-size: 8px; color: #1c1c1a; }
 .voir { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 8px; font-weight: 600; color: #8b6835; }
 .voir svg { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2; }
-.simple { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.simple { font-size: 9px; color: #1c1c1a; padding-top: 1px; }
 .simple b { color: #1c1c1a; font-weight: 600; }
-.non-deduite { margin-top: 3px; font-size: 8px; color: #806031; }
+.non-deduite { margin-top: 3px; font-size: 8px; font-weight: 600; color: #1c1c1a; }
 .perdu-doc { font-size: 9px; font-style: italic; color: #9c3b2e; padding-top: 1px; }
 
 /* Les photos tout au bout, comme le dossier d'aujourd'hui */
@@ -170,8 +175,8 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
 .classeur-barre svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; }
 .grille { border-collapse: collapse; white-space: nowrap; }
 .grille th, .grille td { border: 1px solid #d6d6d6; padding: 3px 8px; height: 20px; }
-.grille thead th { position: sticky; top: 0; z-index: 1; background: #f0f0f0; color: #555; font-weight: 400; text-align: center; }
-.grille tbody th { background: #f0f0f0; color: #555; font-weight: 400; text-align: center; min-width: 26px; }
+.grille thead th { position: sticky; top: 0; z-index: 1; background: #f0f0f0; color: #1c1c1a; font-weight: 400; text-align: center; }
+.grille tbody th { background: #f0f0f0; color: #1c1c1a; font-weight: 400; text-align: center; min-width: 26px; }
 .grille tr.entete td { font-weight: 700; background: #f2f0ea; }
 .grille tr.entete td .filtre { display: inline-block; width: 9px; height: 9px; margin-left: 6px; vertical-align: -1px; border: 1px solid #9a9a9a; border-radius: 1px;
                                background: linear-gradient(135deg, transparent 45%, #777 46%, #777 54%, transparent 55%); opacity: 0.55; }
@@ -179,16 +184,16 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
 .grille td.f { color: #1f6e43; }
 .grille tr.total td { font-weight: 700; border-top: 2px solid #1c1c1a; }
 .feuilles-du-classeur { display: flex; gap: 2px; padding: 0 10px; background: #f0f0f0; border-top: 1px solid #d6d6d6; }
-.feuilles-du-classeur button { min-height: 36px; padding: 0 16px; font: inherit; font-size: 12.5px; color: #444; background: transparent; border: 0; cursor: pointer; }
+.feuilles-du-classeur button { min-height: 36px; padding: 0 16px; font: inherit; font-size: 12.5px; color: #1c1c1a; background: transparent; border: 0; cursor: pointer; }
 .feuilles-du-classeur button[aria-pressed="true"] { background: #fff; color: #1f6e43; font-weight: 700; box-shadow: inset 0 -2px 0 #1f6e43; }
 .feuilles-du-classeur button:focus-visible { outline: 2px solid #1f6e43; outline-offset: -2px; }
-.formule { display: flex; gap: 8px; padding: 4px 10px; border-bottom: 1px solid #d6d6d6; font-size: 12px; color: #444; white-space: nowrap; }
-.formule span:first-child { min-width: 40px; color: #777; }
+.formule { display: flex; gap: 8px; padding: 4px 10px; border-bottom: 1px solid #d6d6d6; font-size: 12px; color: #1c1c1a; white-space: nowrap; }
+.formule span:first-child { min-width: 40px; color: #1c1c1a; font-weight: 600; }
 
 /* ─── LE FEC : le fichier texte, tel qu'il s'ouvre ───────────────────────── */
 .fichier-texte { display: inline-block; min-width: 100%; background: #fff; box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
-.fichier-texte .nom-fichier { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 7px 10px; background: #ecebe6; font: 600 12px/1.3 var(--sans); color: #4a4a44; }
-.fichier-texte .nom-fichier span { font-weight: 400; }
+.fichier-texte .nom-fichier { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 7px 10px; background: #ecebe6; font: 600 12px/1.3 var(--sans); color: #1c1c1a; }
+.fichier-texte .nom-fichier span { font-weight: 400; color: #1c1c1a; }
 .fec-brut { margin: 0; padding: 10px 12px; font: 400 11px/1.65 ui-monospace, "Courier New", monospace; color: #1c1c1a; white-space: pre; }
 .fec-brut .tete-fec { color: #8b6835; font-weight: 700; }
 /* La tabulation, montée à la vue : un trait d'or, aucun caractère inventé */
