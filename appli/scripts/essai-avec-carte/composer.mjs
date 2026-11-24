@@ -56,7 +56,10 @@ const essai = ecran(
       ligne(false, "Aujourd’hui", "0 €", ""),
       ligne(false, "Premier prélèvement", `Le ${M.fin}`, `${M.total}, soit ${M.ttc}, puis chaque mois`),
     ]) +
-    phrase(`Arrêtez avant le ${M.finCourt} : vous ne payez rien.`, "mt-[14px]"),
+    // Sa demande du 24 novembre : dire comment arrêter, pour ne pas effrayer.
+    // La phrase garde sa place ; le chemin est celui de l'appli (Réglages,
+    // Abonnement, « Résilier », `AbonnementClient.tsx`).
+    phrase(`Arrêtez avant le ${M.finCourt} : vous ne payez rien. Il suffit de toucher « Résilier » dans Réglages, Abonnement.`, "mt-[14px]"),
   plein("Ajouter ma carte", "paiement") + discret("Plus tard", 'data-va="sans-carte" data-dit="Dans l\'appli : la session se ferme, et la prochaine ouverture redemande la carte."'),
 );
 
@@ -88,7 +91,7 @@ const pagePaiement = (refus) => ({
 
 const sansCarte = ecran(
   titre("Il manque votre carte.") +
-    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours.`) +
+    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours. Pour arrêter avant, touchez « Résilier » dans Réglages, Abonnement.`) +
     releve([ligne(true, "Votre formule", `${M.formule} avec les outils`, M.total)]),
   plein("Ajouter ma carte", "paiement") + discret("Se déconnecter", 'data-dit="Dans l\'appli : ferme la session."'),
 );
