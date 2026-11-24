@@ -34,9 +34,14 @@ vide. Planche et PDF le disent.
 que c'est des documents comptables, il faut que ça soit lisible facilement. Tout
 ce qui est gris clair, tu le mets en noir. Ce que tu veux faire ressortir, soit
 tu modifies la police, soit tu mets en gras. »* Appliqué à la planche le jour
-même. **Au codage**, `src/server/pdf/dossier-comptable-pdf.ts` écrit encore en
-`DOUX` et en `GRIS` (dates, sous-lignes, pied de page, étiquettes) : tout passe
-en `ENCRE`.
+même. **Le vrai PDF aussi, sur sa demande du même soir** (*« va vérifier dans le
+document comptable qu'on a déjà ; pareil, tout ce qui est en gris, passe-le en
+noir »*) : `DOUX` et `GRIS` retirés de `src/server/pdf/dossier-comptable-pdf.ts`
+(83 textes), et `test-dossier-comptable-pdf.ts` refuse désormais tout texte
+gris (vu rouge avant, vert après). **Codé sur `claude/dossier-comptable-exports-yzwp5f`,
+pas sur `main`** : niveau 2 (`npm run verifier:avant-fusion` et quatre suites
+navigateur), qui attend son « oui ». L'attestation du comptable
+(`attestation-comptable-pdf.ts`) écrit encore en gris : à lui de dire.
 
 **Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
 tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.

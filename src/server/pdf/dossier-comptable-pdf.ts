@@ -120,9 +120,16 @@ function couleur(hex: string) {
 }
 type Teinte = ReturnType<typeof rgb>;
 
+/**
+ * Une seule encre pour le texte, et aucun gris : sa demande du 24 novembre
+ * 2026, « vu que c'est des documents comptables, il faut que ça soit lisible
+ * facilement ; tout ce qui est gris clair, tu le mets en noir ; ce que tu veux
+ * faire ressortir, soit tu modifies la police, soit tu mets en gras ». Ce qui
+ * se distingue le fait par le gras ou la serif ; les seules couleurs du texte
+ * disent un sens (sortie, entrée, lien, écart). `test-dossier-comptable-pdf.ts`
+ * relit la couleur de chaque texte écrit et refuse un gris.
+ */
 const ENCRE = couleur("#1c1c1a");
-const DOUX = couleur("#4a4a44");
-const GRIS = couleur("#6b6b5c");
 const FILET = couleur("#e4e0d6");
 const SEPARATION = couleur("#efece5");
 const PAPIER = couleur("#f3f1eb");
@@ -275,8 +282,8 @@ const nouvellePage = (c: Composition) => c.doc.addPage([LARGEUR, HAUTEUR]);
 
 /** Une petite étiquette en capitales, celle des titres de colonnes. */
 function etiquette(page: PDFPage, p: Polices, texte: string, x: number, y: number, aDroite = false) {
-  if (aDroite) ecrireADroite(page, texte.toUpperCase(), x, y, p.gras, 7.5, GRIS);
-  else ecrire(page, texte.toUpperCase(), x, y, p.gras, 7.5, GRIS);
+  if (aDroite) ecrireADroite(page, texte.toUpperCase(), x, y, p.gras, 7.5, ENCRE);
+  else ecrire(page, texte.toUpperCase(), x, y, p.gras, 7.5, ENCRE);
 }
 
 /** Le titre d'une page, ce qu'elle porte à droite, et le trait noir dessous. Rend le bas du trait. */
@@ -347,7 +354,7 @@ function rangsDeLaPiece(piece: PieceDeLaLigne, p: Polices): Rang[] | null {
       ];
     }
     case "facture":
-      return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8, teinte: GRIS, h: 10.6 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
+      return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8, teinte: ENCRE, h: 10.6 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-hors-atlas":
       return [nom(piece.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-emise":
@@ -429,24 +436,24 @@ function planifier(l: LignePourLeDossier, p: Polices): Plan {
   const libelle = coupe.length <= 3 ? coupe : [...coupe.slice(0, 2), [{ t: ajuste(coupe.slice(2).map((x) => x.map((b) => b.t).join("")).join(" "), p.gras, 9.5, L_LIBELLE), police: p.gras, teinte: ENCRE }]];
   const suite = suiteDeLaPiece(l.ecart, l.sens);
   // Payée en partie se dit sans alerte : seul un vrai écart prend l'ambre.
-  const teinteDeLaSuite = ecartSignale(l.ecart, l.sens) ? ECART : DOUX;
+  const teinteDeLaSuite = ecartSignale(l.ecart, l.sens) ? ECART : ENCRE;
   const rangs = l.piece ? rangsDeLaPiece(l.piece, p) : null;
   let phrase: Bout[] = [];
   if (l.piece?.genre === "facture-emise") {
     phrase = [
       { t: nomDeLaPiece(l.piece), police: p.gras, teinte: ENCRE },
       ...(suite ? [{ t: suite, police: p.gras, teinte: teinteDeLaSuite }] : []),
-      { t: ", émise par Cause", police: p.sans, teinte: DOUX },
+      { t: ", émise par Cause", police: p.sans, teinte: ENCRE },
     ];
   } else if (!l.piece && l.ticketPerdu) {
     phrase = [{ t: "Ticket perdu, mention validée. TVA non déduite.", police: p.oblique, teinte: SORTIE }];
   } else if (!l.piece && l.motif) {
     phrase = [
-      { t: "Justifié par sa nature : ", police: p.sans, teinte: DOUX },
+      { t: "Justifié par sa nature : ", police: p.sans, teinte: ENCRE },
       { t: enMinuscule(libelleMotif(l.motif, l.sens)), police: p.gras, teinte: ENCRE },
     ];
   } else if (!l.piece) {
-    phrase = [{ t: "Aucune pièce", police: p.sans, teinte: GRIS }];
+    phrase = [{ t: "Aucune pièce", police: p.sans, teinte: ENCRE }];
   }
   const fichier = fichierDe(l);
   return {
@@ -511,7 +518,7 @@ function moisDuReleve(c: Composition, m: string, lignes: LignePourLeDossier[], l
   const premiere = pg.page;
   const changer = () => {
     const suivante = pageDuReleve(c, m, true, []);
-    ecrireADroite(pg.page, `Suite ${duMois(m)} page ${numero(c, suivante.page)}`, LARGEUR - MARGE, pg.y - 14, p.sans, 8.5, GRIS);
+    ecrireADroite(pg.page, `Suite ${duMois(m)} page ${numero(c, suivante.page)}`, LARGEUR - MARGE, pg.y - 14, p.sans, 8.5, ENCRE);
     fermer(c, pg);
     pg = suivante;
   };
@@ -537,11 +544,11 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
   // La première ligne de base descend de seize points sous le trait du dessus :
   // la date d'un virement ne le touche plus.
   const yL = haut - 16;
-  ecrire(pg.page, jourEnMots(l.jour), MARGE, yL, p.sans, 8.5, DOUX, 58);
+  ecrire(pg.page, jourEnMots(l.jour), MARGE, yL, p.sans, 8.5, ENCRE, 58);
   poserLignes(pg.page, plan.libelle, X_LIBELLE, yL, 9.5, 12);
   const yCat = yL - 12 * (plan.libelle.length - 1) - 14;
   pg.page.drawCircle({ x: X_LIBELLE + 3, y: yCat + 2.8, size: 3, color: COULEUR_CAT[l.categorie] });
-  ecrire(pg.page, NOM_CATEGORIE[l.categorie], X_LIBELLE + 10, yCat, p.sans, 8.5, DOUX, L_LIBELLE - 10);
+  ecrire(pg.page, NOM_CATEGORIE[l.categorie], X_LIBELLE + 10, yCat, p.sans, 8.5, ENCRE, L_LIBELLE - 10);
   ecrireADroite(pg.page, signe(l), X_MONTANT, yL, p.serif, 11.5, l.sens === "entree" ? ENTREE : SORTIE);
   pg.lignes += 1;
   let bas = haut - hauteurGauche(plan);
@@ -568,7 +575,7 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
       pg = courante();
       haut = pg.y;
       ecrire(pg.page, l.libelle, X_LIBELLE, haut - 16, p.gras, 9.5, ENCRE, L_LIBELLE);
-      ecrire(pg.page, `Suite du ticket du ${jourComplet(l.jour)}`, X_LIBELLE, haut - 30, p.sans, 8.5, DOUX, L_LIBELLE);
+      ecrire(pg.page, `Suite du ticket du ${jourComplet(l.jour)}`, X_LIBELLE, haut - 30, p.sans, 8.5, ENCRE, L_LIBELLE);
       pg.lignes += 1;
       bas = haut - 34;
       yCase = haut - 8;
@@ -601,9 +608,9 @@ type Flux = { page: PDFPage; y: number };
 function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMois: Map<string, PDFPage>, pageDesPerdus: () => PDFPage | null) {
   const { p } = c;
   const page = nouvellePage(c);
-  ecrire(page, "POUR MON COMPTABLE", MARGE, HAUTEUR - 52, p.gras, 7.5, GRIS);
+  ecrire(page, "POUR MON COMPTABLE", MARGE, HAUTEUR - 52, p.gras, 7.5, ENCRE);
   page.drawText(papier("Dossier justifié"), { x: MARGE, y: HAUTEUR - 99, size: 30, font: p.serif, color: ENCRE });
-  ecrire(page, `Du ${jourComplet(d.du)} au ${jourComplet(d.au)}`, MARGE, HAUTEUR - 124, p.serif, 15, DOUX);
+  ecrire(page, `Du ${jourComplet(d.du)} au ${jourComplet(d.au)}`, MARGE, HAUTEUR - 124, p.serif, 15, ENCRE);
   page.drawLine({ start: { x: MARGE, y: HAUTEUR - 143 }, end: { x: LARGEUR - MARGE, y: HAUTEUR - 143 }, thickness: 0.6, color: FILET });
 
   // Qui, quel relevé, quand : trois colonnes, celle de l'entreprise plus large.
@@ -678,7 +685,7 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
     ]
       .filter((t): t is string => typeof t === "string")
       .join(", ");
-  const enMots = (t: string) => enLignes([{ t: `${t}.`, police: p.sans, teinte: DOUX }], 9.5, UTILE);
+  const enMots = (t: string) => enLignes([{ t: `${t}.`, police: p.sans, teinte: ENCRE }], 9.5, UTILE);
   const mesure = contient(999);
   if (mesure) {
     const yContient = y - 18;
@@ -717,7 +724,7 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
     ecrireADroite(pg, enEuros(total / 100), xMontant, yb, p.sans, 9.5, ENCRE);
     // La part d'une petite catégorie ne s'arrondit pas à zéro : elle existe.
     const part = Math.round((total * 100) / sorties);
-    ecrireADroite(pg, part === 0 ? "moins de 1\u00a0%" : `${part}\u00a0%`, LARGEUR - MARGE, yb, p.sans, 9.5, GRIS);
+    ecrireADroite(pg, part === 0 ? "moins de 1\u00a0%" : `${part}\u00a0%`, LARGEUR - MARGE, yb, p.sans, 9.5, ENCRE);
   });
 }
 
@@ -756,7 +763,7 @@ function ticketsPerdus(c: Composition, perdus: LignePourLeDossier[], apres: Page
   if (perdus.length === 0) return null;
   const { p } = c;
   const RANG = 22;
-  const phrase = enLignes([{ t: "Ces dépenses restent dans le relevé, avec leur mention. Leur TVA n'a pas été déduite, faute de ticket.", police: p.sans, teinte: DOUX }], 9.5, UTILE);
+  const phrase = enLignes([{ t: "Ces dépenses restent dans le relevé, avec leur mention. Leur TVA n'a pas été déduite, faute de ticket.", police: p.sans, teinte: ENCRE }], 9.5, UTILE);
   const hauteur = 26 + 32 + 10 + (perdus.length + 1) * RANG + 18 + 13 * phrase.length;
   const flux: Flux = apres && apres.y - hauteur >= BAS ? { page: apres.page, y: apres.y - 26 } : { page: nouvellePage(c), y: HAUT };
   const premiere = flux.page;
@@ -833,7 +840,7 @@ async function poserLaPhoto(c: Composition, page: PDFPage, l: LignePourLeDossier
     if (pose.genre === "image") page.drawImage(pose.objet, pos);
     else page.drawPage(pose.objet, pos);
   } else {
-    ecrire(page, "Photo non lisible ici, gardée dans Cause", cadre.x + 8, cadre.y + cadre.h / 2, p.sans, 8, GRIS, cadre.w - 16);
+    ecrire(page, "Photo non lisible ici, gardée dans Cause", cadre.x + 8, cadre.y + cadre.h / 2, p.sans, 8, ENCRE, cadre.w - 16);
   }
   liaisons.photo.set(l, { page, y: yHaut + 10 });
   const yb = yHaut - lh;
@@ -912,8 +919,8 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
   const pages = doc.getPages();
   const pied = ["Dossier justifié", d.entreprise.nom, entreLesDeux(d.du, d.au, true)].filter(Boolean).join(", ");
   pages.forEach((pg, i) => {
-    ecrire(pg, pied, MARGE, 22, c.p.sans, 7.5, GRIS, 380);
-    ecrireADroite(pg, `Page ${i + 1} sur ${pages.length}`, LARGEUR - MARGE, 22, c.p.sans, 7.5, GRIS);
+    ecrire(pg, pied, MARGE, 22, c.p.sans, 7.5, ENCRE, 380);
+    ecrireADroite(pg, `Page ${i + 1} sur ${pages.length}`, LARGEUR - MARGE, 22, c.p.sans, 7.5, ENCRE);
   });
   for (const f of c.apres) f();
   poserLiens(doc, c.liens);
