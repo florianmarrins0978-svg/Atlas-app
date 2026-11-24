@@ -38,6 +38,24 @@ même. **Au codage**, `src/server/pdf/dossier-comptable-pdf.ts` écrit encore en
 `DOUX` et en `GRIS` (dates, sous-lignes, pied de page, étiquettes) : tout passe
 en `ENCRE`.
 
+**Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
+tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.
+Non : quatorze catégories manquaient (location de matériel 6135, garage 6155,
+leasing 6122, électricité 6061, bureau 6064, logiciels 6135, publicité 623,
+honoraires 6226, cotisations professionnelles 6281, formation 6228, déchets
+verts 6288, vêtements de travail 6063, retraite et mutuelle des salariés 437,
+impôt prélevé sur les salaires 4421). Ajoutées, rangées par familles. Le paysage
+cotise à la **MSA**, pas à l'URSSAF : la ligne d'essai est corrigée.
+
+**Ce qu'il avait compris de travers, et qu'il ne faut pas lui laisser croire :**
+les trois fichiers ne s'allument pas entre eux. Le surlignage est un geste de la
+planche pour montrer où le numéro de pièce est imprimé ; chez le comptable, ce
+sont trois fichiers séparés que relie ce numéro. **Où ils se rangent, proposé :**
+dans Mes dossiers, sous le dossier arrêté, à la place du PDF seul
+(`MesDossiers.tsx`, `pdfDuDossier`), et sur la page du lien du comptable
+(`src/app/comptable/[jeton]`). Cette planche se fige sur ses vrais écrans, ce
+qui demande de lancer l'appli ici : son « oui » d'abord (`CLAUDE.md` §5).
+
 **À trancher par lui :** cotisations du patron (646) et des salariés (431) dans
 une seule catégorie ou deux ; les photos des pièces nommées par leur numéro en
 plus des trois fichiers. **Par son comptable, avant le codage :** la liste des

@@ -301,12 +301,18 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
   </div>
 
   <section class="pl-notes" id="notes">
+    <h2>Comment ça marche</h2>
+    <ul>
+      <li>Chaque dossier que vous arrêtez sort en trois fichiers, rangés ensemble sous ce dossier dans Mes dossiers, là où est le PDF aujourd'hui.</li>
+      <li>Le lien que vous envoyez à votre comptable lui donne les trois. Il prend celui que son logiciel lit, en général l'Excel ou le FEC.</li>
+      <li>Les trois fichiers ne s'allument pas entre eux : ce sont des fichiers séparés. Ce qui les relie, c'est le numéro de pièce, imprimé dans chacun. Il le cherche, il le trouve.</li>
+    </ul>
     <h2>Ce qui change</h2>
     <ul>
       <li>Trois fichiers au lieu d'un, dans le même envoi : le PDF, un Excel à quatre onglets (Ventes, Achats, Banque, Comptes) et le FEC.</li>
       <li>Le registre des ventes ouvre le dossier : chaque facture, son client, son chantier, sa TVA par taux, sa date de paiement et ce qui reste dû.</li>
       <li>Chaque catégorie a sa page, par date, avec son numéro de compte, son hors taxe et sa TVA.</li>
-      <li>Chaque pièce porte un numéro, le même dans les trois fichiers. Touchez A 189 : il se retrouve page, onglet et ligne.</li>
+      <li>Chaque pièce porte un numéro, imprimé dans les trois fichiers. Touchez A 189 : la planche montre où il est dans chacun.</li>
       <li>Matériel se partage en trois : matériaux et plants, petit outillage, matériel de plus de 500 €. Virement envoyé disparaît : chaque virement va dans sa catégorie. Autre devient À classer.</li>
       <li>Le virement d'un salaire porte la fiche de paie du cabinet, avec les jours et les paniers que Cause lui a envoyés.</li>
     </ul>
@@ -317,6 +323,8 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
     </ul>
     <h2>Ajouté sans que vous l'ayez demandé</h2>
     <ul>
+      <li>Quatorze catégories que les artisans paient presque tous : location de matériel, garage, leasing du camion, électricité, fournitures de bureau, logiciels, publicité, honoraires du comptable, cotisations professionnelles, formation, déchets verts, vêtements de travail, retraite et mutuelle des salariés, impôt prélevé sur les salaires. Rangées par familles dans Réglages.</li>
+      <li>L'impôt prélevé sur les salaires (4421) a sa catégorie : sans elle, le prélèvement des impôts tombait dans Impôts et taxes, comme une charge.</li>
       <li>Une catégorie TVA versée (44551). Sans elle, le paiement de la TVA tombait dans Impôts et taxes, et votre comptable l'aurait comptée comme une charge.</li>
       <li>Vos autres entrées ont aussi leur compte : apport, prêt reçu, aide, virement entre vos comptes. Le FEC ne peut pas laisser une ligne de banque sans compte.</li>
       <li>La TVA de vos factures attend le paiement (44574), puis passe en TVA due (44571) le jour où le client paie : c'est la règle de vos travaux, et Cause la suit déjà dans Ma TVA.</li>
@@ -362,7 +370,7 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
     "44566": "TVA sur autres biens et services", "44571": "TVA collectée", "44574": "TVA sur encaissements, en attente",
     "455": "Associés, comptes courants", "471": "Compte d'attente", "512": "Banques", "580": "Virements internes",
     "601": "Achats stockés, matières premières et fournitures", "602": "Achats stockés, autres approvisionnements",
-    "604": "Achats d'études et prestations de services", "605": "Achats de matériel, équipements et travaux", "6061": "Fournitures non stockables, eau, énergie", "6063": "Fournitures d'entretien et de petit équipement",
+    "604": "Achats d'études et prestations de services", "605": "Achats de matériel, équipements et travaux", "6061": "Fournitures non stockables, eau, énergie", "6063": "Fournitures d'entretien et de petit équipement", "6064": "Fournitures administratives", "6122": "Crédit bail mobilier", "6135": "Locations mobilières", "6155": "Entretien et réparations sur biens mobiliers", "623": "Publicité, publications, relations publiques", "6226": "Honoraires", "6228": "Rémunérations d'intermédiaires et honoraires, divers", "6281": "Concours divers, cotisations", "6288": "Autres services extérieurs, divers", "6333": "Participation des employeurs à la formation professionnelle continue", "6615": "Intérêts des comptes courants et des dépôts créditeurs", "437": "Autres organismes sociaux", "4421": "Prélèvements à la source, impôt sur le revenu",
     "6068": "Autres matières et fournitures", "607": "Achats de marchandises", "611": "Sous-traitance générale", "6132": "Locations immobilières",
     "616": "Primes d'assurances", "6251": "Voyages et déplacements", "6256": "Missions", "6257": "Réceptions",
     "626": "Frais postaux et de télécommunications", "627": "Services bancaires et assimilés", "635": "Autres impôts, taxes et versements assimilés",
@@ -373,27 +381,41 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
   /* k : clé ; g : groupe ; c : couleur du point ; p : proposé (ou fonction de la forme) ; tva : compte de la TVA déductible */
   var CATS = [
     { k: "ventes", g: "ventes", nom: "Ventes, travaux et prestations", c: "#2f3b2f", p: "706", pourquoi: "Vos factures de travaux et d'entretien. Votre comptable peut préférer le 704, travaux." },
-    { k: "materiaux", g: "depenses", nom: "Matériaux et plants", c: "#9c6123", p: "601", tva: "44566", pourquoi: "Ce qui entre dans le chantier du client : terre, gravier, bordures, plants. Certains comptables prennent le 605, achats incorporés aux ouvrages." },
-    { k: "outillage", g: "depenses", nom: "Petit outillage", c: "#b98a3e", p: "6063", tva: "44566", pourquoi: "Un outil de moins de 500 € hors taxe se compte en charge." },
-    { k: "soustraitance", g: "depenses", nom: "Sous-traitance", c: "#a0522d", p: "604", tva: "44566", pourquoi: "Un autre artisan fait une partie du chantier de votre client : sa prestation entre dans l'ouvrage. Le 611 sert à ce qui n'y entre pas." },
-    { k: "investissement", g: "depenses", nom: "Matériel de plus de 500 €", c: "#6e5a3a", p: "2154", tva: "44562", pourquoi: "Au dessus de 500 € hors taxe, le matériel s'amortit : votre comptable l'étale sur sa durée. Une remorque ou un camion va au 2182, quel que soit son prix." },
-    { k: "carburant", g: "depenses", nom: "Carburant", c: "#3d6e9e", p: "6061", tva: "44566", pourquoi: "Le carburant mis dans le réservoir ne se stocke pas : fournitures non stockables. Le 60622 de certains logiciels n'existe pas dans le plan comptable." },
-    { k: "repas", g: "depenses", nom: "Repas", c: "#477c36", p: "6256", tva: "44566", pourquoi: "Le repas pris sur un chantier, loin du dépôt. Un repas avec un client va au 6257, réceptions." },
-    { k: "hotel", g: "depenses", nom: "Hôtel", c: "#7a5aa6", p: "6256", tva: "44566", pourquoi: "Une nuit loin de chez vous pour un chantier, comme le repas : missions. Sa TVA ne se déduit pas." },
-    { k: "transport", g: "depenses", nom: "Train, taxi", c: "#277a7a", p: "6251", tva: "44566", pourquoi: "Vos déplacements autrement qu'en camion : voyages et déplacements." },
-    { k: "loyer", g: "depenses", nom: "Loyer", c: "#5d6b8a", p: "6132", tva: "44566", pourquoi: "Le loyer de votre dépôt ou de votre bureau." },
-    { k: "assurances", g: "depenses", nom: "Assurances", c: "#6b4f7a", p: "616", tva: "44566", pourquoi: "Décennale, responsabilité civile, multirisque, flotte." },
-    { k: "telephone", g: "depenses", nom: "Téléphone et internet", c: "#4f7a74", p: "626", tva: "44566", pourquoi: "Forfait du téléphone, box du bureau." },
-    { k: "frais", g: "depenses", nom: "Frais de banque", c: "#8a7f5a", p: "627", tva: "44566", pourquoi: "Tenue de compte, carte, commissions. Le relevé de banque en est la pièce." },
-    { k: "impots", g: "depenses", nom: "Impôts et taxes", c: "#7a4a4a", p: "635", tva: "44566", pourquoi: "CFE, taxe foncière du dépôt, taxe sur les véhicules." },
-    { k: "tva", g: "depenses", nom: "TVA versée", c: "#4a5a7a", p: "44551", pourquoi: "Le paiement de votre TVA aux impôts. Elle n'est pas une charge : elle solde la TVA due." },
-    { k: "salaires", g: "depenses", nom: "Salaires", c: "#4f5d75", p: "421", pourquoi: "Le virement paie un salaire que votre cabinet a déjà passé au 641 depuis la fiche de paie. Le 421 évite de le compter deux fois." },
-    { k: "cotisations", g: "depenses", nom: "Cotisations sociales", c: "#8a6f2a", p: "431", pourquoi: "L'URSSAF de vos salariés, que votre cabinet a calculée avec la paie. Vos cotisations à vous vont au 646." },
-    { k: "emprunt", g: "depenses", nom: "Emprunt", c: "#5a5a6e", p: "164", pourquoi: "L'échéance du prêt. La part d'intérêts (6611) se lit sur le tableau d'amortissement." },
-    { k: "personnel", g: "depenses", nom: "Prélèvement personnel", c: "#7a6a5a",
+    { k: "materiaux", g: "chantier", nom: "Matériaux et plants", c: "#9c6123", p: "601", tva: "44566", pourquoi: "Ce qui entre dans le chantier du client : terre, gravier, bordures, plants. Certains comptables prennent le 605, achats incorporés aux ouvrages." },
+    { k: "outillage", g: "chantier", nom: "Petit outillage, petites fournitures", c: "#b98a3e", p: "6063", tva: "44566", pourquoi: "Un outil de moins de 500 € hors taxe, et les petites fournitures du chantier (vis, colliers, ficelle) : petit équipement." },
+    { k: "vetements", g: "chantier", nom: "Vêtements de travail, protection", c: "#b98a3e", p: "6063", tva: "44566", pourquoi: "Gants, chaussures de sécurité, casque, pantalon anti coupure : petit équipement, comme le petit outillage." },
+    { k: "location", g: "chantier", nom: "Location de matériel", c: "#9c7a3a", p: "6135", tva: "44566", pourquoi: "Une mini pelle, une nacelle, une benne louées pour un chantier : locations mobilières." },
+    { k: "dechets", g: "chantier", nom: "Évacuation des déchets verts", c: "#6f7d3a", p: "6288", tva: "44566", pourquoi: "La déchetterie ou la plateforme de compostage qui prend vos déchets verts. Le 6288 est d'usage, il n'est pas dans le plan comptable : votre comptable a peut être le sien." },
+    { k: "soustraitance", g: "chantier", nom: "Sous-traitance", c: "#a0522d", p: "604", tva: "44566", pourquoi: "Un autre artisan fait une partie du chantier de votre client : sa prestation entre dans l'ouvrage. Le 611 sert à ce qui n'y entre pas." },
+    { k: "investissement", g: "chantier", nom: "Matériel de plus de 500 €", c: "#6e5a3a", p: "2154", tva: "44562", pourquoi: "Au dessus de 500 € hors taxe, le matériel s'amortit : votre comptable l'étale sur sa durée. Une remorque ou un camion va au 2182, quel que soit son prix." },
+    { k: "carburant", g: "route", nom: "Carburant", c: "#3d6e9e", p: "6061", tva: "44566", pourquoi: "Le carburant mis dans le réservoir ne se stocke pas : fournitures non stockables. Le 60622 de certains logiciels n'existe pas dans le plan comptable." },
+    { k: "repas", g: "route", nom: "Repas", c: "#477c36", p: "6256", tva: "44566", pourquoi: "Le repas pris sur un chantier, loin du dépôt. Un repas avec un client va au 6257, réceptions." },
+    { k: "hotel", g: "route", nom: "Hôtel", c: "#7a5aa6", p: "6256", tva: "44566", pourquoi: "Une nuit loin de chez vous pour un chantier, comme le repas : missions. Sa TVA ne se déduit pas." },
+    { k: "transport", g: "route", nom: "Train, taxi", c: "#277a7a", p: "6251", tva: "44566", pourquoi: "Vos déplacements autrement qu'en camion, les péages, le parking : voyages et déplacements." },
+    { k: "entretien", g: "route", nom: "Entretien et réparations", c: "#3d5e7e", p: "6155", tva: "44566", pourquoi: "Le garage, les pneus, la révision du camion, la réparation de la tondeuse : entretien des biens mobiliers." },
+    { k: "leasing", g: "route", nom: "Leasing du camion", c: "#2f5a7a", p: "6122", tva: "44566", pourquoi: "Crédit bail ou location avec option d'achat. Une location longue durée sans achat va au 6135." },
+    { k: "loyer", g: "bureau", nom: "Loyer", c: "#5d6b8a", p: "6132", tva: "44566", pourquoi: "Le loyer de votre dépôt ou de votre bureau." },
+    { k: "assurances", g: "bureau", nom: "Assurances", c: "#6b4f7a", p: "616", tva: "44566", pourquoi: "Décennale, responsabilité civile, multirisque, flotte." },
+    { k: "telephone", g: "bureau", nom: "Téléphone et internet", c: "#4f7a74", p: "626", tva: "44566", pourquoi: "Forfait du téléphone, box du bureau." },
+    { k: "frais", g: "bureau", nom: "Frais de banque", c: "#8a7f5a", p: "627", tva: "44566", pourquoi: "Tenue de compte, carte, commissions. Le relevé de banque en est la pièce. Les agios d'un découvert vont au 6615." },
+    { k: "energie", g: "bureau", nom: "Électricité, eau, gaz", c: "#5d7a8a", p: "6061", tva: "44566", pourquoi: "Les compteurs du dépôt : fournitures non stockables, comme le carburant." },
+    { k: "bureau", g: "bureau", nom: "Fournitures de bureau", c: "#6a6a8a", p: "6064", tva: "44566", pourquoi: "Papier, encre, classeurs : fournitures administratives. Les timbres vont au 626, avec le téléphone." },
+    { k: "logiciels", g: "bureau", nom: "Logiciels et abonnements", c: "#5a6a7a", p: "6135", tva: "44566", pourquoi: "Cause, votre logiciel, votre site : un abonnement se range en location. Les sources hésitent entre 613 et 6135, votre comptable tranche." },
+    { k: "publicite", g: "bureau", nom: "Publicité", c: "#8a5a6a", p: "623", tva: "44566", pourquoi: "Le flocage du camion, les cartes de visite, une annonce : publicité, publications." },
+    { k: "honoraires", g: "bureau", nom: "Honoraires", c: "#6b5a7a", p: "6226", tva: "44566", pourquoi: "Votre comptable, votre avocat : honoraires." },
+    { k: "cotisationsPro", g: "bureau", nom: "Cotisations professionnelles", c: "#7a6a4a", p: "6281", tva: "44566", pourquoi: "La chambre des métiers, votre syndicat professionnel : concours divers, cotisations." },
+    { k: "formation", g: "bureau", nom: "Formation", c: "#5a7a6a", p: "6228", tva: "44566", pourquoi: "Un CACES, un Certiphyto payés à l'organisme de formation. La contribution obligatoire à l'OPCO va au 6333." },
+    { k: "impots", g: "etat", nom: "Impôts et taxes", c: "#7a4a4a", p: "635", tva: "44566", pourquoi: "CFE, taxe foncière du dépôt, taxe sur les véhicules." },
+    { k: "tva", g: "etat", nom: "TVA versée", c: "#4a5a7a", p: "44551", pourquoi: "Le paiement de votre TVA aux impôts. Elle n'est pas une charge : elle solde la TVA due." },
+    { k: "salaires", g: "personnel", nom: "Salaires", c: "#4f5d75", p: "421", pourquoi: "Le virement paie un salaire que votre cabinet a déjà passé au 641 depuis la fiche de paie. Le 421 évite de le compter deux fois." },
+    { k: "cotisations", g: "personnel", nom: "Cotisations sociales", c: "#8a6f2a", p: "431", pourquoi: "L'URSSAF de vos salariés, ou la MSA pour le paysage, que votre cabinet a calculée avec la paie. Vos cotisations à vous vont au 646." },
+    { k: "organismes", g: "personnel", nom: "Retraite, prévoyance, mutuelle des salariés", c: "#8a7a3a", p: "437", pourquoi: "La caisse de retraite complémentaire, la prévoyance, la mutuelle de vos salariés : autres organismes sociaux." },
+    { k: "pas", g: "personnel", nom: "Impôt prélevé sur les salaires", c: "#6a5a3a", p: "4421", pourquoi: "Le prélèvement à la source de vos salariés, que les impôts vous prélèvent chaque mois. Il n'est pas une charge : il vient de leur salaire." },
+    { k: "emprunt", g: "argent", nom: "Emprunt", c: "#5a5a6e", p: "164", pourquoi: "L'échéance du prêt. La part d'intérêts (6611) se lit sur le tableau d'amortissement." },
+    { k: "personnel", g: "argent", nom: "Prélèvement personnel", c: "#7a6a5a",
       p: function () { return forme === "ei" ? "108" : "4551"; },
       pourquoi: function () { return forme === "ei" ? "L'argent que vous prenez pour vous. Entreprise individuelle : compte de l'exploitant." : "L'argent que vous prenez pour vous. En société : votre compte courant d'associé."; } },
-    { k: "aClasser", g: "depenses", nom: "À classer", c: "#736f64", p: "471", tva: "44566", pourquoi: "Compte d'attente : votre comptable range la ligne. Rien n'y reste à la clôture." },
+    { k: "aClasser", g: "argent", nom: "À classer", c: "#736f64", p: "471", tva: "44566", pourquoi: "Compte d'attente : votre comptable range la ligne. Rien n'y reste à la clôture." },
     { k: "apport", g: "entrees", nom: "Apport personnel", c: "#7a6a5a",
       p: function () { return forme === "ei" ? "108" : "4551"; }, pourquoi: function () { return forme === "ei" ? "L'argent que vous remettez dans l'entreprise." : "L'argent que vous prêtez à votre société."; } },
     { k: "pretRecu", g: "entrees", nom: "Prêt reçu", c: "#5a5a6e", p: "164", pourquoi: "Le prêt versé par la banque." },
@@ -450,9 +472,14 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
       piece: { genre: "ticket", date: "2026-10-13", lignes: [["BORDURE BETON 100X20", "186,00"], ["SAC CIMENT 35KG x4", "38,40"], ["GRAVIER 0/20 BIG BAG", "187,90"]], taux: "20%" } },
     { jour: "2026-10-15", lib: "CB RESTAURANT LE RELAIS", cat: "repas", ttc: 56.00, tva: 0, tvaLue: 5.09, fournisseur: "Le Relais", aux: "LERELAIS",
       piece: { genre: "ticket", date: "2026-10-15", lignes: [["MENU OUVRIER x2", "48,00"], ["CAFE x2", "4,00"], ["EAU 50CL x2", "4,00"]], taux: "10%", pourquoiZero: "Repas sans client : TVA non déduite." } },
-    { jour: "2026-10-15", lib: "PRLV URSSAF PAYS DE LA LOIRE", cat: "cotisations", ttc: 1120.00, tva: 0, tiers: "URSSAF Pays de la Loire", piece: { genre: "nature", mot: "impôts, cotisations", nom: "Échéance de septembre" } },
+    { jour: "2026-10-15", lib: "PRLV MSA LOIRE ATLANTIQUE VENDEE", cat: "cotisations", ttc: 1120.00, tva: 0, tiers: "MSA Loire Atlantique Vendée", piece: { genre: "nature", mot: "impôts, cotisations", nom: "Échéance de septembre" } },
+    { jour: "2026-10-15", lib: "PRLV DGFIP PAS SEPTEMBRE", cat: "pas", ttc: 186.00, tva: 0, tiers: "Impôts, DGFiP", piece: { genre: "nature", mot: "impôts, cotisations", nom: "Prélèvement à la source de septembre" } },
     { jour: "2026-10-16", lib: "VIR ELAGAGE PRO 49", cat: "soustraitance", ttc: 1152.00, tva: 192.00, fournisseur: "Élagage Pro 49", aux: "ELAGAGEPRO",
       piece: { genre: "facture", date: "2026-10-14", nom: "Facture 2026-118, démontage d'un cèdre" } },
+    { jour: "2026-10-17", lib: "CB KILOUTOU NANTES", cat: "location", ttc: 216.00, tva: 36.00, fournisseur: "Kiloutou", aux: "KILOUTOU",
+      piece: { genre: "facture", date: "2026-10-16", nom: "Location mini pelle 1,8 t, une journée" } },
+    { jour: "2026-10-19", lib: "CB GARAGE DU PONT", cat: "entretien", ttc: 348.00, tva: 58.00, fournisseur: "Garage du Pont", aux: "GARAGEPONT",
+      piece: { genre: "facture", date: "2026-10-19", nom: "Révision du camion, deux pneus avant" } },
     { jour: "2026-10-20", lib: "VIR SCI DU PARC", entree: "F-2026-043", ttc: 2940.00 },
     { jour: "2026-10-20", lib: "CB TOTAL ENERGIES CHOLET", cat: "carburant", ttc: 67.89, tva: 11.31, fournisseur: "Total Energies", aux: "TOTAL",
       piece: { genre: "ticket", date: "2026-10-19", lignes: [["GAZOLE B7", ""], ["38,46 L x 1,765", "67,89"]], taux: "20%" } },
@@ -516,7 +543,8 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
   function resteDu(f) { return c2(f.ttc - f.paye); }
 
   /* L'ordre des catégories, celui du PDF, de l'Excel et du réglage */
-  var ORDRE_DEPENSES = CATS.filter(function (c) { return c.g === "depenses"; }).map(function (c) { return c.k; });
+  var FAMILLES = ["chantier", "route", "bureau", "personnel", "etat", "argent"];
+  var ORDRE_DEPENSES = CATS.filter(function (c) { return FAMILLES.indexOf(c.g) >= 0; }).map(function (c) { return c.k; });
   function lignesDe(k) { return SORTIES.filter(function (l) { return l.cat === k; }).sort(function (a, b) { return a.jour < b.jour ? -1 : a.jour > b.jour ? 1 : a.rang - b.rang; }); }
   var CATS_DU_DOSSIER = ORDRE_DEPENSES.filter(function (k) { return lignesDe(k).length; });
 
@@ -988,7 +1016,7 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
   }
 
   /* ═══ LES NUMÉROS DE COMPTE, dans Réglages ═══════════════════════════ */
-  var GROUPES = [["ventes", "Vos ventes"], ["depenses", "Vos dépenses"], ["entrees", "Vos autres entrées"], ["tiers", "Clients, fournisseurs, banque"], ["tva", "La TVA"]];
+  var GROUPES = [["ventes", "Vos ventes"], ["chantier", "Le chantier"], ["route", "Le camion, la route"], ["bureau", "L'entreprise"], ["personnel", "Vos salariés"], ["etat", "Les impôts"], ["argent", "Prêt, argent perso, à classer"], ["entrees", "Vos autres entrées"], ["tiers", "Clients, fournisseurs, banque"], ["tva", "La TVA"]];
   function listeComptes() {
     document.getElementById("liste-comptes").innerHTML = GROUPES.map(function (g) {
       return '<p class="rubrique rubrique-or">' + g[1] + '</p><div class="plage plage-serree"><ul class="liste">' +
@@ -1053,7 +1081,7 @@ tr.suivie > td, tr.suivie > th { background: #fbf0d4 !important; }
 
   function rendreSuivi() {
     if (!suivie) {
-      suiviEl.innerHTML = '<span class="invite">Touchez un numéro de pièce, ' + lienPiece("A 189") + " par exemple : il se retrouve dans les trois fichiers.</span>";
+      suiviEl.innerHTML = '<span class="invite">Touchez un numéro de pièce, ' + lienPiece("A 189") + " par exemple : la planche montre où ce numéro est imprimé dans chacun des trois fichiers.</span>";
       return;
     }
     var o = ouEst(suivie), l = LIGNE[suivie];
