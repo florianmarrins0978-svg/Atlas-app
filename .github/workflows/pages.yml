@@ -130,9 +130,31 @@ jobs:
             exit 1
           fi
 
+  # L'artefact se prépare dans SON job, et se publie dans le suivant : la
+  # forme du modèle de GitHub. Payé le 24 novembre 2026 : dans un seul job,
+  # `deploy-pages` cherchait l'artefact 0,4 s après sa finalisation et n'en
+  # trouvait aucun (« No artifacts named "github-pages" were found »), cinq
+  # publications de suite, tests verts. Entre deux jobs, l'artefact est
+  # finalisé et listé avant que le suivant ne démarre.
+  artefact:
+    name: Préparer l'artefact
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # Seul `appli/` est publié : le reste du dépôt (code serveur Next.js,
+      # migrations, scripts d'exploitation) n'a rien à faire sur un site public.
+      - name: Préparer l'artefact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: appli
+
   deploy:
     name: Déploiement
-    needs: tests
+    needs: artefact
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -144,19 +166,10 @@ jobs:
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
       - name: Configurer Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         with:
           enablement: true
-
-      # Seul `appli/` est publié : le reste du dépôt (code serveur Next.js,
-      # migrations, scripts d'exploitation) n'a rien à faire sur un site public.
-      - name: Préparer l'artefact
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
-        with:
-          path: appli
 
       - name: Déployer sur GitHub Pages
         id: deployment
