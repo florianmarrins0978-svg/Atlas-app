@@ -247,20 +247,28 @@ input[type="file"] { display: none; }
     var t = ((a1[0] - b1[0]) * (b1[1] - b2[1]) - (a1[1] - b1[1]) * (b1[0] - b2[0])) / d;
     return [a1[0] + t * (a2[0] - a1[0]), a1[1] + t * (a2[1] - a1[1])];
   }
-  /* Rend les quatre coins (haut gauche, haut droit, bas droit, bas gauche), en
-     fraction de l'image, et une confiance. */
-  function trouverLeTicket(image) {
-    var echelle = Math.min(1, DETECTION / Math.max(image.width, image.height));
-    var w = Math.round(image.width * echelle), h = Math.round(image.height * echelle);
-    var c = document.createElement("canvas"); c.width = w; c.height = h;
-    var cx = c.getContext("2d"); cx.drawImage(image, 0, 0, w, h);
-    var px = cx.getImageData(0, 0, w, h).data, score = new Float32Array(w * h);
-    for (var i = 0; i < w * h; i++) score[i] = blancheur(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]);
-    var seuil = seuilOtsu(score), masque = new Uint8Array(w * h);
-    for (i = 0; i < w * h; i++) masque[i] = score[i] > seuil ? 1 : 0;
+  /* Les trous d'une tache (le texte du ticket) se bouchent : tout ce qui est
+     sombre sans toucher le bord de l'image est enfermé dans le papier. */
+  function boucherLesTrous(masque, w, h) {
+    var dehors = new Uint8Array(w * h), pile = new Int32Array(w * h), haut = 0;
+    function poser(p) { if (!masque[p] && !dehors[p]) { dehors[p] = 1; pile[haut++] = p; } }
+    for (var x = 0; x < w; x++) { poser(x); poser((h - 1) * w + x); }
+    for (var y = 0; y < h; y++) { poser(y * w); poser(y * w + w - 1); }
+    while (haut) {
+      var p = pile[--haut], px = p % w, py = (p / w) | 0;
+      if (px > 0) poser(p - 1); if (px < w - 1) poser(p + 1); if (py > 0) poser(p - w); if (py < h - 1) poser(p + w);
+    }
+    for (var k = 0; k < w * h; k++) if (!dehors[k]) masque[k] = 1;
+  }
+  /* Une tache, son enveloppe, ses quatre bords, et sa plénitude : un ticket
+     est plein une fois ses trous bouchés ; un reflet sur un parquet est fait
+     de traits qui laissent passer le fond, et ne l'est pas. */
+  function ticketAuSeuil(score, w, h, seuil) {
+    var masque = new Uint8Array(w * h);
+    for (var i = 0; i < w * h; i++) masque[i] = score[i] > seuil ? 1 : 0;
+    boucherLesTrous(masque, w, h);
     var t = plusGrandeTache(masque, w, h);
     if (t.taille < w * h * 0.04) return null;
-    /* Le bord de la tache, puis son enveloppe */
     var bord = [];
     for (var y = 1; y < h - 1; y++) for (var x = 1; x < w - 1; x++) {
       var k = y * w + x;
@@ -269,6 +277,7 @@ input[type="file"] { display: none; }
     }
     var env = enveloppe(bord);
     if (env.length < 4) return null;
+    var aireEnv = Math.abs(env.reduce(function (s, p, n) { var q = env[(n + 1) % env.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
     /* Les quatre extrêmes en diagonale découpent l'enveloppe en quatre bords */
     function extreme(f) { var m = 0; env.forEach(function (p, j) { if (f(p) > f(env[m])) m = j; }); return m; }
     var coins = [extreme(function (p) { return -p[0] - p[1]; }), extreme(function (p) { return p[0] - p[1]; }),
@@ -279,9 +288,9 @@ input[type="file"] { display: none; }
     for (var b = 0; b < 4; b++) {
       var de = coins[b], a = coins[(b + 1) % 4], long = -1, seg = null, j = de;
       while (j !== a) {
-        var s = (j + 1) % env.length, l = Math.hypot(env[s][0] - env[j][0], env[s][1] - env[j][1]);
-        if (l > long) { long = l; seg = [env[j], env[s]]; }
-        j = s;
+        var s2 = (j + 1) % env.length, l = Math.hypot(env[s2][0] - env[j][0], env[s2][1] - env[j][1]);
+        if (l > long) { long = l; seg = [env[j], env[s2]]; }
+        j = s2;
         if (j === de) break;
       }
       if (!seg) return null;
@@ -293,8 +302,27 @@ input[type="file"] { display: none; }
       quad.push([Math.max(0, Math.min(1, p[0] / w)), Math.max(0, Math.min(1, p[1] / h))]);
     }
     var aire = Math.abs(quad.reduce(function (s, p, n) { var q = quad[(n + 1) % 4]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
-    var remplissage = t.taille / (aire * w * h);
-    return { quad: quad, sur: aire > 0.06 && remplissage > 0.72 && remplissage < 1.15 };
+    return { quad: quad, plenitude: t.taille / Math.max(1, aireEnv), aire: aire };
+  }
+  /* Rend les quatre coins (haut gauche, haut droit, bas droit, bas gauche), en
+     fraction de l'image, et si le téléphone est sûr de lui. Deux seuils : le
+     premier sépare le clair du sombre ; le second, pris dans le clair, sépare le
+     papier d'un reflet de lampe. La tache la plus pleine l'emporte. */
+  function trouverLeTicket(image) {
+    var echelle = Math.min(1, DETECTION / Math.max(image.width, image.height));
+    var w = Math.round(image.width * echelle), h = Math.round(image.height * echelle);
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var cx = c.getContext("2d"); cx.drawImage(image, 0, 0, w, h);
+    var px = cx.getImageData(0, 0, w, h).data, score = new Float32Array(w * h);
+    for (var i = 0; i < w * h; i++) score[i] = blancheur(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]);
+    var t1 = seuilOtsu(score), clairs = [];
+    for (i = 0; i < w * h; i++) if (score[i] > t1) clairs.push(score[i]);
+    var essais = [ticketAuSeuil(score, w, h, t1)];
+    if (clairs.length > 100) essais.push(ticketAuSeuil(score, w, h, seuilOtsu(clairs)));
+    var meilleur = null;
+    essais.forEach(function (e) { if (e && (!meilleur || e.plenitude > meilleur.plenitude)) meilleur = e; });
+    if (!meilleur) return null;
+    return { quad: meilleur.quad, sur: meilleur.aire > 0.04 && meilleur.plenitude > 0.9 };
   }
 
   /* ═══ REDRESSER ET NETTOYER ═══════════════════════════════════════════ */

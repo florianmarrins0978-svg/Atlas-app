@@ -19,6 +19,11 @@ de vrai, dans le navigateur, sans IA : le papier est clair et peu coloré, la
 plus grande tache claire est gardée, ses bords prolongés retrouvent un coin
 caché sous le pouce, une homographie redresse, une division par le fond efface
 les ombres. 20 à 40 ms sur la photo d'essai ; il peut l'essayer sur ses photos.
+**Éprouvé sur SA photo du 24 novembre** (un long ticket Leclerc froissé, sur un
+parquet, sous une lampe) : le premier calcul collait le reflet de la lampe au
+ticket. Corrigé : deux seuils (le second, pris dans le clair, sépare le papier
+d'un reflet), les trous du texte bouchés, et la tache la plus pleine gagne.
+Trouvé en 69 ms, lisible. **Sa photo n'est pas dans le dépôt**, qui est public.
 Puis le ticket du dossier : A (réécrit lisible, écriture pleine, total plus
 grand), B (A, plus la photo nettoyée dessous).
 
