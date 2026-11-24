@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { abonnements, entreprises, users } from "@/server/db/schema";
 import { FORMULE_DE_LESSAI, finDeLEssai } from "@/lib/abonnements";
+import { CHOIX_PAR_DEFAUT } from "@/lib/essai-avec-carte";
 import { MAX_EQUIPES } from "@/lib/equipes";
 import { adresseNormalisee } from "@/lib/donner-un-acces";
 import { formeADuCapital } from "@/lib/formes-juridiques";
@@ -111,12 +112,18 @@ const propre = (v: string | undefined) => (vide(v) ? undefined : v!.trim());
  * transaction). Absent, rien n'est confirmé : un SIRET tapé attend alors le
  * registre, et c'est le côté sûr (migration 0196).
  */
+/**
+ * `carteRequise` : le paiement est branché, et la carte se pose avant d'entrer
+ * (le modèle A, migration 0199). L'action le décide, pas ce dépôt : c'est elle
+ * qui sait si le prestataire répond. Absent, l'essai d'avant, sans carte.
+ */
 export async function creerSonCompte(
   saisie: SaisieCompte,
-  registre: { siretConfirme: boolean } = { siretConfirme: false }
+  registre: { siretConfirme: boolean } = { siretConfirme: false },
+  essai: { carteRequise: boolean } = { carteRequise: false }
 ): Promise<ResultatCreation> {
   try {
-    return await ecrireLeCompte(saisie, registre);
+    return await ecrireLeCompte(saisie, registre, essai);
   } catch (erreur) {
     const cause = causeDeLaPanne(erreur);
     const codeSql = codeSqlDe(erreur);
@@ -129,7 +136,11 @@ export async function creerSonCompte(
   }
 }
 
-async function ecrireLeCompte(saisie: SaisieCompte, registre: { siretConfirme: boolean }): Promise<ResultatCreation> {
+async function ecrireLeCompte(
+  saisie: SaisieCompte,
+  registre: { siretConfirme: boolean },
+  essai: { carteRequise: boolean }
+): Promise<ResultatCreation> {
   const email = adresseNormalisee(saisie.email);
 
   const [existant] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
@@ -255,14 +266,22 @@ async function ecrireLeCompte(saisie: SaisieCompte, registre: { siretConfirme: b
     // ne part sans lui.
     const siren = sirenDeLEssai(saisie.siret);
     const accorde = siren === null || (await prendreLEssaiDuSiren(tx, siren, entreprise.id));
+    //
+    // **Avec la carte (le modèle A)**, la ligne porte la formule que « Votre
+    // essai » propose, et l'essai de quinze jours, lui, est tenu par le
+    // prestataire dès la carte posée : d'ici là, l'appli reste fermée
+    // (`garderLaPage`). Le SIREN déjà essayé y vaut zéro jour
+    // (`joursDEssaiAuPaiement`).
     const maintenant = new Date();
     await tx.insert(abonnements).values({
       entrepriseId: entreprise.id,
-      formule: FORMULE_DE_LESSAI,
-      periodicite: "mensuelle",
+      formule: essai.carteRequise ? CHOIX_PAR_DEFAUT.formule : FORMULE_DE_LESSAI,
+      periodicite: essai.carteRequise ? CHOIX_PAR_DEFAUT.periodicite : "mensuelle",
+      modules: essai.carteRequise ? [...CHOIX_PAR_DEFAUT.modules] : [],
       statut: "essai",
       periodeFin: accorde ? finDeLEssai(maintenant) : maintenant,
       essaiDejaPris: !accorde,
+      carteRequise: essai.carteRequise,
     });
 
     logger.info("Compte créé depuis la porte", {

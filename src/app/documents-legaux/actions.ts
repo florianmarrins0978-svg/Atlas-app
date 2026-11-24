@@ -14,7 +14,7 @@ import { adresseClient } from "@/lib/adresse-client";
 import { memesDocuments, phraseDAcceptation } from "@/lib/acceptation-documents";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, carteAPoser, enregistrerLAbonnement } from "@/server/repositories/abonnements";
 import { resilierEtRembourser } from "@/server/paiement/stripe";
 import { estRaisonDepart, texteDeDepart } from "@/lib/resiliation";
 
@@ -73,7 +73,25 @@ export async function accepterDocumentsAction(
     versions: attendus.map((d) => `${d.type}@${d.version}`),
   });
 
-  redirect(premiere ? "/creer-un-compte/pret" : "/");
+  redirect(premiere ? await apresLaPremiereAcceptation() : "/");
+}
+
+/**
+ * **Le compte neuf qui doit poser sa carte va à « Votre essai »**, et pas à
+ * « C'est fait » (le modèle A, sa planche du 24 novembre 2026) : la carte
+ * d'abord, le récapitulatif une fois l'essai commencé. Une base muette laisse
+ * la porte d'avant : `garderLaPage` renverra à la carte à l'écran suivant.
+ */
+async function apresLaPremiereAcceptation(): Promise<string> {
+  try {
+    if (await carteAPoser(await getCurrentCtx())) return "/essai?debut=1";
+  } catch (err) {
+    if (typeof (err as { digest?: unknown })?.digest === "string") throw err;
+    logger.error("Après les conditions : la carte à poser n'a pas pu se lire", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+  }
+  return "/creer-un-compte/pret";
 }
 
 export type ResultatRefus =

@@ -20,8 +20,11 @@ import {
   compterLEquipe,
   enregistrerLAbonnement,
   noterLeChangementPrevu,
+  retenirLaSessionDeCarte,
 } from "@/server/repositories/abonnements";
+import { doitPoserSaCarte, joursDEssaiAuPaiement } from "@/lib/essai-avec-carte";
 import {
+  lireLaSessionDePaiement,
   ouvrirLePaiement,
   ouvrirLeGuichet,
   monterToutDeSuite,
@@ -112,7 +115,8 @@ async function refusDeLEquipe(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, fo
 export async function sabonnerAction(
   formuleVoulue: string,
   periodiciteVoulue: string,
-  modulesBruts: unknown
+  modulesBruts: unknown,
+  depuis?: unknown
 ): Promise<ReponsePaiement> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "ouvrir la page de paiement");
@@ -140,7 +144,19 @@ export async function sabonnerAction(
     return { ok: false, message: "Vous venez d’ouvrir le paiement. Patientez un instant." };
   }
 
-  const entreprise = await getEntreprise(ctx);
+  const [entreprise, abonnement] = await Promise.all([getEntreprise(ctx), abonnementDeLEntreprise(ctx)]);
+
+  // **LA CARTE DE L'ESSAI** (le modèle A, migration 0199) : tant qu'elle reste
+  // à poser, s'abonner, c'est la poser, avec ses jours d'essai et rien de
+  // débité avant. Ce que « Votre essai » annonce sort de la même règle
+  // (`joursDEssaiAuPaiement`). Une session déjà ouverte se relit d'abord : il a
+  // pu payer puis fermer l'onglet, et une seconde ouvrirait un second
+  // abonnement.
+  const carte = doitPoserSaCarte(abonnement);
+  if (carte && abonnement?.sessionDeCarte && (await carteDejaPosee(ctx, abonnement.sessionDeCarte))) {
+    return { ok: true };
+  }
+  const retour = depuis === "essai" && carte ? "/essai" : "/reglages/abonnement";
 
   const r = await ouvrirLePaiement({
     entrepriseId: ctx.entrepriseId,
@@ -150,12 +166,27 @@ export async function sabonnerAction(
     modules,
     // `{CHECKOUT_SESSION_ID}` est remplacé par le prestataire au moment de la
     // redirection : c'est par là que l'écran de retour sait quoi relire.
-    retourSucces: adresseDeRetour("/reglages/abonnement?paiement={CHECKOUT_SESSION_ID}"),
-    retourAbandon: adresseDeRetour("/reglages/abonnement?paiement=abandon"),
+    retourSucces: adresseDeRetour(`${retour}?paiement={CHECKOUT_SESSION_ID}`),
+    retourAbandon: adresseDeRetour(`${retour}?paiement=abandon`),
+    ...(carte && abonnement ? { joursDEssai: joursDEssaiAuPaiement(abonnement) } : {}),
   });
 
   if (!r.ok) return { ok: false, message: phrase(r.erreur) };
+  if (carte && r.session) await retenirLaSessionDeCarte(ctx, r.session);
   return { ok: true, url: r.url };
+}
+
+/**
+ * La session retenue a-t-elle posé la carte ? Si oui, l'abonnement s'enregistre
+ * comme au retour du paiement, par la même fonction, et rien ne se rouvre.
+ * L'entreprise de la session est comparée à la sienne : la règle du retour
+ * (`page.tsx`).
+ */
+async function carteDejaPosee(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, session: string): Promise<boolean> {
+  const lu = await lireLaSessionDePaiement(session);
+  if (!lu.ok || lu.entrepriseId !== ctx.entrepriseId) return false;
+  await enregistrerLAbonnement(ctx, lu.etat);
+  return true;
 }
 
 /**

@@ -98,6 +98,7 @@ function etat(surcharge: Partial<EtatVenuDuPrestataire> & { abonnementPrestatair
     annulationDemandee: false,
     clientPrestataire: `cus_${surcharge.abonnementPrestataire}`,
     changementPrevu: false,
+    essaiJusquAu: null,
     ...surcharge,
   };
 }

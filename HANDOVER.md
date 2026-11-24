@@ -1,5 +1,14 @@
 # Reprendre le travail
 
+## L'ESSAI AVEC LA CARTE (24 novembre 2026)
+
+`ARCHITECTURE.md` §617. Ce qu'il faut savoir avant d'y toucher :
+
+- **la fermeture vit dans `garderLaPage`** (`OUVERTS_SANS_CARTE`) ; un écran neuf qui doit s'ouvrir avant la carte s'y ajoute, sinon il renvoie à `/essai` ;
+- **un seul paiement, `sabonnerAction`** : il pose la carte avec l'essai tant que `doitPoserSaCarte`. Ne pas écrire une seconde action pour `/essai` ;
+- **le crochet ne crée pas d'abonnement inconnu**, et c'est voulu (migration 0084) : c'est `session_de_carte`, relue par `/essai` et par l'action, qui rattrape l'onglet fermé après la carte ;
+- **`carte_requise` ne se remet jamais à faux** : c'est l'abonnement chez le prestataire qui ouvre.
+
 ## LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE
 
 `ARCHITECTURE.md` §615. Ce qu'il faut savoir avant d'y toucher :

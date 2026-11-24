@@ -160,7 +160,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
-      changementPrevu: false,
+      changementPrevu: false, essaiJusquAu: null,
     });
     const a = await abonnementDeLEntreprise(ctx);
     assert.equal(a?.statut, "actif");
@@ -207,7 +207,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
-      changementPrevu: false,
+      changementPrevu: false, essaiJusquAu: null,
     });
     for (const f of ["absences", "retours"] as const) await exigerFonction(ctx, f, "essai");
     // Sans les outils, Entreprise ne les ouvre plus (18 novembre 2026).
@@ -221,7 +221,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_essai",
       abonnementPrestataire: "sub_essai",
-      changementPrevu: false,
+      changementPrevu: false, essaiJusquAu: null,
     });
     for (const f of ["arrosage", "diagnostic", "fiche-chantier", "absences", "retours"] as const) {
       assert.equal(await exigerFonction(ctx, f, "essai"), "ouverte", f);
@@ -346,7 +346,7 @@ async function main() {
       annulationDemandee: true,
       clientPrestataire: "cus_resilie",
       abonnementPrestataire: "sub_resilie",
-      changementPrevu: false,
+      changementPrevu: false, essaiJusquAu: null,
     });
     assert.equal((await listerChantiers(ctxResilie)).length, 1, "il ne relit plus ses chantiers");
   });
@@ -369,7 +369,7 @@ async function main() {
       annulationDemandee: false,
       clientPrestataire: "cus_resilie",
       abonnementPrestataire: "sub_reprise",
-      changementPrevu: false,
+      changementPrevu: false, essaiJusquAu: null,
     });
     await creerChantier(ctxResilie, { nom: "Chantier après la reprise" });
     assert.equal((await listerChantiers(ctxResilie)).length, 2);

@@ -615,7 +615,7 @@ export function formule(code: string | null | undefined): Formule | null {
 export const TVA_ABONNEMENT_POURCENT = 20;
 
 /** Les modules connus, dans l'ordre de `MODULES` et sans doublon : un module inconnu ne se facture pas. */
-function modulesConnus(modules: readonly string[]): Module[] {
+export function modulesConnus(modules: readonly string[]): Module[] {
   return MODULES.filter((m) => modules.includes(m.code));
 }
 
@@ -811,6 +811,9 @@ export function etatAffiche(
         modules?: readonly ModuleCode[];
         /** Ce qui commence à l'échéance (`changementAVenir`), ou rien. */
         prevu?: { formule: FormuleCode; periodicite: Periodicite; modules: readonly ModuleCode[] } | null;
+        /** La carte reste à poser avant d'entrer (migration 0199). */
+        carteRequise?: boolean;
+        essaiDejaPris?: boolean;
       }
     | null,
   maintenant: Date
@@ -827,6 +830,19 @@ export function etatAffiche(
 
   switch (abonnement.statut) {
     case "essai": {
+      // **Avec la carte à poser, l'essai n'a pas commencé** : le prestataire
+      // le compte dès la carte enregistrée (le modèle A). Les mots de « Il
+      // manque votre carte », sa planche du 24 novembre 2026.
+      if (abonnement.carteRequise) {
+        return {
+          titre: "Il manque votre carte",
+          detail: abonnement.essaiDejaPris
+            ? "L’abonnement commence dès qu’elle est enregistrée."
+            : "Votre essai démarre dès qu’elle est enregistrée.",
+          ton: "attention",
+          signe: { genre: "paiement" },
+        };
+      }
       const essai = etatDeLEssai(abonnement, maintenant);
       if (!essai || essai.statut === "termine") {
         return {

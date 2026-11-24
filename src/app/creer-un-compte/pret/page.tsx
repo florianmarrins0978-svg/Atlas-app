@@ -7,6 +7,8 @@ import { lireCompte } from "@/server/repositories/compte";
 import { listerCles } from "@/server/repositories/cles-appareil";
 import { garderLaPage } from "@/server/garde-page";
 import { recapitulatifDuCompte } from "@/lib/recapitulatif-compte";
+import { doitPoserSaCarte, ligneDeLEssaiPose } from "@/lib/essai-avec-carte";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import PorteDeNuit from "@/components/atlas/PorteDeNuit";
 import PretClient from "./PretClient";
 
@@ -31,8 +33,18 @@ export default async function PretPage() {
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) redirect("/");
 
-  const [e, compte, cles] = await Promise.all([getEntreprise(ctx), lireCompte(ctx), listerCles(ctx.utilisateurId)]);
+  const [e, compte, cles, abonnement] = await Promise.all([
+    getEntreprise(ctx),
+    lireCompte(ctx),
+    listerCles(ctx.utilisateurId),
+    abonnementDeLEntreprise(ctx),
+  ]);
   if (!e || !compte) redirect("/");
+  // Cette adresse est hors de la garde de la carte (la porte est publique) :
+  // la carte d'abord, comme partout ailleurs (le modèle A).
+  if (doitPoserSaCarte(abonnement)) redirect("/essai");
+  // L'essai que tient le prestataire, en tête : sa planche du 24 novembre 2026.
+  const essai = abonnement ? ligneDeLEssaiPose(abonnement, new Date()) : null;
 
   const recap = recapitulatifDuCompte(
     {
@@ -62,7 +74,11 @@ export default async function PretPage() {
 
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
-      <PretClient lignes={recap.lignes} phrase={recap.phrase} dejaFaceId={cles.length > 0} />
+      <PretClient
+        lignes={essai ? [{ paquet: essai.intitule, valeur: essai.valeur, detail: essai.sous, manque: null }, ...recap.lignes] : recap.lignes}
+        phrase={recap.phrase}
+        dejaFaceId={cles.length > 0}
+      />
     </PorteDeNuit>
   );
 }

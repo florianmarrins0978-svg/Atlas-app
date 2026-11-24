@@ -77,7 +77,11 @@ export type Echec = {
   ok: false;
   erreur: "non_configure" | "prestataire_injoignable" | "prestataire_refuse" | "carte_refusee" | "confirmation_bancaire";
 };
-export type Ouverture = { ok: true; url: string };
+/**
+ * `session` : l'identifiant de la session de paiement, quand il y en a une (pas
+ * pour le guichet). La carte de l'essai le retient (`session_de_carte`).
+ */
+export type Ouverture = { ok: true; url: string; session?: string };
 
 /**
  * Encode en `application/x-www-form-urlencoded`, la seule forme que l'API de
@@ -282,6 +286,12 @@ export async function ouvrirLePaiement(params: {
   /** Où le patron revient — succès et abandon. Fournies par l'appelant. */
   retourSucces: string;
   retourAbandon: string;
+  /**
+   * Des jours d'essai, sans rien débiter avant (le modèle A, sa validation du
+   * 23 novembre 2026). Absent : le paiement commence tout de suite, comme
+   * pour une entreprise dont le SIREN a déjà eu son essai.
+   */
+  joursDEssai?: number;
 }): Promise<Ouverture | Echec> {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
@@ -309,6 +319,15 @@ export async function ouvrirLePaiement(params: {
     // Sur l'abonnement, pas sur la ligne : un changement de formule remplace
     // la ligne, et la TVA partirait avec elle.
     "subscription_data[default_tax_rates][0]": tva.taux,
+    // L'essai : la carte est demandée quand même (c'est tout le modèle A), et
+    // un essai qui finirait sans carte s'annule au lieu de laisser un impayé.
+    ...(params.joursDEssai && params.joursDEssai > 0
+      ? {
+          "subscription_data[trial_period_days]": params.joursDEssai,
+          payment_method_collection: "always",
+          "subscription_data[trial_settings][end_behavior][missing_payment_method]": "cancel",
+        }
+      : {}),
   });
 
   const r = await appeler("/v1/checkout/sessions", "POST", corps);
@@ -319,7 +338,7 @@ export async function ouvrirLePaiement(params: {
     logger.error("Le prestataire n'a pas rendu d'adresse de paiement", { reponse: r.donnees });
     return { ok: false, erreur: "prestataire_refuse" };
   }
-  return { ok: true, url };
+  return { ok: true, url, ...(typeof r.donnees.id === "string" ? { session: r.donnees.id } : {}) };
 }
 
 /**
@@ -364,7 +383,11 @@ export async function lireLaSessionDePaiement(
 
   const abonnementBrut = r.donnees.subscription;
   if (!estObjet(abonnementBrut)) {
-    logger.error("La session de paiement ne porte aucun abonnement", { sessionId });
+    // Une session encore ouverte, ou expirée, n'a pas d'abonnement : c'est
+    // l'état normal d'une carte pas encore posée (`src/app/essai`), qui la
+    // relit à chaque ouverture. Seule une session TERMINÉE sans abonnement est
+    // une anomalie à journaliser.
+    if (r.donnees.status === "complete") logger.error("La session de paiement ne porte aucun abonnement", { sessionId });
     return { ok: false, erreur: "prestataire_refuse" };
   }
 
@@ -451,6 +474,8 @@ export function lireUnAbonnement(brut: Record<string, unknown>): EtatVenuDuPrest
     clientPrestataire: clientId,
     abonnementPrestataire: id,
     changementPrevu: calendrierDe(brut) !== null,
+    // L'essai chez le prestataire : sa fin, lue seulement tant qu'il y est.
+    essaiJusquAu: brut.status === "trialing" && typeof brut.trial_end === "number" ? new Date(brut.trial_end * 1000) : null,
   };
 }
 

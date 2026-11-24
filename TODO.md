@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ L'ESSAI AVEC LA CARTE (LE MODÈLE A) : EN COURS DE CODAGE (24 novembre 2026)
+## ⏳ L'ESSAI AVEC LA CARTE (LE MODÈLE A) : CODÉ LE 24 NOVEMBRE 2026, PAS SUR `main`, LA BATTERIE À JOUER
 
 **Planche** `appli/soignee/essai-avec-carte.html`, sur ses vrais écrans. **Ses décisions, à ne pas lui redemander :**
 après les conditions, « Votre essai » (la formule choisie, 0 € aujourd'hui, la date du premier prélèvement, et
@@ -9,6 +9,19 @@ Stripe, avec 15 jours d'essai et rien de débité avant ; **sans carte, l'appli 
 carte », sa réponse : *« Oui appli fermée ! »*), avec un lien vers la visite guidée pour qui hésite ; l'e-mail de
 rappel trois jours avant le premier prélèvement (il attend l'envoi d'e-mails de Cause, donc son domaine chez OVH).
 L'article 14.2 des conditions (« sans saisie de moyen de paiement ») se corrige dans la version 4.
+
+**Codé le 24 novembre 2026** sur sa demande (*« Code tout ce que tu peux coder déjà ne lance pas de batterie »*),
+`ARCHITECTURE.md` §617, migration 0199 : la garde, `/essai` (« Votre essai », « Il manque votre carte », le salarié
+qui attend), le paiement de Réglages, Abonnement avec l'essai, la session retenue, « C'est fait » avec l'essai,
+l'article 14.2 réécrit. **Notre décision, à lui dire** : sans choix venu du site, la formule la moins chère au mois
+(« Changer » mène aux trois formules). **Reste :**
+- la batterie (niveau 3 : argent, migration, garde de toutes les pages), sur son « oui » ;
+- **regarder `/essai` et « C'est fait »** (serveur de développement, sur son accord) ; puis une suite navigateur
+  qui ouvre `/essai` avec le faux prestataire (`ATLAS_PAIEMENT_BASE_URL`) ;
+- un vrai paiement sur son espace, avec une clé de test Stripe ;
+- l'e-mail de rappel (domaine OVH) ;
+- le site qui passe la formule choisie à `/creer-un-compte` (quand il sera en ligne) ;
+- un SIRET tapé après la carte ne raccourcit pas l'essai du prestataire : à trancher avec lui.
 
 ## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 

@@ -138,11 +138,13 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ou: "« Réglages » dans la barre du bas, puis Abonnement",
     intitule: "L'essai gratuit : combien de jours, et ce qui se passe après",
     motsCles: ["essai", "gratuit", "gratuitement", "tester", "essayer", "decouvrir", "fin"],
+    // **La carte au début, depuis le 24 novembre 2026** (le modèle A) : la
+    // phrase d'avant (« sans carte bancaire ») est devenue fausse ce jour-là.
     geste:
-      `Un compte neuf a ${JOURS_ESSAI} jours d'essai gratuit, sans carte bancaire, avec toutes les fonctions ouvertes. ` +
-      "À la fin, vous voyez toujours tout, mais il faut choisir une formule pour créer de nouveau.",
-    source: "src/lib/abonnements.ts",
-    preuves: ["export const JOURS_ESSAI", 'FORMULE_DE_LESSAI: FormuleCode = "illimite"', "Choisissez une formule pour créer de nouveau"],
+      `Un compte neuf a ${JOURS_ESSAI} jours d'essai gratuit. Votre carte est demandée au début, et rien n'est prélevé pendant l'essai. ` +
+      "Pour arrêter avant et ne rien payer, touchez « Résilier » dans Réglages, Abonnement. Sinon, la formule choisie commence à la fin de l'essai.",
+    source: "src/lib/essai-avec-carte.ts",
+    preuves: ["export function joursDEssaiAuPaiement", "Pour arrêter avant et ne rien payer, touchez « Résilier » dans Réglages, Abonnement."],
   },
   {
     id: "abonnement-personnes",

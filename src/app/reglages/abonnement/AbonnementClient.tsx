@@ -124,6 +124,9 @@ export default function AbonnementClient({
       const r = await sabonnerAction(code, periodicite, modules);
       if (!r.ok) setMessage(r.message);
       else if (r.url) window.location.href = r.url;
+      // Sans adresse : la carte de l'essai était déjà posée, et vient d'être
+      // enregistrée (`sabonnerAction`). L'écran se relit.
+      else window.location.reload();
     });
   }
 

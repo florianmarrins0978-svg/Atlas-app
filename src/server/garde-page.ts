@@ -6,9 +6,32 @@ import { accesDeLaPersonne } from "@/server/autorisation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { garderLAdresseVerifiee, garderLesDocumentsLegaux } from "@/server/garde-etapes-du-compte";
 import { CompteFermeError } from "@/server/db/with-entreprise";
+import { carteAPoser } from "@/server/repositories/abonnements";
+import type { Ctx } from "@/server/repositories/context";
+import { logger } from "@/server/logger";
 
 /** L'écran du salarié dont l'entreprise a fermé son compte. */
 export const CHEMIN_COMPTE_FERME = "/compte-ferme";
+
+/**
+ * L'écran de la carte à poser — le modèle A, sa réponse du 24 novembre 2026 :
+ * *« Oui appli fermée ! »*. Tant que `carteAPoser`, tout écran y renvoie, sauf
+ * les étapes qui le précèdent (le code, les conditions), les deux écrans qui
+ * ne lisent rien de l'entreprise (le compte fermé, la double vérification) :
+ * les y renvoyer les ferait tourner en rond. Et **Réglages, Abonnement**, où
+ * mène « Changer » : les trois formules y sont, et s'abonner y pose la carte
+ * avec l'essai (`sabonnerAction`). Son seul autre geste ouvert est
+ * le retour aux réglages, qui ramène ici.
+ */
+export const CHEMIN_DE_LA_CARTE = "/essai";
+const OUVERTS_SANS_CARTE = [
+  CHEMIN_DE_LA_CARTE,
+  "/verifier-email",
+  "/documents-legaux",
+  CHEMIN_COMPTE_FERME,
+  "/double-verification",
+  "/reglages/abonnement",
+];
 
 /**
  * LE REFUS DES RÔLES, POSÉ PAR CHAQUE ÉCRAN.
@@ -54,9 +77,10 @@ export async function garderLaPage(): Promise<void> {
   // seconde liste que ce dépôt a déjà payée deux fois (`chemins-publics.ts`).
   if (estCheminPublic(chemin)) return;
 
+  let ctx;
   let acces;
   try {
-    const ctx = await getCurrentCtx();
+    ctx = await getCurrentCtx();
     acces = await accesDeLaPersonne(ctx);
   } catch (err) {
     /**
@@ -91,7 +115,31 @@ export async function garderLaPage(): Promise<void> {
   // aura déjà tranché au tour suivant.
   if (!acces) return;
 
+  // **La carte avant tout le reste**, et pour tous les rôles : c'est
+  // l'entreprise qui n'est pas ouverte, pas l'écran qui est refusé. L'écran de
+  // la carte, lui, s'ouvre à tous (un salarié y lit qu'il attend le patron).
+  const ouvertSansCarte = OUVERTS_SANS_CARTE.some((p) => chemin === p || chemin.startsWith(`${p}/`));
+  if (!ouvertSansCarte && (await laCarteResteAPoser(ctx))) redirect(CHEMIN_DE_LA_CARTE);
+  if (chemin === CHEMIN_DE_LA_CARTE) return;
+
   if (!cheminAutorise(acces.role, chemin)) {
     redirect(accueilDuRole(acces.role));
+  }
+}
+
+/**
+ * Une base muette ne ferme pas l'application à ceux qui sont déjà entrés : le
+ * choix des deux étapes du compte (`garde-etapes-du-compte.ts`), pour la même
+ * raison. L'écran suivant reposera la question.
+ */
+async function laCarteResteAPoser(ctx: Ctx): Promise<boolean> {
+  try {
+    return await carteAPoser(ctx);
+  } catch (err) {
+    logger.error("Lecture de la carte à poser impossible", {
+      entrepriseId: ctx.entrepriseId,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return false;
   }
 }

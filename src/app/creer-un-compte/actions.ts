@@ -1,5 +1,7 @@
 "use server";
 
+import { paiementConfigure } from "@/server/paiement/stripe";
+import { retourConfigure } from "@/server/paiement/retour";
 import { signIn } from "@/auth";
 import { creerSonCompte, type SaisieCompte } from "@/server/repositories/creation-compte";
 import { ouvrirLaVerification } from "@/server/repositories/verification-email";
@@ -48,7 +50,10 @@ export async function creerLeCompteAction(saisie: SaisieCompte): Promise<EtatCre
   // réponse ne vaut rien côté serveur. Injoignable, rien n'est confirmé, et le
   // compte se crée quand même.
   const siretConfirme = sirenDeLEssai(saisie.siret) !== null && (await demanderAuRegistre(saisie.siret ?? "")).etat === "trouve";
-  const resultat = await creerSonCompte(saisie, { siretConfirme });
+  // **La carte se demande seulement quand on peut la prendre** (le modèle A) :
+  // sur un espace sans clé de paiement ou sans adresse de retour, fermer
+  // l'appli jusqu'à une carte impossible à poser l'enfermerait pour de bon.
+  const resultat = await creerSonCompte(saisie, { siretConfirme }, { carteRequise: paiementConfigure() && retourConfigure() });
   if (!resultat.ok) return { refus: resultat.refus };
 
   // La ligne d'attente est écrite AVANT d'ouvrir la session : une session

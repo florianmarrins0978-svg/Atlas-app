@@ -1101,7 +1101,9 @@ Les outils de paysage. Le plan d’arrosage automatique, le diagnostic végétal
 
 14.2 : Essai gratuit
 
-L’abonnement peut être précédé d’un essai gratuit de quinze jours, sans saisie de moyen de paiement, pendant lequel les outils de la formule Illimité sont ouverts, ainsi que la fiche de chantier ; le plan d’arrosage et le diagnostic végétal y sont offerts une fois, comme le prévoit l’article 14.1. À son terme, sauf souscription, le service passe en lecture seule : vos données restent consultables et exportables, mais rien de nouveau ne peut être créé ; aucune somme n’est prélevée et aucune reconduction n’intervient d’elle-même.
+L’abonnement est précédé d’un essai gratuit de quinze jours, un seul par entreprise, reconnue à son numéro SIREN. L’essai commence quand vous enregistrez un moyen de paiement sur la page sécurisée du prestataire de paiement (article 14.3), et l’accès au service avec lui ; rien n’est prélevé pendant l’essai. Les outils de la formule choisie sont ouverts, ainsi que la fiche de chantier ; le plan d’arrosage et le diagnostic végétal y sont offerts une fois, comme le prévoit l’article 14.1. La date et le montant du premier prélèvement vous sont indiqués avant l’enregistrement du moyen de paiement.
+
+Vous pouvez résilier à tout moment pendant l’essai, sans frais, en touchant « Résilier » dans Réglages, Abonnement : rien ne vous est alors prélevé, et vous gardez l’accès jusqu’au terme de l’essai. Sans résiliation, l’abonnement à la formule choisie commence au terme de l’essai, avec le premier prélèvement. Sans moyen de paiement enregistré, rien n’est prélevé et aucune reconduction n’intervient : au terme d’un essai ouvert ainsi, le service passe en lecture seule, vos données restant consultables et exportables.
 
 14.3, Paiement
 

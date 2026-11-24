@@ -4163,6 +4163,12 @@ export const abonnements = pgTable(
      * « Essai déjà utilisé par votre entreprise », pas « Essai terminé ».
      */
     essaiDejaPris: boolean("essai_deja_pris").notNull().default(false),
+    // Migration 0199 : la carte à poser avant d'entrer (le modèle A), la fin de
+    // l'essai que tient le prestataire, et la session de paiement ouverte pour
+    // la carte. Voir `drizzle/0199_essai_avec_la_carte.sql`.
+    carteRequise: boolean("carte_requise").notNull().default(false),
+    essaiJusquAu: timestamp("essai_jusqu_au", { withTimezone: true }),
+    sessionDeCarte: text("session_de_carte"),
     annulationDemandee: boolean("annulation_demandee").notNull().default(false),
     clientPrestataire: text("client_prestataire"),
     abonnementPrestataire: text("abonnement_prestataire"),

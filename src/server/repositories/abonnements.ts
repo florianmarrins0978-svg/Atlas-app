@@ -12,13 +12,15 @@
 // migration 0084. Voir `appliquerDepuisLeCrochet`, et le long paragraphe de la
 // migration sur la raison pour laquelle ce n'est pas un affaiblissement.
 
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { cache } from "react";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { abonnements, entreprises, evenementsPaiement, membresEntreprise } from "../db/schema";
 import { abonnementRouvreLeCompte } from "@/lib/fermeture-compte";
 import { estModule, roleFabrique, type EquipeComptee, type FormuleCode, type ModuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
 import { lesComptesQuiPartent, memesModules, type Choix } from "@/lib/changement-de-formule";
+import { doitPoserSaCarte } from "@/lib/essai-avec-carte";
 import { ROLES, type Role } from "@/lib/acces-roles";
 import type { Ctx } from "./context";
 
@@ -36,6 +38,14 @@ export type Abonnement = {
   formulePrevue: FormuleCode | null;
   periodicitePrevue: Periodicite | null;
   modulesPrevus: ModuleCode[] | null;
+  /** Son SIREN avait déjà eu l'essai (migration 0195). */
+  essaiDejaPris: boolean;
+  /** La carte reste à poser avant d'entrer (migration 0199, `doitPoserSaCarte`). */
+  carteRequise: boolean;
+  /** La fin de l'essai que tient le prestataire, tant qu'il y est. */
+  essaiJusquAu: Date | null;
+  /** La session de paiement ouverte pour la carte, à relire (migration 0199). */
+  sessionDeCarte: string | null;
 };
 
 /**
@@ -60,6 +70,9 @@ export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | nu
         formulePrevue: abonnements.formulePrevue,
         periodicitePrevue: abonnements.periodicitePrevue,
         modulesPrevus: abonnements.modulesPrevus,
+        carteRequise: abonnements.carteRequise,
+        essaiJusquAu: abonnements.essaiJusquAu,
+        sessionDeCarte: abonnements.sessionDeCarte,
       })
       .from(abonnements)
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId))
@@ -134,6 +147,13 @@ export type EtatVenuDuPrestataire = {
    * (`noterLeChangementPrevu`), que le prestataire ne redit pas.
    */
   changementPrevu: boolean;
+  /**
+   * La fin de l'essai que tient le prestataire (`trial_end`), tant que
+   * l'abonnement y est (`trialing`) ; `null` sinon. Le statut, lui, reste
+   * « actif » : l'appli s'ouvre, et tout ce qui résilie ou change passe par le
+   * prestataire comme pour un abonnement payé (migration 0199).
+   */
+  essaiJusquAu: Date | null;
 };
 
 function versLaLigne(etat: EtatVenuDuPrestataire) {
@@ -146,9 +166,63 @@ function versLaLigne(etat: EtatVenuDuPrestataire) {
     annulationDemandee: etat.annulationDemandee,
     clientPrestataire: etat.clientPrestataire,
     abonnementPrestataire: etat.abonnementPrestataire,
+    essaiJusquAu: etat.essaiJusquAu,
+    // L'abonnement existe chez le prestataire : la session qui a posé la carte
+    // n'a plus rien à dire.
+    sessionDeCarte: null,
     ...(etat.changementPrevu ? {} : { formulePrevue: null, periodicitePrevue: null, modulesPrevus: null }),
     updatedAt: new Date(),
   };
+}
+
+/**
+ * LA CARTE RESTE-T-ELLE À POSER ? — la question que `garderLaPage` pose à
+ * chaque écran (le modèle A, sa réponse du 24 novembre 2026 : *« Oui appli
+ * fermée ! »*). La règle est `doitPoserSaCarte` ; ce dépôt ne fait que lire.
+ *
+ * **`cache()` de React, comme `accesDeLaPersonne`** : une lecture par
+ * requête, jamais entre deux. La carte posée à la minute ouvre l'écran suivant.
+ * Deux chaînes et non l'objet `ctx` : `cache()` compare par identité.
+ */
+const lireLaCarteAPoser = cache(async function lireLaCarteAPoser(utilisateurId: string, entrepriseId: string): Promise<boolean> {
+  return withEntreprise(utilisateurId, entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({
+        carteRequise: abonnements.carteRequise,
+        abonnementPrestataire: abonnements.abonnementPrestataire,
+        essaiDejaPris: abonnements.essaiDejaPris,
+      })
+      .from(abonnements)
+      .where(eq(abonnements.entrepriseId, entrepriseId))
+      .limit(1);
+    return doitPoserSaCarte(ligne);
+  });
+});
+
+export async function carteAPoser(ctx: Ctx): Promise<boolean> {
+  return lireLaCarteAPoser(ctx.utilisateurId, ctx.entrepriseId);
+}
+
+/**
+ * RETENIR LA SESSION DE PAIEMENT ouverte pour la carte, afin de la relire si
+ * l'artisan paie puis ferme l'onglet avant le retour (migration 0199).
+ *
+ * **Permise en lecture seule**, comme `enregistrerLAbonnement` : une entreprise
+ * dont le SIREN a déjà eu l'essai est en lecture seule dès sa création, et
+ * c'est précisément la carte qui l'en sort.
+ */
+export async function retenirLaSessionDeCarte(ctx: Ctx, session: string): Promise<void> {
+  await withEntreprise(
+    ctx.utilisateurId,
+    ctx.entrepriseId,
+    async (tx) => {
+      await tx
+        .update(abonnements)
+        .set({ sessionDeCarte: session, updatedAt: new Date() })
+        .where(and(eq(abonnements.entrepriseId, ctx.entrepriseId), isNull(abonnements.abonnementPrestataire)));
+    },
+    { pourSortirDeLEssai: true }
+  );
 }
 
 /**

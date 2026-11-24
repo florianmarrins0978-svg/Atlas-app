@@ -180,7 +180,91 @@ async function main() {
       assert.match(champs(session!.corps).get("success_url") ?? "", /^https:\/\/atlas\.example\//);
     });
 
+    // Le paiement d'avant le modèle A ne porte aucun essai : il débite tout de
+    // suite, et c'est ce que la montée et le retour d'un résilié attendent.
+    await cas("sans jours d'essai, aucun essai ne part chez le prestataire", async () => {
+      const c = champs(recues.find((x) => x.chemin === "/v1/checkout/sessions")!.corps);
+      assert.equal(c.has("subscription_data[trial_period_days]"), false);
+      assert.equal(c.has("payment_method_collection"), false);
+    });
+
+    // La session retenue se relit si l'artisan paie puis ferme l'onglet
+    // (`session_de_carte`, migration 0199) : sans son identifiant, un second
+    // appui ouvrirait un second abonnement.
+    await cas("l'identifiant de la session est rendu avec l'adresse", async () => {
+      assert.equal(r.ok && r.session, "cs_1");
+    });
+
     serveur.close();
+  }
+
+  // **L'ESSAI AVEC LA CARTE** (le modèle A, sa validation du 23 novembre 2026) :
+  // quinze jours sans rien débiter, la carte demandée quand même, et un essai
+  // qui finirait sans carte s'annule au lieu de laisser un impayé.
+  console.log("\n=== L'essai avec la carte : quinze jours, rien de débité ===\n");
+
+  {
+    const { serveur, recues } = fauxPrestataire((r) => {
+      if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_essai" } };
+      if (r.chemin.startsWith("/v1/tax_rates?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_neuf" } };
+      return { statut: 200, corps: { id: "cs_essai", url: "https://paiement.example/cs_essai" } };
+    });
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+
+    const r = await stripe.ouvrirLePaiement({
+      entrepriseId: "ent-essai",
+      email: null,
+      formule: "artisan",
+      periodicite: "mensuelle",
+      modules: ["paysage"],
+      retourSucces: "https://atlas.example/essai?paiement={CHECKOUT_SESSION_ID}",
+      retourAbandon: "https://atlas.example/essai?paiement=abandon",
+      joursDEssai: 15,
+    });
+
+    await cas("quinze jours d'essai, la carte demandée, et l'annulation si elle manque au terme", async () => {
+      assert.equal(r.ok, true);
+      const c = champs(recues.find((x) => x.chemin === "/v1/checkout/sessions")!.corps);
+      assert.equal(c.get("subscription_data[trial_period_days]"), "15");
+      assert.equal(c.get("payment_method_collection"), "always");
+      assert.equal(c.get("subscription_data[trial_settings][end_behavior][missing_payment_method]"), "cancel");
+    });
+
+    await cas("le prix est celui de la formule et des outils, comme sans essai", async () => {
+      const creation = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/prices");
+      assert.equal(champs(creation!.corps).get("unit_amount"), "4500");
+    });
+
+    serveur.close();
+
+    // Zéro jour : le SIREN a déjà eu son essai, et l'abonnement commence à la
+    // carte posée (`joursDEssaiAuPaiement`).
+    const zero = fauxPrestataire((q) => {
+      if (q.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_essai" }] } };
+      if (q.chemin.startsWith("/v1/tax_rates?")) return { statut: 200, corps: { data: [{ id: "txr_neuf" }] } };
+      return { statut: 200, corps: { id: "cs_zero", url: "https://paiement.example/cs_zero" } };
+    });
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${await surUnPort(zero.serveur)}`;
+    const stripeZero = await moduleFrais();
+    await stripeZero.ouvrirLePaiement({
+      entrepriseId: "ent-essai",
+      email: null,
+      formule: "artisan",
+      periodicite: "mensuelle",
+      modules: [],
+      retourSucces: "https://atlas.example/essai?paiement={CHECKOUT_SESSION_ID}",
+      retourAbandon: "https://atlas.example/essai?paiement=abandon",
+      joursDEssai: 0,
+    });
+    await cas("zéro jour d'essai : rien d'un essai ne part", async () => {
+      const c = champs(zero.recues.find((x) => x.chemin === "/v1/checkout/sessions")!.corps);
+      assert.equal(c.has("subscription_data[trial_period_days]"), false);
+    });
+    zero.serveur.close();
   }
 
   // **LES OUTILS DE PAYSAGE PARTENT DANS LE MÊME PRIX** (18 et 19 novembre
@@ -453,6 +537,12 @@ async function main() {
 
   {
     const stripe = await moduleFrais();
+
+    await cas("l'essai tenu par le prestataire se lit : sa fin, et rien hors essai", async () => {
+      const essai = stripe.lireUnAbonnement(abonnementRendu({ status: "trialing", trial_end: 1796688000 }));
+      assert.equal(essai?.essaiJusquAu?.toISOString(), new Date(1796688000 * 1000).toISOString());
+      assert.equal(stripe.lireUnAbonnement(abonnementRendu({ status: "active", trial_end: 1796688000 }))?.essaiJusquAu, null);
+    });
 
     await cas("« trialing » vaut actif — un essai n'est pas un impayé", async () => {
       assert.equal(stripe.lireUnAbonnement(abonnementRendu({ status: "trialing" }))?.statut, "actif");
