@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE ROBINET SANS PROGRAMMATEUR (24 novembre 2026)
+
+Sa remarque : *« on a oublié de faire un montage. C'est sans programmateur [...] juste une double
+sortie d'arrosage. Ou pas, si le client n'en veut pas. Et ensuite, tout de suite, le 25 taraudé 3/4 ou
+le 32 taraudé 3/4 [...] et le 25 ou le 32. »* Planche : `appli/arrosage-robinet-3d.html`, « Sans » au
+programmateur, et la double sortie Avec ou Sans. L'écran du plan au robinet montre déjà cette pile
+quand le programmateur est à la nourrice (`Robinet3D`, `programmateur: null`). **À lui de dire** si ce
+montage doit aussi exister sans aucun programmateur dans le plan (un arrosage ouvert à la main), ce
+que le plan ne propose pas aujourd'hui.
+
 ## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
 
 Sa demande, après avoir vu qu'Entreprise ouvrait encore les outils de paysage :

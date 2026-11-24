@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-24
+
+- **Planche « Le robinet en 3D » : le montage sans programmateur** (`appli/arrosage-robinet-3d.html`, sa remarque du 24 : *« on a oublié de faire un montage. C'est sans programmateur »*). Sans programmateur, le raccord femelle 25 x 3/4" (ou 32 x 3/4", le même à l'oeil) se visse sur la double sortie ou directement sur le robinet, puis le PEHD ; la double sortie se retire aussi sous un programmateur. La composition le savait déjà (`programmateur: null`, l'interrupteur de la double sortie) : seule la planche ne le proposait pas. Vingt combinaisons, aucune erreur de composition.
+
 ## 2026-11-23
 
 - **Planche « Le goutte-à-goutte en GAG »** (`appli/arrosage-nourrice-3d-gag.html`, sa demande du 23 : *« tu les mets en escalier [...] une goutte à goutte et l'autre GAG »*). Sur la vraie nourrice en 3D : le mot entier sous la première voie de goutte-à-goutte, GAG sous les suivantes, et un mot qui en couvrirait un autre se décale sur le côté libre ou descend d'une marche. Mesuré sur 90 nourrices : 84 ont aujourd'hui des mots qui se chevauchent, aucune avec la proposition. Rien dans l'appli avant son choix.
