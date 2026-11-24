@@ -8,11 +8,11 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/comptable-trois-fichi
 
 | Demandé | Sur la planche | Où |
 |---|---|---|
-| Les pages du PDF | la première page, le registre des ventes, chaque catégorie (choisie dans une liste), les salaires ; « Imprimer le PDF d'essai » sort les 29 pages | onglet Le PDF |
+| Les pages du PDF | la première page, le registre des ventes, chaque catégorie (choisie dans une liste), les salaires ; « Imprimer le PDF d'essai » sort les 34 pages | onglet Le PDF |
 | L'Excel à quatre onglets | Ventes, Achats, Banque, Comptes, tels qu'Excel les ouvre ; « Télécharger l'Excel d'essai » écrit un vrai `.xlsx` (totaux en formules, dates en dates, filtres, première ligne figée) | onglet L'Excel |
 | Le FEC | lu en colonnes ou tel quel (la tabulation montrée par un trait d'or) ; « Télécharger le FEC d'essai » écrit le vrai fichier | onglet Le FEC |
 | Le réglage des numéros | l'écran Réglages dans le téléphone : chaque ligne s'ouvre, le numéro se change, l'intitulé du plan comptable s'affiche, une classe inattendue est signalée ; le numéro changé se retrouve dans le PDF, l'Excel et le FEC | onglet Numéros de compte |
-| Un numéro par pièce, le même partout | A 181 à A 202 pour octobre ; toucher un numéro le surligne et donne sa page, sa ligne d'onglet, sa ligne de banque et ses lignes de FEC | partout |
+| Un numéro par pièce, le même partout | A 181 à A 205 pour octobre ; toucher un numéro le surligne et donne sa page, sa ligne d'onglet, sa ligne de banque et ses lignes de FEC | partout |
 | Le FEC officiel reste celui du comptable | écrit au dessus du FEC, et en bas de la première page du PDF | onglet Le FEC |
 
 **Aucun texte gris** (sa demande du 24 novembre, après la première version) : les trois documents s'écrivent en noir, et ce qui doit ressortir passe par le gras ou la serif. Le vrai PDF (`src/server/pdf/dossier-comptable-pdf.ts`) écrit encore en gris : à reprendre au codage.
@@ -22,8 +22,8 @@ Vérifié sur les fichiers téléchargés, pas sur l'écran :
 
 | Contrôle | Résultat |
 |---|---|
-| FEC : 18 colonnes à chaque ligne | 110 lignes sur 110 |
-| FEC : chaque écriture équilibrée | 43 écritures sur 43 ; débit 43 643,83 € = crédit 43 643,83 € |
+| FEC : 18 colonnes à chaque ligne | 122 lignes sur 122 |
+| FEC : chaque écriture équilibrée | 48 écritures sur 48 ; débit 44 957,83 € = crédit 44 957,83 € |
 | FEC : numéros d'écriture continus et dans l'ordre des dates, par journal | oui |
 | FEC : compte fournisseurs soldé (tout est lettré) | 401 à 0,00 |
 | Excel ouvert par openpyxl et recalculé par LibreOffice | Ventes 12 030,00 HT, TVA 458,00 + 1 490,00, TTC 13 978,00, reste dû 6 258,00 ; balance à 0 |
@@ -62,6 +62,44 @@ par un comptable avant le codage**, comme `TODO.md` le demandait déjà.
 | Entre mes comptes | **580** | Le PCG ne définit que le 58 ; 580 est l'usage, et le FEC veut trois chiffres au début du compte. | haute |
 | TVA en attente du paiement | **44574** | **Absent du PCG**, mais d'usage (Qonto, Dougs) ; d'autres prennent un 4458x. Le comptable a peut être le sien : réglable. | moyenne |
 | TVA due, déductible, sur immobilisations | **44571, 44566, 44562** | | haute |
+
+### Ajoutées après sa question « est-ce qu'il ne manque rien ? » (24 novembre au soir)
+
+**Non, il en manquait.** La première liste reprenait ses catégories ; elle
+oubliait des dépenses que presque tout artisan paie. Quatorze de plus, rangées
+dans Réglages par familles (le chantier, le camion et la route, l'entreprise,
+vos salariés, les impôts, prêt et argent perso) :
+
+| Catégorie | Proposé | Pourquoi, et la source | Confiance |
+|---|---|---|---|
+| Vêtements de travail, protection | **6063** | petit équipement non stocké ; 6068 ou 6022 (stocké) chez d'autres. [Pennylane](https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/comment-comptabiliser-les-vetement-de-travail-liste-de-compte-comptable-a) | moyenne à haute |
+| Location de matériel (mini pelle, nacelle, benne) | **6135** | Locations mobilières (PCG) | haute |
+| Évacuation des déchets verts | **6288** | usage de praticiens, **absent du PCG** (628 n'y porte que 6281 et 6284) ; d'autres prennent le 611. [Copeps](https://copeps.fr/actualites/comptabilisation-decontamination-produits/) | basse |
+| Entretien et réparations (garage, pneus, tondeuse) | **6155** | Entretien et réparations sur biens mobiliers (PCG) | haute |
+| Leasing du camion | **6122** | Crédit bail mobilier ; une location longue durée sans achat va au 6135 | haute |
+| Électricité, eau, gaz du dépôt | **6061** | Fournitures non stockables, comme le carburant | haute |
+| Fournitures de bureau | **6064** | Fournitures administratives ; les timbres au 626 | haute |
+| Logiciels et abonnements | **6135** | les sources hésitent (613, 6135, parfois 6281) ; le 651 est pour une licence, pas un abonnement. [Pennylane, 6135](https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/compte-6135-locations-mobilieres), [Finom](https://finom.co/fr-fr/blog/comptabiliser-abonnement-logiciel/) | moyenne |
+| Publicité | **623** | Publicité, publications, relations publiques | haute |
+| Honoraires (comptable, avocat) | **6226** | Honoraires | haute |
+| Cotisations professionnelles | **6281** | Concours divers, cotisations | haute |
+| Formation (CACES, Certiphyto) | **6228** | facture de l'organisme ; la contribution OPCO va au 6333. [Pennylane](https://www.pennylane.com/fr/fiches-pratiques/plan-comptable/comment-comptabiliser-les-frais-de-formation-professionnelle) | moyenne |
+| Retraite, prévoyance, mutuelle des salariés | **437** | Autres organismes sociaux | haute |
+| Impôt prélevé sur les salaires | **4421** | Prélèvements à la source ; la DGFiP le prélève chaque mois. **Sans cette catégorie, il tombait dans Impôts et taxes (635), comme une charge.** [Dougs](https://www.dougs.fr/ressources/pcg/classe-4/compte-4421/), [net-entreprises](https://www.net-entreprises.fr/media/documentation/guide-dsn-pas.pdf) | haute |
+
+Retouchés dans la même passe : « Petit outillage » devient **« Petit outillage,
+petites fournitures »** (vis, colliers, ficelle : même 6063) ; « Train, taxi »
+couvre aussi **péages et parking** (6251) ; les **agios** d'un découvert vont au
+**6615**, pas avec les frais de banque.
+
+**Le paysage cotise à la MSA, pas à l'URSSAF** (code rural, L. 722-1 et L. 722-2 ;
+[réponse ministérielle](https://questions.assemblee-nationale.fr/dyn/12/questions/QANR5L12QE33996.pdf)) :
+la ligne d'essai de la planche était fausse pour un paysagiste, elle est
+corrigée. Le compte (431) ne change pas.
+
+**Toujours pas couvert, et dit tel quel :** des plants revendus sans pose
+(achat 607, vente 707), les cadeaux aux clients (6234), les amendes (non
+déductibles). Ils tombent en À classer, et le comptable les range.
 
 ## Le FEC : ce qui est normé, et ce que Cause en fait
 
