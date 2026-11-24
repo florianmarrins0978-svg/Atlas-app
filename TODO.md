@@ -1713,7 +1713,7 @@ libre s'imprime EN PLUS, jamais à la place (la facture porte nom, adresse et
 SIRET de la même entreprise, CGI 242 nonies A). Ainsi le SIRET d'un autre ne
 donne que des devis au nom de cet autre. Reste : la diffusion partielle (nom non
 publié : il le tape). Planche sur le vrai écran Mon entreprise, sur son « oui » du même soir :
-`appli/soignee/identite-au-registre.html`. Rien n'est codé.
+`appli/soignee/identite-au-registre.html`. Rien n'est codé. **ÉCARTÉE PAR LUI LE 24 NOVEMBRE 2026, à ne pas recoder** : *« et si on fait en sorte de ne jamais bloquer, et qu'il puisse même réécrire s'il veut ; à partir du moment où il a rentré son SIREN, l'application reconnaît le SIREN et lui demande juste de se connecter à son autre compte, et comme ça il peut changer ce qu'il veut »*. Le nom et l'adresse restent libres dans Réglages. Ce qui protège : le SIREN reconnu (un essai par entreprise), le SIRET confirmé au registre avant tout envoi, et la carte à l'inscription. Ce qui reste ouvert, et qu'il accepte : le SIRET réel d'un autre, jamais utilisé sur Cause, sous son propre nom ; c'est une fraude sur ses propres devis, et le risque est pour le tricheur.
 
 ~~**Deux défauts de l'appli vus en la faisant, non corrigés (hors du lot) :**~~ **Corrigés le 24 novembre 2026, sur son « 1 oui corrige »** : la porte dit CAUSE, et `test-nom-cause.ts` voit maintenant le vieux nom en capitales (il a trouvé aussi le mode d'emploi de l'export et deux consignes de l'assistant) ; « C'est fait » écrit le téléphone tel qu'il s'imprime, zéro compris (`test-recapitulatif-compte.ts`).
 
