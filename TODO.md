@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## ⏳ L'ESSAI AVEC LA CARTE (LE MODÈLE A) : EN COURS DE CODAGE (24 novembre 2026)
+
+**Planche** `appli/soignee/essai-avec-carte.html`, sur ses vrais écrans. **Ses décisions, à ne pas lui redemander :**
+après les conditions, « Votre essai » (la formule choisie, 0 € aujourd'hui, la date du premier prélèvement, et
+le chemin pour résilier dessiné : Réglages, Abonnement, « Résilier ») ; « Ajouter ma carte » ouvre le paiement de
+Stripe, avec 15 jours d'essai et rien de débité avant ; **sans carte, l'appli reste FERMÉE** (« Il manque votre
+carte », sa réponse : *« Oui appli fermée ! »*), avec un lien vers la visite guidée pour qui hésite ; l'e-mail de
+rappel trois jours avant le premier prélèvement (il attend l'envoi d'e-mails de Cause, donc son domaine chez OVH).
+L'article 14.2 des conditions (« sans saisie de moyen de paiement ») se corrige dans la version 4.
+
 ## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
 Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §615, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
