@@ -5,7 +5,7 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import {
   abonnementDeLEntreprise,
   appliquerDepuisLeCrochet,
-  compterLesFabricants,
+  compterLEquipe,
   enregistrerLAbonnement,
   noterLeChangementPrevu,
   type EtatVenuDuPrestataire,
@@ -85,9 +85,13 @@ async function compterAbonnements(entrepriseId: string): Promise<number> {
 const LE_9_OCTOBRE = new Date("2026-10-09T10:00:00Z");
 const LE_9_NOVEMBRE = new Date("2026-11-09T10:00:00Z");
 
+/** Ceux qui fabriquent, comptés comme le code les compte (`compterLEquipe`). */
+const compterLesFabricants = async (ctx: Ctx) => (await compterLEquipe(ctx)).fabricants;
+
 function etat(surcharge: Partial<EtatVenuDuPrestataire> & { abonnementPrestataire: string }): EtatVenuDuPrestataire {
   return {
     formule: "entreprise",
+    modules: [],
     periodicite: "mensuelle",
     statut: "actif",
     periodeFin: LE_9_OCTOBRE,
@@ -269,7 +273,7 @@ async function main() {
 
   await test("LA DESCENTE CONFIRMÉE retire les accès en trop, et le patron reste", async () => {
     const ctx = await entrepriseAvecDeux("Descendue", "sub_D1");
-    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle" });
+    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle", modules: [] });
     const r = await appliquerDepuisLeCrochet(
       "evt_d1",
       "customer.subscription.updated",
@@ -298,7 +302,7 @@ async function main() {
 
   await test("le calendrier retiré chez le prestataire, la descente prévue s'oublie", async () => {
     const ctx = await entrepriseAvecDeux("Gardée", "sub_D3");
-    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle" });
+    await noterLeChangementPrevu(ctx, { formule: "artisan", periodicite: "mensuelle", modules: [] });
     await appliquerDepuisLeCrochet(
       "evt_d3",
       "customer.subscription.updated",
@@ -317,8 +321,9 @@ async function main() {
     assert.equal(await compterLesFabricants(ctx), 1);
   });
 
-  await test("LES SALARIÉS NE COMPTENT PAS — sa correction du 9 septembre", async () => {
+  await test("LES SALARIÉS NE COMPTENT PAS — sa correction du 9 septembre, hors Artisan", async () => {
     const ctx = await contexte("Huit gars");
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_huit", formule: "entreprise" }));
     for (let i = 0; i < 4; i++) {
       const r = await donnerUnAcces(ctx, {
         nom: `Salarié ${i}`,
@@ -330,6 +335,31 @@ async function main() {
       assert.equal(r.ok, true, `le salarié ${i} a été refusé`);
     }
     assert.equal(await compterLesFabricants(ctx), 1, "les salariés sont entrés dans le compte");
+    assert.deepEqual(await compterLEquipe(ctx), { comptes: 5, fabricants: 1, salaries: 4 });
+  });
+
+  // **Artisan, c'est lui seul** — sa règle du 18 novembre 2026. Le salarié est
+  // refusé comme le commercial, et la phrase renvoie à Entreprise.
+  await test("ARTISAN : UN SEUL ACCÈS — un salarié est refusé, et aucun compte orphelin ne reste", async () => {
+    const ctx = await contexte("Seul");
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_seul", formule: "artisan" }));
+    for (const role of ["salarie", "commercial", "facturation", "proprietaire"] as const) {
+      const email = `seul-${role}-${Date.now()}@t.test`;
+      const r = await donnerUnAcces(ctx, { nom: role, email, motDePasse: "motdepasse-douze", confirmation: "motdepasse-douze", role });
+      assert.equal(r.ok, false, `un ${role} est entré sur Artisan`);
+      if (!r.ok) assert.equal(r.refus, "artisan-seul");
+      const { rows } = await pool.query<{ n: string }>(`SELECT count(*)::text AS n FROM users WHERE email = $1`, [email]);
+      assert.equal(rows[0].n, "0", "un compte a été créé alors que l'accès était refusé");
+    }
+    assert.deepEqual(await compterLEquipe(ctx), { comptes: 1, fabricants: 1, salaries: 0 });
+  });
+
+  await test("les modules s'écrivent et se relisent, et le crochet les change", async () => {
+    const ctx = await contexte("Avec les outils");
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_outils", formule: "artisan", modules: ["paysage"] }));
+    assert.deepEqual((await abonnementDeLEntreprise(ctx))?.modules, ["paysage"]);
+    await appliquerDepuisLeCrochet("evt_outils", "customer.subscription.updated", etat({ abonnementPrestataire: "sub_outils", formule: "artisan", modules: [] }));
+    assert.deepEqual((await abonnementDeLEntreprise(ctx))?.modules, []);
   });
 
   await test("SANS ABONNEMENT, rien n'est plafonné — l'application ne se ferme pas", async () => {
@@ -412,7 +442,17 @@ async function main() {
     // C'est par là qu'on franchirait le plafond sans s'en apercevoir :
     // personne ne s'ajoute, un rôle change.
     const ctx = await contexte("Promotion");
-    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_Q", formule: "artisan" }));
+    await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: "sub_Q", formule: "entreprise" }));
+    for (let i = 0; i < 4; i++) {
+      const plein = await donnerUnAcces(ctx, {
+        nom: `Commercial ${i}`,
+        email: `promotion-${i}-${Date.now()}@t.test`,
+        motDePasse: "motdepasse-douze",
+        confirmation: "motdepasse-douze",
+        role: "commercial",
+      });
+      assert.equal(plein.ok, true);
+    }
 
     const ajout = await donnerUnAcces(ctx, {
       nom: "Un gars",
@@ -428,7 +468,7 @@ async function main() {
     assert.ok(gars, "le salarié ajouté est introuvable");
 
     const promotion = await changerLeRole(ctx, gars.id, "commercial");
-    assert.equal(promotion.ok, false, "le salarié est devenu commercial malgré le plafond « Artisan »");
+    assert.equal(promotion.ok, false, "le salarié est devenu commercial malgré le plafond d'« Entreprise »");
     if (!promotion.ok) assert.equal(promotion.refus, "plafond-atteint");
 
     // Et l'inverse reste possible : redescendre ne consomme aucune place.
@@ -455,10 +495,7 @@ async function main() {
       role,
     });
 
-  for (const [code, plafond] of [
-    ["artisan", 1],
-    ["entreprise", 5],
-  ] as const) {
+  for (const [code, plafond] of [["entreprise", 5]] as const) {
     await test(`« ${code} » : ${plafond} compte(s) aux devis passent, le suivant est refusé QUEL QUE SOIT son rôle`, async () => {
       const ctx = await contexte(`Formule ${code}`);
       await enregistrerLAbonnement(ctx, etat({ abonnementPrestataire: `sub_F_${code}`, formule: code }));

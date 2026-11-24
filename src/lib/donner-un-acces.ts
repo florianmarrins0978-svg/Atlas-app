@@ -45,7 +45,13 @@ export type RefusAcces =
    * compter reviendrait à facturer la taille de ses chantiers au lieu de
    * l'usage de l'outil (`src/lib/abonnements.ts`).
    */
-  | "plafond-atteint";
+  | "plafond-atteint"
+  /**
+   * Artisan est pour une seule personne — sa règle du 18 novembre 2026 : *« la
+   * première formule, c'est juste pour une seule personne »*. Le salarié n'y
+   * entre pas non plus.
+   */
+  | "artisan-seul";
 
 /**
  * L'adresse est-elle envoyable ?
@@ -213,5 +219,7 @@ export function messageRefusAcces(refus: RefusAcces): string {
     // mène nulle part se lit comme une panne, et il appellerait.
     case "plafond-atteint":
       return "Votre formule ne comprend pas une personne de plus aux devis et aux factures. Changez de formule dans Réglages, Abonnement.";
+    case "artisan-seul":
+      return "Artisan est pour vous seul. Pour donner un accès, passez à Entreprise dans Réglages, Abonnement.";
   }
 }

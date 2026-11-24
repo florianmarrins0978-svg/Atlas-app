@@ -98,9 +98,13 @@ export default function ArrosageClient({
   // Une lecture neuve se reçoit pendant le rendu, comme React le recommande
   // pour un état qui suit une valeur reçue : un effet la rendrait en deux temps.
   const [etatVu, setEtatVu] = useState(etat);
+  // Le jeton du plan offert survit à un refus entre deux retouches : sans lui,
+  // la retouche suivante serait refusée comme un second plan.
+  const [jetonOffert, setJetonOffert] = useState<string | null>(null);
   if (etat !== etatVu) {
     setEtatVu(etat);
     if (etat.etat === "lu") setReplie(true);
+    if (etat.etat === "lu" && etat.jetonOffert) setJetonOffert(etat.jetonOffert);
     if (etat.etat === "a-verifier") {
       setReplie(false);
       setPlanLu(etat.plan);
@@ -391,6 +395,7 @@ export default function ArrosageClient({
         {/* **Sous la photo, sans la déplacer** : il reconnaît son écran par la
             place de ce qu'il lit (`CLAUDE.md` §3). */}
         <input ref={champDessin} type="hidden" name="dessin" defaultValue="" />
+        <input type="hidden" name="jeton-offert" value={jetonOffert ?? ""} readOnly />
         {/* Pendant la lecture, l'attente seule : dessiner à côté ferait deux plans pour un croquis. */}
         {!dessiner && !(enCours && !parDessin) && (
           <button
@@ -516,6 +521,7 @@ export default function ArrosageClient({
           retouchesDeDepart={etat === repris?.etat ? repris.retouches : undefined}
           lecture={planLu}
           photo={() => (planLu ? champPhoto.current?.files?.[0] ?? null : null)}
+          jetonOffert={jetonOffert}
         />
       )}
     </form>
@@ -534,12 +540,15 @@ function PlanLu({
   retouchesDeDepart,
   lecture,
   photo,
+  jetonOffert,
 }: {
   etat: Extract<EtatPlan, { etat: "lu" }>;
   actionVisible: boolean;
   retouchesDeDepart?: Retouches;
   lecture: LePlanLu | null;
   photo: () => File | null;
+  /** Le jeton du plan offert : la discussion est une retouche (`exigerLArrosage`). */
+  jetonOffert: string | null;
 }) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
   // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
@@ -569,7 +578,11 @@ function PlanLu({
         retouchesDeDepart={retouchesDeDepart}
         apresLesReserves={(courant) => <EnregistrerDansUnDossier saisie={courant.saisie} plan={courant.plan} lecture={lecture} photo={photo} />}
       />
-      <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
+      <DiscuterLePlan
+        parametres={parametres}
+        jetonOffert={jetonOffert}
+        surNouveauPlan={(refait) => setParametres(refait.parametres)}
+      />
     </>
   );
 }

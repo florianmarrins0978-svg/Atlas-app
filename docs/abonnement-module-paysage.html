@@ -58,7 +58,7 @@
 <body>
 <main>
 <h1 id="le-module-paysage-et-artisan-pour-une-seule-personne">Le module Paysage, et Artisan pour une seule personne</h1>
-<p><em>Demande du 18 novembre 2026. Planche posée sur le vrai écran Abonnement, rien n'est codé.</em></p>
+<p><em>Demande du 18 novembre 2026. <strong>Codé le 19 novembre 2026</strong>, sur la branche <code>claude/happy-cannon-2rci5s</code> ; batterie non jouée, à sa demande ; pas encore sur <code>main</code>.</em></p>
 <p>Planche : <code>appli/soignee/abonnement-module-paysage.html</code></p>
 <h2 id="ce-qui-est-décidé-18-novembre-2026">Ce qui est décidé (18 novembre 2026)</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -203,6 +203,46 @@
 <td>lui</td>
 </tr>
 </tbody></table></div>
+<h2 id="ce-qui-est-codé-19-novembre-2026">Ce qui est codé (19 novembre 2026)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Les outils de paysage en module, le même prix pour les trois formules ; Entreprise et Illimité sans eux</td>
+<td><code>src/lib/abonnements.ts</code> (<code>MODULES</code>)</td>
+</tr>
+<tr>
+<td>Un seul prix chez le prestataire, formule et outils ; les outils relus au retour et au crochet</td>
+<td><code>src/server/paiement/stripe.ts</code></td>
+</tr>
+<tr>
+<td>Artisan pour vous seul ; une formule trop petite pour l'équipe refusée avant de payer</td>
+<td><code>placePourUnAcces</code>, <code>equipeTientDansLaFormule</code></td>
+</tr>
+<tr>
+<td>Le plan et le diagnostic offerts, pris quand le résultat sort ; le plan offert se retouche 24 heures</td>
+<td><code>offres_prises</code> (migration 0187), <code>exigerLArrosage</code></td>
+</tr>
+<tr>
+<td>L'écran Abonnement de la planche (A, trois lignes, en doré), la page Paysage (« 1 offert », « En option »), l'écran fermé (« Ajouter les outils »)</td>
+<td><code>BlocDesOutils.tsx</code>, <code>paysage/page.tsx</code>, <code>FonctionReservee.tsx</code></td>
+</tr>
+<tr>
+<td>La facture de Cause nomme les outils</td>
+<td><code>nomDeLAbonnement</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Fait autrement que la planche, et pourquoi :</strong></p>
+<ul>
+<li><strong>Le résultat d'un diagnostic reste lisible</strong> quand l'offre est prise : la porte fermait tout le dossier, donc aussi le diagnostic offert qu'il venait de recevoir. Elle est désormais sur l'écran qui en commence un.</li>
+<li><strong>La photo complémentaire et la relance d'un diagnostic</strong> n'ont plus de garde de formule : elles appartiennent au diagnostic déjà ouvert, et la refuser laissait le diagnostic offert à moitié.</li>
+<li><strong>L'aide de l'assistant</strong> disait les salariés au planning « quelle que soit la formule » : c'est faux depuis Artisan seul, elle est corrigée.</li>
+</ul>
+<p><strong>Éprouvé ici :</strong> les règles (<code>test-abonnements.ts</code>), un seul prix contre un faux prestataire (<code>test-paiement-stripe.ts</code>), l'offre en base, prise une seule fois même à deux envois (<code>test-offres-prises-db.ts</code>), et les écrans regardés à la largeur d'un téléphone (Abonnement sans et avec les outils, refus d'un salarié, Paysage avant et après l'offre, écrans fermés).</p>
+<p><strong>Pas joué :</strong> la batterie (sa demande), et deux suites base qui vident la base (<code>test-abonnement-db.ts</code>, <code>test-essai-lecture-seule-db.ts</code>), mises à jour.</p>
+<p><strong>Pas vérifiable ici :</strong> un vrai paiement avec les outils, la lecture réelle d'un croquis ou d'une plante.</p>
 </main>
 </body>
 </html>

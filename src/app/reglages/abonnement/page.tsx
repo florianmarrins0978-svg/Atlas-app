@@ -4,10 +4,10 @@ import Paquet from "@/components/atlas/reglages/Paquet";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
-import { abonnementDeLEntreprise, enregistrerLAbonnement, equipeDeLEntreprise } from "@/server/repositories/abonnements";
+import { abonnementDeLEntreprise, compterLEquipe, enregistrerLAbonnement, equipeDeLEntreprise } from "@/server/repositories/abonnements";
 import { lireLaSessionDePaiement, paiementConfigure } from "@/server/paiement/stripe";
 import { retourConfigure } from "@/server/paiement/retour";
-import { FORMULES, etatAffiche, formuleChoisie, type FormuleCode } from "@/lib/abonnements";
+import { FORMULES, etatAffiche, formuleChoisie, modulesChoisis, type FormuleCode } from "@/lib/abonnements";
 import { changementAVenir, lesComptesQuiPartent } from "@/lib/changement-de-formule";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
@@ -39,7 +39,7 @@ export const dynamic = "force-dynamic";
 export default async function AbonnementPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paiement?: string }>;
+  searchParams: Promise<{ paiement?: string; outils?: string }>;
 }) {
   await garderLaPage();
   const ctx = await getCurrentCtx();
@@ -60,7 +60,7 @@ export default async function AbonnementPage({
     );
   }
 
-  const { paiement } = await searchParams;
+  const { paiement, outils } = await searchParams;
 
   /**
    * ─── LE RETOUR DU PAIEMENT ─────────────────────────────────────────────
@@ -95,11 +95,12 @@ export default async function AbonnementPage({
   const etat = etatAffiche(abonnement ? { ...abonnement, prevu } : null, maintenant);
   // Ce qui partirait avec chaque formule, compté sur l'équipe telle qu'elle
   // est : la feuille l'annonce, le crochet le fera, par la même règle.
-  const equipe = await equipeDeLEntreprise(ctx);
+  const membres = await equipeDeLEntreprise(ctx);
   const comptesQuiPartent = Object.fromEntries(
-    FORMULES.map((f) => [f.code, lesComptesQuiPartent(equipe, f.code).length])
+    FORMULES.map((f) => [f.code, lesComptesQuiPartent(membres, f.code).length])
   ) as Record<FormuleCode, number>;
   const credits = await creditsIADeLEntreprise(ctx, maintenant);
+  const equipe = await compterLEquipe(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -113,10 +114,15 @@ export default async function AbonnementPage({
       </Paquet>
 
       {/* Pendant l'essai, aucune formule n'est « actuelle » : il S'ABONNE, il ne
-          change pas — il n'y a pas d'abonnement Stripe à faire évoluer au prorata. */}
+          change pas, il n'y a pas d'abonnement Stripe à faire évoluer. */}
       <AbonnementClient
         formuleActuelle={formuleChoisie(abonnement)}
         periodiciteActuelle={formuleChoisie(abonnement) ? abonnement!.periodicite : null}
+        modulesActuels={modulesChoisis(abonnement)}
+        // Le bouton « Ajouter les outils » d'un outil fermé arrive ici, les
+        // outils déjà ajoutés : il n'a plus qu'à choisir sa formule.
+        outilsDemandes={outils === "paysage"}
+        equipe={equipe}
         annulationDemandee={abonnement?.annulationDemandee ?? false}
         paiementBranche={paiementConfigure() && retourConfigure()}
         echeance={abonnement?.periodeFin?.toISOString() ?? null}

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { etatAffiche, moisAbrege } from "../src/lib/abonnements";
+import { etatAffiche, moisAbrege, type ModuleCode } from "../src/lib/abonnements";
 import {
   changementAVenir,
   changementDeFormule,
@@ -27,12 +27,12 @@ function cas(nom: string, f: () => void) {
 
 const LE_23_NOV = new Date(Date.UTC(2026, 10, 23, 17, 0, 0));
 const LE_23_DEC = new Date(Date.UTC(2026, 11, 23, 12, 0, 0));
-const ARTISAN_MOIS = { formule: "artisan", periodicite: "mensuelle" } as const;
-const ENTREPRISE_MOIS = { formule: "entreprise", periodicite: "mensuelle" } as const;
-const ILLIMITE_MOIS = { formule: "illimite", periodicite: "mensuelle" } as const;
-const ARTISAN_AN = { formule: "artisan", periodicite: "annuelle" } as const;
-const ENTREPRISE_AN = { formule: "entreprise", periodicite: "annuelle" } as const;
-const ILLIMITE_AN = { formule: "illimite", periodicite: "annuelle" } as const;
+const ARTISAN_MOIS = { formule: "artisan", periodicite: "mensuelle", modules: [] as readonly ModuleCode[] } as const;
+const ENTREPRISE_MOIS = { formule: "entreprise", periodicite: "mensuelle", modules: [] as readonly ModuleCode[] } as const;
+const ILLIMITE_MOIS = { formule: "illimite", periodicite: "mensuelle", modules: [] as readonly ModuleCode[] } as const;
+const ARTISAN_AN = { formule: "artisan", periodicite: "annuelle", modules: [] as readonly ModuleCode[] } as const;
+const ENTREPRISE_AN = { formule: "entreprise", periodicite: "annuelle", modules: [] as readonly ModuleCode[] } as const;
+const ILLIMITE_AN = { formule: "illimite", periodicite: "annuelle", modules: [] as readonly ModuleCode[] } as const;
 
 console.log("=== Monter au mois : le prix entier, l'échéance remise ===\n");
 
@@ -112,6 +112,45 @@ cas("une échéance inconnue ne se devine pas", () => {
   assert.equal(prochaineEcheance(changementDeFormule(ENTREPRISE_MOIS, ARTISAN_MOIS), ARTISAN_MOIS, null, LE_23_NOV), null);
 });
 
+console.log("\n=== Les outils de paysage : ajouter monte, retirer attend l'échéance ===\n");
+
+const OUTILS = ["paysage"] as readonly ModuleCode[];
+
+cas("AJOUTER LES OUTILS au mois : Artisan avec les outils, 45 € entiers, l'échéance remise", () => {
+  assert.deepEqual(changementDeFormule(ARTISAN_MOIS, { ...ARTISAN_MOIS, modules: OUTILS }), {
+    genre: "tout-de-suite",
+    facon: "monter-au-mois",
+    debitHT: 45,
+    echeanceRemise: true,
+  });
+});
+
+cas("AJOUTER LES OUTILS à l'année : la différence, 60 €", () => {
+  const c = changementDeFormule(ARTISAN_AN, { ...ARTISAN_AN, modules: OUTILS });
+  assert.equal(c.genre === "tout-de-suite" && c.debitHT, 60);
+});
+
+cas("RETIRER LES OUTILS : à l'échéance, il les garde jusque-là", () => {
+  assert.deepEqual(changementDeFormule({ ...ENTREPRISE_MOIS, modules: OUTILS }, ENTREPRISE_MOIS), { genre: "a-l-echeance" });
+});
+
+cas("Artisan avec les outils vers Entreprise sans eux : plus cher, donc tout de suite, 59 €", () => {
+  const c = changementDeFormule({ ...ARTISAN_MOIS, modules: OUTILS }, ENTREPRISE_MOIS);
+  assert.equal(c.genre === "tout-de-suite" && c.debitHT, 59);
+});
+
+cas("monter en gardant les outils : Entreprise avec les outils, 65 €", () => {
+  const c = changementDeFormule({ ...ARTISAN_MOIS, modules: OUTILS }, { ...ENTREPRISE_MOIS, modules: OUTILS });
+  assert.equal(c.genre === "tout-de-suite" && c.debitHT, 65);
+});
+
+cas("les outils prévus au retrait se lisent dans le changement à venir", () => {
+  assert.deepEqual(
+    changementAVenir({ ...ENTREPRISE_MOIS, modules: OUTILS, formulePrevue: "entreprise", periodicitePrevue: "mensuelle", modulesPrevus: [] }),
+    ENTREPRISE_MOIS
+  );
+});
+
 console.log("\n=== Un mois et un an se comptent comme un abonnement ===\n");
 
 cas("le 31 janvier plus un mois tombe le 28 février, jamais le 3 mars", () => {
@@ -137,12 +176,12 @@ const EQUIPE = [
   { id: "salarie", role: "salarie", depuis: J(3) },
 ] as const;
 
-cas("vers Artisan : tous les autres qui facturent partent, le patron reste", () => {
-  assert.deepEqual(lesComptesQuiPartent(EQUIPE, "artisan"), ["compta", "commercial"]);
+cas("vers Artisan : TOUS les autres partent, salarié compris (un seul accès, sa règle du 18 novembre)", () => {
+  assert.deepEqual(lesComptesQuiPartent(EQUIPE, "artisan"), ["compta", "salarie", "commercial"]);
 });
 
-cas("le salarié au planning ne compte pas : il n'occupe aucune place de facturation", () => {
-  assert.ok(!lesComptesQuiPartent(EQUIPE, "artisan").includes("salarie"));
+cas("vers Entreprise, le salarié au planning ne compte pas : il n'occupe aucune place de facturation", () => {
+  assert.deepEqual(lesComptesQuiPartent(EQUIPE, "entreprise"), []);
 });
 
 cas("vers Entreprise avec sept qui facturent : les deux derniers arrivés partent", () => {
@@ -159,24 +198,24 @@ cas("vers Illimité : personne ne part", () => {
 
 cas("deux patrons sur Artisan : aucun patron ne part, les autres oui", () => {
   const deux = [...EQUIPE, { id: "patron2", role: "proprietaire" as const, depuis: J(9) }];
-  assert.deepEqual(lesComptesQuiPartent(deux, "artisan"), ["compta", "commercial"]);
+  assert.deepEqual(lesComptesQuiPartent(deux, "artisan"), ["compta", "salarie", "commercial"]);
 });
 
 console.log("\n=== La descente prévue se lit sur l'écran, puis s'efface ===\n");
 
 cas("rien de prévu : rien à venir", () => {
-  assert.equal(changementAVenir({ ...ENTREPRISE_MOIS, formulePrevue: null, periodicitePrevue: null }), null);
+  assert.equal(changementAVenir({ ...ENTREPRISE_MOIS, formulePrevue: null, periodicitePrevue: null, modulesPrevus: null }), null);
 });
 
 cas("Artisan prévu sur Entreprise : à venir", () => {
   assert.deepEqual(
-    changementAVenir({ ...ENTREPRISE_MOIS, formulePrevue: "artisan", periodicitePrevue: "mensuelle" }),
+    changementAVenir({ ...ENTREPRISE_MOIS, formulePrevue: "artisan", periodicitePrevue: "mensuelle", modulesPrevus: [] }),
     ARTISAN_MOIS
   );
 });
 
 cas("l'échéance passée, la formule EST la prévue : plus rien à venir", () => {
-  assert.equal(changementAVenir({ ...ARTISAN_MOIS, formulePrevue: "artisan", periodicitePrevue: "mensuelle" }), null);
+  assert.equal(changementAVenir({ ...ARTISAN_MOIS, formulePrevue: "artisan", periodicitePrevue: "mensuelle", modulesPrevus: [] }), null);
 });
 
 cas("l'état dit « Jusqu'au 23 décembre 2026, puis Artisan à 39 € HT par mois. », dans le carré doré", () => {

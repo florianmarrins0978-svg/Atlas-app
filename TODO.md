@@ -19,7 +19,7 @@ arrivé ».
 
 | Branche | Date | Ce que c'est | Où il en est |
 |---|---|---|---|
-| `claude/happy-cannon-2rci5s` | 19 nov. | le module Paysage à 6 € pour les trois formules, Artisan un seul accès, un plan et un diagnostic offerts | son « oui » du 24 novembre : réuni au lot du changement de formule, une seule version 4 des conditions |
+| `claude/happy-cannon-2rci5s` | 19 nov. | le module Paysage à 6 € pour les trois formules, Artisan un seul accès, un plan et un diagnostic offerts | **réuni le 24 novembre** au changement de formule sur `claude/ecstatic-einstein-g0dncn`, sur son « oui » ; attend la batterie |
 | `claude/vigilant-ramanujan-kxr0np` | 19 et 20 nov. | la fiche de diagnostic soignée, les dossiers des diagnostics avec leurs notes, les photos de référence qui défilent | sa branche dit « codé, pas sur `main` » ; `main` disait « pas codé » (corrigé) |
 | `claude/upbeat-pascal-mzremi` | 21 nov. | la nourrice de l'outil dessinée avec ses photos vues du dessus (sept commits) | rien sur `main` ; la nourrice en 3D est arrivée depuis, à lui de dire si ce dessin sert encore |
 
@@ -86,6 +86,23 @@ niveau 2 (`npm run verifier:avant-fusion`), qui attend son « oui ».
 recomposant, une fois l'outil corrigé.
 
 ## ⏳ CHANGER DE FORMULE : CODÉ LE 23 NOVEMBRE 2026 SUR `claude/ecstatic-einstein-g0dncn`, ATTEND SA BATTERIE
+
+**Le module Paysage y est réuni depuis le 24 novembre 2026** (son « oui » :
+même écran, une seule version 4). Ce que la réunion a tranché, **déduit de ses
+règles et non dit par lui** (`ARCHITECTURE.md` §611 et §615) :
+
+| | |
+|---|---|
+| ajouter les outils | une montée : le prix entier du mois (45 € pour Artisan), ou à l'année la différence (60 €) |
+| retirer les outils | une descente : à l'échéance, il les garde jusque-là |
+| au-dessus ou en dessous | se juge au prix du mois, formule et outils compris |
+| une formule trop petite pour l'équipe | abonné : plus de refus, la feuille avertit et le crochet retire les accès à l'échéance (sa décision du 23, qui remplace le « refusé avant » du 18) ; pour s'ABONNER, le refus du module reste |
+| les accès qui partent | Artisan : tous les autres, salariés compris (un seul accès, sa règle du 18) ; ailleurs, ceux qui facturent au-delà du plafond |
+| les conditions version 4 | 14.1 (les outils à 6 €, Artisan pour une seule personne), 14.2 (l'essai), 14.6 |
+
+La migration du module est renumérotée **0198** (0187 était pris sur `main`),
+et porte aussi `modules_prevus`. Son paragraphe d'architecture devient §615.
+
 
 **Codé sur son « tu peux coder et ne lance pas de batterie »** (`ARCHITECTURE.md`
 §611). Niveau 3 (argent, migration 0197) : rien ne part sur `main` sans la
@@ -840,7 +857,11 @@ is at … but expected … » (reproduit en local avec deux fetch d'un dépôt
 huit fois sur huit : le cas n'est pas tranché. Le refus porterait alors « le
 dépôt distant n'a pas pu être joint ». Ne rien corriger avant de l'avoir lu.
 
-## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
+## ⏳ CODÉ, ATTEND SA BATTERIE : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (19 novembre 2026)
+
+**Réuni le 24 novembre 2026 au changement de formule** (`claude/ecstatic-einstein-g0dncn`, son « oui »), voir « CHANGER DE FORMULE » plus haut : une seule batterie, une seule version 4 des conditions. Le refus d'une équipe trop grande ne vaut plus que pour s'abonner.
+
+**Codé le 19 novembre** sur la branche `claude/happy-cannon-2rci5s` (`ARCHITECTURE.md` §615), sur ses planches choisies. **Niveau 3, batterie NON jouée à sa demande** (« code mais pas de batterie ») : elle attend son « oui », puis `main`. Avant toute vente : la version 4 des conditions générales, sa décision. Ce qui suit est l'historique des décisions.
 
 `appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran
 Abonnement (figé avec `scripts/planche-figee/`). Le détail et ce que le code

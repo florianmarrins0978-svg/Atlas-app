@@ -37,8 +37,8 @@ const rien = () => {};
 function feuille(props: Partial<React.ComponentProps<typeof ConfirmerLeChangement>>): string {
   return renderToStaticMarkup(
     React.createElement(ConfirmerLeChangement, {
-      actuel: { formule: "artisan", periodicite: "mensuelle" },
-      voulu: { formule: "entreprise", periodicite: "mensuelle" },
+      actuel: { formule: "artisan", periodicite: "mensuelle", modules: [] },
+      voulu: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
       echeance: LE_23_DEC,
       comptesQuiPartent: 0,
       fermer: rien,
@@ -63,8 +63,8 @@ test("MONTER : 59 € HT débités aujourd'hui, 70,80 € TTC, avant tout geste"
 
 test("MONTER À L'ANNÉE : la différence, 200 € HT, et la phrase qui le dit", () => {
   const html = feuille({
-    actuel: { formule: "artisan", periodicite: "annuelle" },
-    voulu: { formule: "entreprise", periodicite: "annuelle" },
+    actuel: { formule: "artisan", periodicite: "annuelle", modules: [] },
+    voulu: { formule: "entreprise", periodicite: "annuelle", modules: [] },
   });
   assert.ok(html.includes(`>200${N}€<`), "ce n'est pas la différence des deux années");
   assert.match(html, /La différence avec Artisan, pour l’année en cours\./);
@@ -75,8 +75,8 @@ test("MONTER À L'ANNÉE : la différence, 200 € HT, et la phrase qui le dit",
 
 test("DESCENDRE : 0 € aujourd'hui, Artisan commence le 23 décembre, il garde Entreprise", () => {
   const html = feuille({
-    actuel: { formule: "entreprise", periodicite: "mensuelle" },
-    voulu: { formule: "artisan", periodicite: "mensuelle" },
+    actuel: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
+    voulu: { formule: "artisan", periodicite: "mensuelle", modules: [] },
   });
   assert.match(html, />Passer à Artisan</);
   assert.ok(html.includes(`>0${N}€<`), "la descente annonce un débit");
@@ -89,8 +89,8 @@ test("DESCENDRE : 0 € aujourd'hui, Artisan commence le 23 décembre, il garde 
 
 test("AVEC DES SALARIÉS : la plage ambre dit combien de comptes partent, et quand", () => {
   const html = feuille({
-    actuel: { formule: "entreprise", periodicite: "mensuelle" },
-    voulu: { formule: "artisan", periodicite: "mensuelle" },
+    actuel: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
+    voulu: { formule: "artisan", periodicite: "mensuelle", modules: [] },
     comptesQuiPartent: 2,
   });
   assert.match(html, /data-atlas="comptes-supprimes"/);
@@ -100,8 +100,8 @@ test("AVEC DES SALARIÉS : la plage ambre dit combien de comptes partent, et qua
 
 test("un seul compte se dit au singulier", () => {
   const html = feuille({
-    actuel: { formule: "entreprise", periodicite: "mensuelle" },
-    voulu: { formule: "artisan", periodicite: "mensuelle" },
+    actuel: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
+    voulu: { formule: "artisan", periodicite: "mensuelle", modules: [] },
     comptesQuiPartent: 1,
   });
   assert.match(html, /l’autre compte de l’entreprise sera supprimé\./);
@@ -112,10 +112,30 @@ test("une montée n'annonce jamais de comptes supprimés, même si la liste en c
   assert.ok(!feuille({ comptesQuiPartent: 3 }).includes("comptes-supprimes"));
 });
 
+test("AJOUTER LES OUTILS : la feuille dit 45 € HT aujourd'hui, Artisan avec les outils", () => {
+  const html = feuille({
+    actuel: { formule: "artisan", periodicite: "mensuelle", modules: [] },
+    voulu: { formule: "artisan", periodicite: "mensuelle", modules: ["paysage"] },
+  });
+  assert.match(html, />Ajouter les outils</);
+  assert.ok(html.includes(`>45${N}€<`), "l'ajout des outils n'annonce pas le prix entier");
+  assert.ok(html.includes(`54,00${N}€ TTC`), "le TTC des outils manque");
+});
+
+test("RETIRER LES OUTILS : 0 € aujourd'hui, il les garde jusqu'à l'échéance", () => {
+  const html = feuille({
+    actuel: { formule: "entreprise", periodicite: "mensuelle", modules: ["paysage"] },
+    voulu: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
+  });
+  assert.match(html, />Retirer les outils</);
+  assert.ok(html.includes(`>0${N}€<`));
+  assert.match(html, /Jusque-là, vous gardez les outils\./);
+});
+
 test("DE L'ANNÉE AU MOIS : rien aujourd'hui, le mois commence à l'échéance", () => {
   const html = feuille({
-    actuel: { formule: "entreprise", periodicite: "annuelle" },
-    voulu: { formule: "entreprise", periodicite: "mensuelle" },
+    actuel: { formule: "entreprise", periodicite: "annuelle", modules: [] },
+    voulu: { formule: "entreprise", periodicite: "mensuelle", modules: [] },
   });
   assert.match(html, />Passer au mois</);
   assert.ok(html.includes(`>0${N}€<`));
@@ -127,10 +147,13 @@ test("LA DESCENTE PRÉVUE : « Garder Entreprise » en bas, la date sur la carte
     React.createElement(AbonnementClient, {
       formuleActuelle: "entreprise",
       periodiciteActuelle: "mensuelle",
+      modulesActuels: [],
+      outilsDemandes: false,
+      equipe: { comptes: 1, fabricants: 1, salaries: 0 },
       annulationDemandee: false,
       paiementBranche: true,
       echeance: LE_23_DEC,
-      prevu: { formule: "artisan", periodicite: "mensuelle" },
+      prevu: { formule: "artisan", periodicite: "mensuelle", modules: [] },
       comptesQuiPartent: { artisan: 0, entreprise: 0, illimite: 0 },
     })
   );
@@ -145,6 +168,9 @@ test("sans descente prévue, aucun « Garder »", () => {
     React.createElement(AbonnementClient, {
       formuleActuelle: "entreprise",
       periodiciteActuelle: "mensuelle",
+      modulesActuels: [],
+      outilsDemandes: false,
+      equipe: { comptes: 1, fabricants: 1, salaries: 0 },
       annulationDemandee: false,
       paiementBranche: true,
       echeance: LE_23_DEC,

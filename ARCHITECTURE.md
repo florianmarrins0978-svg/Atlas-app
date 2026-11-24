@@ -38473,6 +38473,45 @@ annonçait. Un premier abonnement ou une formule mal lue ne retirent personne.
 Ce qui part est l'ADHÉSION (`lesComptesQuiPartent`) : le patron reste, les plus
 anciens gardent leur place, le compte et ses documents restent à l'entreprise.
 
-**Conditions générales version 4** : seul l'article 14.6 change, déduit de la
-page publiée. Elle ne dit pas encore Cause, ni les cases « Qui édite » : il
-voulait les faire dans une même version.
+**Conditions générales version 4** : l'article 14.6, déduit de la page
+publiée, et depuis le 24 novembre les articles 14.1 et 14.2 du module Paysage
+(§615). Elle ne dit pas encore Cause, ni les cases « Qui édite » : il voulait
+les faire dans une même version.
+
+**Le module Paysage réuni, 24 novembre 2026** (§615, son « oui »). Un choix
+porte ses modules : `Choix` = formule, rythme, modules, et ce qui est
+au-dessus se juge au PRIX du mois, outils compris. Ajouter les outils est une
+montée, les retirer une descente ; aucun changement plus cher ne baisse la
+formule (39, 59, 159 € : les 6 € des outils ne comblent aucun écart), donc
+seule une descente retire des accès. Le refus d'une équipe trop grande
+(`equipeTientDansLaFormule`) ne vaut plus que pour s'abonner : abonné, la
+feuille avertit. `lesComptesQuiPartent` suit les deux plafonds du module
+(`plafondComptes` d'Artisan, salariés compris ; `plafondFabricants` ailleurs).
+`modules_prevus` (migration 0198) accompagne la formule prévue, et les phases
+du calendrier redisent l'étiquette des modules.
+
+## §615 : Les outils de paysage, un module ; Artisan pour une seule personne ; un plan et un diagnostic offerts
+
+*Écrit §591 sur sa branche le 19 novembre 2026, renuméroté §615 le 24 novembre en le réunissant au changement de formule (§611) : §591 était pris sur `main`, et §612 à §614 par la branche du SIREN.*
+
+*18 et 19 novembre 2026, ses demandes et ses planches choisies : `appli/soignee/abonnement-module-paysage.html` (« A, trois lignes, en doré ») et `appli/soignee/paysage-plan-offert.html`. Le détail de ses réponses : `docs/abonnement-module-paysage.md`.*
+
+| Décision | Pourquoi |
+|---|---|
+| **Les outils de paysage sont un module** (`MODULES`, `src/lib/abonnements.ts`), 6 € HT par mois, 60 € à l'année, **pour les trois formules** ; Entreprise et Illimité ne les ouvrent plus (`fonctions` : absences et retours seulement) | sa phrase : « ça doit être pour toutes les formules ». Une liste et non un booléen : « si on rajoute des modules » |
+| **Un seul prix chez le prestataire, formule et outils ensemble** (`atlas_artisan_paysage_mensuelle_4500`), jamais une seconde ligne | un abonnement Atlas n'a qu'une ligne, et `changerLaFormule` refuse d'en deviner une parmi deux ; ajouter ou retirer les outils se fait au prorata en changeant ce prix, comme un changement de formule. Les modules se relisent dans `metadata[modules]` ; un module inconnu rend l'abonnement illisible plutôt que deviné |
+| **La base porte les modules** (`abonnements.modules`, migration 0187, `DEFAULT '{}'`, contrainte sur les codes connus) | expand seulement : l'ancien code ignore la colonne ; aucune ligne réécrite, donc rien à voir sous la RLS forcée |
+| **L'accès a trois valeurs** : ouverte, offerte, fermée (`accesALaFonction`). Sans abonnement, tout est ouvert ; pendant l'essai, les fiches de chantier sont ouvertes (elles ne coûtent aucune IA) | une seule règle, lue par la page Paysage, l'écran fermé, la porte d'un dossier (`OuvertParLaFormule`) et la garde des actions (`exigerFonction`, qui rend l'accès à l'appelant) |
+| **L'offre** : un plan d'arrosage et un diagnostic, une fois par entreprise, essai compris (table `offres_prises`, clé primaire entreprise et outil, sous FORCE RLS, dans l'export de Mes données) | sa réponse : sinon un paysagiste ferait tous ses plans pendant les quinze jours. La clé primaire rend la prise atomique : deux envois simultanés n'en prennent qu'une (`test-offres-prises-db.ts`) |
+| **L'offre se prend quand le résultat sort** : le plan calculé (chemin du dessin), ou le diagnostic ouvert ; jamais la photo lue ni un croquis refusé | il n'a rien eu, il n'a rien dépensé. La photo du diagnostic qui ne s'ouvre pas rend l'offre, par son jeton |
+| **Le plan offert se retouche 24 heures**, par le jeton qu'il a reçu (`retoucheDuPlanOfferte`, `exigerLArrosage`) | le plan n'est pas rangé : chaque retouche le refait. Sans jeton, sa retouche serait refusée comme un second plan ; sans durée, un jeton gardé ouvrirait l'outil pour toujours. La discussion du plan ne s'ouvre qu'avec lui (un outil seulement « offert » n'a pas encore de plan, et l'appel direct en fabriquerait sans jamais prendre l'offre) |
+| **Le diagnostic n'a plus de porte sur son dossier**, seulement sur l'écran qui en commence un ; compléter, réessayer et rattacher n'ont plus de garde de formule | la porte du dossier fermait aussi le RÉSULTAT : le diagnostic offert pris, il ne pouvait plus le lire, ni envoyer la photo complémentaire demandée. Chacun reste borné par l'état du diagnostic, lu en base |
+| **Artisan est un seul accès** (`plafondComptes: 1`), salarié compris ; ailleurs, seul compte qui fabrique (`placePourUnAcces`, refus `artisan-seul`) | sa règle : « la première formule, c'est juste pour une seule personne ». La correction du 9 septembre tient pour les deux autres |
+| **Une formule trop petite pour l'équipe se refuse avant de payer** (`equipeTientDansLaFormule`, dite sur la carte et redite par l'action) | l'article 14.6 des conditions générales, et sa réponse « refusé avant ». **Il n'était tenu nulle part** : on passait d'Entreprise à Artisan avec trois personnes qui facturent |
+| **Les cartes portent ce qu'elles ont** (`carteDeLaFormule`) : Artisan ses quatre lignes cochées, les autres « Tout ce qu'offre … , et : » ; un plafond ne se barre qu'une fois | sa remarque : Artisan ne montrait plus que des lignes barrées. `lignesCommunes` et `lignesQuiDistinguent` sont retirées |
+| **Le nom de ce qu'il paie vient d'un seul endroit** (`nomDeLAbonnement`) : l'écran, le prix du prestataire, la facture de Cause | trois façons de le dire finiraient par nommer trois choses |
+| **Les dessins des outils sont partagés** (`DessinOutilPaysage`), entre la page Paysage et le bloc de l'Abonnement | deux copies d'un tracé divergent |
+
+**Ce qui n'est PAS fait, et qui est à lui :** la version 4 des conditions générales. La version 3 publiée dit les salariés jamais comptés et les outils de paysage compris dans Entreprise ; l'appli dit désormais l'inverse. Aucun abonné réel n'existe encore, mais rien ne doit se vendre avant qu'il publie la version 4.
+
+**Pas vérifiable ici :** un vrai paiement avec les outils (aucun compte Stripe ; éprouvé contre le faux prestataire de `test-paiement-stripe.ts`), la lecture réelle d'un croquis ou d'une plante (aucune clé de vision sur ce poste).

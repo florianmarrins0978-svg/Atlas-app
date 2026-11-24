@@ -87,6 +87,9 @@ test("« Attention au mot » est une simple ligne, sans encadré bleu", () => {
     React.createElement(AbonnementClient, {
       formuleActuelle: "entreprise",
       periodiciteActuelle: "mensuelle",
+      modulesActuels: [],
+      outilsDemandes: false,
+      equipe: { comptes: 1, fabricants: 1, salaries: 0 },
       annulationDemandee: false,
       paiementBranche: true,
       echeance: null,

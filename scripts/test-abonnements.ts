@@ -6,24 +6,30 @@ import {
   FORMULE_DE_LESSAI,
   JOURS_AVANT_ALERTE,
   JOURS_ESSAI,
+  MODULES,
+  RETOUCHES_DU_PLAN_OFFERT_MS,
+  accesALaFonction,
+  carteDeLaFormule,
   centimes,
   enLectureSeule,
   etatDeLAcces,
   phraseLectureSeule,
   etatAffiche,
   etatDeLEssai,
+  equipeTientDansLaFormule,
+  etiquetteDeLOutil,
   finDeLEssai,
   fonctionOuverte,
   formule,
   formuleChoisie,
   jourEnLettres,
-  lignesCommunes,
   lignesDeLaFormule,
-  lignesQuiDistinguent,
+  modulesChoisis,
   montantDu,
   phraseDeLaFermeture,
-  placePourUnFabricant,
+  placePourUnAcces,
   prixALAnnee,
+  retoucheDuPlanOfferte,
   roleFabrique,
   texteDuRuban,
   type FonctionReservee,
@@ -76,15 +82,24 @@ cas("les trois formules et leurs deux prix correspondent à la planche", () => {
   }
 });
 
-cas("les lignes des cartes sont celles de la planche, mot pour mot et dans son ordre", () => {
-  const texte = readFileSync(PLANCHE, "utf8");
-  const bloc = texte.slice(texte.indexOf("var LIGNES"), texte.indexOf("];", texte.indexOf("var LIGNES")));
-  const planche = [...bloc.matchAll(/texte:\s*"([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(planche.length >= 10, `seulement ${planche.length} lignes lues sur la planche`);
-  // Entreprise montre toutes les lignes : ce qu'il a, et ce qui lui manque.
-  const entreprise = formule("entreprise");
-  assert.ok(entreprise);
-  assert.deepEqual(lignesDeLaFormule(entreprise).map((l) => l.texte), planche);
+// **La planche du module, choisie le 19 novembre 2026 (A, trois lignes, en
+// doré)** : chaque ligne et chaque introduction des cartes y est écrite telle
+// que le code la rend, et le prix des outils aussi. La planche du 24 septembre
+// reste juge des trois prix ; ses lignes ne le sont plus, puisqu'elle portait
+// encore les outils de paysage dans Entreprise.
+const PLANCHE_DU_MODULE = path.join(__dirname, "..", "appli", "soignee", "abonnement-module-paysage.html");
+
+cas("les cartes et le bloc des outils sont ceux de sa planche du 19 novembre", () => {
+  const texte = readFileSync(PLANCHE_DU_MODULE, "utf8");
+  assert.ok(texte.includes("Ajoutez les outils de paysage"), "la planche ne porte plus le bloc des outils");
+  for (const f of FORMULES) {
+    const carte = carteDeLaFormule(f);
+    if (carte.introduction) assert.ok(texte.includes(carte.introduction), `introduction de ${f.nom}`);
+    for (const l of carte.lignes) assert.ok(texte.includes(l.texte), `« ${l.texte} » (${f.nom}) absente de la planche`);
+  }
+  const outils = MODULES[0];
+  assert.ok(texte.includes(`Ajouter pour ${outils.prixMensuel} € par mois`), "le bouton de la planche ne dit pas le prix du code");
+  for (const o of outils.outils) assert.ok(texte.includes(o.titre) && texte.includes(o.phrase), `outil « ${o.titre} »`);
 });
 
 cas("l'année vaut dix mois — deux mois offerts, comme l'annonce la bascule", () => {
@@ -115,41 +130,98 @@ cas("le gain annoncé vaut les deux mois offerts que promet la bascule", () => {
   }
 });
 
-// **Ce que les trois formules partagent se lit une fois** (même planche) :
-// cinq lignes identiques dans les trois cartes faisaient lire trente-cinq
-// lignes pour en comparer vingt-cinq. La règle se calcule sur les formules,
-// jamais sur une liste recopiée : la ligne qui deviendrait réservée demain
-// quitterait le paquet commun toute seule.
-cas("les lignes communes sont celles que TOUTES les formules ouvrent", () => {
-  assert.deepEqual(lignesCommunes(), [
-    "Devis et factures illimités",
-    "Vos dictées transcrites et chiffrées",
-    "Le planning de vos chantiers",
-    "Votre relevé de TVA, tenu tout seul",
-    "Vos salariés ont accès au planning",
-  ]);
-});
-
-cas("chaque carte ne garde que ce qui la distingue, et ce qui manque reste barré", () => {
-  const artisan = lignesQuiDistinguent(formule("artisan")!);
-  assert.equal(artisan.length, 7);
-  assert.ok(artisan.every((l) => l.manque), "Artisan montre une ligne qu'il ouvre parmi celles qui le distinguent");
-  const entreprise = lignesQuiDistinguent(formule("entreprise")!);
+// **Artisan porte ce qu'il contient** — sa remarque du 19 novembre 2026 :
+// « Dans les trois formules » se lisait au-dessus, et la carte d'Artisan ne
+// montrait plus que des lignes barrées. Les deux autres disent « Tout ce
+// qu'offre la précédente, et : », puis leur seule différence.
+cas("Artisan : ses quatre lignes cochées, puis ce qui lui manque, barré", () => {
+  const carte = carteDeLaFormule(formule("artisan")!);
+  assert.equal(carte.introduction, null);
   assert.deepEqual(
-    entreprise.filter((l) => l.manque).map((l) => l.texte),
-    ["Autant de personnes que vous voulez aux devis et aux factures"]
+    carte.lignes.map((l) => [l.texte, l.manque]),
+    [
+      ["Devis et factures illimités", false],
+      ["Vos dictées transcrites et chiffrées", false],
+      ["Le planning de vos chantiers", false],
+      ["Votre relevé de TVA, tenu tout seul", false],
+      ["Vos salariés ont accès au planning", true],
+      ["Les absences de vos équipes", true],
+      ["Les retours d’intervention de vos salariés", true],
+      ["Jusqu’à 5 personnes aux devis et aux factures", true],
+    ]
   );
-  assert.equal(entreprise.length, 7);
-  const illimite = lignesQuiDistinguent(formule("illimite")!);
-  assert.equal(illimite.length, 6);
-  assert.ok(illimite.every((l) => !l.manque));
 });
 
-cas("rien ne se perd : communes et distinctives refont exactement la carte entière", () => {
+cas("Entreprise : « Tout ce qu'offre Artisan, et : », puis ce qu'elle ajoute", () => {
+  const carte = carteDeLaFormule(formule("entreprise")!);
+  assert.equal(carte.introduction, "Tout ce qu’offre Artisan, et :");
+  assert.deepEqual(
+    carte.lignes.map((l) => [l.texte, l.manque]),
+    [
+      ["Vos salariés ont accès au planning", false],
+      ["Les absences de vos équipes", false],
+      ["Les retours d’intervention de vos salariés", false],
+      ["Jusqu’à 5 personnes aux devis et aux factures", false],
+      ["Autant de personnes que vous voulez aux devis et aux factures", true],
+    ]
+  );
+});
+
+cas("Illimité : « Tout ce qu'offre Entreprise, et : », et sa seule différence", () => {
+  const carte = carteDeLaFormule(formule("illimite")!);
+  assert.equal(carte.introduction, "Tout ce qu’offre Entreprise, et :");
+  assert.deepEqual(carte.lignes.map((l) => [l.texte, l.manque]), [["Autant de personnes que vous voulez aux devis et aux factures", false]]);
+});
+
+cas("rien ne se perd : une carte et celles d'avant redisent tout ce que la formule ouvre", () => {
+  FORMULES.forEach((f, i) => {
+    const ouvre = lignesDeLaFormule(f).filter((l) => !l.manque).map((l) => l.texte).sort();
+    const dit = FORMULES.slice(0, i + 1)
+      .flatMap((g) => carteDeLaFormule(g).lignes.filter((l) => !l.manque).map((l) => l.texte))
+      .filter((t) => ouvre.includes(t));
+    assert.deepEqual([...new Set(dit)].sort(), ouvre, `${f.nom}`);
+  });
+});
+
+cas("aucune carte ne parle plus des outils de paysage : ils se règlent au-dessus, une fois", () => {
   for (const f of FORMULES) {
-    const entiere = lignesDeLaFormule(f).map((l) => l.texte).sort();
-    const recomposee = [...lignesCommunes(), ...lignesQuiDistinguent(f).map((l) => l.texte)].sort();
-    assert.deepEqual(recomposee, entiere, `${f.nom}`);
+    for (const l of lignesDeLaFormule(f)) assert.ok(!/arrosage|diagnostic|fiches de chantier/i.test(l.texte), `${f.nom} : ${l.texte}`);
+  }
+});
+
+console.log("\n=== Les outils de paysage — ses décisions du 18 et du 19 novembre 2026 ===\n");
+
+cas("6 € HT par mois, 60 € à l'année, pour les trois outils de la page Paysage", () => {
+  assert.equal(MODULES.length, 1);
+  const outils = MODULES[0];
+  assert.equal(outils.code, "paysage");
+  assert.equal(outils.prixMensuel, 6);
+  assert.equal(outils.prixAnnuel, 60);
+  assert.equal(outils.prixAnnuel, outils.prixMensuel * 10, "l'année des outils n'offre pas deux mois");
+  assert.deepEqual([...outils.fonctions].sort(), ["arrosage", "diagnostic", "fiche-chantier"]);
+});
+
+cas("le même prix pour les trois formules : chaque total prend 6 €, ou 60 € à l'année", () => {
+  for (const f of FORMULES) {
+    assert.equal(montantDu(f, "mensuelle", ["paysage"]), f.prixMensuel + 6, f.nom);
+    assert.equal(montantDu(f, "annuelle", ["paysage"]), f.prixAnnuel + 60, f.nom);
+  }
+  assert.equal(centimes(formule("artisan")!, "mensuelle", ["paysage"]), 4500);
+  assert.equal(centimes(formule("artisan")!, "annuelle", ["paysage"]), 45000);
+});
+
+cas("à l'année avec les outils : 540 € barrés, 450 €, « Vous gagnez 90 € » (sa planche)", () => {
+  assert.deepEqual(prixALAnnee(formule("artisan")!, ["paysage"]), { douzeMois: 540, annuel: 450, gain: 90 });
+  assert.deepEqual(prixALAnnee(formule("entreprise")!, ["paysage"]), { douzeMois: 780, annuel: 650, gain: 130 });
+});
+
+cas("Entreprise et Illimité ne comprennent plus les outils ; avec eux, toute formule les ouvre", () => {
+  const PAYSAGE: FonctionReservee[] = ["arrosage", "diagnostic", "fiche-chantier"];
+  for (const f of FORMULES) {
+    for (const fn of PAYSAGE) {
+      assert.equal(fonctionOuverte({ formule: f.code, statut: "actif", modules: [] }, fn), false, `${f.nom} ouvre ${fn} sans les outils`);
+      assert.equal(fonctionOuverte({ formule: f.code, statut: "actif", modules: ["paysage"] }, fn), true, `${f.nom} ferme ${fn} avec les outils`);
+    }
   }
 });
 
@@ -195,34 +267,68 @@ cas("tous les rôles du dépôt sont tranchés — aucun n'échappe à la règle
 
 console.log("\n=== Le plafond de chaque formule ===\n");
 
-cas("Artisan : une seule personne aux devis et aux factures", () => {
-  assert.equal(placePourUnFabricant("artisan", 0).ok, true);
-  assert.equal(placePourUnFabricant("artisan", 1).ok, false);
+// **Artisan, c'est lui seul** — sa règle du 18 novembre 2026 : *« avec la
+// formule artisan, il doit avoir qu'un seul accès »*. Le salarié n'y entre pas
+// non plus. Ailleurs, la correction du 9 septembre tient : on compte qui
+// FABRIQUE, jamais les salariés.
+const EQUIPE = (comptes: number, fabricants: number, salaries = comptes - fabricants) => ({ comptes, fabricants, salaries });
+
+cas("Artisan : un seul accès, le sien ; un salarié est refusé comme un commercial", () => {
+  const salarie = placePourUnAcces("artisan", EQUIPE(1, 1), "salarie");
+  assert.equal(salarie.ok, false);
+  if (!salarie.ok) assert.deepEqual(salarie.refus, { genre: "seul", nom: "Artisan" });
+  assert.equal(placePourUnAcces("artisan", EQUIPE(1, 1), "commercial").ok, false);
+  assert.equal(placePourUnAcces("artisan", EQUIPE(0, 0), "proprietaire").ok, true);
 });
 
-cas("Entreprise : cinq, et la sixième est refusée", () => {
-  assert.equal(placePourUnFabricant("entreprise", 4).ok, true);
-  const refus = placePourUnFabricant("entreprise", 5);
+cas("Entreprise : cinq aux devis et aux factures, la sixième est refusée, les salariés passent", () => {
+  assert.equal(placePourUnAcces("entreprise", EQUIPE(9, 4), "commercial").ok, true);
+  const refus = placePourUnAcces("entreprise", EQUIPE(9, 5), "facturation");
   assert.equal(refus.ok, false);
-  if (!refus.ok) {
-    assert.equal(refus.refus.plafond, 5);
-    assert.equal(refus.refus.nom, "Entreprise");
-  }
+  if (!refus.ok) assert.deepEqual(refus.refus, { genre: "fabricants", plafond: 5, nom: "Entreprise" });
+  assert.equal(placePourUnAcces("entreprise", EQUIPE(30, 5), "salarie").ok, true);
 });
 
 cas("Illimité : aucun plafond, même à cent", () => {
-  assert.equal(placePourUnFabricant("illimite", 100).ok, true);
+  assert.equal(placePourUnAcces("illimite", EQUIPE(100, 100), "commercial").ok, true);
 });
 
 cas("SANS ABONNEMENT, aucun plafond — rien ne se ferme aujourd'hui", () => {
   // C'est la règle qui empêche ce lot de couper l'application des artisans qui
   // s'en servent déjà, avant que la moindre offre existe.
-  assert.equal(placePourUnFabricant(null, 50).ok, true);
-  assert.equal(placePourUnFabricant(undefined, 50).ok, true);
+  assert.equal(placePourUnAcces(null, EQUIPE(50, 50), "commercial").ok, true);
+  assert.equal(placePourUnAcces(undefined, EQUIPE(50, 50), "salarie").ok, true);
 });
 
 cas("une formule inconnue en base n'invente pas de plafond", () => {
-  assert.equal(placePourUnFabricant("premium", 999).ok, true);
+  assert.equal(placePourUnAcces("premium", EQUIPE(999, 999), "commercial").ok, true);
+});
+
+// **Choisir Artisan avec des salariés déjà invités est refusé** — sa réponse
+// du 18 novembre 2026, et c'est l'article 14.6 des conditions générales. Le
+// même refus ferme l'écart trouvé le même jour : passer d'Entreprise à Artisan
+// avec trois personnes qui facturent n'était refusé nulle part.
+cas("passer à une formule trop petite pour l'équipe : refusé, et la phrase dit qui retirer", () => {
+  assert.equal(equipeTientDansLaFormule("artisan", EQUIPE(1, 1)), null);
+  assert.equal(
+    equipeTientDansLaFormule("artisan", EQUIPE(3, 1)),
+    "Vous avez 2 salariés. Retirez-les d’abord dans Équipe."
+  );
+  assert.equal(
+    equipeTientDansLaFormule("artisan", EQUIPE(2, 1)),
+    "Vous avez 1 salarié. Retirez-le d’abord dans Équipe."
+  );
+  assert.equal(
+    equipeTientDansLaFormule("artisan", EQUIPE(3, 2, 1)),
+    "Artisan est pour vous seul. Retirez d’abord les 2 autres accès dans Équipe."
+  );
+  assert.equal(
+    equipeTientDansLaFormule("entreprise", EQUIPE(10, 7)),
+    "Entreprise comprend 5 personnes aux devis et aux factures. Retirez-en d’abord 2 dans Équipe."
+  );
+  assert.equal(equipeTientDansLaFormule("entreprise", EQUIPE(40, 5)), null);
+  assert.equal(equipeTientDansLaFormule("illimite", EQUIPE(400, 400)), null);
+  assert.equal(equipeTientDansLaFormule("premium", EQUIPE(400, 400)), null);
 });
 
 console.log("\n=== Ce que l'écran affiche ===\n");
@@ -337,6 +443,7 @@ const ESSAI = {
   statut: "essai" as const,
   periodeFin: FIN,
   annulationDemandee: false,
+  modules: [] as const,
 };
 const apres = (jours: number, heures = 0) => new Date(DEBUT.getTime() + (jours * 24 + heures) * 3600 * 1000);
 
@@ -345,10 +452,54 @@ cas("« essai gratuit 15 jours » — la durée est la sienne, et la fin tombe q
   assert.equal((FIN.getTime() - DEBUT.getTime()) / 86_400_000, 15);
 });
 
-cas("pendant l'essai, on essaie TOUT : la formule est « Illimité », rien n'est fermé ni plafonné", () => {
+cas("pendant l'essai, tout s'essaie : l'équipe sans plafond, les fiches de chantier ouvertes", () => {
   assert.equal(FORMULE_DE_LESSAI, "illimite");
-  for (const f of FONCTIONS) assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, f), f);
-  assert.deepEqual(placePourUnFabricant(FORMULE_DE_LESSAI, 100), { ok: true });
+  for (const f of ["absences", "retours", "fiche-chantier"] as const) {
+    assert.equal(accesALaFonction(ESSAI, f, false), "ouverte", f);
+  }
+  assert.deepEqual(placePourUnAcces(FORMULE_DE_LESSAI, EQUIPE(100, 100), "commercial"), { ok: true });
+});
+
+// **Un plan d'arrosage et un diagnostic offerts, une seule fois par
+// entreprise, essai compris** — ses réponses du 19 novembre 2026. Sans cela,
+// un paysagiste ferait tous ses plans pendant les quinze jours.
+cas("l'arrosage et le diagnostic : offerts une fois, essai compris, puis fermés", () => {
+  for (const f of ["arrosage", "diagnostic"] as const) {
+    assert.equal(accesALaFonction(ESSAI, f, false), "offerte", `${f} pendant l'essai`);
+    assert.equal(accesALaFonction(ESSAI, f, true), "fermee", `${f} une fois offert`);
+    const artisan = { formule: "artisan" as const, statut: "actif" as const, modules: [] };
+    assert.equal(accesALaFonction(artisan, f, false), "offerte", `${f} sur Artisan`);
+    assert.equal(accesALaFonction(artisan, f, true), "fermee");
+    assert.equal(accesALaFonction({ ...artisan, modules: ["paysage"] }, f, true), "ouverte", `${f} avec les outils`);
+  }
+});
+
+cas("les fiches de chantier n'ont pas d'offre : fermées sans les outils, hors essai", () => {
+  const artisan = { formule: "artisan" as const, statut: "actif" as const, modules: [] };
+  assert.equal(accesALaFonction(artisan, "fiche-chantier", false), "fermee");
+  assert.equal(accesALaFonction({ ...artisan, formule: "illimite" }, "fiche-chantier", false), "fermee");
+});
+
+cas("sans abonnement, rien ne se compte : tout est ouvert, rien n'est « offert »", () => {
+  for (const f of FONCTIONS) assert.equal(accesALaFonction(null, f, true), "ouverte", f);
+});
+
+cas("le plan offert se retouche pendant 24 heures, avec son jeton, et pas au-delà", () => {
+  const utiliseeLe = new Date("2026-11-19T10:00:00Z");
+  const offre = { jeton: "a1b2", utiliseeLe };
+  const plus = (ms: number) => new Date(utiliseeLe.getTime() + ms);
+  assert.equal(RETOUCHES_DU_PLAN_OFFERT_MS, 24 * 3600 * 1000);
+  assert.equal(retoucheDuPlanOfferte(offre, "a1b2", plus(3600 * 1000)), true);
+  assert.equal(retoucheDuPlanOfferte(offre, "a1b2", plus(RETOUCHES_DU_PLAN_OFFERT_MS)), false);
+  assert.equal(retoucheDuPlanOfferte(offre, "autre", plus(60_000)), false);
+  assert.equal(retoucheDuPlanOfferte(offre, null, plus(60_000)), false);
+  assert.equal(retoucheDuPlanOfferte(null, "a1b2", plus(60_000)), false);
+});
+
+cas("la page Paysage dit « 1 offert » ou « En option », et rien quand l'outil est ouvert", () => {
+  assert.equal(etiquetteDeLOutil("offerte"), "1 offert");
+  assert.equal(etiquetteDeLOutil("fermee"), "En option");
+  assert.equal(etiquetteDeLOutil("ouverte"), null);
 });
 
 cas("jour 1 : quinze jours restants, ruban calme", () => {
@@ -428,6 +579,9 @@ cas("l'écran d'abonnement : pendant l'essai, aucune formule n'est « actuelle �
   assert.equal(formuleChoisie(ESSAI), null);
   assert.equal(formuleChoisie({ formule: "artisan", statut: "actif" }), "artisan");
   assert.equal(formuleChoisie({ formule: "artisan", statut: "resilie" }), null);
+  assert.deepEqual(modulesChoisis({ ...ESSAI, modules: ["paysage"] }), []);
+  assert.deepEqual(modulesChoisis({ formule: "artisan", statut: "actif", modules: ["paysage"] }), ["paysage"]);
+  assert.deepEqual(modulesChoisis(null), []);
 });
 
 cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé » en alerte", () => {
@@ -445,50 +599,70 @@ cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé 
   assert.deepEqual(fini.signe, { genre: "ferme" });
 });
 
-console.log("\n=== Ce qui se ferme à « Artisan » — « oui bloqué pour l'abonnement artisan » ===\n");
+console.log("\n=== Ce qui se ferme — « oui bloqué pour l'abonnement artisan », et les outils à part ===\n");
 
-cas("Artisan n'ouvre ni le paysage, ni les absences, ni les retours ; Entreprise et Illimité ouvrent tout", () => {
-  for (const f of FONCTIONS) {
-    assert.equal(fonctionOuverte("artisan", f), false, `Artisan ouvre ${f}`);
-    assert.equal(fonctionOuverte("entreprise", f), true, `Entreprise ferme ${f}`);
-    assert.equal(fonctionOuverte("illimite", f), true, `Illimité ferme ${f}`);
+cas("Artisan n'ouvre ni les absences ni les retours ; Entreprise et Illimité les ouvrent", () => {
+  for (const f of ["absences", "retours"] as const) {
+    assert.equal(fonctionOuverte({ formule: "artisan", statut: "actif", modules: ["paysage"] }, f), false, `Artisan ouvre ${f}`);
+    assert.equal(fonctionOuverte({ formule: "entreprise", statut: "actif", modules: [] }, f), true, `Entreprise ferme ${f}`);
+    assert.equal(fonctionOuverte({ formule: "illimite", statut: "actif", modules: [] }, f), true, `Illimité ferme ${f}`);
   }
 });
 
 cas("SANS ABONNEMENT, tout est ouvert — une fermeture est la conséquence d'une formule choisie", () => {
   assert.equal(fonctionOuverte(null, "absences"), true);
-  assert.equal(fonctionOuverte(undefined, "retours"), true);
-  assert.equal(fonctionOuverte("inconnue", "retours"), true);
+  assert.equal(fonctionOuverte(undefined, "arrosage"), true);
+  assert.equal(fonctionOuverte({ formule: "inconnue", statut: "actif", modules: [] }, "retours"), true);
 });
 
 cas("ce qui est barré est exactement ce que la formule n'ouvre pas", () => {
   const barre = (code: string) =>
     lignesDeLaFormule(formule(code)!).filter((l) => l.manque).map((l) => l.texte);
   assert.deepEqual(barre("artisan"), [
-    "Le plan d’arrosage automatique",
-    "Le diagnostic végétal",
-    "Les fiches de chantier de vos entretiens",
+    "Vos salariés ont accès au planning",
     "Les absences de vos équipes",
     "Les retours d’intervention de vos salariés",
     "Jusqu’à 5 personnes aux devis et aux factures",
-    "Autant de personnes que vous voulez aux devis et aux factures",
   ]);
   assert.deepEqual(barre("entreprise"), ["Autant de personnes que vous voulez aux devis et aux factures"]);
   assert.deepEqual(barre("illimite"), []);
 });
 
-cas("Illimité n'affiche pas « jusqu'à 5 » : ce serait lui reprocher d'avoir plus", () => {
-  const textes = lignesDeLaFormule(formule("illimite")!).map((l) => l.texte);
-  assert.ok(!textes.some((t) => t.startsWith("Jusqu’à 5")));
+cas("un plafond ne se barre qu'une fois : Artisan ne barre pas aussi « autant que vous voulez »", () => {
+  const artisan = lignesDeLaFormule(formule("artisan")!).map((l) => l.texte);
+  assert.ok(!artisan.some((t) => t.startsWith("Autant de personnes")));
+  const illimite = lignesDeLaFormule(formule("illimite")!).map((l) => l.texte);
+  assert.ok(!illimite.some((t) => t.startsWith("Jusqu’à 5")), "Illimité affiche « jusqu'à 5 » : ce serait lui reprocher d'avoir plus");
 });
 
-cas("la phrase de la fermeture nomme la formule qui ouvre, pour chaque fonction", () => {
-  for (const f of FONCTIONS) {
-    const { titre, detail } = phraseDeLaFermeture(f);
+cas("l'écran fermé : les absences et les retours renvoient à Entreprise, les outils à leur ajout", () => {
+  for (const f of ["absences", "retours"] as const) {
+    const p = phraseDeLaFermeture(f);
     // L'espace est INSÉCABLE dans le titre : le « » ne doit jamais partir seul à la ligne.
-    assert.match(titre, /« Entreprise »/);
-    assert.ok(detail.length > 20);
+    assert.match(p.titre, /« Entreprise »/);
+    assert.equal(p.bouton, "Voir la formule Entreprise");
+    assert.equal(p.adresse, "/reglages/abonnement");
   }
+  assert.equal(phraseDeLaFermeture("arrosage").titre, "Votre plan offert est fait");
+  assert.equal(phraseDeLaFermeture("diagnostic").titre, "Votre diagnostic offert est fait");
+  assert.equal(phraseDeLaFermeture("fiche-chantier").titre, "Les fiches de chantier sont en option");
+  for (const f of ["arrosage", "diagnostic", "fiche-chantier"] as const) {
+    const p = phraseDeLaFermeture(f);
+    assert.equal(p.bouton, "Ajouter les outils");
+    assert.equal(p.adresse, "/reglages/abonnement?outils=paysage");
+    assert.ok(p.detail.length > 20);
+  }
+  // Le prix de la phrase est celui du code, jamais écrit à côté.
+  assert.match(phraseDeLaFermeture("arrosage").detail, new RegExp(`${MODULES[0].prixMensuel}\u00a0€ HT par mois`));
+});
+
+cas("l'abonnement en cours dit ses outils, et son prix les compte", () => {
+  const e = etatAffiche(
+    { formule: "entreprise", periodicite: "mensuelle", statut: "actif", periodeFin: new Date("2026-12-09T10:00:00Z"), annulationDemandee: false, modules: ["paysage"] },
+    new Date("2026-11-19T10:00:00Z")
+  );
+  assert.equal(e.titre, "Entreprise, avec les outils de paysage");
+  assert.match(e.detail ?? "", /65 € HT par mois/);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);

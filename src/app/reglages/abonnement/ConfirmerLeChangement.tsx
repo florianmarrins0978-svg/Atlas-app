@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { formule, jourEnLettres, moisAbrege, montantDu } from "@/lib/abonnements";
-import { changementDeFormule, prochaineEcheance, ttcEnCentimes, type Choix } from "@/lib/changement-de-formule";
+import { formule, jourEnLettres, moisAbrege, montantDu, nomDeLAbonnement } from "@/lib/abonnements";
+import { changementDeFormule, memesModules, prochaineEcheance, ttcEnCentimes, type Choix } from "@/lib/changement-de-formule";
 import { enEuros, enEurosEntiers } from "@/lib/euros";
 import { changerDeFormuleAction } from "./actions";
 import { CarreDeDate } from "./EtatDeLAbonnement";
@@ -58,15 +58,33 @@ export default function ConfirmerLeChangement({
   const prochaine = prochaineEcheance(changement, voulu, echeance ? new Date(echeance) : null, new Date());
   const debitHT = changement.genre === "tout-de-suite" ? changement.debitHT : 0;
   const memeFormule = actuel.formule === voulu.formule;
-  const titre = memeFormule ? (voulu.periodicite === "annuelle" ? "Passer à l’année" : "Passer au mois") : `Passer à ${v.nom}`;
+  // Les outils de paysage seuls : le titre est celui du bouton qui l'a ouverte.
+  const seulementLesOutils = memeFormule && actuel.periodicite === voulu.periodicite && !memesModules(actuel.modules, voulu.modules);
+  const titre = seulementLesOutils
+    ? voulu.modules.length > actuel.modules.length
+      ? "Ajouter les outils"
+      : "Retirer les outils"
+    : memeFormule
+      ? voulu.periodicite === "annuelle"
+        ? "Passer à l’année"
+        : "Passer au mois"
+      : `Passer à ${nomDeLAbonnement(v.code, voulu.modules)}`;
   const rythme = voulu.periodicite === "annuelle" ? "par an" : "par mois";
   const suivant =
-    changement.genre === "tout-de-suite" ? "Prochain paiement" : memeFormule ? "Le paiement au mois commence" : `${v.nom} commence`;
+    changement.genre === "tout-de-suite"
+      ? "Prochain paiement"
+      : seulementLesOutils
+        ? "Sans les outils à partir de"
+        : memeFormule
+          ? "Le paiement au mois commence"
+          : `${v.nom} commence`;
   const note =
     changement.genre === "a-l-echeance"
-      ? memeFormule
-        ? "Jusque-là, vous gardez le paiement à l’année."
-        : `Jusque-là, vous gardez ${a.nom}.`
+      ? seulementLesOutils
+        ? "Jusque-là, vous gardez les outils."
+        : memeFormule
+          ? "Jusque-là, vous gardez le paiement à l’année."
+          : `Jusque-là, vous gardez ${nomDeLAbonnement(a.code, actuel.modules)}.`
       : changement.genre === "tout-de-suite" && changement.facon === "monter-a-l-annee"
         ? `La différence avec ${a.nom}, pour l’année en cours.`
         : memeFormule
@@ -77,7 +95,7 @@ export default function ConfirmerLeChangement({
   function confirmer() {
     setMessage(null);
     demarrer(async () => {
-      const r = await changerDeFormuleAction(voulu.formule, voulu.periodicite);
+      const r = await changerDeFormuleAction(voulu.formule, voulu.periodicite, [...voulu.modules]);
       if (r.ok) {
         window.location.reload();
         return;
@@ -129,7 +147,7 @@ export default function ConfirmerLeChangement({
                 {suivant}
               </span>
               <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                {enEurosEntiers(montantDu(v, voulu.periodicite))} HT {rythme}
+                {enEurosEntiers(montantDu(v, voulu.periodicite, voulu.modules))} HT {rythme}
               </span>
             </span>
           </div>

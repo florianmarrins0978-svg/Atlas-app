@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { abonnements, compteurFacturesAtlas, entreprises, facturesAtlas } from "../db/schema";
 import { donneesFactureAtlas, numeroFactureAtlas } from "@/lib/facture-atlas";
-import { formule, TVA_ABONNEMENT_POURCENT } from "@/lib/abonnements";
+import { nomDeLAbonnement, TVA_ABONNEMENT_POURCENT } from "@/lib/abonnements";
 import type { FacturePayeeLue } from "../paiement/stripe";
 import { pieceDeLaFacture } from "../pdf/facture-x-pdf";
 import { enregistrerObjet } from "../storage";
@@ -43,7 +43,7 @@ export async function emettreLaFactureDAbonnement(
   const resultat = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.abonnement_prestataire', ${lue.abonnementPrestataire}, true)`);
     const [abonnement] = await tx
-      .select({ entrepriseId: abonnements.entrepriseId, formule: abonnements.formule })
+      .select({ entrepriseId: abonnements.entrepriseId, formule: abonnements.formule, modules: abonnements.modules })
       .from(abonnements)
       .where(eq(abonnements.abonnementPrestataire, lue.abonnementPrestataire))
       .limit(1);
@@ -69,7 +69,8 @@ export async function emettreLaFactureDAbonnement(
       tvaCentimes: lue.tvaCentimes,
       ttcCentimes: lue.ttcCentimes,
       tauxPourcent: TVA_ABONNEMENT_POURCENT,
-      formuleNom: formule(abonnement.formule)?.nom ?? abonnement.formule,
+      // « Artisan, avec les outils de paysage » : ce qui a été payé, en entier.
+      formuleNom: nomDeLAbonnement(abonnement.formule, abonnement.modules),
       periodeDebut: lue.periodeDebut,
       periodeFin: lue.periodeFin,
     };

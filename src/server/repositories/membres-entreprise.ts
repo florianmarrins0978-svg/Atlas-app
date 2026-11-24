@@ -16,22 +16,22 @@ import {
   refusDuRetrait,
   type RefusAcces,
 } from "@/lib/donner-un-acces";
-import { placePourUnFabricant, roleFabrique } from "@/lib/abonnements";
-import { abonnementDeLEntreprise, compterLesFabricants } from "./abonnements";
+import { placePourUnAcces, roleFabrique } from "@/lib/abonnements";
+import { abonnementDeLEntreprise, compterLEquipe } from "./abonnements";
 
 /**
- * RESTE-T-IL UNE PLACE POUR UNE PERSONNE DE PLUS QUI FABRIQUE ?
+ * RESTE-T-IL UNE PLACE POUR UN ACCÈS DE PLUS, DE CE RÔLE ?
  *
- * **Elle rend `true` pour un salarié, toujours**, et ce n'est pas une
- * exception : le plafond ne compte que ceux qui font des devis ou des factures
- * — sa correction du 9 septembre 2026. Un paysagiste avec huit gars sur le
- * terrain n'utilise pas huit fois Atlas, il coche huit cases dans un planning.
+ * **Artisan, c'est lui seul** (sa règle du 18 novembre 2026) : tout accès de
+ * plus est refusé, salarié compris. **Ailleurs, seul compte qui fabrique** — sa
+ * correction du 9 septembre 2026 : un paysagiste avec huit gars sur le terrain
+ * n'utilise pas huit fois Atlas, il coche huit cases dans un planning.
  *
- * **Et elle rend `true` quand il n'y a PAS d'abonnement.** Un plafond est la
+ * **Et rien n'est refusé quand il n'y a PAS d'abonnement.** Un plafond est la
  * conséquence d'une formule choisie, jamais un état par défaut : l'appliquer
  * sans abonnement fermerait aujourd'hui l'équipe des artisans qui se servent
  * d'Atlas avant que la moindre offre existe. La règle vit dans
- * `placePourUnFabricant`, pas ici.
+ * `placePourUnAcces`, pas ici.
  *
  * **Aucun verrou, et c'est assumé.** Deux ajouts simultanés pourraient franchir
  * le plafond d'une unité. Cela suppose deux patrons ajoutant un commercial dans
@@ -39,12 +39,12 @@ import { abonnementDeLEntreprise, compterLesFabricants } from "./abonnements";
  * et dont le pire effet est un commercial de trop, qui se retire d'un geste.
  * C'est le même raisonnement que le compteur de patrons, juste en dessous.
  */
-async function placeDisponible(ctx: Ctx, role: Role): Promise<boolean> {
-  if (!roleFabrique(role)) return true;
+async function refusDePlace(ctx: Ctx, role: Role): Promise<"artisan-seul" | "plafond-atteint" | null> {
   const abonnement = await abonnementDeLEntreprise(ctx);
-  if (!abonnement) return true;
-  const fabricants = await compterLesFabricants(ctx);
-  return placePourUnFabricant(abonnement.formule, fabricants).ok;
+  if (!abonnement) return null;
+  const place = placePourUnAcces(abonnement.formule, await compterLEquipe(ctx), role);
+  if (place.ok) return null;
+  return place.refus.genre === "seul" ? "artisan-seul" : "plafond-atteint";
 }
 
 /** Une personne qui a un accès à cette entreprise, telle que l'écran la lit. */
@@ -183,8 +183,8 @@ export async function donnerUnAcces(
   // **Le plafond de la formule, vérifié AVANT de créer le compte.** Le créer
   // puis refuser l'adhésion laisserait un compte orphelin, avec une adresse
   // désormais « déjà prise » que le patron ne pourrait plus réemployer.
-  const place = await placeDisponible(ctx, saisie.role);
-  if (!place) return { ok: false, refus: "plafond-atteint" };
+  const place = await refusDePlace(ctx, saisie.role);
+  if (place) return { ok: false, refus: place };
 
   // Coût 10 : celui d'`authorize`, du changement de mot de passe et du jeu de
   // démonstration. En changer ici rendrait ce chemin plus lent ou plus faible
@@ -237,7 +237,15 @@ export async function changerLeRole(ctx: Ctx, accesId: string, roleVoulu: string
   // apercevoir : personne ne s'ajoute, un rôle change. Ne garder que
   // `donnerUnAcces` aurait laissé cette porte grande ouverte.
   if (roleFabrique(roleVoulu as Role) && !roleFabrique(cible.role)) {
-    if (!(await placeDisponible(ctx, roleVoulu as Role))) return { ok: false, refus: "plafond-atteint" };
+    // Le compte existe déjà : il ne s'ajoute pas aux accès, seulement à ceux
+    // qui fabriquent. On le retire donc des accès comptés, sans quoi Artisan
+    // refuserait une promotion qui ne change pas le nombre de comptes.
+    const abonnement = await abonnementDeLEntreprise(ctx);
+    if (abonnement) {
+      const equipe = await compterLEquipe(ctx);
+      const place = placePourUnAcces(abonnement.formule, { ...equipe, comptes: equipe.comptes - 1 }, roleVoulu as Role);
+      if (!place.ok) return { ok: false, refus: place.refus.genre === "seul" ? "artisan-seul" : "plafond-atteint" };
+    }
   }
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

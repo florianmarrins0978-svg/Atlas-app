@@ -813,8 +813,17 @@ ARTICLE 19 : Dispositions diverses
      * Son texte du 23 novembre portait les trois phrases du 1 et du 4 ; le 2,
      * le 3 et le 5 viennent de ses réponses du soir, et la phrase sur le
      * nombre de comptes de la version 3 est réécrite au lieu d'être perdue.
-     * **Seul l'article 14.6 change** : le reste est celui de la version 3, mot
-     * pour mot, déduit de la page publiée (`scripts/generer-version-cgu.ts`).
+     *
+     * **Et le module Paysage**, réuni à ce lot le 24 novembre (son « oui ») :
+     * les outils de paysage s'ajoutent à toute formule pour 6 € HT par mois
+     * (60 € à l'année) et aucune ne les comprend plus ; Artisan est pour une
+     * seule personne, salariés compris ; un plan et un diagnostic sont
+     * offerts une fois ; l'essai suit (14.2) ; ajouter les outils est une
+     * montée, les retirer une descente (14.6).
+     *
+     * **Seuls les articles 14.1, 14.2 et 14.6 changent** : le reste est celui
+     * de la version 3, mot pour mot, déduit de la page publiée
+     * (`scripts/generer-version-cgu.ts`).
      *
      * **Le nom Cause et les cases « Qui édite » n'y sont pas, et c'est à lui** :
      * il voulait les faire dans une même version, pour une seule acceptation
@@ -1071,23 +1080,25 @@ ARTICLE 14 : Prix, abonnement et paiement
 
 Atlas est proposé par abonnement, en trois formules. Les tarifs s’entendent hors taxes ; la TVA française au taux en vigueur s’y ajoute.
 
-Formule, Par mois, Par an, Comptes qui facturent
+Formule, Par mois, Par an, Comptes
 
-Artisan, 39 € HT, 390 € HT, 1
+Artisan, 39 € HT, 390 € HT, 1, salariés compris
 
-Entreprise, 59 € HT, 590 € HT, jusqu’à 5
+Entreprise, 59 € HT, 590 € HT, jusqu’à 5 qui facturent
 
 Illimité, 159 € HT, 1 590 € HT, sans limite
 
-Ce qui se compte, et ce qui ne se compte pas. Seuls comptent les comptes autorisés à établir des devis ou des factures, le propriétaire, les commerciaux et le service facturation. Les comptes « salarié », qui ne consultent que le planning, ne sont pas comptés et ne donnent lieu à aucun supplément, quel que soit leur nombre.
+Ce qui se compte, et ce qui ne se compte pas. La formule Artisan est réservée à une seule personne : elle ne comprend aucun autre compte, salarié compris. Dans les formules Entreprise et Illimité, seuls comptent les comptes autorisés à établir des devis ou des factures, le propriétaire, les commerciaux et le service facturation. Les comptes « salarié », qui ne consultent que le planning, n’y sont pas comptés et ne donnent lieu à aucun supplément, quel que soit leur nombre.
 
 Chaque formule comprend, sans limitation de nombre : les devis, les factures, la transcription des dictées et leur mise en devis, le stockage des documents et des photos, les mises à jour et l’assistance.
 
-Ce que la formule Artisan ne comprend pas. Les formules Entreprise et Illimité comprennent en outre les outils de paysage (le plan d’arrosage automatique, le diagnostic végétal et la fiche de chantier), les absences des équipes et les retours d’intervention. La formule Artisan ne les comprend pas.
+Ce que la formule Artisan ne comprend pas. Les formules Entreprise et Illimité comprennent en outre les absences des équipes et les retours d’intervention. La formule Artisan ne les comprend pas.
+
+Les outils de paysage. Le plan d’arrosage automatique, le diagnostic végétal et la fiche de chantier s’ajoutent à n’importe quelle formule, dans le même abonnement, pour 6 € HT par mois ou 60 € HT par an. Aucune formule ne les comprend sans cet ajout. Un plan d’arrosage et un diagnostic végétal sont offerts une seule fois par entreprise, essai compris.
 
 14.2 : Essai gratuit
 
-L’abonnement peut être précédé d’un essai gratuit de quinze jours, sans saisie de moyen de paiement, pendant lequel tous les outils de la formule Illimité sont ouverts. À son terme, sauf souscription, le service passe en lecture seule : vos données restent consultables et exportables, mais rien de nouveau ne peut être créé ; aucune somme n’est prélevée et aucune reconduction n’intervient d’elle-même.
+L’abonnement peut être précédé d’un essai gratuit de quinze jours, sans saisie de moyen de paiement, pendant lequel les outils de la formule Illimité sont ouverts, ainsi que la fiche de chantier ; le plan d’arrosage et le diagnostic végétal y sont offerts une fois, comme le prévoit l’article 14.1. À son terme, sauf souscription, le service passe en lecture seule : vos données restent consultables et exportables, mais rien de nouveau ne peut être créé ; aucune somme n’est prélevée et aucune reconduction n’intervient d’elle-même.
 
 14.3, Paiement
 
@@ -1112,6 +1123,8 @@ Le passage à une formule supérieure prend effet immédiatement. Pour un abonne
 Le passage d’un paiement mensuel à un paiement annuel prend effet immédiatement : le prix annuel est dû en entier à la date du changement, qui devient la nouvelle date d’échéance, et la période mensuelle en cours n’est pas remboursée.
 
 Le passage à une formule inférieure, ou d’un paiement annuel à un paiement mensuel, prend effet à l’échéance suivante : rien n’est dû à la date du changement, et la formule en cours reste ouverte jusque-là. Si la nouvelle formule ouvre moins d’accès que l’entreprise n’en utilise, les accès en surnombre sont supprimés à cette échéance, ce dont vous êtes averti au moment du changement ; les devis et factures créés par ces accès restent à l’entreprise.
+
+Ajouter les outils de paysage suit les règles d’un passage à une formule supérieure ; les retirer, celles d’un passage à une formule inférieure.
 
 14.7, Révision des tarifs
 

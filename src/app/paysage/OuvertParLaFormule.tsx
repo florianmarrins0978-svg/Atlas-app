@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { colors, font } from "@/lib/design-tokens";
-import { fonctionOuverte, type FonctionReservee as Fonction } from "@/lib/abonnements";
+import type { FonctionReservee as Fonction } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { accesDeLaFonction } from "@/server/garde-action";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import FonctionReservee from "@/components/atlas/FonctionReservee";
 
@@ -25,6 +25,9 @@ import FonctionReservee from "@/components/atlas/FonctionReservee";
  * dossiers d'arrosage en sont (sa réponse 5 du 21 novembre 2026) : un élément
  * React ne s'exécute que s'il est rendu, donc rien n'est lu quand l'option est
  * ouverte.
+ *
+ * **Un outil OFFERT s'ouvre** (le plan d'arrosage et le diagnostic, une fois,
+ * 19 novembre 2026) : c'est en s'en servant qu'il le découvre.
  */
 export default async function OuvertParLaFormule({
   fonction,
@@ -37,9 +40,7 @@ export default async function OuvertParLaFormule({
   children: ReactNode;
   aussi?: ReactNode;
 }) {
-  const ctx = await getCurrentCtx();
-  const abonnement = await abonnementDeLEntreprise(ctx);
-  if (fonctionOuverte(abonnement?.formule, fonction)) return children;
+  if ((await accesDeLaFonction(await getCurrentCtx(), fonction)) !== "fermee") return children;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

@@ -17,8 +17,8 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { abonnements, entreprises, evenementsPaiement, membresEntreprise } from "../db/schema";
 import { abonnementRouvreLeCompte } from "@/lib/fermeture-compte";
-import { roleFabrique, type FormuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
-import { lesComptesQuiPartent, type Choix } from "@/lib/changement-de-formule";
+import { estModule, roleFabrique, type EquipeComptee, type FormuleCode, type ModuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
+import { lesComptesQuiPartent, memesModules, type Choix } from "@/lib/changement-de-formule";
 import { ROLES, type Role } from "@/lib/acces-roles";
 import type { Ctx } from "./context";
 
@@ -26,13 +26,16 @@ export type Abonnement = {
   formule: FormuleCode;
   periodicite: Periodicite;
   statut: StatutAbonnement;
+  /** Les modules souscrits ; un code inconnu de `MODULES` n'est jamais rendu. */
+  modules: ModuleCode[];
   periodeFin: Date | null;
   annulationDemandee: boolean;
   clientPrestataire: string | null;
   abonnementPrestataire: string | null;
-  /** La formule qui commence à l'échéance (`changementAVenir`). */
+  /** Ce qui commence à l'échéance (`changementAVenir`). */
   formulePrevue: FormuleCode | null;
   periodicitePrevue: Periodicite | null;
+  modulesPrevus: ModuleCode[] | null;
 };
 
 /**
@@ -52,13 +55,19 @@ export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | nu
         annulationDemandee: abonnements.annulationDemandee,
         clientPrestataire: abonnements.clientPrestataire,
         abonnementPrestataire: abonnements.abonnementPrestataire,
+        modules: abonnements.modules,
         formulePrevue: abonnements.formulePrevue,
         periodicitePrevue: abonnements.periodicitePrevue,
+        modulesPrevus: abonnements.modulesPrevus,
       })
       .from(abonnements)
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId))
       .limit(1);
-    return ligne ?? null;
+    // La base refuse déjà un module inconnu (0198) ; le filtre garde le type
+    // honnête plutôt que d'affirmer ce que la colonne ne promet pas.
+    return ligne
+      ? { ...ligne, modules: ligne.modules.filter(estModule), modulesPrevus: ligne.modulesPrevus?.filter(estModule) ?? null }
+      : null;
   });
 }
 
@@ -79,18 +88,23 @@ const ROLES_QUI_FABRIQUENT = ROLES.filter(roleFabrique);
  * C'est le nombre que le plafond de la formule borne — sa correction du
  * 9 septembre 2026 : on compte qui FABRIQUE, jamais les salariés au planning.
  */
-export async function compterLesFabricants(ctx: Ctx): Promise<number> {
+/**
+ * L'ÉQUIPE COMPTÉE, le patron compris : tous les accès, ceux qui fabriquent,
+ * les salariés. **Un seul comptage pour les trois**, d'une seule requête :
+ * trois requêtes pourraient lire trois équipes différentes à une invitation
+ * près, et la phrase de refus dirait un nombre faux.
+ */
+export async function compterLEquipe(ctx: Ctx): Promise<EquipeComptee> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
-      .select({ combien: sql<number>`count(*)::int` })
+      .select({
+        comptes: sql<number>`count(*)::int`,
+        fabricants: sql<number>`(count(*) FILTER (WHERE ${inArray(membresEntreprise.role, ROLES_QUI_FABRIQUENT)}))::int`,
+        salaries: sql<number>`(count(*) FILTER (WHERE ${eq(membresEntreprise.role, "salarie")}))::int`,
+      })
       .from(membresEntreprise)
-      .where(
-        and(
-          eq(membresEntreprise.entrepriseId, ctx.entrepriseId),
-          inArray(membresEntreprise.role, ROLES_QUI_FABRIQUENT)
-        )
-      );
-    return ligne?.combien ?? 0;
+      .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId));
+    return { comptes: ligne?.comptes ?? 0, fabricants: ligne?.fabricants ?? 0, salaries: ligne?.salaries ?? 0 };
   });
 }
 
@@ -104,6 +118,8 @@ export async function compterLesFabricants(ctx: Ctx): Promise<number> {
  */
 export type EtatVenuDuPrestataire = {
   formule: FormuleCode;
+  /** Relus sur l'abonnement du prestataire, comme la formule (`lireUnAbonnement`). */
+  modules: ModuleCode[];
   periodicite: Periodicite;
   statut: StatutAbonnement;
   periodeFin: Date | null;
@@ -122,13 +138,14 @@ export type EtatVenuDuPrestataire = {
 function versLaLigne(etat: EtatVenuDuPrestataire) {
   return {
     formule: etat.formule,
+    modules: etat.modules,
     periodicite: etat.periodicite,
     statut: etat.statut,
     periodeFin: etat.periodeFin,
     annulationDemandee: etat.annulationDemandee,
     clientPrestataire: etat.clientPrestataire,
     abonnementPrestataire: etat.abonnementPrestataire,
-    ...(etat.changementPrevu ? {} : { formulePrevue: null, periodicitePrevue: null }),
+    ...(etat.changementPrevu ? {} : { formulePrevue: null, periodicitePrevue: null, modulesPrevus: null }),
     updatedAt: new Date(),
   };
 }
@@ -142,7 +159,12 @@ export async function noterLeChangementPrevu(ctx: Ctx, prevu: Choix | null): Pro
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx
       .update(abonnements)
-      .set({ formulePrevue: prevu?.formule ?? null, periodicitePrevue: prevu?.periodicite ?? null, updatedAt: new Date() })
+      .set({
+        formulePrevue: prevu?.formule ?? null,
+        periodicitePrevue: prevu?.periodicite ?? null,
+        modulesPrevus: prevu ? [...prevu.modules] : null,
+        updatedAt: new Date(),
+      })
       .where(eq(abonnements.entrepriseId, ctx.entrepriseId));
   });
 }
@@ -231,6 +253,7 @@ export async function appliquerDepuisLeCrochet(
         periodicite: abonnements.periodicite,
         formulePrevue: abonnements.formulePrevue,
         periodicitePrevue: abonnements.periodicitePrevue,
+        modulesPrevus: abonnements.modulesPrevus,
       })
       .from(abonnements)
       .where(eq(abonnements.abonnementPrestataire, etat.abonnementPrestataire))
@@ -266,11 +289,15 @@ export async function appliquerDepuisLeCrochet(
     // puis fermer l'onglet, et seul le crochet saura alors qu'il est revenu.
     await rouvrirSiRepris(tx, ligne.entrepriseId, etat);
 
+    // La FORMULE change, et c'est celle qu'il a notée, avec son rythme et ses
+    // modules : seul un changement de formule retire des accès, jamais le
+    // rythme ni les outils.
     const descenteQuiPrendEffet =
       etat.statut === "actif" &&
       ligne.formulePrevue === etat.formule &&
       ligne.periodicitePrevue === etat.periodicite &&
-      (ligne.formule !== etat.formule || ligne.periodicite !== etat.periodicite);
+      memesModules((ligne.modulesPrevus ?? []).filter(estModule), etat.modules) &&
+      ligne.formule !== etat.formule;
     if (!descenteQuiPrendEffet) return { applique: true, comptesRetires: 0, photosOrphelines: [] };
 
     const equipe = await tx
