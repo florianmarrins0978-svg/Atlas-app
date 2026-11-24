@@ -1,5 +1,22 @@
 # Prochaines tâches
 
+## 🔨 EN COURS : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, À CODER EN ENTIER (24 novembre 2026, tard)
+
+**Ses réponses, à ne pas lui redemander :** *« B ticket, 2 catégories
+cotisation. On code tout et à la fin on jouera une seule batterie pour
+l'ensemble, ne me pose plus la question. »*
+
+| | |
+|---|---|
+| **le ticket dans le dossier** | B : le ticket réécrit lisible, la photo nettoyée dessous |
+| **cotisations** | deux catégories : celles des salariés (431), les siennes (646) |
+| **ce qui se code** | tout le dossier des planches `comptable-trois-fichiers.html` et `ticket-lisible.html` : catégories et numéros de compte (réglage), choix de la catégorie d'une ligne, PDF rangé par catégorie avec registre des ventes et numéros de pièce, Excel à quatre onglets, FEC d'import, recadrage du ticket à la photo |
+| **la batterie** | UNE seule, à la fin, pour l'ensemble (avec la correction du flux de publication en deux jobs), **sans lui redemander son « oui »** : c'est son « oui » donné d'avance |
+
+**Décidé par moi, faute de planche, et à lui dire :** le geste qui donne sa
+catégorie à une ligne (rien ne le dessinait) suit celui qui existe pour la
+justifier ; les coins du ticket ne s'ajustent que quand le téléphone doute.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE TICKET LISIBLE (24 novembre 2026)
 
 **Sa remarque :** *« quand je prenais un ticket en photo et que tu le recréais
