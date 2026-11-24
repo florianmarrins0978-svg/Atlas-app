@@ -1,5 +1,35 @@
 # Prochaines tâches
 
+## LE DOSSIER DU COMPTABLE RANGÉ PAR CATÉGORIE : SES CHOIX DU 24 NOVEMBRE 2026, MAQUETTE À FAIRE
+
+Sa demande : *« toutes les entrées et les sorties doivent être organisées sous
+des catégories »*, avec un registre des factures clients. Le dossier actuel
+(`src/server/pdf/dossier-comptable-pdf.ts`) est rangé PAR MOIS ; la catégorie
+n'y est qu'une étiquette et un tableau de totaux. Ses réponses :
+
+| | |
+|---|---|
+| **format** | PDF **et** Excel **et** FEC dans le même envoi |
+| **rangement du PDF** | le registre des ventes d'abord, puis les achats par catégorie, par date dans chacune |
+| **numéro de compte** | affiché à côté de chaque catégorie, proposé par Cause, modifiable dans Réglages |
+| **salaires** | le comptable calcule (jours travaillés et paniers repas, `src/app/termines/comptable/jours-travailles/`), envoie la fiche de paie, l'entreprise vire le salarié : le virement se range en Salaires, la fiche de paie en est la pièce |
+
+**Ce qui manque aujourd'hui** : le registre des ventes (numéro, date, client,
+chantier, HT, TVA par taux, TTC, payée le, reste dû) ; des catégories
+Salaires, URSSAF, assurances, sous-traitance, investissement, frais bancaires,
+emprunt, prélèvement personnel (tout tombe en « Autre » ou « Virement
+envoyé ») ; une numérotation des pièces reliée à la ligne de banque.
+
+**Ce qui ne s'invente pas** : les numéros de compte divergent entre sources
+(repas 6256 ou 6251, carburant 6061 ou 60622). La liste proposée se fait
+valider par un comptable avant d'être livrée. Le FEC est un fichier normé
+(18 colonnes, partie double, comptes de tiers, numérotation continue) : celui
+de Cause est un **fichier d'import** pour le logiciel du comptable, jamais le
+FEC fiscal de l'exercice, que seul son logiciel produit. À dire à l'écran.
+
+**Prochaine étape** : la planche, posée sur le vrai dossier
+(`appli/soignee/comptable-dossier.html` en est la base), avant tout code.
+
 ## ⏳ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ SUR LA BRANCHE DES DEUX NOURRICES (23 novembre 2026)
 
 Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
