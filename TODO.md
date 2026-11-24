@@ -68,13 +68,13 @@ même. **Le vrai PDF aussi, sur sa demande du même soir** (*« va vérifier dan
 document comptable qu'on a déjà ; pareil, tout ce qui est en gris, passe-le en
 noir »*) : `DOUX` et `GRIS` retirés de `src/server/pdf/dossier-comptable-pdf.ts`
 (83 textes), et `test-dossier-comptable-pdf.ts` refuse désormais tout texte
-gris (vu rouge avant, vert après). **Codé sur `claude/dossier-comptable-exports-yzwp5f`,
-pas sur `main`** : niveau 2 (`npm run verifier:avant-fusion` et quatre suites
-navigateur), qui attend son « oui ». **L'attestation du comptable aussi**, sur son « oui, passe en noir » :
+gris (vu rouge avant, vert après). **L'attestation du comptable aussi**, sur son « oui, passe en noir » :
 `DOUX` retiré de `attestation-comptable-pdf.ts` (14 textes), même contrôle dans
 `test-attestation-comptable.ts`, la relecture des couleurs étant partagée
-(`scripts/_couleurs-du-texte-pdf.ts`). Les deux documents attendent le même
-contrôle de niveau 2, et son « oui » pour le lancer.
+(`scripts/_couleurs-du-texte-pdf.ts`). **Sur `main` le 24 novembre au soir**,
+sur son « oui » : niveau 2 au vert (`npm run verifier:avant-fusion`, cinq suites
+navigateur : jours-dans-equipe, pages-publiques-sans-navigation,
+photo-du-check-up, retour-comptable, verification-comptable).
 
 **Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
 tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.
