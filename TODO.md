@@ -24,6 +24,17 @@ parquet, sous une lampe) : le premier calcul collait le reflet de la lampe au
 ticket. Corrigé : deux seuils (le second, pris dans le clair, sépare le papier
 d'un reflet), les trous du texte bouchés, et la tache la plus pleine gagne.
 Trouvé en 69 ms, lisible. **Sa photo n'est pas dans le dépôt**, qui est public.
+**Sa réponse : « la photo était floue, du coup on voit rien ».** Deux causes,
+mesurées : le ticket redressé était plafonné à 1 100 px de haut (un long
+ticket y perdait la moitié de sa finesse : plafond monté à 2 400) ; et sa photo
+est arrivée ici en 1 512 px (l'appli de conversation réduit ; son téléphone en
+prend sans doute 4 032, non vérifié), le ticket n'y fait que 490 px de large.
+Ajouté : une mesure de netteté (contours rapportés au contraste, à la taille
+des lettres) et de taille du ticket, qui demandent de reprendre la photo ;
+vérifiée sur sa photo floutée (2,4 et 1,9 contre 9,9 nette, seuil 6). Et les
+bords parallèles à leur vis-à-vis, qui retrouvent un coin sous le pouce.
+**À vérifier dans l'appli au codage :** que la photo du ticket part en pleine
+taille (aucune réduction trouvée côté téléphone dans `AchatsTva.tsx`).
 Puis le ticket du dossier : A (réécrit lisible, écriture pleine, total plus
 grand), B (A, plus la photo nettoyée dessous).
 
