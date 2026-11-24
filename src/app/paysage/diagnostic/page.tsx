@@ -2,6 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import PrendreUnePhoto from "./PrendreUnePhoto";
 import { garderLaPage } from "@/server/garde-page";
+import OuvertParLaFormule from "../OuvertParLaFormule";
 
 /**
  * « Diagnostic végétal » — l'écran d'entrée, et il tient en trois lignes.
@@ -25,36 +26,40 @@ export const metadata = { title: "Diagnostic végétal, Cause" };
 
 export default async function DiagnosticPage() {
   await garderLaPage();
+  // La porte est ici, et non sur le dossier : le résultat d'un diagnostic
+  // déjà fait reste lisible (`layout.tsx`).
   return (
-    <div
-      style={{
-        backgroundColor: colors.cream,
-        color: colors.ink,
-        fontFamily: font.body,
-        minHeight: "100%",
-      }}
-    >
-      <div className="pb-16" data-atlas="ecran-diagnostic">
-        <EnTeteEcran
-          surtitre="Paysage"
-          titre="Diagnostic végétal"
-          retour={{ href: "/paysage", libelle: "Retour aux outils" }}
-        />
+    <OuvertParLaFormule fonction="diagnostic" titre="Diagnostic végétal">
+      <div
+        style={{
+          backgroundColor: colors.cream,
+          color: colors.ink,
+          fontFamily: font.body,
+          minHeight: "100%",
+        }}
+      >
+        <div className="pb-16" data-atlas="ecran-diagnostic">
+          <EnTeteEcran
+            surtitre="Paysage"
+            titre="Diagnostic végétal"
+            retour={{ href: "/paysage", libelle: "Retour aux outils" }}
+          />
 
-        <section className="mx-[26px] mt-[30px]">
-          <p className="text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-            Photographiez la zone qui vous semble anormale.
-          </p>
+          <section className="mx-[26px] mt-[30px]">
+            <p className="text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+              Photographiez la zone qui vous semble anormale.
+            </p>
 
-          <div className="mt-[26px]">
-            <PrendreUnePhoto libelle="Prendre une photo" />
-          </div>
+            <div className="mt-[26px]">
+              <PrendreUnePhoto libelle="Prendre une photo" />
+            </div>
 
-          <p className="mt-[18px] text-center text-[12px]" style={{ color: colors.muted }}>
-            Feuille, écorce, branche ou champignon.
-          </p>
-        </section>
+            <p className="mt-[18px] text-center text-[12px]" style={{ color: colors.muted }}>
+              Feuille, écorce, branche ou champignon.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </OuvertParLaFormule>
   );
 }

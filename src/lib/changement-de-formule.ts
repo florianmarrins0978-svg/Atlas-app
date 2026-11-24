@@ -19,21 +19,36 @@
 // rien de ce qui part tout de suite ne baisse la formule, et seule une
 // descente qu'il a confirmée retire des comptes.
 //
+// **Les outils de paysage (le module, `MODULES`) font partie du choix**
+// depuis la réunion des deux lots, le 24 novembre 2026 : ce qui est « au-dessus »
+// se juge au PRIX du mois, formule et modules compris. Ajouter les outils est
+// donc une montée (le prix entier du mois, ou à l'année la différence), les
+// retirer une descente (à l'échéance, il les garde jusque-là). Déduit de ses
+// règles, pas dit par lui. Un changement plus cher ne baisse jamais la formule
+// (39, 59 et 159 € : les 6 € des outils ne comblent aucun écart), donc rien de
+// ce qui part tout de suite ne retire de comptes.
+//
 // **Une seule règle**, pour l'écran qui l'annonce dans la feuille et pour
 // l'action qui la fait exécuter au prestataire (`CLAUDE.md` §3) : la feuille
 // ne peut pas annoncer un montant que le prestataire ne débitera pas.
 import {
-  FORMULES,
+  MODULES,
   TVA_ABONNEMENT_POURCENT,
   formule,
   montantDu,
   roleFabrique,
   type FormuleCode,
+  type ModuleCode,
   type Periodicite,
 } from "./abonnements";
 import type { Role } from "./acces-roles";
 
-export type Choix = { formule: FormuleCode; periodicite: Periodicite };
+export type Choix = { formule: FormuleCode; periodicite: Periodicite; modules: readonly ModuleCode[] };
+
+/** Les mêmes modules, dans n'importe quel ordre. */
+export function memesModules(a: readonly ModuleCode[], b: readonly ModuleCode[]): boolean {
+  return MODULES.every((m) => a.includes(m.code) === b.includes(m.code));
+}
 
 export type Changement =
   | { genre: "aucun" }
@@ -47,31 +62,43 @@ export type Changement =
     }
   | { genre: "a-l-echeance" };
 
-/** Du moins cher au plus cher : l'ordre de `FORMULES`, qui est celui des cartes. */
-function rang(code: FormuleCode): number {
-  return FORMULES.findIndex((f) => f.code === code);
-}
-
 export function changementDeFormule(actuel: Choix, voulu: Choix): Changement {
   const a = formule(actuel.formule);
   const v = formule(voulu.formule);
   if (!a || !v) return { genre: "aucun" };
-  if (actuel.formule === voulu.formule && actuel.periodicite === voulu.periodicite) return { genre: "aucun" };
+  if (
+    actuel.formule === voulu.formule &&
+    actuel.periodicite === voulu.periodicite &&
+    memesModules(actuel.modules, voulu.modules)
+  ) {
+    return { genre: "aucun" };
+  }
 
-  if (rang(voulu.formule) < rang(actuel.formule)) return { genre: "a-l-echeance" };
+  // Au-dessus ou en dessous : le prix du mois, formule et modules compris.
+  if (montantDu(v, "mensuelle", voulu.modules) < montantDu(a, "mensuelle", actuel.modules)) return { genre: "a-l-echeance" };
   if (actuel.periodicite === "mensuelle" && voulu.periodicite === "annuelle") {
-    return { genre: "tout-de-suite", facon: "passer-a-l-annee", debitHT: montantDu(v, "annuelle"), echeanceRemise: true };
+    return {
+      genre: "tout-de-suite",
+      facon: "passer-a-l-annee",
+      debitHT: montantDu(v, "annuelle", voulu.modules),
+      echeanceRemise: true,
+    };
   }
   if (actuel.periodicite === "annuelle" && voulu.periodicite === "mensuelle") return { genre: "a-l-echeance" };
   if (voulu.periodicite === "annuelle") {
     return {
       genre: "tout-de-suite",
       facon: "monter-a-l-annee",
-      debitHT: montantDu(v, "annuelle") - montantDu(a, "annuelle"),
+      debitHT: montantDu(v, "annuelle", voulu.modules) - montantDu(a, "annuelle", actuel.modules),
       echeanceRemise: false,
     };
   }
-  return { genre: "tout-de-suite", facon: "monter-au-mois", debitHT: montantDu(v, "mensuelle"), echeanceRemise: true };
+  return {
+    genre: "tout-de-suite",
+    facon: "monter-au-mois",
+    debitHT: montantDu(v, "mensuelle", voulu.modules),
+    echeanceRemise: true,
+  };
 }
 
 /**
@@ -139,9 +166,11 @@ export function joursPerdus(changement: Changement, echeanceEnCours: Date | null
 
 /**
  * LES COMPTES QUI PARTENT avec la descente — sa décision du 23 novembre :
- * *« faut lui dire que tous ses autres comptes vont être supprimés »*. Ceux
- * qui fabriquent des devis ou des factures au-delà du plafond de la formule
- * voulue (`roleFabrique`, les mêmes que compte `placePourUnFabricant`).
+ * *« faut lui dire que tous ses autres comptes vont être supprimés »*. Les
+ * mêmes plafonds que `placePourUnAcces` : Artisan, un seul accès, salariés
+ * compris (sa règle du 18 novembre) ; les autres formules, un plafond de ceux
+ * qui fabriquent des devis ou des factures (`roleFabrique`), le salarié au
+ * planning n'y comptant pas.
  *
  * **Le patron ne part jamais**, même à deux patrons sur Artisan : un compte
  * sans patron ne se gère plus. Puis les plus anciens gardent leur place, les
@@ -159,13 +188,22 @@ export function lesComptesQuiPartent(
   voulue: FormuleCode
 ): string[] {
   const f = formule(voulue);
-  if (!f || f.plafondFabricants === null) return [];
-  const fabricants = membres.filter((m) => roleFabrique(m.role));
-  const patrons = fabricants.filter((m) => m.role === "proprietaire").length;
-  const autres = fabricants
+  if (!f) return [];
+  const patrons = membres.filter((m) => m.role === "proprietaire").length;
+  let restent = membres
     .filter((m) => m.role !== "proprietaire")
     .sort((a, b) => a.depuis.getTime() - b.depuis.getTime());
-  return autres.slice(Math.max(0, f.plafondFabricants - patrons)).map((m) => m.id);
+  const partent: string[] = [];
+  if (f.plafondComptes !== null) {
+    const places = Math.max(0, f.plafondComptes - patrons);
+    partent.push(...restent.slice(places).map((m) => m.id));
+    restent = restent.slice(0, places);
+  }
+  if (f.plafondFabricants !== null) {
+    const places = Math.max(0, f.plafondFabricants - patrons);
+    partent.push(...restent.filter((m) => roleFabrique(m.role)).slice(places).map((m) => m.id));
+  }
+  return partent;
 }
 
 /**
@@ -176,10 +214,19 @@ export function lesComptesQuiPartent(
 export function changementAVenir(abonnement: {
   formule: FormuleCode;
   periodicite: Periodicite;
+  modules: readonly ModuleCode[];
   formulePrevue: FormuleCode | null;
   periodicitePrevue: Periodicite | null;
+  modulesPrevus: readonly ModuleCode[] | null;
 }): Choix | null {
   if (!abonnement.formulePrevue || !abonnement.periodicitePrevue) return null;
-  if (abonnement.formulePrevue === abonnement.formule && abonnement.periodicitePrevue === abonnement.periodicite) return null;
-  return { formule: abonnement.formulePrevue, periodicite: abonnement.periodicitePrevue };
+  const modules = abonnement.modulesPrevus ?? [];
+  if (
+    abonnement.formulePrevue === abonnement.formule &&
+    abonnement.periodicitePrevue === abonnement.periodicite &&
+    memesModules(modules, abonnement.modules)
+  ) {
+    return null;
+  }
+  return { formule: abonnement.formulePrevue, periodicite: abonnement.periodicitePrevue, modules };
 }

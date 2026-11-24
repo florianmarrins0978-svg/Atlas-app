@@ -102,7 +102,7 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // 2026) : un point rouge sur un écran qu'on ne peut pas ouvrir est une
   // agression, pas une information. L'onglet, lui, reste (`ListeTermines`).
   const abonnement = await abonnementDeLEntreprise(ctx);
-  const retours = fonctionOuverte(abonnement?.formule, "retours") ? await compterLesRetours(ctx) : 0;
+  const retours = fonctionOuverte(abonnement, "retours") ? await compterLesRetours(ctx) : 0;
   const nonPayees = await listerFacturesNonPayees(ctx);
   // Le plafond de la franchise (sa planche du 5 novembre 2026, A) : rien pour
   // une entreprise Assujettie, et la ligne elle-même se tait loin du plafond.

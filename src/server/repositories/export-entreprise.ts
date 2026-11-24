@@ -85,6 +85,7 @@ import {
   transmissionsFactures,
   facturesAtlas,
   objectifsAnnee,
+  offresPrises,
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
@@ -269,6 +270,7 @@ export async function exporterEntreprise(
       sesDossiersArrosage,
       sesPlansArrosage,
       sesDossiersAPurger,
+      sesOffresPrises,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -544,6 +546,9 @@ export async function exporterEntreprise(
       // Comme `photos_diagnostic_a_purger` : la file dit quand un dossier
       // oublié s'effacera.
       tx.select().from(dossiersArrosageAPurger).where(eq(dossiersArrosageAPurger.entrepriseId, e)),
+      // Le plan d'arrosage et le diagnostic offerts qu'il a déjà pris (0198) :
+      // une reprise qui les perdrait les lui offrirait une seconde fois.
+      tx.select().from(offresPrises).where(eq(offresPrises.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -677,6 +682,7 @@ export async function exporterEntreprise(
       dossiers_arrosage: sesDossiersArrosage,
       plans_arrosage: sesPlansArrosage,
       dossiers_arrosage_a_purger: sesDossiersAPurger,
+      offres_prises: sesOffresPrises,
     };
 
     const compte: Record<string, number> = {};

@@ -3,7 +3,9 @@ import { phraseDeLaFermeture, type FonctionReservee as Fonction } from "@/lib/ab
 import PrimaryButton from "./PrimaryButton";
 
 /**
- * CE QUE VOIT UN ABONNÉ « ARTISAN » à la place d'une fonction d'« Entreprise ».
+ * CE QUE VOIT UN ABONNÉ à la place d'une fonction que sa formule n'ouvre pas :
+ * les absences et les retours d'« Entreprise », ou un outil de paysage sans les
+ * outils (18 novembre 2026), le plan et le diagnostic offerts une fois pris.
  *
  * Sa planche du 10 septembre 2026 : l'écran **reste atteignable** — même
  * en-tête, même titre, même flèche de retour. Une rubrique qui disparaît se
@@ -16,7 +18,7 @@ import PrimaryButton from "./PrimaryButton";
  * `phraseDeLaFermeture`, la décision de `fonctionOuverte` — rien ici.
  */
 export default function FonctionReservee({ fonction }: { fonction: Fonction }) {
-  const { titre, detail } = phraseDeLaFermeture(fonction);
+  const { titre, detail, bouton, adresse } = phraseDeLaFermeture(fonction);
   return (
     <section
       data-atlas={`fonction-reservee-${fonction}`}
@@ -40,8 +42,10 @@ export default function FonctionReservee({ fonction }: { fonction: Fonction }) {
         {detail}
       </p>
       <div className="mt-5 flex justify-center">
-        <PrimaryButton href="/reglages/abonnement" repere="voir-formule-entreprise">
-          Voir la formule Entreprise
+        {/* Pour un outil de paysage, le bouton AJOUTE les outils : l'écran
+            Abonnement s'ouvre, les outils déjà ajoutés (`?outils=paysage`). */}
+        <PrimaryButton href={adresse} repere={adresse.includes("outils=") ? "ajouter-les-outils" : "voir-formule-entreprise"}>
+          {bouton}
         </PrimaryButton>
       </div>
     </section>

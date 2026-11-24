@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { exigerEcran, exigerFonction } from "@/server/garde-action";
+import { accesDeLaFonction, exigerEcran } from "@/server/garde-action";
+import { prendreLOffre, rendreLOffre } from "@/server/repositories/offres";
+import { phraseDeLaFermeture } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { enregistrerObjet, lireObjet } from "@/server/storage";
@@ -110,11 +112,30 @@ export async function analyserPhotoAction(formData: FormData): Promise<Resultat>
 
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "analyser une photo de végétal");
-  await exigerFonction(ctx, "diagnostic", "analyser une photo de végétal");
+  // **Une phrase, pas une erreur** : le bouton « Nouvelle photo » vit aussi sur
+  // la page d'un résultat, qui reste ouverte, et le message d'une exception ne
+  // lui arriverait jamais (`AGENTS.md`).
+  const acces = await accesDeLaFonction(ctx, "diagnostic");
+  const fermeture = phraseDeLaFermeture("diagnostic");
+  if (acces === "fermee") return { ok: false, phrase: `${fermeture.titre}. ${fermeture.detail}` };
   const limite = await verifierLimite(`diagnostic:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { ok: false, phrase: limite.message };
 
-  const diagnosticId = await ouvrirDiagnostic(ctx);
+  // **LE DIAGNOSTIC OFFERT SE PREND ICI, à l'ouverture** (19 novembre 2026) :
+  // une photo refusée plus haut ne l'a pas coûté. Le complément et la relance
+  // d'une analyse tombée appartiennent à CE diagnostic, et ne le recomptent pas.
+  // La prise est atomique : deux envois simultanés n'ouvrent pas deux offres.
+  const offre = acces === "offerte" ? await prendreLOffre(ctx, "diagnostic") : null;
+  if (acces === "offerte" && !offre) return { ok: false, phrase: `${fermeture.titre}. ${fermeture.detail}` };
+
+  let diagnosticId: string;
+  try {
+    diagnosticId = await ouvrirDiagnostic(ctx);
+  } catch (err) {
+    // Rien n'a été ouvert : il n'a rien eu, l'offre lui revient.
+    if (offre) await rendreLOffre(ctx, "diagnostic", offre.jeton);
+    throw err;
+  }
   const rangee = await rangerPhoto(ctx, diagnosticId, prete.photo, "initiale", null);
   if (rangee) {
     await executerAnalyse(ctx, diagnosticId, [{ base64: prete.photo.base64, mimeType: prete.photo.mimeType }], false);
@@ -178,13 +199,19 @@ async function rangerPhoto(
  * migration porte la même limite en contrainte CHECK, pour qu'elle ne dépende
  * pas du seul code.
  */
+/**
+ * **Sans garde de formule, et c'est voulu (19 novembre 2026).** Compléter,
+ * réessayer et rattacher agissent sur un diagnostic DÉJÀ ouvert, donc ouvert
+ * quand l'outil l'était, ou offert. Les fermer laisserait le diagnostic offert
+ * à moitié : la photo complémentaire demandée serait refusée. Chacun reste borné
+ * par son état (une photo complémentaire, une relance), lu dans la base.
+ */
 export async function ajouterComplementAction(diagnosticId: string, formData: FormData): Promise<Resultat> {
   const prete = await preparerPhoto(formData.get("photo"));
   if (!prete.ok) return { ok: false, phrase: prete.phrase };
 
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "compléter un diagnostic");
-  await exigerFonction(ctx, "diagnostic", "compléter un diagnostic");
   const diagnostic = await lireDiagnostic(ctx, diagnosticId);
   if (!diagnostic) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
   if (diagnostic.statut !== "complement_demande") {
@@ -221,7 +248,6 @@ export async function ajouterComplementAction(diagnosticId: string, formData: Fo
 export async function reprendreAnalyseAction(diagnosticId: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "réessayer un diagnostic");
-  await exigerFonction(ctx, "diagnostic", "réessayer un diagnostic");
   const diagnostic = await lireDiagnostic(ctx, diagnosticId);
   if (!diagnostic) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
   if (diagnostic.statut !== "echoue") return { ok: false, phrase: "Ce diagnostic a déjà été regardé." };
@@ -306,7 +332,6 @@ export type ResultatSimple = { ok: true } | { ok: false; phrase: string };
 export async function rattacherAction(diagnosticId: string, chantierId: string): Promise<ResultatSimple> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "rattacher un diagnostic à un chantier");
-  await exigerFonction(ctx, "diagnostic", "rattacher un diagnostic à un chantier");
   const r = await rattacherAUnChantier(ctx, diagnosticId, chantierId, politique());
   if (!r.ok) {
     return {

@@ -10,13 +10,17 @@ import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import {
   FORMULES,
+  carteDeLaFormule,
+  equipeTientDansLaFormule,
   formule,
-  lignesCommunes,
-  lignesQuiDistinguent,
+  montantDu,
   prixALAnnee,
+  type EquipeComptee,
   type FormuleCode,
+  type ModuleCode,
   type Periodicite,
 } from "@/lib/abonnements";
+import BlocDesOutils from "./BlocDesOutils";
 import { sabonnerAction, ouvrirLeGuichetAction, garderLaFormuleAction, nePasArreterAction } from "./actions";
 import AvantDePartir from "./AvantDePartir";
 import ConfirmerLeChangement from "./ConfirmerLeChangement";
@@ -43,10 +47,20 @@ import Picto from "@/components/atlas/reglages/Picto";
  * lui manque toujours barré ; une carte se TOUCHE pour se choisir, et un seul
  * bouton plein, en bas, dit ce qu'il fait (« S’abonner à Entreprise »,
  * « Passer à Illimité ») à la place de trois boutons pareils.
+ *
+ * **Sa planche du 19 novembre 2026** (`appli/soignee/abonnement-module-paysage.html`,
+ * « A, trois lignes, en doré ») : les outils de paysage s'ajoutent en haut,
+ * une fois pour les trois formules, et chaque prix les compte ; « Dans les
+ * trois formules » disparaît, Artisan porte ce qu'il a et les deux autres
+ * disent « Tout ce qu'offre … , et : » (`carteDeLaFormule`) ; et choisir une
+ * formule trop petite pour l'équipe se dit sur la carte, avant de payer.
  */
 export default function AbonnementClient({
   formuleActuelle,
   periodiciteActuelle,
+  modulesActuels,
+  outilsDemandes,
+  equipe,
   annulationDemandee,
   paiementBranche,
   echeance,
@@ -56,6 +70,12 @@ export default function AbonnementClient({
   /** `null` quand il n'a pas d'abonnement. */
   formuleActuelle: FormuleCode | null;
   periodiciteActuelle: Periodicite | null;
+  /** Les modules qu'il paie déjà ; vides sans abonnement. */
+  modulesActuels: ModuleCode[];
+  /** Il arrive d'un outil fermé (« Ajouter les outils ») : les outils sont déjà ajoutés. */
+  outilsDemandes: boolean;
+  /** Son équipe, pour dire AVANT de payer qu'une formule ne la tient pas. */
+  equipe: EquipeComptee;
   /** Une résiliation est demandée : l'abonnement s'arrêtera à l'échéance. */
   annulationDemandee: boolean;
   /** Faux tant que la clé du prestataire n'est pas posée : on le DIT. */
@@ -77,6 +97,9 @@ export default function AbonnementClient({
   // La formule dont la feuille annonce le montant avant de valider (planche
   // du 23 novembre 2026). Rien ne change tant qu'il n'a pas confirmé.
   const [aConfirmer, setAConfirmer] = useState<Choix | null>(null);
+  const [avecOutils, setAvecOutils] = useState(modulesActuels.includes("paysage") || outilsDemandes);
+  const modules: ModuleCode[] = avecOutils ? ["paysage"] : [];
+  const outilsInchanges = avecOutils === modulesActuels.includes("paysage");
 
   function nePasArreter() {
     setMessage(null);
@@ -94,11 +117,11 @@ export default function AbonnementClient({
     // abonnement, et il serait prélevé deux fois. Abonné, il voit d'abord ce
     // qui sera débité, dans la feuille.
     if (formuleActuelle) {
-      setAConfirmer({ formule: code, periodicite });
+      setAConfirmer({ formule: code, periodicite, modules });
       return;
     }
     demarrer(async () => {
-      const r = await sabonnerAction(code, periodicite);
+      const r = await sabonnerAction(code, periodicite, modules);
       if (!r.ok) setMessage(r.message);
       else if (r.url) window.location.href = r.url;
     });
@@ -126,20 +149,37 @@ export default function AbonnementClient({
   // formule, à son propre rythme, ne se « change » pas : le bouton se retire
   // plutôt que de proposer un geste qui ne ferait rien.
   const nomChoisi = formule(choisie)?.nom ?? choisie;
-  const dejaLaSienne = choisie === formuleActuelle && periodicite === periodiciteActuelle;
+  const etAuxOutils = avecOutils ? " et aux outils" : "";
+  const memeFormule = choisie === formuleActuelle && periodicite === periodiciteActuelle;
+  const dejaLaSienne = memeFormule && outilsInchanges;
   // **Une descente prévue se retire d'ici** : sa formule touchée, le bouton
   // dit « Garder Entreprise » au lieu de se retirer. Celle qui est prévue,
   // touchée, n'a plus rien à faire.
   const garderPossible = prevu !== null && dejaLaSienne;
-  const dejaPrevue = prevu !== null && choisie === prevu.formule && periodicite === prevu.periodicite;
-  // Sa formule à l'autre rythme : le bouton dit le rythme, dans les deux sens.
+  const dejaPrevue =
+    prevu !== null &&
+    choisie === prevu.formule &&
+    periodicite === prevu.periodicite &&
+    avecOutils === prevu.modules.includes("paysage");
+  // Sa formule à l'autre rythme : le bouton dit le rythme, dans les deux sens ;
+  // sa formule telle quelle, avec ou sans les outils : le bouton dit les outils.
   const libelleDuBas = !formuleActuelle
-    ? `S’abonner à ${nomChoisi}`
-    : choisie === formuleActuelle
-      ? periodicite === "annuelle"
-        ? "Passer à l’année"
-        : "Passer au mois"
-      : `Passer à ${nomChoisi}`;
+    ? `S’abonner à ${nomChoisi}${etAuxOutils}`
+    : memeFormule
+      ? avecOutils
+        ? "Ajouter les outils"
+        : "Retirer les outils"
+      : choisie === formuleActuelle
+        ? periodicite === "annuelle"
+          ? "Passer à l’année"
+          : "Passer au mois"
+        : `Passer à ${nomChoisi}${etAuxOutils}`;
+  // **La même phrase que l'action** (`equipeTientDansLaFormule`) : dite ici
+  // avant de payer, redite là-bas si l'écran a été contourné. **Pour
+  // s'abonner seulement** : abonné, une formule trop petite est une descente,
+  // et la feuille dit quels accès partiront à l'échéance (sa décision du
+  // 23 novembre 2026, qui remplace le refus du 18).
+  const equipeDeTrop = formuleActuelle ? null : equipeTientDansLaFormule(choisie, equipe);
 
   return (
     <div className="pb-24">
@@ -223,18 +263,21 @@ export default function AbonnementClient({
       {partir && formuleActuelle && periodiciteActuelle && (
         <AvantDePartir
           formuleActuelle={formuleActuelle}
+          modules={modulesActuels}
           periodicite={periodiciteActuelle}
           fermer={() => setPartir(false)}
           proposer={(code) => {
             setPartir(false);
-            setAConfirmer({ formule: code, periodicite: periodiciteActuelle });
+            // Ses outils restent avec la formule moins chère : partir d'une
+            // formule n'est pas partir des outils.
+            setAConfirmer({ formule: code, periodicite: periodiciteActuelle, modules: modulesActuels });
           }}
         />
       )}
 
       {aConfirmer && formuleActuelle && periodiciteActuelle && (
         <ConfirmerLeChangement
-          actuel={{ formule: formuleActuelle, periodicite: periodiciteActuelle }}
+          actuel={{ formule: formuleActuelle, periodicite: periodiciteActuelle, modules: modulesActuels }}
           voulu={aConfirmer}
           echeance={echeance}
           comptesQuiPartent={comptesQuiPartent[aConfirmer.formule]}
@@ -259,22 +302,25 @@ export default function AbonnementClient({
           onChoix={setPeriodicite}
         />
 
-        <div className="mt-3 rounded-[6px] px-[18px] py-3.5" style={{ backgroundColor: colors.card }}>
-          <p className="mb-1 text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
-            Dans les trois formules
-          </p>
-          <ul>
-            {lignesCommunes().map((texte) => (
-              <LigneOffre key={texte} texte={texte} manque={false} />
-            ))}
-          </ul>
-        </div>
+        <BlocDesOutils
+          periodicite={periodicite}
+          ajoutes={avecOutils}
+          onAjouter={() => {
+            setMessage(null);
+            setAvecOutils(true);
+          }}
+          onRetirer={() => {
+            setMessage(null);
+            setAvecOutils(false);
+          }}
+        />
 
         <div className="mt-3 flex flex-col gap-2.5">
           {FORMULES.map((f) => {
             const ici = f.code === formuleActuelle && periodicite === periodiciteActuelle;
             const prise = f.code === choisie;
-            const annee = prixALAnnee(f);
+            const annee = prixALAnnee(f, modules);
+            const carte = carteDeLaFormule(f);
             return (
               // **Un `div` qui se comporte en bouton, et non un `<button>`** :
               // la carte porte une liste, qu'un bouton n'a pas le droit de
@@ -314,7 +360,7 @@ export default function AbonnementClient({
                       <Prix montant={annee.annuel} unite="/an HT" />
                     </span>
                   ) : (
-                    <Prix montant={f.prixMensuel} unite="/mois HT" />
+                    <Prix montant={montantDu(f, "mensuelle", modules)} unite="/mois HT" />
                   )}
                 </div>
                 {ici && (
@@ -329,9 +375,23 @@ export default function AbonnementClient({
                     <EtatEcrit ton="or">À partir du {jourEnLettres(new Date(echeance))}</EtatEcrit>
                   </p>
                 )}
+                {prise && avecOutils && (
+                  <p className="ml-8 mt-2.5" data-atlas="avec-les-outils">
+                    <EtatEcrit ton="vert">Avec les outils</EtatEcrit>
+                  </p>
+                )}
                 <p className="ml-8 mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                   {f.accroche}
                 </p>
+                {prise && equipeDeTrop && (
+                  <p
+                    data-atlas="equipe-de-trop"
+                    className="ml-8 mt-2.5 text-[14.5px] font-semibold leading-[1.45]"
+                    style={{ color: colors.carteAmbreTexte }}
+                  >
+                    {equipeDeTrop}
+                  </p>
+                )}
                 {periodicite === "annuelle" && (
                   <p className="ml-8 mt-2">
                     <EtatEcrit ton="vert">Vous gagnez {annee.gain} €</EtatEcrit>
@@ -340,7 +400,12 @@ export default function AbonnementClient({
                 {/* Ce que la formule n'ouvre pas reste écrit, barré : sa
                     demande du 24 septembre 2026, « qu'il voie ce qu'il loupe ». */}
                 <ul className="ml-8 mt-2">
-                  {lignesQuiDistinguent(f).map((l) => (
+                  {carte.introduction && (
+                    <li className="pb-[3px] pt-[5px] text-[14.5px] font-semibold leading-[1.4]" style={{ color: colors.inkSoft }}>
+                      {carte.introduction}
+                    </li>
+                  )}
+                  {carte.lignes.map((l) => (
                     <LigneOffre key={l.texte} texte={l.texte} manque={l.manque} />
                   ))}
                 </ul>
@@ -386,13 +451,14 @@ export default function AbonnementClient({
           <button
             type="button"
             onClick={() => choisir(choisie)}
-            disabled={enCours || !paiementBranche}
+            disabled={enCours || !paiementBranche || equipeDeTrop !== null}
             data-atlas={`choisir-${choisie}`}
             className="atlas-plein min-h-[56px] w-full rounded-full px-[22px] text-[17px] font-semibold disabled:cursor-default"
             // Sans paiement branché, le bouton s'ÉTEINT (gris), et la plage
             // bleue dit pourquoi ; pendant l'envoi, il pâlit seulement.
+            // L'équipe de trop l'éteint aussi : la phrase est sur la carte, juste au-dessus.
             style={
-              paiementBranche
+              paiementBranche && !equipeDeTrop
                 ? { backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }
                 : { backgroundColor: colors.line, color: colors.inkSoft }
             }

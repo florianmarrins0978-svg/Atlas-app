@@ -1,5 +1,54 @@
 # Prochaines tâches
 
+## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
+
+Sa demande, après avoir vu qu'Entreprise ouvrait encore les outils de paysage :
+*« va chercher s'il n'y a pas des lots pareils qui se sont égarés, qu'on n'a pas
+mis dans l'application, qui attendent de jouer une batterie »*.
+
+**Comment c'est relevé, et comment le refaire.** Sur un historique COMPLET
+(`git fetch --unshallow origin` d'abord : un clone de session est superficiel,
+et c'est lui qui faisait croire « aucune histoire commune ») : pour chaque
+branche `claude/*`, les commits que `git cherry origin/main` dit absents ; pour
+chacun, son code (`src/`, `drizzle/`) appliqué à l'envers sur `main`, puis à
+l'endroit ; et la part de ses lignes ajoutées qu'on retrouve dans `main`. Une
+part haute veut dire « arrivé, retouché depuis » ; une part nulle, « jamais
+arrivé ».
+
+**Codés, jamais sur `main`, et rien ne le disait sur `main` :**
+
+| Branche | Date | Ce que c'est | Où il en est |
+|---|---|---|---|
+| `claude/happy-cannon-2rci5s` | 19 nov. | le module Paysage à 6 € pour les trois formules, Artisan un seul accès, un plan et un diagnostic offerts | **réuni le 24 novembre** au changement de formule sur `claude/ecstatic-einstein-g0dncn`, sur son « oui » ; attend la batterie |
+| `claude/vigilant-ramanujan-kxr0np` | 19 et 20 nov. | la fiche de diagnostic soignée, les dossiers des diagnostics avec leurs notes, les photos de référence qui défilent | sa branche dit « codé, pas sur `main` » ; `main` disait « pas codé » (corrigé) |
+| `claude/upbeat-pascal-mzremi` | 21 nov. | la nourrice de l'outil dessinée avec ses photos vues du dessus (sept commits) | rien sur `main` ; la nourrice en 3D est arrivée depuis, à lui de dire si ce dessin sert encore |
+
+**En route, dans la batterie commune de la session du SIREN**
+(`claude/modest-pascal-l7ma19`) : l'essai par SIREN et le registre, la carte de
+la visite guidée, l'arrosage des deux nourrices (`claude/laughing-wright-xxntzg` :
+le PE au plus court, 0,3 bar au dernier arroseur, GAG, une vanne de plus), et
+le changement de formule. **Gardé hors de `main` par sa décision** : Darcy et
+Moody (`claude/adoring-mendel-e8roex`, « Prends avec Rain Bird »).
+
+**Plus anciens, à lui de dire s'ils servent encore** (le code de `main` a bougé
+depuis, aucun ne se fusionne tel quel) :
+
+| Branche | Date | Ce que c'est | Ce qu'on en sait |
+|---|---|---|---|
+| `claude/intervention-filter-month-year-vo4q29` | 22 et 23 sept. | filtrer les retours d'intervention au mois, avec la roue | moins d'un tiers de son code sur `main` |
+| `claude/unites-dictees` | 29 sept. | une dictée n'écrit que ses unités : « 2 u », jamais « 2 souche » | sa branche attendait sa réponse sur le prix à la bûche |
+| `claude/travaux-supplementaires-facture-0ffzq7` | 1er sept. | les travaux en plus sur la facture, chacun son taux de TVA | refait autrement sur `main` le 4 novembre, probablement dépassé |
+| `claude/legal-quote-terms-25aceo` | 30 août | la forme juridique et le n° de TVA sur le devis | en partie sur `main` ; attendait sa décision sur le capital et le RCS |
+| `claude/green-rounded-send-button-gqxt0c` | 18 août | l'envoi au client plus visible | les écrans ont été refaits depuis, probablement dépassé |
+| `claude/load-testing-model-selection-wtkrgh` | 30 août au 11 oct. | un établi de qualification hors de l'appli | un outil, pas un écran |
+
+**Écartés par lui, rien à faire** : « Payé par » en bouts ronds (non repris le
+29 octobre). **Arrivés sur `main`, retouchés depuis** (plus des trois quarts de
+leurs lignes s'y retrouvent) : la fiche de chantier soignée, « Solde », le
+répertoire des métiers, « J'ai reçu le paiement », la date d'un chantier
+terminé, la visionneuse des retours, l'assistant hors métier, les tubes
+d'arrosage, Jours travaillés.
+
 ## ⏳ LE PLAN D'ARROSAGE ET SES SIX CORRECTIONS DU 23 NOVEMBRE : CODÉES, LA BATTERIE À JOUER
 
 Le tuyau au plus court en PE, les parts égales, un modèle par vanne, le minimum de Rain Bird au dernier arroseur (1,7 bar, le surpresseur proposé), une vanne de plus dès 0,1 bar, deux nourrices au-delà de six voies (`ARCHITECTURE.md` §615, `.claude/rules/arrosage.md`). Sa réponse à la batterie : *« Et jouer la batterie »*.
@@ -52,6 +101,23 @@ recomposant, une fois l'outil corrigé.
 Batterie complète au vert, puis le complément d'après-fusion (types, lint), puis `main`.
 
 ## ⏳ CHANGER DE FORMULE : CODÉ LE 23 NOVEMBRE 2026 SUR `claude/ecstatic-einstein-g0dncn`, ATTEND SA BATTERIE
+
+**Le module Paysage y est réuni depuis le 24 novembre 2026** (son « oui » :
+même écran, une seule version 4). Ce que la réunion a tranché, **déduit de ses
+règles et non dit par lui** (`ARCHITECTURE.md` §614 et §616) :
+
+| | |
+|---|---|
+| ajouter les outils | une montée : le prix entier du mois (45 € pour Artisan), ou à l'année la différence (60 €) |
+| retirer les outils | une descente : à l'échéance, il les garde jusque-là |
+| au-dessus ou en dessous | se juge au prix du mois, formule et outils compris |
+| une formule trop petite pour l'équipe | abonné : plus de refus, la feuille avertit et le crochet retire les accès à l'échéance (sa décision du 23, qui remplace le « refusé avant » du 18) ; pour s'ABONNER, le refus du module reste |
+| les accès qui partent | Artisan : tous les autres, salariés compris (un seul accès, sa règle du 18) ; ailleurs, ceux qui facturent au-delà du plafond |
+| les conditions version 4 | 14.1 (les outils à 6 €, Artisan pour une seule personne), 14.2 (l'essai), 14.6 |
+
+La migration du module est renumérotée **0198** (0187 était pris sur `main`),
+et porte aussi `modules_prevus`. Son paragraphe d'architecture devient §616.
+
 
 **Codé sur son « tu peux coder et ne lance pas de batterie »** (`ARCHITECTURE.md`
 §614). Niveau 3 (argent, migration 0197) : rien ne part sur `main` sans la
@@ -167,7 +233,7 @@ Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fus
 
 - **Darcy et Moody n'y sont pas, sur sa décision.** Réuni aux écartements de Rain Bird, Darcy faisait rougir la règle du té égal (18 octobre) : sur son jardin de 12 × 12 et 8 × 8, la pression au dernier arroseur tombait de 2,21 à 1,80 bar, et le plan passait de 3 réseaux à 2, dont un qui arrosait les deux pelouses. Devant la planche qui le montre (`appli/arrosage-rainbird-et-darcy.html`), sa réponse : *« Prends avec Rain Bird »*. Le lot reste sur `claude/adoring-mendel-e8roex`.
 - **Ce que cela coûte, et qu'il doit savoir le jour où il y revient** : sans Darcy, le calcul garde Hazen-Williams, que la session Darcy a trouvé trop optimiste de 4 à 25 % sur la perte du tuyau (le dernier arroseur reçoit un peu moins que ce que l'outil annonce). Le reprendre, c'est accepter le plan réuni de la planche, ou trancher autrement.
-- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : sa branche n'a plus d'histoire commune avec `main`, et son sujet est l'argent.
+- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : son sujet est l'argent. ~~sa branche n'a plus d'histoire commune avec `main`~~ **faux, corrigé le 24 novembre 2026** : c'était une copie partielle de l'historique (clone superficiel). Sa base commune avec `main` est `d495de84`, et il ne lui manque que trois commits.
 
 ## TRANCHÉ : CHANGER DE FORMULE (23 novembre 2026), À CODER
 
@@ -843,7 +909,11 @@ is at … but expected … » (reproduit en local avec deux fetch d'un dépôt
 huit fois sur huit : le cas n'est pas tranché. Le refus porterait alors « le
 dépôt distant n'a pas pu être joint ». Ne rien corriger avant de l'avoir lu.
 
-## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
+## ⏳ CODÉ, ATTEND SA BATTERIE : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (19 novembre 2026)
+
+**Réuni le 24 novembre 2026 au changement de formule** (`claude/ecstatic-einstein-g0dncn`, son « oui »), voir « CHANGER DE FORMULE » plus haut : une seule batterie, une seule version 4 des conditions. Le refus d'une équipe trop grande ne vaut plus que pour s'abonner.
+
+**Codé le 19 novembre** sur la branche `claude/happy-cannon-2rci5s` (`ARCHITECTURE.md` §616), sur ses planches choisies. **Niveau 3, batterie NON jouée à sa demande** (« code mais pas de batterie ») : elle attend son « oui », puis `main`. Avant toute vente : la version 4 des conditions générales, sa décision. Ce qui suit est l'historique des décisions.
 
 `appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran
 Abonnement (figé avec `scripts/planche-figee/`). Le détail et ce que le code
@@ -1325,7 +1395,7 @@ même (`CHANGELOG.md`). **Il n'a pas encore vu cette version.**
   film « Une photo. » la montrent), et le film se retourne. Le lien vers la
   licence (creativecommons.org) n'a pas pu être ouvert depuis ce poste, son
   mandataire le refuse ; celui de la photo répond.
-- **Les dossiers ne sont pas codés.** Le film « Vos dossiers. » est tourné
+- ~~**Les dossiers ne sont pas codés.**~~ **Faux, relevé le 24 novembre 2026** : ils sont codés le 20 novembre sur `claude/vigilant-ramanujan-kxr0np`, jamais arrivés sur `main` (voir « LES LOTS ÉGARÉS », en tête). Le film « Vos dossiers. » est tourné
   sur sa planche du 20 novembre (`appli/soignee/diagnostic-dossiers.html`,
   posée par une autre session, qui n'en a rien écrit ici) ; sa réponse à
   cette planche n'est écrite nulle part, et ses deux questions restent

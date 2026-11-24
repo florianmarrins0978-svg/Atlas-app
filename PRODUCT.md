@@ -40,8 +40,12 @@ facture, puis la fiche d'entretien.
 **Cible commerciale, confirmée le 2 septembre 2026 : les paysagistes d'abord.**
 **Élargie le 9 octobre 2026 aux élagueurs** (sa réponse, devant le site de
 vente) : la fiche de sécurité d'élagage et le vocabulaire du jardin les
-servent déjà. L'arrosage, le diagnostic végétal et les fiches d'entretien font
-partie du cœur, pas d'un module optionnel.
+servent déjà. L'arrosage, le diagnostic végétal et les fiches d'entretien sont **un module**
+depuis le 18 novembre 2026 : « les outils de paysage », 6 € HT par mois, qui
+s'ajoutent à n'importe quelle formule ; un plan d'arrosage et un diagnostic
+sont offerts une fois par entreprise, essai compris (`src/lib/abonnements.ts`,
+`MODULES`). Corrigé le 19 novembre : cette ligne disait « partie du cœur, pas
+d'un module optionnel ».
 
 **Le site de vente s'adresse aux artisans depuis le 6 novembre 2026** (sa
 demande : *« pensé pour les artisans, pas pour les paysagistes et les
@@ -140,7 +144,9 @@ marque (voir ci-dessous) ; le fonctionnement hors réseau.
 **L'abonnement, lui, est tranché** (corrigé le 25 octobre 2026 : cette ligne le
 disait encore indécis) : la grille vient de ses planches du 9 et du
 24 septembre 2026 et vit dans `src/lib/abonnements.ts`, Artisan 39 €,
-Entreprise 59 €, Illimité 159 € HT par mois, quinze jours d'essai. Le paiement
+Entreprise 59 €, Illimité 159 € HT par mois, quinze jours d'essai ; Artisan est
+pour une seule personne et les outils de paysage s'ajoutent pour 6 € (18 et
+19 novembre 2026, codé, pas encore sur `main` ce jour-là). Le paiement
 en ligne dépend du prestataire branché sur l'espace ; l'écran dit quand il ne
 l'est pas.
 

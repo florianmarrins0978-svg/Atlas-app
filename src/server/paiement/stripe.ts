@@ -39,10 +39,14 @@ import { getEnv } from "../env";
 import { logger } from "../logger";
 import {
   FORMULES,
+  MODULES,
+  estModule,
   formule,
+  nomDeLAbonnement,
   centimes,
   TVA_ABONNEMENT_POURCENT,
   type FormuleCode,
+  type ModuleCode,
   type Periodicite,
 } from "@/lib/abonnements";
 import { remboursementAuProrata, type RaisonDepart } from "@/lib/resiliation";
@@ -158,10 +162,25 @@ async function appeler(
  * bouge, un objet neuf naît tout seul et l'ancien reste attaché aux abonnements
  * qui le portaient — ce qui est précisément ce qu'on veut, personne ne devant
  * être reprélevé d'un montant qu'il n'a pas accepté.
+ *
+ * **LES OUTILS DE PAYSAGE ENTRENT DANS CE MÊME PRIX** (18 et 19 novembre 2026) :
+ * « Artisan, avec les outils de paysage » est un prix à lui
+ * (`atlas_artisan_paysage_mensuelle_4500`), jamais une seconde ligne. Un
+ * abonnement Atlas n'a qu'une ligne (`ligneUnique` refuse d'en deviner une
+ * parmi deux), et ajouter ou retirer les outils se fait en changeant ce prix,
+ * exactement comme un changement de formule : ajouter est une montée, retirer
+ * une descente à l'échéance (`src/lib/changement-de-formule.ts`).
  */
-async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Periodicite): Promise<{ ok: true; prix: string } | Echec> {
-  const montant = centimes(f, periodicite);
-  const cle = `atlas_${f.code}_${periodicite}_${montant}`;
+async function prixDeLaFormule(
+  f: (typeof FORMULES)[number],
+  periodicite: Periodicite,
+  modules: readonly ModuleCode[]
+): Promise<{ ok: true; prix: string } | Echec> {
+  const montant = centimes(f, periodicite, modules);
+  // L'ordre de `MODULES`, jamais celui de l'appelant : deux ordres feraient
+  // deux clés, donc deux prix, pour le même abonnement.
+  const avec = MODULES.filter((m) => modules.includes(m.code));
+  const cle = ["atlas", f.code, ...avec.map((m) => m.code), periodicite, montant].join("_");
 
   const existant = await appeler(
     `/v1/prices?lookup_keys[]=${encodeURIComponent(cle)}&active=true&limit=1`,
@@ -185,7 +204,7 @@ async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Period
       // reprendre évite un refus pour clé occupée — la seule cause possible
       // étant un prix qu'on a nous-même désactivé.
       transfer_lookup_key: "true",
-      "product_data[name]": `Cause ${f.nom}`,
+      "product_data[name]": `Cause ${nomDeLAbonnement(f.code, modules)}`,
     })
   );
   if (!cree.ok) return cree;
@@ -249,15 +268,17 @@ async function tauxDeTva(): Promise<{ ok: true; taux: string } | Echec> {
 /**
  * OUVRIR LE PAIEMENT — la page hébergée où il saisit sa carte.
  *
- * **`metadata` porte la formule choisie**, et c'est par là qu'on la relit au
- * retour : déduire la formule du montant obligerait à faire correspondre des
- * centimes à une grille, et une remise suffirait à tout fausser.
+ * **`metadata` porte la formule choisie, et ses modules**, et c'est par là
+ * qu'on les relit au retour : déduire la formule du montant obligerait à faire
+ * correspondre des centimes à une grille, et une remise suffirait à tout
+ * fausser.
  */
 export async function ouvrirLePaiement(params: {
   entrepriseId: string;
   email: string | null;
   formule: FormuleCode;
   periodicite: Periodicite;
+  modules: readonly ModuleCode[];
   /** Où le patron revient — succès et abandon. Fournies par l'appelant. */
   retourSucces: string;
   retourAbandon: string;
@@ -265,7 +286,7 @@ export async function ouvrirLePaiement(params: {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
 
-  const prix = await prixDeLaFormule(f, params.periodicite);
+  const prix = await prixDeLaFormule(f, params.periodicite, params.modules);
   if (!prix.ok) return prix;
   const tva = await tauxDeTva();
   if (!tva.ok) return tva;
@@ -284,6 +305,7 @@ export async function ouvrirLePaiement(params: {
     "subscription_data[metadata][entreprise_id]": params.entrepriseId,
     "subscription_data[metadata][formule]": params.formule,
     "subscription_data[metadata][periodicite]": params.periodicite,
+    "subscription_data[metadata][modules]": etiquetteDesModules(params.modules),
     // Sur l'abonnement, pas sur la ligne : un changement de formule remplace
     // la ligne, et la TVA partirait avec elle.
     "subscription_data[default_tax_rates][0]": tva.taux,
@@ -358,6 +380,25 @@ function estObjet(v: unknown): v is Record<string, unknown> {
 }
 
 /**
+ * L'ÉTIQUETTE DES MODULES : « paysage », ou vide. **Vide l'efface** chez le
+ * prestataire : c'est ainsi qu'un abonnement qui retire ses outils perd aussi
+ * l'étiquette qui les lui rendait.
+ */
+function etiquetteDesModules(modules: readonly ModuleCode[]): string {
+  return MODULES.filter((m) => modules.includes(m.code))
+    .map((m) => m.code)
+    .join(",");
+}
+
+/** Relit l'étiquette ; `null` quand elle nomme un module qu'Atlas ne connaît pas. */
+function modulesLus(brut: unknown): ModuleCode[] | null {
+  if (brut === undefined || brut === null || brut === "") return [];
+  if (typeof brut !== "string") return null;
+  const codes = brut.split(",").map((c) => c.trim());
+  return codes.every(estModule) ? (codes as ModuleCode[]) : null;
+}
+
+/**
  * LA TRADUCTION D'UN ABONNEMENT STRIPE EN ÉTAT D'ATLAS.
  *
  * **Exportée, parce que le crochet en a besoin autant que le retour de
@@ -391,9 +432,18 @@ export function lireUnAbonnement(brut: Record<string, unknown>): EtatVenuDuPrest
     logger.error("Abonnement sans périodicité reconnue", { abonnement: id, periodicite: String(codePeriodicite) });
     return null;
   }
+  // Un module inconnu : on ne devine pas ce qui est payé, pour la même raison
+  // qu'une formule inconnue. Absent ou vide : aucun module, les abonnements
+  // d'avant le 18 novembre 2026 n'en portent pas.
+  const modules = modulesLus(meta.modules);
+  if (!modules) {
+    logger.error("Abonnement aux modules non reconnus", { abonnement: id, modules: String(meta.modules) });
+    return null;
+  }
 
   return {
     formule: codeFormule as FormuleCode,
+    modules,
     periodicite: codePeriodicite,
     statut: statutLu(brut.status),
     periodeFin: finDePeriode(brut),
@@ -586,6 +636,8 @@ export async function monterToutDeSuite(params: {
   abonnementPrestataire: string;
   formule: FormuleCode;
   periodicite: Periodicite;
+  /** Les modules VOULUS, pas ceux d'avant : ajouter les outils est une montée. */
+  modules: readonly ModuleCode[];
   facon: "monter-au-mois" | "monter-a-l-annee" | "passer-a-l-annee";
 }): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
   const f = formule(params.formule);
@@ -608,7 +660,7 @@ export async function monterToutDeSuite(params: {
     return { ok: false, erreur: "prestataire_refuse" };
   }
 
-  const prix = await prixDeLaFormule(f, params.periodicite);
+  const prix = await prixDeLaFormule(f, params.periodicite, params.modules);
   if (!prix.ok) return prix;
 
   // Un calendrier resté chez le prestataire (une descente que l'écran ne
@@ -630,6 +682,7 @@ export async function monterToutDeSuite(params: {
       // une seule façon de savoir quelle formule porte un abonnement.
       "metadata[formule]": params.formule,
       "metadata[periodicite]": params.periodicite,
+      "metadata[modules]": etiquetteDesModules(params.modules),
       // Un changement de formule annule une résiliation en cours : il vient de
       // choisir de rester. Laisser le drapeau couperait son abonnement neuf à
       // la fin de la période, sans que rien ne l'en avertisse.
@@ -668,6 +721,8 @@ export async function prevoirALEcheance(params: {
   abonnementPrestataire: string;
   formule: FormuleCode;
   periodicite: Periodicite;
+  /** Les modules VOULUS, pas ceux d'avant : les retirer, c'est passer une liste vide. */
+  modules: readonly ModuleCode[];
 }): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
   const f = formule(params.formule);
   if (!f) return { ok: false, erreur: "prestataire_refuse" };
@@ -698,7 +753,7 @@ export async function prevoirALEcheance(params: {
     return { ok: false, erreur: "prestataire_refuse" };
   }
 
-  const prix = await prixDeLaFormule(f, params.periodicite);
+  const prix = await prixDeLaFormule(f, params.periodicite, params.modules);
   if (!prix.ok) return prix;
   const tva = await tauxDeTva();
   if (!tva.ok) return tva;
@@ -707,10 +762,13 @@ export async function prevoirALEcheance(params: {
   // l'abonnement continue seul : `end_date` plutôt qu'un nombre de
   // répétitions, dont le nom change d'une version de l'API à l'autre.
   const finDeLaSuivante = Math.round(plusUnePeriode(new Date(phase.end_date * 1000), params.periodicite).getTime() / 1000);
-  const etiquettes = (formuleCode: string, periodicite: string) => ({
+  // Les modules se redisent à chaque phase : une phase sans leur étiquette
+  // les ferait perdre à l'échéance, et `lireUnAbonnement` lirait « aucun ».
+  const etiquettes = (formuleCode: string, periodicite: string, modules: string) => ({
     entreprise_id: typeof meta.entreprise_id === "string" ? meta.entreprise_id : undefined,
     formule: formuleCode,
     periodicite,
+    modules,
   });
   const champs: Record<string, string | number | undefined> = {
     end_behavior: "release",
@@ -727,10 +785,11 @@ export async function prevoirALEcheance(params: {
     "phases[1][default_tax_rates][0]": tva.taux,
     "phases[1][proration_behavior]": "none",
   };
-  for (const [cle, valeur] of Object.entries(etiquettes(meta.formule, meta.periodicite))) {
+  const modulesPayes = typeof meta.modules === "string" ? meta.modules : "";
+  for (const [cle, valeur] of Object.entries(etiquettes(meta.formule, meta.periodicite, modulesPayes))) {
     champs[`phases[0][metadata][${cle}]`] = valeur;
   }
-  for (const [cle, valeur] of Object.entries(etiquettes(params.formule, params.periodicite))) {
+  for (const [cle, valeur] of Object.entries(etiquettes(params.formule, params.periodicite, etiquetteDesModules(params.modules)))) {
     champs[`phases[1][metadata][${cle}]`] = valeur;
   }
 

@@ -58,6 +58,9 @@ Sur la branche `claude/intelligent-ptolemy-qviel9`. La marge se tape en pour cen
 ## LA FEUILLE « MAIN D'ŒUVRE » CHANGE LA LIGNE DE SON ÉQUIPE : SUR `main` (20 novembre 2026)
 
 Rouverte, la feuille repart de sa ligne ; « Changer la main d’œuvre » la change (une seule ligne de son équipe par TVA), un partenaire pose la sienne, « Répartis » retire sa ligne. Migration 0187 (les hommes de sa ligne). Batterie verte (une rouge venue d’ailleurs, rejouée verte des deux côtés). `ARCHITECTURE.md` §591.
+## LES OUTILS DE PAYSAGE EN MODULE, ARTISAN POUR UNE SEULE PERSONNE, UN PLAN ET UN DIAGNOSTIC OFFERTS : CODÉ, PAS SUR `main` (19 novembre 2026)
+
+Sur la branche `claude/happy-cannon-2rci5s`, sur ses planches choisies (`appli/soignee/abonnement-module-paysage.html`, « A, trois lignes, en doré » ; `appli/soignee/paysage-plan-offert.html`). Les outils de paysage (arrosage, diagnostic, fiches de chantier) s'ajoutent à n'importe quelle formule pour 6 € HT par mois, 60 € à l'année ; Entreprise et Illimité ne les comprennent plus ; Artisan est un seul accès, salariés compris ; un plan d'arrosage et un diagnostic sont offerts une fois par entreprise, essai compris. Migration 0187 (expand), `ARCHITECTURE.md` §616, `docs/abonnement-module-paysage.md`. **Niveau 3 (argent, migration) : la batterie n'est pas jouée, à sa demande (« code mais pas de batterie »).** Les contrôles purs, le faux prestataire et la suite base des offres sont verts ; les écrans ont été regardés. Restent sa batterie, la version 4 des conditions générales (sa décision), et le premier essai avec une vraie clé de paiement.
 
 ## DEUX DÉFAUTS CORRIGÉS, SUR `main` (19 novembre 2026)
 

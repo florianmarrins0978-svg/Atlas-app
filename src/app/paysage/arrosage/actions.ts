@@ -1,6 +1,8 @@
 "use server";
 
-import { exigerEcran, exigerFonction } from "@/server/garde-action";
+import { exigerEcran, exigerLArrosage } from "@/server/garde-action";
+import { prendreLOffre } from "@/server/repositories/offres";
+import { phraseDeLaFermeture } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis, type CroquisLu } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
@@ -83,6 +85,12 @@ export type EtatPlan =
       /** De quoi refaire le plan quand il demande une modification. */
       parametres: ParametresPlan;
       plan: LePlan;
+      /**
+       * Le jeton du PLAN OFFERT (19 novembre 2026), quand c'en est un : il
+       * revient avec chaque retouche, qui sinon serait refusée comme un second
+       * plan (`exigerLArrosage`). Absent pour un abonné aux outils.
+       */
+      jetonOffert?: string;
     };
 
 // Le plan lui-même, son dessin et ses pièces se composent dans `le-plan.ts`,
@@ -97,7 +105,8 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // désormais à compter la cadence, plus bas.
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "lire un croquis d'arrosage");
-  await exigerFonction(ctx, "arrosage", "lire un croquis d'arrosage");
+  const jeton = texteOuNull(formulaire.get("jeton-offert"));
+  const acces = await exigerLArrosage(ctx, "lire un croquis d'arrosage", jeton);
 
   // **LE PLAN DESSINÉ AU DOIGT** — sa planche B, choisie le 18 octobre 2026.
   // Il ne passe pas par l'IA : tout y est déjà en mètres. Il rejoint la photo
@@ -115,7 +124,8 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     const relu = lireLeDessin(brut);
     if (!relu.ok) return { etat: "refus", raison: relu.raison };
     const branchement = String(formulaire.get("piquage") ?? "compteur");
-    return planDuCroquis(croquisDuDessin(relu.dessin, branchement === "compteur" ? "compteur" : "robinet"), formulaire);
+    const etat = planDuCroquis(croquisDuDessin(relu.dessin, branchement === "compteur" ? "compteur" : "robinet"), formulaire);
+    return avecLOffre(ctx, acces, jeton, etat);
   }
 
   const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
@@ -146,6 +156,35 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   const lu = await lireCroquis(prete.photo.octets.toString("base64"), prete.photo.mimeType);
   if (!lu.ok) return { etat: "refus", raison: lu.raison };
   return { etat: "a-verifier", plan: planLuDuCroquis(lu.croquis) };
+}
+
+function texteOuNull(v: FormDataEntryValue | null): string | null {
+  return typeof v === "string" && v !== "" ? v : null;
+}
+
+/**
+ * LE PLAN OFFERT SE PREND QUAND IL SORT — sa décision du 19 novembre 2026 : un
+ * plan d'arrosage gratuit, une fois. Un croquis refusé (métrés, piquage ou
+ * nourrice manquants) ne le coûte pas : il n'a rien eu. La photo lue et à
+ * vérifier non plus, ce n'est pas encore un plan.
+ *
+ * **La prise est atomique** : deux envois simultanés n'ouvrent pas deux plans.
+ * La retouche du plan offert garde son jeton ; un abonné aux outils n'en a pas.
+ */
+async function avecLOffre(
+  ctx: Awaited<ReturnType<typeof getCurrentCtx>>,
+  acces: "ouverte" | "offerte" | "retouche",
+  jeton: string | null,
+  etat: EtatPlan
+): Promise<EtatPlan> {
+  if (etat.etat !== "lu" || acces === "ouverte") return etat;
+  if (acces === "retouche") return { ...etat, jetonOffert: jeton ?? undefined };
+  const prise = await prendreLOffre(ctx, "arrosage");
+  if (!prise) {
+    const fermeture = phraseDeLaFermeture("arrosage");
+    return { etat: "refus", raison: `${fermeture.titre}. ${fermeture.detail}` };
+  }
+  return { ...etat, jetonOffert: prise.jeton };
 }
 
 /**
@@ -348,11 +387,17 @@ export type EtatDiscussion =
 export async function discuterDuPlan(
   parametres: ParametresPlan,
   historique: Tour[],
-  demande: string
+  demande: string,
+  jetonOffert: string | null = null
 ): Promise<EtatDiscussion> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "discuter du plan d'arrosage");
-  await exigerFonction(ctx, "arrosage", "discuter du plan d'arrosage");
+  // **La discussion refait un plan sans en créer un** : elle ne s'ouvre qu'à
+  // un abonné aux outils, ou à la retouche du plan offert, par son jeton. Un
+  // outil seulement « offert » n'a encore aucun plan à discuter ; l'appel
+  // direct, lui, fabriquerait des plans sans jamais prendre l'offre.
+  const acces = await exigerLArrosage(ctx, "discuter du plan d'arrosage", jetonOffert);
+  if (acces === "offerte") return { etat: "refus", raison: "La discussion part d’un plan. Faites d’abord le plan." };
 
   // **La cadence manquait ici, et elle est posée partout ailleurs** — audit
   // final, 29 août 2026. C'était la seule porte d'IA du produit sans compteur :

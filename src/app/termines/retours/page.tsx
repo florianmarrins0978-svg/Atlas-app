@@ -36,7 +36,7 @@ export default async function PageDesRetours() {
   // même en-tête, même retour — ce qui change, c'est ce qu'il y a dedans. Et
   // RIEN n'est lu avant d'avoir vérifié la formule.
   const abonnement = await abonnementDeLEntreprise(ctx);
-  if (!fonctionOuverte(abonnement?.formule, "retours")) {
+  if (!fonctionOuverte(abonnement, "retours")) {
     return (
       <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
         <EnTeteEcran titre="Retours d'intervention" retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }} allure="commune" />

@@ -49,6 +49,7 @@ async function abonne(suffixe: string, abonnementPrestataire: string) {
   const ctx = { utilisateurId, entrepriseId: entreprise.id };
   await enregistrerLAbonnement(ctx, {
     formule: "artisan",
+    modules: [],
     periodicite: "mensuelle",
     statut: "actif",
     periodeFin: new Date(Date.now() + 30 * 86_400_000),
