@@ -40,8 +40,11 @@ noir »*) : `DOUX` et `GRIS` retirés de `src/server/pdf/dossier-comptable-pdf.t
 (83 textes), et `test-dossier-comptable-pdf.ts` refuse désormais tout texte
 gris (vu rouge avant, vert après). **Codé sur `claude/dossier-comptable-exports-yzwp5f`,
 pas sur `main`** : niveau 2 (`npm run verifier:avant-fusion` et quatre suites
-navigateur), qui attend son « oui ». L'attestation du comptable
-(`attestation-comptable-pdf.ts`) écrit encore en gris : à lui de dire.
+navigateur), qui attend son « oui ». **L'attestation du comptable aussi**, sur son « oui, passe en noir » :
+`DOUX` retiré de `attestation-comptable-pdf.ts` (14 textes), même contrôle dans
+`test-attestation-comptable.ts`, la relecture des couleurs étant partagée
+(`scripts/_couleurs-du-texte-pdf.ts`). Les deux documents attendent le même
+contrôle de niveau 2, et son « oui » pour le lancer.
 
 **Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
 tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.

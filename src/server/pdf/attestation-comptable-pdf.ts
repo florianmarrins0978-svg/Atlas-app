@@ -38,8 +38,14 @@ function couleur(hex: string) {
 }
 type Teinte = ReturnType<typeof rgb>;
 
+/**
+ * Une seule encre pour le texte, et aucun gris : sa demande du 24 novembre
+ * 2026, « tout ce qui est gris, il faut que tu me le passes en noir », pour
+ * l'attestation comme pour le dossier. Ce qui se distingue le fait par le gras
+ * ou la serif ; seule la conclusion garde la teinte de son verdict.
+ * `test-attestation-comptable.ts` relit la couleur de chaque texte écrit.
+ */
 const ENCRE = couleur(ORIGINE.ink);
-const DOUX = couleur(ORIGINE.inkSoft);
 const FILET = couleur("#e4e0d6");
 const REJET_FOND = couleur(ORIGINE.carteRougeFond);
 const REJET_TEXTE = couleur(ORIGINE.carteRougeTexte);
@@ -131,7 +137,7 @@ function rangee(plume: Plume, gauche: string, droite: string, policeDroite: PDFF
   plume.place(pas);
   plume.y -= pas;
   droite = papier(droite);
-  plume.page.drawText(gauche, { x: MARGE, y: plume.y, size: 10.5, font: plume.polices.sans, color: DOUX });
+  plume.page.drawText(gauche, { x: MARGE, y: plume.y, size: 10.5, font: plume.polices.sans, color: ENCRE });
   plume.page.drawText(droite, { x: LARGEUR - MARGE - policeDroite.widthOfTextAtSize(droite, tailleDroite), y: plume.y, size: tailleDroite, font: policeDroite, color: teinteDroite });
 }
 
@@ -205,8 +211,8 @@ export async function composerAttestation(c: ContenuAttestation, signaturePng: U
 
   plume.texte(c.titre, p.serif, 26, ENCRE, MARGE, UTILE, 1.1);
   plume.y -= 6;
-  plume.texte(c.dossier, p.sans, 11, DOUX);
-  plume.texte(c.periode, p.sans, 11, DOUX);
+  plume.texte(c.dossier, p.sans, 11, ENCRE);
+  plume.texte(c.periode, p.sans, 11, ENCRE);
 
   plume.filet(16);
   rangee(plume, "Conclusion", c.motConclusion, p.serif, 16, verdict);
@@ -240,7 +246,7 @@ export async function composerAttestation(c: ContenuAttestation, signaturePng: U
 
   if (c.observations) {
     plume.y -= 14;
-    plume.texte("Observations", p.gras, 9.5, DOUX);
+    plume.texte("Observations", p.gras, 9.5, ENCRE);
     plume.texte(c.observations, p.sans, 10.5, ENCRE);
   }
 
@@ -248,14 +254,14 @@ export async function composerAttestation(c: ContenuAttestation, signaturePng: U
   plume.texte(c.phrase, p.serif, 14, ENCRE, MARGE, UTILE, 1.35);
 
   plume.y -= 8;
-  c.signataire.forEach((l, i) => plume.texte(l, i === 0 ? p.gras : p.sans, i === 0 ? 11 : 10, i === 0 ? ENCRE : DOUX));
+  c.signataire.forEach((l, i) => plume.texte(l, i === 0 ? p.gras : p.sans, i === 0 ? 11 : 10, ENCRE));
 
   // La signature et le tampon, sur la même ligne, comme sur la planche : le
   // tampon déborde sur la fin du trait, ce que fait tout tampon posé à la main.
   const zone = 112;
   plume.place(zone + 30);
   plume.y -= 22;
-  plume.page.drawText(papier(c.fait), { x: MARGE, y: plume.y, size: 10, font: p.sans, color: DOUX });
+  plume.page.drawText(papier(c.fait), { x: MARGE, y: plume.y, size: 10, font: p.sans, color: ENCRE });
   const haut = plume.y - 8;
   const base = haut - zone;
   const echelle = Math.min(260 / signature.width, (zone - 16) / signature.height, 1);
@@ -265,8 +271,8 @@ export async function composerAttestation(c: ContenuAttestation, signaturePng: U
   plume.y = base;
 
   plume.filet(18);
-  plume.texte(c.pied, p.sans, 9, DOUX);
-  plume.texte(c.empreinte, p.sans, 8.5, DOUX);
+  plume.texte(c.pied, p.sans, 9, ENCRE);
+  plume.texte(c.empreinte, p.sans, 8.5, ENCRE);
 
   return protegerContreModification(await doc.save());
 }
