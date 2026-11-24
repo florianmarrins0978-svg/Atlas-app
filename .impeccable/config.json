@@ -912,6 +912,15 @@
         ],
         "createdAt": "2026-11-22T20:07:48.572Z",
         "reason": "la police de titre du site de vente, charte retenue le 6 novembre 2026 : la même que sur cause-2-visite.html, dont cette page est les mentions légales"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-trois-fichiers.html"
+        ],
+        "createdAt": "2026-11-24T17:40:40.881Z",
+        "reason": "Claude, triage : le seul relevé est .cadre, le cadre de téléphone commun du kit (kit.css) ; l'écran le remplit exprès, la marge intérieure vit dans .defile"
       }
     ]
   }
