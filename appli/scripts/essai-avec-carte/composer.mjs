@@ -100,7 +100,7 @@ const pagePaiement = (refus) => ({
 
 const sansCarte = ecran(
   titre("Il manque votre carte.") +
-    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours. Pour arrêter avant, touchez « Résilier » dans Réglages, Abonnement.`) +
+    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours. Pour arrêter avant et ne rien payer, touchez « Résilier » dans Réglages, Abonnement.`) +
     chemin() +
     releve([ligne(true, "Votre formule", `${M.formule} avec les outils`, M.total)]),
   plein("Ajouter ma carte", "paiement") + discret("Se déconnecter", 'data-dit="Dans l\'appli : ferme la session."'),
