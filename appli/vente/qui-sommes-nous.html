@@ -48,7 +48,8 @@
   CE QUI EST DE MOI, à valider par lui (docs/qui-sommes-nous.md) : les
   heures de la journée (une journée type, donnée en exemple), « nos soirées
   se passaient à refaire des devis », « nous voulions un outil qui tienne
-  dans la poche », les noms d'outils de la troisième forme.
+  dans la poche », les six outils de l'établi et les trois phrases
+  « le jour, … le soir, … » de la troisième forme.
   CE QUI N'EST PAS ÉCRIT, et c'est voulu (PRODUCT.md, « Evidence on Hand ») :
   aucun nombre (ni d'années, ni de personnes, ni d'artisans servis), aucun
   prénom, aucun lieu, aucun témoignage.
@@ -102,18 +103,6 @@ section{padding:clamp(88px,12vw,150px) 0}
 html.anime [data-monte] .mt{display:inline-block;overflow:hidden;vertical-align:top;padding:.16em .12em .18em;margin:-.16em -.12em -.18em}
 html.anime [data-monte] .mi{display:inline-block;transform:translateY(140%) rotate(5deg);transform-origin:0 100%;transition:transform .8s var(--sortie);transition-delay:calc(var(--i,0) * 34ms)}
 html.anime [data-monte].vu .mi{transform:none}
-html.anime .mot .point{display:inline-block;opacity:0;transform-origin:50% 82%}
-html.anime .mot.vu .point{animation:point-tombe .52s .56s both}
-@keyframes point-tombe{
-  0%{opacity:0;transform:translateY(-.9em) scale(1,1);animation-timing-function:cubic-bezier(.5,0,1,.6)}
-  12%{opacity:1}
-  60%{opacity:1;transform:translateY(-.03em) scale(1,1);animation-timing-function:linear}
-  70%{opacity:1;transform:translateY(0) scale(1.24,.72);animation-timing-function:cubic-bezier(.2,.8,.3,1)}
-  100%{opacity:1;transform:none}
-}
-.mot{font-size:clamp(56px,13vw,96px);line-height:.9}
-.mot .point{color:var(--or)}
-.nuit .mot .point{color:var(--or-clair)}
 .chapo{font-size:clamp(19px,2vw,22px);line-height:1.45;color:var(--encre-2)}
 .nuit .chapo{color:var(--sur-nuit-2)}
 
@@ -184,7 +173,18 @@ html.anime .menu.ouvert a{opacity:1;transform:none;transition:opacity .5s ease c
 .nuit .appareil{box-shadow:0 60px 90px -40px rgba(0,0,0,.75),0 22px 34px -22px rgba(0,0,0,.6),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
 .socle{position:relative}
 html.anime .tourne{transform:perspective(1200px) translateY(calc(var(--t,0) * 64px)) rotateX(calc(var(--t,0) * 21deg)) rotateY(calc(var(--t,0) * var(--cote,-19deg))) scale(calc(1 - var(--tp,0) * .1))}
-html.anime .socle.repos > .tourne{transform:none}
+html.anime .leve{transform:perspective(1100px) translateY(calc(var(--t,0) * 44px)) rotateX(calc(var(--tp,0) * 34deg)) scale(calc(1 - var(--tp,0) * .06));transform-origin:50% 100%}
+html.anime .socle.repos > .tourne,html.anime .socle.repos > .leve{transform:none}
+/* Une capture qui n'est pas un écran entier (le cadrage d'un film, un plan
+   découpé) se pose à sa propre proportion, comme sur le site : dans le cadre
+   d'un téléphone, elle perdait ses bords. */
+.gros{margin:0;border-radius:22px;overflow:hidden;isolation:isolate;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
+.gros img{width:100%}
+.feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+/* Le devis du client commence au ras de l'écran : sous le coin arrondi du
+   téléphone, « Devis » perdait sa première lettre. Une marge du fond même de
+   la page du client le rend entier. */
+.appareil > img.ras{padding:12px 10px 0;object-fit:contain;object-position:top;background:#f4f3ee}
 
 /* ── La place d'une photo qu'il enverra ───────────────────────────────── */
 /* Un viseur d'or et l'icône d'un appareil : la place se lit comme réservée,
@@ -202,17 +202,6 @@ html.anime .socle.repos > .tourne{transform:none}
 .nuit .photo .coin{border-color:var(--or-clair)}
 .nuit .photo svg{color:var(--or-clair)}
 .nuit .photo b{color:var(--sur-nuit)}
-
-/* Les engagements, cochés au trait (la liste « faits » du site). */
-.faits{list-style:none;margin:0;padding:0;display:grid}
-.faits li{padding:24px 0 24px 46px;border-bottom:1px solid var(--trait);display:grid;gap:6px;position:relative}
-.faits li:first-child{border-top:1px solid var(--trait)}
-.faits li svg{position:absolute;left:0;top:27px;width:26px;height:26px;color:var(--feuille)}
-html.anime .faits svg circle{stroke-dasharray:76;stroke-dashoffset:76;transform:rotate(-90deg);transform-origin:13px 13px;transition:stroke-dashoffset .9s var(--sortie);transition-delay:calc(var(--i,0) * 150ms)}
-html.anime .faits svg path{stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .45s var(--sortie);transition-delay:calc(var(--i,0) * 150ms + 420ms)}
-html.anime .faits.vu svg circle,html.anime .faits.vu svg path{stroke-dashoffset:0}
-.faits b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display);font-weight:400}
-.faits span{color:var(--encre-2);font-size:16.5px}
 
 /* Ce qui se pose en entrant dans l'écran, une fois. */
 html.anime .entre{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform 1s var(--sortie);transition-delay:var(--d,0ms)}
@@ -249,6 +238,8 @@ html.anime .etape .heure{color:color-mix(in srgb,var(--encre-2) 46%,var(--fond))
 html.anime .etape.passee .heure{color:var(--or)}
 .etape h3{font-size:clamp(32px,7.6vw,46px);line-height:1.02}
 .etape .dit p{margin-top:12px;font-size:clamp(18px,4.6vw,21px);line-height:1.45;color:var(--encre-2);max-width:24em}
+.etape .dit .promesse{margin-top:14px;color:var(--encre);font-weight:500}
+.etape .gros{width:min(62vw,268px)}
 .etape .visuel{margin-top:14px}
 .etape .appareil{width:min(62vw,268px)}
 .etape .photo{max-width:560px}
@@ -270,10 +261,8 @@ html.anime .etape.passee .heure{color:var(--or)}
 .soir .socle{justify-self:center}
 @media (min-width:960px){.soir-grille{grid-template-columns:1.1fr .9fr;align-items:center}.soir .socle{justify-self:end}}
 .pourquoi{padding-bottom:calc(clamp(88px,12vw,150px) + var(--coin))}
-.pourquoi-grille{display:grid;gap:44px}
-.pourquoi h2{font-size:clamp(48px,11vw,88px);line-height:.95}
+.pourquoi h2{font-size:clamp(48px,11vw,88px);line-height:.95;max-width:9em}
 .pourquoi .chapo{margin-top:24px;max-width:24em;font-size:clamp(20px,4.6vw,24px);line-height:1.42}
-@media (min-width:960px){.pourquoi-grille{grid-template-columns:1fr 1fr;gap:88px;align-items:start}}
 
 /* ═══ DEUXIÈME FORME : LA LETTRE ══════════════════════════════════════════ */
 /* La page est une lettre posée sur la scène verte du site. Elle s'écrit de
@@ -329,15 +318,18 @@ html.anime .lettre.vu .signature svg path{stroke-dashoffset:0;transition:stroke-
 .v-mains .ouverture .chapo{margin-top:24px;max-width:26em}
 .etabli{list-style:none;margin:clamp(40px,6vw,64px) 0 0;padding:clamp(18px,4vw,44px) clamp(10px,3vw,36px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,2vw,24px) clamp(8px,2vw,24px);border-radius:30px;background:radial-gradient(circle at 11px 11px,rgba(var(--ombre),.13) 1.3px,transparent 1.9px) 0 0/22px 22px,var(--sable);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.06)}
 @media (min-width:760px){.etabli{grid-template-columns:repeat(3,1fr)}}
-@media (min-width:960px){.etabli{grid-template-columns:repeat(6,1fr);padding:40px 28px 30px}.outil svg,.tel{width:min(100%,170px)}}
+@media (min-width:960px){.etabli{grid-template-columns:repeat(6,1fr);padding:40px 28px 30px}.outil > svg{width:min(100%,170px)}.tel{width:230px}}
 .outil{display:grid;justify-items:center;align-content:start;gap:6px;padding:10px 4px 14px;text-align:center}
-.outil svg{width:min(100%,150px);height:auto;aspect-ratio:1;fill:none;stroke:var(--encre);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.outil > svg{width:min(100%,150px);height:auto;aspect-ratio:1;fill:none;stroke:var(--encre);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
 .outil b{font:400 clamp(21px,4.8vw,28px)/1.1 var(--display);font-weight:400}
 .outil-cause svg{stroke:var(--feuille)}
 .outil-cause b{font-style:italic;color:var(--feuille)}
-.tel{position:relative;display:block;width:min(100%,150px)}
-.tel svg{width:100%}
-.tel img{position:absolute;left:29.6%;top:10.4%;width:40.8%;height:79.2%;object-fit:cover;object-position:top;border-radius:7px;background:var(--papier)}
+/* Cause, le dernier outil, a sa rangée : son écran doit se lire, comme
+   ceux des téléphones du reste de la page. */
+.outil-cause{grid-column:1 / -1;padding-top:18px}
+.tel{position:relative;display:block;width:min(56vw,210px)}
+.tel svg{width:100%;height:auto;aspect-ratio:74/120;stroke-width:1.15}
+.tel img{position:absolute;left:8.1%;top:5%;width:83.8%;height:90%;object-fit:cover;object-position:top;border-radius:12% / 7.4%;background:var(--papier)}
 html.anime .etabli .outil svg path{stroke-dasharray:1 2;stroke-dashoffset:1.02;transition:stroke-dashoffset 1.25s var(--va-et-vient);transition-delay:calc(var(--i,0) * 230ms)}
 html.anime .etabli.vu .outil svg path{stroke-dashoffset:0}
 html.anime .etabli .outil b{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .8s var(--sortie);transition-delay:calc(var(--i,0) * 230ms + 500ms)}
@@ -353,10 +345,13 @@ html.anime .etabli.vu .tel img{opacity:1;filter:none;transition:opacity .7s ease
 .lecons{padding-bottom:calc(clamp(88px,12vw,150px) + var(--coin))}
 .lecons-liste{list-style:none;margin:clamp(48px,7vw,80px) 0 0;padding:0;display:grid;gap:clamp(72px,11vw,120px)}
 .lecon{display:grid;gap:36px;justify-items:start}
+.lecons > .large > h2{font-size:clamp(52px,12vw,96px);line-height:.92}
+.lecons > .large > h2 em,.lecon h3 em{color:var(--or)}
+.lecon .jour{font:italic 400 clamp(24px,5.6vw,32px)/1.15 var(--display);color:var(--encre-2);margin:0 0 10px}
 .lecon h3{font-size:clamp(36px,8.6vw,60px);line-height:1}
 .lecon p{margin-top:14px;font-size:clamp(19px,4.6vw,23px);line-height:1.42;color:var(--encre-2);max-width:20em}
-.lecon .socle{justify-self:center}
-.lecon .appareil{width:min(64vw,280px)}
+.lecon .socle{justify-self:center;width:min(100%,400px)}
+.lecon .feuille{width:min(86%,340px);margin-inline:auto}
 @media (min-width:960px){
   .lecon{grid-template-columns:1fr 1fr;align-items:center;gap:72px}
   .lecon:nth-child(even) .dit{order:2}
@@ -451,20 +446,20 @@ html.anime .geant.vu span{transform:none}
       <li class="etape">
         <span class="repere" aria-hidden="true"></span>
         <p class="heure">10 h</p>
-        <div class="dit entre"><h3>Chez le client, on dicte.</h3><p>Debout dans le jardin, vous décrivez le chantier. Cause écrit le devis.</p></div>
+        <div class="dit entre"><h3>Chez le client, on dicte.</h3><p>Debout dans le jardin, vous décrivez le chantier. Cause écrit le devis.</p><p class="promesse">Une information manque&nbsp;? Cause la laisse vide et vous la demande.</p></div>
         <div class="visuel"><div class="socle" data-t><div class="appareil tourne"><img src="images/nov-film-micro-fin.jpg" alt="La fiche du client dans Cause, pendant qu'on dicte le chantier." width="780" height="1328" loading="lazy" decoding="async"></div></div></div>
       </li>
       <li class="etape">
         <span class="repere" aria-hidden="true"></span>
         <p class="heure">12 h</p>
-        <div class="dit entre"><h3>Le client accepte.</h3><p>Sur son téléphone, il lit le devis, choisit sa date et signe.</p></div>
-        <div class="visuel"><div class="socle" data-t><div class="appareil tourne" style="--cote:19deg"><img src="images/nov-client-2.jpg" alt="Le devis reçu par le client, avec le choix de la date." width="1170" height="1992" loading="lazy" decoding="async"></div></div></div>
+        <div class="dit entre"><h3>Le client accepte.</h3><p>Sur son téléphone, il lit le devis, choisit sa date et signe.</p><p class="promesse">Rien ne part sans votre accord.</p></div>
+        <div class="visuel"><div class="socle" data-t><div class="appareil tourne" style="--cote:19deg"><img class="ras" src="images/nov-client-2.jpg" alt="Le devis reçu par le client, avec le choix de la date." width="1170" height="1992" loading="lazy" decoding="async"></div></div></div>
       </li>
       <li class="etape">
         <span class="repere" aria-hidden="true"></span>
         <p class="heure">17 h</p>
         <div class="dit entre"><h3>Le retour du chantier.</h3><p>Ce qui a été fait est coché sur place. Il vous arrive tout seul.</p></div>
-        <div class="visuel"><div class="socle" data-t><div class="appareil tourne"><img src="images/nov-film-fiche-fin.jpg" alt="Le retour d'intervention : ce qui a été fait, et ce qui est à signaler." width="930" height="1611" loading="lazy" decoding="async"></div></div></div>
+        <div class="visuel"><div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/nov-film-fiche-fin.jpg" alt="Le retour d'intervention : ce qui a été fait, et ce qui est à signaler." width="930" height="1611" loading="lazy" decoding="async"></figure></div></div></div>
       </li>
       </ol>
     </div>
@@ -483,7 +478,7 @@ html.anime .geant.vu span{transform:none}
 </section>
 
 <section class="pourquoi papier nappe">
-  <div class="large pourquoi-grille">
+  <div class="large">
     <div>
       <h2 data-monte>Pourquoi nous <em>l'avons faite.</em></h2>
       <p class="chapo entre" style="--d:200ms">Nous voulions un outil qui tienne dans la poche, parle notre métier et ne décide jamais à notre place. Nous l'avons construit.</p>
@@ -493,11 +488,6 @@ html.anime .geant.vu span{transform:none}
       </div>
       <p class="rassure">0 € pendant 15 jours. Sans engagement.</p>
     </div>
-    <ul class="faits" data-vu="0.25">
-      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Rien ne part sans votre accord.</b><span>Vous relisez, vous corrigez, vous envoyez.</span></li>
-      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Rien ne s'invente.</b><span>Une information manque ? Cause la laisse vide et vous la demande.</span></li>
-      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Les mots du métier.</b><span>Ceux du chantier, pas ceux d'un bureau.</span></li>
-    </ul>
   </div>
 </section>
 
@@ -574,33 +564,51 @@ html.anime .geant.vu span{transform:none}
       </li>
       <li class="outil" style="--i:1">
         <svg viewBox="0 0 120 120" aria-hidden="true">
-          <path pathLength="1" d="M20 58h30a8 8 0 0 1 8 8v16a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V62a4 4 0 0 1 4-4z"/>
-          <path pathLength="1" d="M24 58c0-14 9-22 20-22 9 0 14 6 14 14v8"/>
-          <path pathLength="1" d="M58 64h44a9 9 0 0 1 0 18H58"/>
-          <path pathLength="1" d="M62 73h40"/>
-          <path pathLength="1" d="M16 70H8"/>
+          <path pathLength="1" d="M28 50h26a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V56a6 6 0 0 1 6-6z"/>
+          <path pathLength="1" d="M60 60h44a8 8 0 0 1 0 16H60"/>
+          <path pathLength="1" d="M63 57l3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3"/>
+          <path pathLength="1" d="M30 50c0-14 8-22 18-22 6 0 10 5 10 12v10"/>
+          <path pathLength="1" d="M58 30c7 1 11 7 11 15"/>
+          <path pathLength="1" d="M22 58h-8a8 8 0 0 0-8 8v8a8 8 0 0 0 8 8h8"/>
+          <path pathLength="1" d="M22 66h-6v8h6"/>
+          <path pathLength="1" d="M32 64h16M32 71h16"/>
         </svg>
         <b>La tronçonneuse</b>
       </li>
       <li class="outil" style="--i:2">
         <svg viewBox="0 0 120 120" aria-hidden="true">
-          <path pathLength="1" d="M47 12h26"/>
-          <path pathLength="1" d="M49 12c-1 8 4 14 11 17 7-3 12-9 11-17"/>
+          <path pathLength="1" d="M28 62C28 38 42 22 60 22s32 16 32 40"/>
+          <path pathLength="1" d="M22 62h76"/>
+          <path pathLength="1" d="M50 24c-3 10-3 26-2 38M70 24c3 10 3 26 2 38"/>
+          <path pathLength="1" d="M34 66h52v18a6 6 0 0 1-6 6H40a6 6 0 0 1-6-6z"/>
+          <path pathLength="1" d="M47 66v24M60 66v24M73 66v24M34 78h52"/>
+          <path pathLength="1" d="M24 62v8M96 62v8"/>
+          <path pathLength="1" d="M24 70a7 11 0 1 0 0 22a7 11 0 1 0 0-22z"/>
+          <path pathLength="1" d="M96 70a7 11 0 1 0 0 22a7 11 0 1 0 0-22z"/>
+        </svg>
+        <b>Le casque</b>
+      </li>
+      <li class="outil" style="--i:3">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M47 9h26a3 3 0 0 1 0 6H47a3 3 0 0 1 0-6z"/>
+          <path pathLength="1" d="M50 15l10 14 10-14"/>
           <path pathLength="1" d="M60 29v45"/>
           <path pathLength="1" d="M46 74h28v24c0 9-6 15-14 15s-14-6-14-15z"/>
           <path pathLength="1" d="M46 80h28"/>
         </svg>
         <b>La bêche</b>
       </li>
-      <li class="outil" style="--i:3">
+      <li class="outil" style="--i:4">
         <svg viewBox="0 0 120 120" aria-hidden="true">
-          <path pathLength="1" d="M79 29c1-4 0-7-2-10C68 8 44 10 40 26l4 66c1 18 30 20 37 5"/>
-          <path pathLength="1" d="M81 97L78 38"/>
-          <path pathLength="1" d="M75 56h8l1 16h-8z"/>
+          <path pathLength="1" d="M85 40C88 30 86 18 74 11C62 4 44 6 37 18C32 26 33 36 35 48L40 94C41 103 47 108 54 108C60 108 64 104 66 98"/>
+          <path pathLength="1" d="M66 98L84 46"/>
+          <path pathLength="1" d="M85 40c0 2-1 4-1 6"/>
+          <path pathLength="1" d="M81.3 67.6L72.8 64.6L67 81.6L75.5 84.6Z"/>
+          <path pathLength="1" d="M43 24c-4 8-3 18-1 28l4 40"/>
         </svg>
         <b>Le mousqueton</b>
       </li>
-      <li class="outil" style="--i:4">
+      <li class="outil" style="--i:5">
         <svg viewBox="0 0 120 120" aria-hidden="true">
           <path pathLength="1" d="M28 32h32a14 14 0 0 1 14 14v32a14 14 0 0 1-14 14H28a14 14 0 0 1-14-14V46a14 14 0 0 1 14-14z"/>
           <path pathLength="1" d="M34 62a10 10 0 1 0 20 0a10 10 0 1 0-20 0"/>
@@ -611,12 +619,12 @@ html.anime .geant.vu span{transform:none}
         </svg>
         <b>Le mètre</b>
       </li>
-      <li class="outil outil-cause" style="--i:5">
+      <li class="outil outil-cause" style="--i:6">
         <span class="tel">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <path pathLength="1" d="M42 8h36a10 10 0 0 1 10 10v84a10 10 0 0 1-10 10H42a10 10 0 0 1-10-10V18a10 10 0 0 1 10-10z"/>
+          <svg viewBox="0 0 74 120" aria-hidden="true">
+            <path pathLength="1" d="M14 2h46a12 12 0 0 1 12 12v92a12 12 0 0 1-12 12H14a12 12 0 0 1-12-12V14A12 12 0 0 1 14 2z"/>
           </svg>
-          <img src="images/nov-creer-un-devis-fin.jpg" alt="" width="1170" height="1992" loading="lazy" decoding="async">
+          <img src="images/nov-creer-un-devis-fin.jpg" alt="Cause, la fiche d'un client et son micro pour dicter le devis." width="1170" height="1992" loading="lazy" decoding="async">
         </span>
         <b>Cause</b>
       </li>
@@ -639,19 +647,19 @@ html.anime .geant.vu span{transform:none}
 
 <section class="lecons papier nappe">
   <div class="large">
-    <h2 class="mot" data-monte>Appris sur le chantier<span class="point">.</span></h2>
+    <h2 data-monte>Nos mains, <em>nos soirées.</em></h2>
     <ol class="lecons-liste">
       <li class="lecon">
-        <div class="dit entre"><h3>Les mains sont prises.</h3><p>Alors on dicte. Cause écrit le devis.</p></div>
-        <div class="socle" data-t><div class="appareil tourne"><img src="images/nov-film-micro-fin.jpg" alt="La fiche du client dans Cause, pendant qu'on dicte le chantier." width="780" height="1328" loading="lazy" decoding="async"></div></div>
+        <div class="dit entre"><p class="jour">Le jour, on relève les métrés.</p><h3><em>Le soir,</em> le plan d'arrosage est calculé.</h3><p>Sans les métrés, Cause ne propose aucun plan.</p></div>
+        <div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/qui-sommes-nous-reseau-1.jpg" alt="Le plan d'arrosage dans Cause : une pelouse de 20 m sur 8 m, quatre turbines et 24 m de PEHD." width="1038" height="1180" loading="lazy" decoding="async"></figure></div></div>
       </li>
       <li class="lecon">
-        <div class="dit entre"><h3>Le client veut une date.</h3><p>Il la choisit sur son téléphone, en acceptant le devis.</p></div>
-        <div class="socle" data-t><div class="appareil tourne" style="--cote:19deg"><img src="images/nov-client-2.jpg" alt="Le devis reçu par le client, avec le choix de la date." width="1170" height="1992" loading="lazy" decoding="async"></div></div>
+        <div class="dit entre"><p class="jour">Le jour, l'équipe est sur les chantiers.</p><h3><em>Le soir,</em> la semaine est au planning.</h3></div>
+        <div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/nov-mois-5.jpg" alt="Le planning de novembre dans Cause, jour par jour, matin et après-midi." width="1170" height="1563" loading="lazy" decoding="async"></figure></div></div>
       </li>
       <li class="lecon">
-        <div class="dit entre"><h3>Un réseau enterré ne pardonne pas.</h3><p>Sans les métrés, Cause ne propose aucun plan d'arrosage.</p></div>
-        <div class="socle" data-t><div class="appareil tourne"><img src="images/outils-plan-reseau.jpg" alt="Le plan d'arrosage dans Cause : deux réseaux, leurs turbines et leurs tuyaux." width="1038" height="2385" loading="lazy" decoding="async"></div></div>
+        <div class="dit entre"><p class="jour">Le jour, le chantier se termine.</p><h3><em>Le soir,</em> la facture est prête.</h3></div>
+        <div class="socle" data-t><div class="leve"><figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture en PDF, prête à partir chez le client." width="1654" height="2339" loading="lazy" decoding="async"></figure></div></div>
       </li>
     </ol>
   </div>
@@ -784,7 +792,7 @@ html.anime .geant.vu span{transform:none}
             cache.appendChild(mot); frag.appendChild(cache);
           });
           noeud.replaceChild(frag, n);
-        } else if (n.nodeType === 1 && !n.classList.contains("point")) traiter(n);
+        } else if (n.nodeType === 1) traiter(n);
       });
     };
     traiter(el);
@@ -805,7 +813,6 @@ html.anime .geant.vu span{transform:none}
   tous("[data-monte]").forEach(function(el){ guetter(el, 0.35); });
   tous(".entre").forEach(function(el){ guetter(el, 0.2); });
   tous("[data-vu]").forEach(function(el){ guetter(el, Number(el.getAttribute("data-vu")) || 0.2); });
-  tous(".faits").forEach(function(l){ Array.prototype.forEach.call(l.children, function(li, n){ li.style.setProperty("--i", n); }); });
 
   // La lettre s'écrit dès qu'elle se montre : elle est l'ouverture de sa
   // forme, on ne la fait pas attendre. La signature se trace quand le
