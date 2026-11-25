@@ -216,6 +216,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/chantiers/xxxx/facture/travaux-supplementaires",
     "/reglages/abonnement",
     "/reglages/banque",
+    // Les numéros de compte du comptable (25 novembre 2026) : de la facturation, fermés comme elle.
+    "/reglages/comptes",
     "/reglages/documents",
     // **Les quatre écrans du découpage du 7 septembre 2026**, et leur présence
     // ici est une bonne nouvelle : `cheminAutorise` les a refusés d'elle-même,
@@ -259,6 +261,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",
+    // L'Excel et le FEC d'import d'un dossier (25 novembre 2026), fermés comme son PDF.
+    "/termines/comptable/dossiers/xxxx/xxxx",
     "/termines/comptable/jours-travailles",
     "/termines/comptable/jours-travailles/pdf",
     "/termines/comptable/piece/xxxx",

@@ -4,7 +4,7 @@
 // **POURQUOI CE FICHIER EXISTE.**
 //
 // Atlas range ses octets dans un stockage objet (S3), et la base ne garde que
-// la CLÉ qui y mène. Trente-deux colonnes, réparties sur vingt-cinq tables, portent une de ces
+// la CLÉ qui y mène. Trente-cinq colonnes, réparties sur vingt-cinq tables, portent une de ces
 // clés. Personne ne peut deviner cette liste : ni PostgreSQL, ni l'hébergeur, ni
 // un outil de sauvegarde. C'est la seule chose, dans tout le sujet
 // « sauvegarde », que le produit doit savoir à la place de sa machine.
@@ -196,6 +196,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "un achat peut être saisi à la main, sans photo",
   },
+  // Le ticket recadré et nettoyé dans le téléphone, à côté de sa photo (migration 0198).
+  {
+    table: "achats_tva",
+    colonne: "photo_nette_cle",
+    quoi: "le ticket de caisse recadré et nettoyé comme un scan",
+    absenceNormale: true,
+    raisonAbsence: "un ticket saisi à la main, d'avant le 25 novembre 2026, ou que le téléphone n'a pas trouvé avec assurance, n'en a pas",
+  },
   // La facture faite hors d'Atlas jointe à un virement reçu (migration 0150).
   {
     table: "mouvements_bancaires",
@@ -262,6 +270,21 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     colonne: "fichier_cle",
     quoi: "le dossier justifié remis au comptable, en PDF",
     absenceNormale: false,
+  },
+  // Son Excel et son FEC d'import, rangés avec lui (migration 0198, 25 novembre 2026).
+  {
+    table: "dossiers_comptables",
+    colonne: "excel_cle",
+    quoi: "le dossier justifié remis au comptable, en Excel",
+    absenceNormale: true,
+    raisonAbsence: "un dossier rangé avant le 25 novembre 2026 n'a que son PDF",
+  },
+  {
+    table: "dossiers_comptables",
+    colonne: "fec_cle",
+    quoi: "le FEC d'import du dossier justifié",
+    absenceNormale: true,
+    raisonAbsence: "un dossier rangé avant le 25 novembre 2026 n'a que son PDF",
   },
   {
     table: "bilans_comptables",

@@ -299,7 +299,7 @@ async function main() {
     assert.match(r.texte, /F-2026-038 17\/09\/2026 M\. Lefèvre, Création de massif 2 574,00 € 08\/10 0,00 €/);
     assert.match(r.texte, /TVA en attente du paiement au 44574, due au 44571 quand le client paie/);
     const franchise = (await lirePages(await dossier([], { ventes, franchise: true }))).find((p) => p.texte.startsWith("Registre des ventes"));
-    assert.match(franchise?.texte ?? "", /TVA non applicable, article 293 B du CGI/);
+    assert.match(franchise?.texte ?? "", /TVA non applicable, art\. 293 B du CGI\./);
     assert.doesNotMatch(franchise?.texte ?? "", /TVA 10 %/, "une franchise n'a pas de colonne de TVA");
   });
 

@@ -7,6 +7,7 @@ import { texteDuPapier } from "@/lib/texte-pdf";
 import { ligneDuTotal, type LigneImprimee } from "@/lib/ticket-imprime";
 import { couleurDe, nomCategorie, type CleCompta } from "@/lib/categories-comptables";
 import { ordreDesCategories, tauxDuRegistre, tauxEnMots, tvaAuTaux, type LigneComptable, type RangDuRegistre } from "@/lib/dossier-du-comptable";
+import { mentionFranchise } from "@/lib/franchise-tva";
 import { libelleMotif, jourComplet, jourEnMots, suiteDeLaPiece, ecartSignale, totalSigne, type Categorie, type Ecart, type Motif } from "@/lib/pour-mon-comptable";
 
 /**
@@ -894,7 +895,7 @@ function registre(c: Composition, d: DonneesDossier): PDFPage {
   ];
   let y = enTete(page, p, "Registre des ventes", bilan, { compte: d.comptes.ventes });
   const mot = d.franchise
-    ? `Une ligne par facture de la période. Clients au ${d.comptes.clients}. TVA non applicable, article 293 B du CGI.`
+    ? `Une ligne par facture de la période. Clients au ${d.comptes.clients}. ${mentionFranchise(d.au)}`
     : d.exigibilite === "encaissements"
       ? `Une ligne par facture de la période. Clients au ${d.comptes.clients}, TVA en attente du paiement au ${d.comptes.tvaEnAttente}, due au ${d.comptes.tvaCollectee} quand le client paie.`
       : `Une ligne par facture de la période. Clients au ${d.comptes.clients}, TVA due au ${d.comptes.tvaCollectee} dès la facture.`;

@@ -132,6 +132,9 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/banque",
   // Sa plateforme de facture électronique (5 novembre 2026).
   "/reglages/facture-electronique",
+  // Les numéros de compte du comptable (25 novembre 2026), réclamés par ce
+  // contrôle à la batterie du dossier en trois fichiers.
+  "/reglages/comptes",
   // Une idée pour l'appli, et les idées reçues de l'éditeur (5 novembre 2026),
   // réclamées par ce contrôle à la batterie commune du 6 novembre.
   "/reglages/idee",

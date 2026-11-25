@@ -100,6 +100,9 @@ essai("ses priorités ouvrent l'entreprise, dans l'ordre de sa planche du 25 oct
     "/reglages/equipe",
     "/reglages/vehicules",
     "/reglages/organigramme",
+    // Les numéros de compte du comptable (25 novembre 2026), au bout du paquet
+    // de l'entreprise : aucune rubrique d'avant n'a changé de place.
+    "/reglages/comptes",
     "/reglages/tarifs",
     "/reglages/documents",
     "/reglages/fournisseurs",

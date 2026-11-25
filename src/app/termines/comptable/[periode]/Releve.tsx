@@ -234,7 +234,7 @@ export default function Releve({
                   setRangee(ouverte);
                   setOuverte(null);
                 }}
-                className="mb-2 flex min-h-[52px] w-full items-center justify-between gap-3 rounded-[14px] px-4 text-left text-[15.5px]"
+                className="mb-2 flex min-h-[52px] w-full items-center justify-between gap-3 rounded-full px-5 text-left text-[15.5px]"
                 style={{ backgroundColor: colors.card, color: colors.ink }}
                 data-atlas="changer-la-categorie"
               >
