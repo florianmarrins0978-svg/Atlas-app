@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e6">
+<title>Cause, qui sommes-nous</title>
+<meta name="description" content="Planche : la page Qui sommes-nous du site de Cause, en trois formes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  QUI SOMMES-NOUS : UNE PLANCHE EN TROIS FORMES. Posée le 24 novembre 2026,
+  rien n'est codé dans l'application ni ajouté au site.
+
+  Sa demande, depuis son téléphone : « sur le site internet, il faudrait
+  créer une page qui suis-je. L'idée, c'est de dire que nous sommes une
+  équipe d'artisans, paysagistes et élagueurs, qui avons créé et développé
+  une application pour répondre le plus près possible aux besoins des
+  artisans, et que ça se veut être une application créée par des artisans
+  pour des artisans. Fais-moi une planche déjà. Un truc sympa, joli. »
+  Le titre est « Qui sommes-nous » : il parle d'une équipe, au pluriel.
+
+  À la question « quelle forme ? » (la journée, la lettre, nos mains et nos
+  soirées), sa réponse : « fais les 3, je choisirai après ». Le bandeau noir
+  du haut appartient à la planche, pas au site : il passe d'une forme à
+  l'autre, et l'adresse garde la forme choisie (#journee, #lettre, #mains).
+
+  LE MONDE EST CELUI DU SITE (cause-2-visite.html), sans un écart : crème,
+  vert nuit, vert feuille, or, Instrument Serif et Hanken Grotesk, la barre,
+  le menu, les boutons, les bandes nuit qui montent en feuilles, les titres
+  qui montent mot à mot, les téléphones qui se tournent vers le lecteur, le
+  pied et son grand nom. Les captures sont les vraies captures de l'appli
+  qu'emploie déjà le site (images/nov-*, images/outils-*).
+
+  LES PHOTOS : sa réponse, « oui, je les enverrai ». Leurs places sont
+  marquées « à venir » (un viseur d'or, l'icône d'un appareil) : rien n'est
+  pris dans une banque d'images, aucun visage n'est inventé.
+
+  CE QUI VIENT DE LUI : une équipe d'artisans, paysagistes et élagueurs ;
+  l'application créée et développée pour répondre au plus près aux besoins
+  des artisans ; « créée par des artisans, pour des artisans ».
+  CE QUI VIENT DU PRODUIT, et que le site dit déjà : on dicte sur place,
+  Cause écrit le devis, le client accepte et choisit sa date sur son
+  téléphone, rien ne part sans l'accord de l'artisan, une information qui
+  manque reste vide et lui est demandée, le plan d'arrosage refuse de se
+  faire sans les métrés.
+  CE QUI EST DE MOI, à valider par lui (docs/qui-sommes-nous.md) : les
+  heures de la journée (une journée type, donnée en exemple), « nos soirées
+  se passaient à refaire des devis », « nous voulions un outil qui tienne
+  dans la poche », les six outils de l'établi et les trois phrases
+  « le jour, … le soir, … » de la troisième forme.
+  CE QUI N'EST PAS ÉCRIT, et c'est voulu (PRODUCT.md, « Evidence on Hand ») :
+  aucun nombre (ni d'années, ni de personnes, ni d'artisans servis), aucun
+  prénom, aucun lieu, aucun témoignage.
+-->
+<script>
+// Le mouvement s'annonce avant le premier rendu (comme sur le site) : sans
+// cela les titres se montreraient, puis se cacheraient pour monter. Si le
+// script du bas n'aboutit pas, la page redevient immobile, tout visible.
+(function(d){
+  var calme = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  d.classList.add("js");
+  if (!calme && "IntersectionObserver" in window && d.animate && window.Promise) d.classList.add("anime");
+  setTimeout(function(){ if (!window.causePret) d.classList.remove("anime"); }, 4000);
+})(document.documentElement);
+</script>
+<style>
+:root{
+  --fond:#f5f1e6;--papier:#fcfaf3;--encre:#12261b;--encre-2:#4b5a50;--trait:#e0d9c7;
+  --sauge:#e4ebda;--sauge-2:#d3dfc5;--sable:#efe6d3;--sable-2:#e5d8bd;
+  --action:#1d7a3c;--action-survol:#186a33;--action-texte:#ffffff;
+  --feuille:#237a3c;--or:#95600f;--or-clair:#f0b43c;
+  --nuit:#0e2a1b;--nuit-2:#0a2015;--sur-nuit:#f3efe3;--sur-nuit-2:#b9cbbd;--trait-nuit:rgba(243,239,227,.14);
+  --ombre:18,38,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --large:1200px;
+  --sortie:cubic-bezier(.16,1,.3,1);
+  --va-et-vient:cubic-bezier(.65,0,.35,1);
+  --coin:28px;
+  /* La barre du site (64 px) et le bandeau de la planche (56 px). */
+  --haut:120px;
+  color-scheme:light;
+}
+@media (min-width:960px){:root{--coin:44px}}
+*{box-sizing:border-box}
+html{overflow-x:hidden;overflow-x:clip;scroll-padding-top:calc(var(--haut) + 12px);scrollbar-color:color-mix(in srgb,var(--encre-2) 45%,transparent) var(--fond);accent-color:var(--action)}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--or-clair) 42%,transparent);color:inherit}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--action);outline-offset:3px;border-radius:8px}
+.nuit :focus-visible,.pied :focus-visible{outline-color:var(--or-clair)}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.015em;line-height:.95;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+em{font-style:italic}
+.large{width:min(100% - 32px,var(--large));margin-inline:auto}
+section{padding:clamp(88px,12vw,150px) 0}
+[hidden]{display:none !important}
+
+/* ── Les titres montent mot à mot de derrière leur ligne (le site) ────── */
+html.anime [data-monte] .mt{display:inline-block;overflow:hidden;vertical-align:top;padding:.16em .12em .18em;margin:-.16em -.12em -.18em}
+html.anime [data-monte] .mi{display:inline-block;transform:translateY(140%) rotate(5deg);transform-origin:0 100%;transition:transform .8s var(--sortie);transition-delay:calc(var(--i,0) * 34ms)}
+html.anime [data-monte].vu .mi{transform:none}
+.chapo{font-size:clamp(19px,2vw,22px);line-height:1.45;color:var(--encre-2)}
+.nuit .chapo{color:var(--sur-nuit-2)}
+
+/* ── Le vert nuit, et les bandes qui montent en feuilles (le site) ────── */
+.nuit,.pied{position:relative;isolation:isolate;background:radial-gradient(90% 70% at 85% -10%,rgba(240,180,60,.11),transparent 62%),var(--nuit);color:var(--sur-nuit)}
+.nuit::before,.pied::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")}
+.nappe{position:relative;margin-top:calc(var(--coin) * -1);border-radius:var(--coin) var(--coin) 0 0}
+html.anime .nuit.nappe.entre-etroite{-webkit-clip-path:inset(0 calc(var(--e,0) * 6%) 0 calc(var(--e,0) * 6%) round calc(var(--coin) + var(--e,0) * 22px) calc(var(--coin) + var(--e,0) * 22px) 0 0);clip-path:inset(0 calc(var(--e,0) * 6%) 0 calc(var(--e,0) * 6%) round calc(var(--coin) + var(--e,0) * 22px) calc(var(--coin) + var(--e,0) * 22px) 0 0)}
+.papier{background:var(--papier)}
+
+/* ── Le bandeau de la planche : il n'appartient pas au site ───────────── */
+/* Une seule ligne, sous la barre, qui glisse du doigt si l'écran est trop
+   étroit. Le noir le sépare du site : on voit tout de suite qu'il n'en est
+   pas. */
+.formes{position:fixed;left:0;right:0;top:64px;z-index:19;display:flex;gap:6px;padding:8px 12px;background:#141414;overflow-x:auto;scrollbar-width:none}
+.formes::-webkit-scrollbar{display:none}
+.formes button{flex:none;white-space:nowrap;font:600 14px/1 var(--texte);color:#e8e8e8;background:transparent;border:1px solid #4a4a4a;border-radius:999px;padding:0 18px;min-height:40px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.formes button:first-child{margin-left:auto}.formes button:last-child{margin-right:auto}
+.formes button:hover{border-color:#8a8a8a}
+.formes button[aria-pressed="true"]{background:#e8e8e8;color:#141414;border-color:#e8e8e8}
+.formes button:focus-visible{outline-color:#e8e8e8}
+
+/* ── La barre et le menu (le site) ────────────────────────────────────── */
+.barre{position:fixed;inset:0 0 auto 0;z-index:20;height:64px;background:color-mix(in srgb,var(--fond) 84%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid transparent;transition:border-color .3s}
+.barre.posee{border-bottom-color:var(--trait)}
+.barre .large{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.fil{position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--or-clair);transform:scaleX(0);transform-origin:0 50%;pointer-events:none;z-index:1}
+.marque{font:400 30px/1 var(--display);text-decoration:none;letter-spacing:-.01em}
+.liens{display:none;gap:30px;font-size:15.5px}
+.liens a{position:relative;text-decoration:none;color:var(--encre-2);transition:color .2s}
+.liens a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform .45s var(--sortie)}
+.liens a:hover,.liens a[aria-current="page"]{color:var(--encre)}
+.liens a:hover::after,.liens a[aria-current="page"]::after{transform:scaleX(1)}
+.barre .droite{display:flex;align-items:center;gap:6px}
+.ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
+.lien-demo{font:600 14.5px/1 var(--texte);text-decoration:none;padding:13px 18px;border-radius:999px;background:var(--action);color:var(--action-texte);transition:background .2s}
+.lien-demo:hover{background:var(--action-survol)}
+@media (min-width:960px){.liens{display:flex}.ouvre-menu{display:none}}
+.menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:92px 24px 32px;display:flex;flex-direction:column;visibility:hidden;pointer-events:none}
+.menu.ouvert{visibility:visible;pointer-events:auto}
+html.anime .menu{clip-path:circle(0 at calc(100% - 150px) 32px);transition:clip-path .38s var(--va-et-vient),visibility 0s linear .38s}
+html.anime .menu.ouvert{clip-path:circle(150% at calc(100% - 150px) 32px);transition:clip-path .8s var(--sortie),visibility 0s}
+html.anime .menu a{opacity:0;transform:translateY(24px);transition:opacity .18s ease,transform .18s ease}
+html.anime .menu.ouvert a{opacity:1;transform:none;transition:opacity .5s ease calc(var(--i,0) * 60ms + .14s),transform .85s var(--sortie) calc(var(--i,0) * 60ms + .14s)}
+.menu a{font:400 clamp(40px,11vw,64px)/1.15 var(--display);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--trait)}
+.menu a[aria-current="page"]{font-style:italic;color:var(--feuille)}
+.menu .ferme{position:absolute;top:10px;right:max(16px,env(safe-area-inset-right));border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:12px;min-height:44px;cursor:pointer}
+.menu .bouton{margin-top:32px;font:600 17px/1 var(--texte);border:0}
+
+/* ── Les boutons (le site) ────────────────────────────────────────────── */
+.bouton{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 30px;border-radius:999px;background:var(--action);color:var(--action-texte);font:600 17px/1 var(--texte);text-decoration:none;border:0;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 10px 24px -14px rgba(var(--ombre),.7);transition:transform .3s var(--sortie),box-shadow .3s var(--sortie),background .2s}
+.bouton:hover{background:var(--action-survol);transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 18px 32px -16px rgba(var(--ombre),.75)}
+.bouton:active{transform:translateY(0) scale(.985)}
+.bouton::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 36%,rgba(255,255,255,.3) 50%,transparent 64%);transform:translateX(-130%);pointer-events:none}
+@media (hover:hover){.bouton:hover::after{transform:translateX(130%);transition:transform .95s var(--sortie)}}
+.bouton.clair{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 22%,transparent)}
+.bouton.clair:hover{background:color-mix(in srgb,var(--encre) 5%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 45%,transparent)}
+.bouton.clair::after{display:none}
+.nuit .bouton{background:var(--or-clair);color:var(--nuit);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 18px 40px -18px rgba(240,180,60,.55)}
+.nuit .bouton:hover{background:#f5c25a}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.rassure{margin-top:16px;font-size:15px;color:var(--encre-2)}
+.nuit .rassure{color:var(--sur-nuit-2)}
+
+/* ── Le téléphone et la profondeur (le site) ──────────────────────────── */
+.appareil{position:relative;width:min(70vw,300px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
+.appareil > img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
+.nuit .appareil{box-shadow:0 60px 90px -40px rgba(0,0,0,.75),0 22px 34px -22px rgba(0,0,0,.6),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
+.socle{position:relative}
+html.anime .tourne{transform:perspective(1200px) translateY(calc(var(--t,0) * 64px)) rotateX(calc(var(--t,0) * 21deg)) rotateY(calc(var(--t,0) * var(--cote,-19deg))) scale(calc(1 - var(--tp,0) * .1))}
+html.anime .leve{transform:perspective(1100px) translateY(calc(var(--t,0) * 44px)) rotateX(calc(var(--tp,0) * 34deg)) scale(calc(1 - var(--tp,0) * .06));transform-origin:50% 100%}
+html.anime .socle.repos > .tourne,html.anime .socle.repos > .leve{transform:none}
+/* Une capture qui n'est pas un écran entier (le cadrage d'un film, un plan
+   découpé) se pose à sa propre proportion, comme sur le site : dans le cadre
+   d'un téléphone, elle perdait ses bords. */
+.gros{margin:0;border-radius:22px;overflow:hidden;isolation:isolate;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
+.gros img{width:100%}
+.feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+/* Le devis du client commence au ras de l'écran : sous le coin arrondi du
+   téléphone, « Devis » perdait sa première lettre. Une marge du fond même de
+   la page du client le rend entier. */
+.appareil > img.ras{padding:12px 10px 0;object-fit:contain;object-position:top;background:#f4f3ee}
+
+/* ── La place d'une photo qu'il enverra ───────────────────────────────── */
+/* Un viseur d'or et l'icône d'un appareil : la place se lit comme réservée,
+   pas comme une image qui n'a pas chargé. Rien n'y est inventé. */
+.photo{position:relative;margin:0;display:grid;place-content:center;justify-items:center;gap:8px;aspect-ratio:4/3;border-radius:22px;padding:28px;text-align:center;background:var(--sauge);color:var(--encre-2);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.06)}
+.photo .coin{position:absolute;width:26px;height:26px;border:0 solid var(--or)}
+.photo .coin:nth-child(1){top:16px;left:16px;border-width:2px 0 0 2px;border-top-left-radius:8px}
+.photo .coin:nth-child(2){top:16px;right:16px;border-width:2px 2px 0 0;border-top-right-radius:8px}
+.photo .coin:nth-child(3){bottom:16px;left:16px;border-width:0 0 2px 2px;border-bottom-left-radius:8px}
+.photo .coin:nth-child(4){bottom:16px;right:16px;border-width:0 2px 2px 0;border-bottom-right-radius:8px}
+.photo svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;color:var(--feuille)}
+.photo b{font:400 clamp(24px,5.4vw,30px)/1.1 var(--display);color:var(--encre);font-weight:400}
+.photo span{font-size:15px}
+.nuit .photo{background:rgba(243,239,227,.06);color:var(--sur-nuit-2);box-shadow:inset 0 0 0 1px var(--trait-nuit)}
+.nuit .photo .coin{border-color:var(--or-clair)}
+.nuit .photo svg{color:var(--or-clair)}
+.nuit .photo b{color:var(--sur-nuit)}
+
+/* Ce qui se pose en entrant dans l'écran, une fois. */
+html.anime .entre{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform 1s var(--sortie);transition-delay:var(--d,0ms)}
+html.anime .entre.vu{opacity:1;transform:none}
+
+/* ═══ PREMIÈRE FORME : LA JOURNÉE ═════════════════════════════════════════ */
+/* Une journée de chantier, du camion du matin à la soirée libre. Le fil de
+   la journée se remplit d'or en descendant, et le soleil le suit ; chaque
+   heure qu'il passe prend sa couleur. Le soir, la bande nuit monte par-dessus
+   et le soleil se couche derrière elle. */
+.v-journee .ouverture{padding-top:calc(var(--haut) + clamp(36px,7vw,84px));padding-bottom:0}
+.v-journee h1{font-size:clamp(52px,13.6vw,104px);line-height:.93;max-width:10.5em}
+.v-journee h1 em,.v-journee h2 em{color:var(--feuille)}
+.v-journee .ouverture .chapo{margin-top:24px;max-width:27em}
+.journee{padding-top:clamp(64px,8vw,96px);padding-bottom:calc(clamp(40px,6vw,72px) + var(--coin))}
+.journee > .large > h2{font-size:clamp(46px,10.6vw,84px);line-height:.95;max-width:11em}
+.frise{--pas:44px;--axe:13px;position:relative;margin:clamp(44px,6vw,72px) 0 0;padding:0 0 0 var(--pas)}
+.etapes{list-style:none;margin:0;padding:0}
+.rail{position:absolute;left:calc(var(--axe) - 1px);top:22px;bottom:40px;width:2px;border-radius:2px;background:var(--trait)}
+.rail-plein{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(var(--or-clair),var(--or));transform-origin:50% 0}
+html.anime .rail-plein{transform:scaleY(var(--p,0))}
+.soleil{display:none}
+html.anime .soleil{display:block;position:absolute;left:50%;top:0;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#fbd77f,var(--or-clair) 62%);box-shadow:0 0 0 4px var(--fond),0 4px 10px rgba(var(--ombre),.25);transform:translateY(var(--y,0px))}
+.etape{position:relative;display:grid;gap:14px;padding-bottom:clamp(72px,11vw,120px)}
+.etape:last-child{padding-bottom:clamp(24px,4vw,40px)}
+.repere{position:absolute;left:calc(var(--axe) - var(--pas) - 9px);top:calc(clamp(46px,10.6vw,68px) * .5 - 9px);width:18px;height:18px;border-radius:50%;background:var(--fond);box-shadow:inset 0 0 0 2px var(--or)}
+.repere::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--or)}
+html.anime .etape .repere{box-shadow:inset 0 0 0 2px var(--trait);transition:box-shadow .4s ease}
+html.anime .etape .repere::after{transform:scale(0);transition:transform .5s var(--sortie)}
+html.anime .etape.passee .repere{box-shadow:inset 0 0 0 2px var(--or)}
+html.anime .etape.passee .repere::after{transform:none}
+.heure{font:400 clamp(46px,10.6vw,68px)/1 var(--display);color:var(--or);letter-spacing:-.02em;font-variant-numeric:lining-nums}
+html.anime .etape .heure{color:color-mix(in srgb,var(--encre-2) 46%,var(--fond));transition:color .6s ease}
+html.anime .etape.passee .heure{color:var(--or)}
+.etape h3{font-size:clamp(32px,7.6vw,46px);line-height:1.02}
+.etape .dit p{margin-top:12px;font-size:clamp(18px,4.6vw,21px);line-height:1.45;color:var(--encre-2);max-width:24em}
+.etape .dit .promesse{margin-top:14px;color:var(--encre);font-weight:500}
+.etape .gros{width:min(62vw,268px)}
+.etape .visuel{margin-top:14px}
+.etape .appareil{width:min(62vw,268px)}
+.etape .photo{max-width:560px}
+@media (min-width:960px){
+  .frise{--pas:72px;--axe:18px}
+  .etape{grid-template-columns:170px minmax(0,1fr) 320px;column-gap:44px;align-items:start}
+  .etape .visuel{grid-column:3;grid-row:1 / span 2;margin-top:0;justify-self:end}
+  .etape .dit{padding-top:10px}
+  .etape:first-child .visuel{grid-column:2 / 4;grid-row:2;justify-self:stretch;margin-top:28px}
+  .etape:first-child .photo{aspect-ratio:21/9}
+  .etape .photo{max-width:none}
+}
+.soir{padding-top:clamp(96px,12vw,150px)}
+.soir-grille{display:grid;gap:52px;justify-items:start}
+.soir .heure{color:var(--or-clair)}
+.soir h2{margin-top:14px;font-size:clamp(46px,10.6vw,88px);line-height:.95}
+.soir h2 em{color:var(--or-clair)}
+.soir .chapo{margin-top:22px;max-width:22em;font-size:clamp(20px,4.6vw,24px)}
+.soir .socle{justify-self:center}
+@media (min-width:960px){.soir-grille{grid-template-columns:1.1fr .9fr;align-items:center}.soir .socle{justify-self:end}}
+.pourquoi{padding-bottom:calc(clamp(88px,12vw,150px) + var(--coin))}
+.pourquoi h2{font-size:clamp(48px,11vw,88px);line-height:.95;max-width:9em}
+.pourquoi .chapo{margin-top:24px;max-width:24em;font-size:clamp(20px,4.6vw,24px);line-height:1.42}
+
+/* ═══ DEUXIÈME FORME : LA LETTRE ══════════════════════════════════════════ */
+/* La page est une lettre posée sur la scène verte du site. Elle s'écrit de
+   haut en bas, paragraphe après paragraphe (le geste de la feuille du devis
+   sur le site), et la signature se trace en dernier, comme celle que le
+   client pose au doigt sur son devis. */
+.v-lettre .table{padding-top:calc(var(--haut) + clamp(36px,7vw,84px));padding-bottom:calc(clamp(88px,12vw,140px) + var(--coin));background:radial-gradient(70% 45% at 28% 12%,rgba(255,255,255,.55),transparent 70%),var(--sauge)}
+.v-lettre h1{text-align:center;font-size:clamp(54px,14vw,108px);line-height:.92}
+.v-lettre h1 em{color:var(--feuille)}
+.tient,.tient .mi{white-space:nowrap}
+.lettre{position:relative;max-width:720px;margin:clamp(36px,6vw,64px) auto 0;padding:clamp(28px,7vw,72px) clamp(22px,7vw,80px) clamp(40px,7vw,76px);border-radius:6px;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+.lettre .photo{margin:0 0 28px;aspect-ratio:3/2;transform:rotate(1.2deg);background:var(--sable);box-shadow:0 18px 30px -20px rgba(var(--ombre),.55),0 0 0 6px #fff,0 0 0 7px rgba(var(--ombre),.08)}
+@media (min-width:760px){
+  .lettre{transform:rotate(-.5deg)}
+  .lettre .photo{float:right;width:46%;margin:6px -8% 22px 30px;transform:rotate(2.4deg)}
+}
+.lettre p{font-size:clamp(18px,4.5vw,20px);line-height:1.66;margin-top:1em;color:var(--encre)}
+.lettre .bonjour{margin:0;font:italic 400 clamp(36px,8.6vw,48px)/1 var(--display)}
+.lettre .forte{margin:1.1em 0 .2em;font:italic 400 clamp(32px,7.6vw,44px)/1.08 var(--display);color:var(--feuille);clear:both}
+.signature{margin-top:1.8em}
+.signature .a-bientot{margin:0;color:var(--encre-2)}
+.signature b{display:block;margin-top:10px;font:italic 400 clamp(38px,9vw,52px)/1 var(--display);font-weight:400}
+.signature svg{display:block;width:min(280px,76%);height:auto;margin-top:4px;color:var(--or);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.ps{margin-top:2.2em;padding-top:1.3em;border-top:1px solid var(--trait)}
+.lettre .ps p{margin:0;font-size:17px;color:var(--encre-2)}
+.ps a{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-weight:600;color:var(--action)}
+html.anime .lettre .ecrit{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 40%,transparent 60%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 40%,transparent 60%,transparent 100%);-webkit-mask-size:100% 250%;mask-size:100% 250%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:0 100%;mask-position:0 100%}
+html.anime .lettre.vu .ecrit{-webkit-mask-position:0 0;mask-position:0 0;transition:-webkit-mask-position 1.15s cubic-bezier(.45,0,.2,1),mask-position 1.15s cubic-bezier(.45,0,.2,1);transition-delay:calc(var(--i,0) * 420ms)}
+html.anime .lettre .photo{opacity:0;transform:translateY(-14px) rotate(-3deg) scale(.96)}
+html.anime .lettre.vu .photo{opacity:1;transform:rotate(1.2deg);transition:opacity .5s ease .2s,transform 1.2s var(--sortie) .2s}
+@media (min-width:760px){html.anime .lettre.vu .photo{transform:rotate(2.4deg)}}
+/* Un trait de longueur nulle garde ses bouts arrondis, et se peignait en
+   points avant d'être tracé : le tiret dort un peu avant le début du trait. */
+html.anime .signature svg path{stroke-dasharray:1 2;stroke-dashoffset:1.02}
+html.anime .lettre.vu .signature svg path{stroke-dashoffset:0;transition:stroke-dashoffset 1.3s var(--va-et-vient) var(--fin-lettre,3.6s)}
+.tirages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:clamp(16px,3vw,32px);max-width:600px;margin:clamp(48px,7vw,80px) auto 0}
+.tirages .photo{aspect-ratio:4/5;padding:18px;background:var(--papier);box-shadow:0 26px 40px -26px rgba(var(--ombre),.55),0 0 0 6px #fff,0 0 0 7px rgba(var(--ombre),.08)}
+.tirages .photo:first-child{transform:rotate(-2deg)}
+.tirages .photo:last-child{transform:rotate(1.6deg);margin-top:28px}
+.tirages .photo b{font-size:clamp(20px,4.6vw,26px)}
+.v-lettre .fin{text-align:center;padding:clamp(110px,15vw,170px) 0 calc(clamp(110px,15vw,170px) + var(--coin))}
+.v-lettre .fin h2,.v-mains .fin h2{font-size:clamp(50px,11.5vw,104px);line-height:.98;max-width:11em;margin-inline:auto}
+.v-lettre .fin h2 em{color:var(--or-clair)}
+.fin .actions{justify-content:center;margin-top:44px}
+
+/* ═══ TROISIÈME FORME : NOS MAINS, NOS SOIRÉES ════════════════════════════ */
+/* L'établi : les outils de leurs mains, dessinés au trait l'un après
+   l'autre, puis le dernier, le téléphone, dont l'écran s'allume sur la vraie
+   appli. Le trait est le même pour tous : Cause est un outil de plus. */
+.v-mains .ouverture{padding-top:calc(var(--haut) + clamp(36px,7vw,84px));padding-bottom:calc(clamp(64px,9vw,110px) + var(--coin))}
+.v-mains h1{font-size:clamp(52px,13.6vw,104px);line-height:.93;max-width:10em}
+.v-mains h1 em,.v-mains .fin h2 em{color:var(--feuille)}
+.v-mains .ouverture .chapo{margin-top:24px;max-width:26em}
+.etabli{list-style:none;margin:clamp(40px,6vw,64px) 0 0;padding:clamp(18px,4vw,44px) clamp(10px,3vw,36px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,2vw,24px) clamp(8px,2vw,24px);border-radius:30px;background:radial-gradient(circle at 11px 11px,rgba(var(--ombre),.13) 1.3px,transparent 1.9px) 0 0/22px 22px,var(--sable);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.06)}
+@media (min-width:760px){.etabli{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:960px){.etabli{grid-template-columns:repeat(6,1fr);padding:40px 28px 30px}.outil > svg{width:min(100%,170px)}.tel{width:230px}}
+.outil{display:grid;justify-items:center;align-content:start;gap:6px;padding:10px 4px 14px;text-align:center}
+.outil > svg{width:min(100%,150px);height:auto;aspect-ratio:1;fill:none;stroke:var(--encre);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.outil b{font:400 clamp(21px,4.8vw,28px)/1.1 var(--display);font-weight:400}
+.outil-cause svg{stroke:var(--feuille)}
+.outil-cause b{font-style:italic;color:var(--feuille)}
+/* Cause, le dernier outil, a sa rangée : son écran doit se lire, comme
+   ceux des téléphones du reste de la page. */
+.outil-cause{grid-column:1 / -1;padding-top:18px}
+.tel{position:relative;display:block;width:min(56vw,210px)}
+.tel svg{width:100%;height:auto;aspect-ratio:74/120;stroke-width:1.15}
+.tel img{position:absolute;left:8.1%;top:5%;width:83.8%;height:90%;object-fit:cover;object-position:top;border-radius:12% / 7.4%;background:var(--papier)}
+html.anime .etabli .outil svg path{stroke-dasharray:1 2;stroke-dashoffset:1.02;transition:stroke-dashoffset 1.25s var(--va-et-vient);transition-delay:calc(var(--i,0) * 230ms)}
+html.anime .etabli.vu .outil svg path{stroke-dashoffset:0}
+html.anime .etabli .outil b{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .8s var(--sortie);transition-delay:calc(var(--i,0) * 230ms + 500ms)}
+html.anime .etabli.vu .outil b{opacity:1;transform:none}
+html.anime .etabli .tel img{opacity:0;filter:brightness(1.6) blur(3px)}
+html.anime .etabli.vu .tel img{opacity:1;filter:none;transition:opacity .7s ease,filter 1.1s ease;transition-delay:calc(var(--i,0) * 230ms + 1150ms)}
+.equipe{padding-bottom:calc(clamp(88px,12vw,150px) + var(--coin))}
+.equipe-grille{display:grid;gap:44px}
+.equipe h2{font-size:clamp(52px,12vw,96px);line-height:.92}
+.equipe h2 em{color:var(--or-clair)}
+.equipe .chapo{margin-top:24px;max-width:24em;font-size:clamp(20px,4.6vw,24px);line-height:1.42}
+@media (min-width:960px){.equipe-grille{grid-template-columns:.95fr 1.05fr;gap:72px;align-items:center}}
+.lecons{padding-bottom:calc(clamp(88px,12vw,150px) + var(--coin))}
+.lecons-liste{list-style:none;margin:clamp(48px,7vw,80px) 0 0;padding:0;display:grid;gap:clamp(72px,11vw,120px)}
+.lecon{display:grid;gap:36px;justify-items:start}
+.lecons > .large > h2{font-size:clamp(52px,12vw,96px);line-height:.92}
+.lecons > .large > h2 em,.lecon h3 em{color:var(--or)}
+.lecon .jour{font:italic 400 clamp(24px,5.6vw,32px)/1.15 var(--display);color:var(--encre-2);margin:0 0 10px}
+.lecon h3{font-size:clamp(36px,8.6vw,60px);line-height:1}
+.lecon p{margin-top:14px;font-size:clamp(19px,4.6vw,23px);line-height:1.42;color:var(--encre-2);max-width:20em}
+.lecon .socle{justify-self:center;width:min(100%,400px)}
+.lecon .feuille{width:min(86%,340px);margin-inline:auto}
+@media (min-width:960px){
+  .lecon{grid-template-columns:1fr 1fr;align-items:center;gap:72px}
+  .lecon:nth-child(even) .dit{order:2}
+  .lecon .socle{justify-self:center}
+}
+.v-mains .fin{text-align:center;padding:clamp(110px,15vw,170px) 0 calc(clamp(110px,15vw,170px) + var(--coin));background:var(--fond)}
+
+/* ── Le pied (le site) ────────────────────────────────────────────────── */
+.pied{background:var(--nuit-2);padding:72px 0 0;overflow:hidden}
+.pied-grille{display:grid;gap:44px}
+.pied .marque{font-size:36px;color:var(--sur-nuit)}
+.pied .devise{margin-top:10px;color:var(--sur-nuit-2);font-size:16px}
+.pied nav{display:grid;grid-template-columns:1fr 1fr;gap:32px 24px}
+.pied h3{font:600 12.5px/1 var(--texte);letter-spacing:.12em;text-transform:uppercase;color:var(--or-clair)}
+.pied ul{list-style:none;padding:0;margin:14px 0 0}
+.pied li a{display:block;padding:7px 0;color:var(--sur-nuit);text-decoration:none;font-size:16px}
+.pied li a:hover{text-decoration:underline}
+.pied li a[aria-current="page"]{color:var(--or-clair)}
+.pied .bas{margin-top:52px;padding-top:20px;border-top:1px solid var(--trait-nuit);color:var(--sur-nuit-2);font-size:14px}
+.geant{margin:40px 0 0;padding-bottom:calc(8px + env(safe-area-inset-bottom));font:400 clamp(150px,41vw,560px)/.78 var(--display);letter-spacing:-.03em;text-align:center;white-space:nowrap;overflow:hidden;color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--or-clair) 62%,transparent);user-select:none;-webkit-user-select:none}
+.geant span{display:block}
+html.anime .geant span{transform:translateY(62%);transition:transform 1.6s var(--sortie)}
+html.anime .geant.vu span{transform:none}
+@media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
+
+@media (prefers-reduced-motion:reduce){.bouton,.formes button{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="barre" id="barre">
+  <div class="large">
+    <a class="marque" href="cause-2-visite.html">Cause</a>
+    <nav class="liens" aria-label="Rubriques">
+      <a href="cause-2-visite.html#fonctionnement">Comment ça marche</a>
+      <a href="cause-2-visite.html#prix">Les prix</a>
+      <a href="cause-2-visite.html#questions">Vos questions</a>
+      <a href="qui-sommes-nous.html" aria-current="page">Qui sommes-nous</a>
+      <a href="cause-2-visite.html#contact">Contact</a>
+    </nav>
+    <div class="droite">
+      <button type="button" class="ouvre-menu" aria-expanded="false" aria-controls="menu">Menu</button>
+      <a class="lien-demo" href="cause-2-visite.html#prix">Essai gratuit</a>
+    </div>
+  </div>
+  <span class="fil" aria-hidden="true"></span>
+</header>
+
+<nav class="formes" aria-label="Les trois formes de la planche">
+  <button type="button" data-forme="journee" aria-pressed="true">La journée</button>
+  <button type="button" data-forme="lettre" aria-pressed="false">La lettre</button>
+  <button type="button" data-forme="mains" aria-pressed="false">Nos mains</button>
+</nav>
+
+<nav class="menu" id="menu" aria-label="Rubriques">
+  <button type="button" class="ferme">Fermer</button>
+  <a href="cause-2-visite.html#fonctionnement" style="--i:0">Comment ça marche</a>
+  <a href="cause-2-visite.html#prix" style="--i:1">Les prix</a>
+  <a href="cause-2-visite.html#questions" style="--i:2">Vos questions</a>
+  <a href="qui-sommes-nous.html" aria-current="page" style="--i:3">Qui sommes-nous</a>
+  <a href="cause-2-visite.html#contact" style="--i:4">Contact</a>
+  <a class="bouton" href="cause-2-visite.html#prix" style="--i:5">Essayer 15 jours gratuits</a>
+</nav>
+
+<!-- ═══ LA JOURNÉE ═══ -->
+<main class="v-journee" data-forme="journee">
+
+<section class="ouverture">
+  <div class="large">
+    <h1 data-monte>Créée par des artisans, <em>pour des artisans.</em></h1>
+    <p class="chapo entre" style="--d:180ms">Nous sommes paysagistes et élagueurs. Cause est née de nos journées de chantier.</p>
+  </div>
+</section>
+
+<section class="journee">
+  <div class="large">
+    <h2 data-monte>Notre journée. <em>Sûrement la vôtre.</em></h2>
+    <div class="frise" id="frise">
+      <span class="rail" aria-hidden="true"><span class="rail-plein"></span><span class="soleil"></span></span>
+      <ol class="etapes">
+      <li class="etape">
+        <span class="repere" aria-hidden="true"></span>
+        <p class="heure">7 h</p>
+        <div class="dit entre"><h3>Le camion se charge.</h3><p>L'équipe part tôt. Le chantier n'attend pas.</p></div>
+        <div class="visuel entre" style="--d:120ms">
+          <figure class="photo"><span class="coin"></span><span class="coin"></span><span class="coin"></span><span class="coin"></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.6-2.6h3.8L15.5 7"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+            <b>Photo de l'équipe</b><span>à venir</span>
+          </figure>
+        </div>
+      </li>
+      <li class="etape">
+        <span class="repere" aria-hidden="true"></span>
+        <p class="heure">10 h</p>
+        <div class="dit entre"><h3>Chez le client, on dicte.</h3><p>Debout dans le jardin, vous décrivez le chantier. Cause écrit le devis.</p><p class="promesse">Une information manque&nbsp;? Cause la laisse vide et vous la demande.</p></div>
+        <div class="visuel"><div class="socle" data-t><div class="appareil tourne"><img src="images/nov-film-micro-fin.jpg" alt="La fiche du client dans Cause, pendant qu'on dicte le chantier." width="780" height="1328" loading="lazy" decoding="async"></div></div></div>
+      </li>
+      <li class="etape">
+        <span class="repere" aria-hidden="true"></span>
+        <p class="heure">12 h</p>
+        <div class="dit entre"><h3>Le client accepte.</h3><p>Sur son téléphone, il lit le devis, choisit sa date et signe.</p><p class="promesse">Rien ne part sans votre accord.</p></div>
+        <div class="visuel"><div class="socle" data-t><div class="appareil tourne" style="--cote:19deg"><img class="ras" src="images/nov-client-2.jpg" alt="Le devis reçu par le client, avec le choix de la date." width="1170" height="1992" loading="lazy" decoding="async"></div></div></div>
+      </li>
+      <li class="etape">
+        <span class="repere" aria-hidden="true"></span>
+        <p class="heure">17 h</p>
+        <div class="dit entre"><h3>Le retour du chantier.</h3><p>Ce qui a été fait est coché sur place. Il vous arrive tout seul.</p></div>
+        <div class="visuel"><div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/nov-film-fiche-fin.jpg" alt="Le retour d'intervention : ce qui a été fait, et ce qui est à signaler." width="930" height="1611" loading="lazy" decoding="async"></figure></div></div></div>
+      </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="soir nuit nappe">
+  <div class="large soir-grille">
+    <div>
+      <p class="heure">21 h</p>
+      <h2 data-monte>Le soir, plus rien <em>à retaper.</em></h2>
+      <p class="chapo entre" style="--d:260ms">La facture est prête. La TVA du mois est comptée. La soirée est à vous.</p>
+    </div>
+    <div class="socle" data-t><div class="appareil tourne" style="--cote:16deg"><img src="images/nov-tva-apres.jpg" alt="Ma TVA dans Cause : la TVA du mois, déjà comptée." width="1170" height="1992" loading="lazy" decoding="async"></div></div>
+  </div>
+</section>
+
+<section class="pourquoi papier nappe">
+  <div class="large">
+    <div>
+      <h2 data-monte>Pourquoi nous <em>l'avons faite.</em></h2>
+      <p class="chapo entre" style="--d:200ms">Nous voulions un outil qui tienne dans la poche, parle notre métier et ne décide jamais à notre place. Nous l'avons construit.</p>
+      <div class="actions entre" style="--d:320ms">
+        <a class="bouton" href="cause-2-visite.html#prix">Essayer 15 jours gratuits</a>
+        <a class="bouton clair" href="cause-2-visite.html#prix">Voir les prix</a>
+      </div>
+      <p class="rassure">0 € pendant 15 jours. Sans engagement.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══ LA LETTRE ═══ -->
+<main class="v-lettre" data-forme="lettre" hidden>
+
+<section class="table">
+  <div class="large">
+    <h1 data-monte>Qui <em class="tient">sommes-nous&nbsp;?</em></h1>
+    <article class="lettre" id="lettre" aria-label="Lettre de l'équipe de Cause">
+      <figure class="photo"><span class="coin"></span><span class="coin"></span><span class="coin"></span><span class="coin"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.6-2.6h3.8L15.5 7"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+        <b>Photo de l'équipe</b><span>à venir</span>
+      </figure>
+      <p class="bonjour ecrit" style="--i:0">Bonjour,</p>
+      <p class="ecrit" style="--i:1">Nous sommes une équipe d'artisans, paysagistes et élagueurs.</p>
+      <p class="ecrit" style="--i:2">Nos journées se passent sur les chantiers. Nos soirées, trop souvent, à refaire des devis.</p>
+      <p class="ecrit" style="--i:3">Alors nous avons créé Cause, et nous l'avons développée au plus près de ce que vit un artisan&nbsp;: vous dictez le chantier sur place, le devis s'écrit, votre client l'accepte sur son téléphone, la facture suit.</p>
+      <p class="ecrit" style="--i:4">Rien ne part sans votre accord. Quand une information manque, Cause la laisse vide et vous la demande, plutôt que de l'inventer.</p>
+      <p class="forte ecrit" style="--i:5">Une application créée par des artisans, pour des artisans.</p>
+      <div class="signature ecrit" style="--i:6">
+        <p class="a-bientot">À bientôt sur vos chantiers,</p>
+        <b>L'équipe de Cause</b>
+        <svg viewBox="0 0 280 40" aria-hidden="true"><path pathLength="1" d="M4 26c22-10 48-16 74-8s40 12 66 4 46-18 72-12c18 4 34 10 60 2"/></svg>
+      </div>
+      <div class="ps ecrit" style="--i:7">
+        <p>P.S. Artisan vous aussi&nbsp;? Dites-nous ce qui vous manque.</p>
+        <a href="cause-2-visite.html#contact">Nous écrire</a>
+      </div>
+    </article>
+    <div class="tirages entre">
+      <figure class="photo"><span class="coin"></span><span class="coin"></span><span class="coin"></span><span class="coin"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.6-2.6h3.8L15.5 7"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+        <b>Un chantier</b><span>à venir</span>
+      </figure>
+      <figure class="photo"><span class="coin"></span><span class="coin"></span><span class="coin"></span><span class="coin"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.6-2.6h3.8L15.5 7"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+        <b>Un élagage</b><span>à venir</span>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="fin nuit nappe">
+  <div class="large">
+    <h2 data-monte>Essayez-la sur <em>vos chantiers.</em></h2>
+    <div class="actions"><a class="bouton" href="cause-2-visite.html#prix">Essayer 15 jours gratuits</a></div>
+    <p class="rassure">0 € pendant 15 jours. Sans engagement.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══ NOS MAINS, NOS SOIRÉES ═══ -->
+<main class="v-mains" data-forme="mains" hidden>
+
+<section class="ouverture">
+  <div class="large">
+    <h1 data-monte>Le dernier outil <em>de notre camion.</em></h1>
+    <p class="chapo entre" style="--d:180ms">Nous sommes paysagistes et élagueurs. Il nous manquait un outil pour le soir. Nous l'avons fait.</p>
+    <ul class="etabli" data-vu="0.3" aria-label="Nos outils">
+      <li class="outil" style="--i:0">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M58 52C57 38 52 25 44 13c11 2 20 13 23 30"/>
+          <path pathLength="1" d="M62 52c2-13 7-26 16-36 1 14-5 27-12 37"/>
+          <path pathLength="1" d="M56.5 50a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0"/>
+          <path pathLength="1" d="M56 56C48 72 40 90 34 107q4 5 9 1c5-16 12-33 18-49"/>
+          <path pathLength="1" d="M64 56c8 16 16 34 22 51q-4 5-9 1c-5-16-12-33-18-49"/>
+          <path pathLength="1" d="M52 70q8-7 16 0"/>
+        </svg>
+        <b>Le sécateur</b>
+      </li>
+      <li class="outil" style="--i:1">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M28 50h26a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V56a6 6 0 0 1 6-6z"/>
+          <path pathLength="1" d="M60 60h44a8 8 0 0 1 0 16H60"/>
+          <path pathLength="1" d="M63 57l3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3"/>
+          <path pathLength="1" d="M30 50c0-14 8-22 18-22 6 0 10 5 10 12v10"/>
+          <path pathLength="1" d="M58 30c7 1 11 7 11 15"/>
+          <path pathLength="1" d="M22 58h-8a8 8 0 0 0-8 8v8a8 8 0 0 0 8 8h8"/>
+          <path pathLength="1" d="M22 66h-6v8h6"/>
+          <path pathLength="1" d="M32 64h16M32 71h16"/>
+        </svg>
+        <b>La tronçonneuse</b>
+      </li>
+      <li class="outil" style="--i:2">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M28 62C28 38 42 22 60 22s32 16 32 40"/>
+          <path pathLength="1" d="M22 62h76"/>
+          <path pathLength="1" d="M50 24c-3 10-3 26-2 38M70 24c3 10 3 26 2 38"/>
+          <path pathLength="1" d="M34 66h52v18a6 6 0 0 1-6 6H40a6 6 0 0 1-6-6z"/>
+          <path pathLength="1" d="M47 66v24M60 66v24M73 66v24M34 78h52"/>
+          <path pathLength="1" d="M24 62v8M96 62v8"/>
+          <path pathLength="1" d="M24 70a7 11 0 1 0 0 22a7 11 0 1 0 0-22z"/>
+          <path pathLength="1" d="M96 70a7 11 0 1 0 0 22a7 11 0 1 0 0-22z"/>
+        </svg>
+        <b>Le casque</b>
+      </li>
+      <li class="outil" style="--i:3">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M47 9h26a3 3 0 0 1 0 6H47a3 3 0 0 1 0-6z"/>
+          <path pathLength="1" d="M50 15l10 14 10-14"/>
+          <path pathLength="1" d="M60 29v45"/>
+          <path pathLength="1" d="M46 74h28v24c0 9-6 15-14 15s-14-6-14-15z"/>
+          <path pathLength="1" d="M46 80h28"/>
+        </svg>
+        <b>La bêche</b>
+      </li>
+      <li class="outil" style="--i:4">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M85 40C88 30 86 18 74 11C62 4 44 6 37 18C32 26 33 36 35 48L40 94C41 103 47 108 54 108C60 108 64 104 66 98"/>
+          <path pathLength="1" d="M66 98L84 46"/>
+          <path pathLength="1" d="M85 40c0 2-1 4-1 6"/>
+          <path pathLength="1" d="M81.3 67.6L72.8 64.6L67 81.6L75.5 84.6Z"/>
+          <path pathLength="1" d="M43 24c-4 8-3 18-1 28l4 40"/>
+        </svg>
+        <b>Le mousqueton</b>
+      </li>
+      <li class="outil" style="--i:5">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path pathLength="1" d="M28 32h32a14 14 0 0 1 14 14v32a14 14 0 0 1-14 14H28a14 14 0 0 1-14-14V46a14 14 0 0 1 14-14z"/>
+          <path pathLength="1" d="M34 62a10 10 0 1 0 20 0a10 10 0 1 0-20 0"/>
+          <path pathLength="1" d="M74 76h34v8H74"/>
+          <path pathLength="1" d="M108 72v16"/>
+          <path pathLength="1" d="M82 76v4M90 76v3M98 76v4"/>
+          <path pathLength="1" d="M36 32v-6h12v6"/>
+        </svg>
+        <b>Le mètre</b>
+      </li>
+      <li class="outil outil-cause" style="--i:6">
+        <span class="tel">
+          <svg viewBox="0 0 74 120" aria-hidden="true">
+            <path pathLength="1" d="M14 2h46a12 12 0 0 1 12 12v92a12 12 0 0 1-12 12H14a12 12 0 0 1-12-12V14A12 12 0 0 1 14 2z"/>
+          </svg>
+          <img src="images/nov-creer-un-devis-fin.jpg" alt="Cause, la fiche d'un client et son micro pour dicter le devis." width="1170" height="1992" loading="lazy" decoding="async">
+        </span>
+        <b>Cause</b>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="equipe nuit nappe">
+  <div class="large equipe-grille">
+    <div>
+      <h2 data-monte>Des artisans, <em>d'abord.</em></h2>
+      <p class="chapo entre" style="--d:220ms">Une équipe de paysagistes et d'élagueurs. Nous avons créé Cause pour répondre au plus près aux besoins des artisans&nbsp;: ce sont les nôtres.</p>
+    </div>
+    <figure class="photo entre" style="--d:120ms"><span class="coin"></span><span class="coin"></span><span class="coin"></span><span class="coin"></span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.6-2.6h3.8L15.5 7"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+      <b>Photo de l'équipe</b><span>à venir</span>
+    </figure>
+  </div>
+</section>
+
+<section class="lecons papier nappe">
+  <div class="large">
+    <h2 data-monte>Nos mains, <em>nos soirées.</em></h2>
+    <ol class="lecons-liste">
+      <li class="lecon">
+        <div class="dit entre"><p class="jour">Le jour, on relève les métrés.</p><h3><em>Le soir,</em> le plan d'arrosage est calculé.</h3><p>Sans les métrés, Cause ne propose aucun plan.</p></div>
+        <div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/qui-sommes-nous-reseau-1.jpg" alt="Le plan d'arrosage dans Cause : une pelouse de 20 m sur 8 m, quatre turbines et 24 m de PEHD." width="1038" height="1180" loading="lazy" decoding="async"></figure></div></div>
+      </li>
+      <li class="lecon">
+        <div class="dit entre"><p class="jour">Le jour, l'équipe est sur les chantiers.</p><h3><em>Le soir,</em> la semaine est au planning.</h3></div>
+        <div class="socle" data-t><div class="leve"><figure class="gros"><img src="images/nov-mois-5.jpg" alt="Le planning de novembre dans Cause, jour par jour, matin et après-midi." width="1170" height="1563" loading="lazy" decoding="async"></figure></div></div>
+      </li>
+      <li class="lecon">
+        <div class="dit entre"><p class="jour">Le jour, le chantier se termine.</p><h3><em>Le soir,</em> la facture est prête.</h3></div>
+        <div class="socle" data-t><div class="leve"><figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture en PDF, prête à partir chez le client." width="1654" height="2339" loading="lazy" decoding="async"></figure></div></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="fin nappe">
+  <div class="large">
+    <h2 data-monte>Créée par des artisans. <em>Pour des artisans.</em></h2>
+    <div class="actions"><a class="bouton" href="cause-2-visite.html#prix">Essayer 15 jours gratuits</a></div>
+    <p class="rassure">0 € pendant 15 jours. Sans engagement.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="pied nappe">
+  <div class="large">
+    <div class="pied-grille">
+      <div>
+        <a class="marque" href="cause-2-visite.html">Cause</a>
+        <p class="devise">Le logiciel des artisans.</p>
+      </div>
+      <nav aria-label="Pied de page">
+        <div><h3>Cause</h3><ul>
+          <li><a href="cause-2-visite.html#fonctionnement">Comment ça marche</a></li>
+          <li><a href="cause-2-visite.html#prix">Les prix</a></li>
+          <li><a href="cause-2-visite.html#prix">Essai gratuit</a></li>
+          <li><a href="qui-sommes-nous.html" aria-current="page">Qui sommes-nous</a></li>
+        </ul></div>
+        <div><h3>Aide</h3><ul>
+          <li><a href="cause-2-visite.html#questions">Vos questions</a></li>
+          <li><a href="cause-2-visite.html#contact">Contact</a></li>
+        </ul></div>
+        <div><h3>Légal</h3><ul>
+          <li><a href="mentions-legales-cause.html#mentions">Mentions légales</a></li>
+          <li><a href="mentions-legales-cause.html#conditions">Conditions générales</a></li>
+          <li><a href="mentions-legales-cause.html#donnees">Données personnelles</a></li>
+          <li><a href="mentions-legales-cause.html#cookies">Cookies</a></li>
+        </ul></div>
+      </nav>
+    </div>
+    <p class="bas">© 2026 Cause. Prix hors taxes.</p>
+  </div>
+  <div class="geant" data-vu="0.35" aria-hidden="true"><span>Cause</span></div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var racine = document.documentElement, anime = racine.classList.contains("anime");
+  var un = function(s, c){ return (c || document).querySelector(s); };
+  var tous = function(s, c){ return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var borne = function(v, a, b){ return v < a ? a : v > b ? b : v; };
+  var lisse = function(a, b, v){ var x = borne((v - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
+
+  // ── CE QUI SERT AVEC OU SANS MOUVEMENT ────────────────────────────────
+
+  // Le menu du téléphone (le site) : plein écran, fermé dès qu'on choisit.
+  var menu = document.getElementById("menu"), ouvre = un(".ouvre-menu");
+  var basculer = function(ouvert, rendre){
+    menu.classList.toggle("ouvert", ouvert); ouvre.setAttribute("aria-expanded", String(ouvert));
+    racine.style.overflow = ouvert ? "hidden" : "";
+    if (ouvert) un(".ferme", menu).focus(); else if (rendre) ouvre.focus();
+  };
+  ouvre.addEventListener("click", function(){ basculer(true); });
+  un(".ferme", menu).addEventListener("click", function(){ basculer(false, true); });
+  tous("a", menu).forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
+  addEventListener("keydown", function(e){ if (e.key === "Escape" && menu.classList.contains("ouvert")) basculer(false, true); });
+
+  // Les trois formes. L'adresse garde celle qu'on regarde : un lien envoyé
+  // ou une page rechargée la rouvre, et l'on repart du haut de la page.
+  var boutonsForme = tous(".formes button"), formes = tous("main[data-forme]");
+  var surChangement = [];
+  var montrer = function(nom, garderPlace){
+    if (!formes.some(function(m){ return m.dataset.forme === nom; })) nom = "journee";
+    formes.forEach(function(m){ m.hidden = m.dataset.forme !== nom; });
+    boutonsForme.forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.forme === nom)); });
+    if (location.hash !== "#" + nom && history.replaceState) history.replaceState(null, "", "#" + nom);
+    if (!garderPlace) window.scrollTo(0, 0);
+    surChangement.forEach(function(fn){ fn(); });
+  };
+  boutonsForme.forEach(function(b){ b.addEventListener("click", function(){ montrer(b.dataset.forme); }); });
+  addEventListener("hashchange", function(){ montrer(location.hash.slice(1)); });
+  montrer(location.hash.slice(1), true);
+
+  // La boucle du défilement, la seule de la page (comme sur le site) : elle
+  // lit les positions, puis écrit la barre, son fil, et ce que chaque
+  // élément suivi tire de sa place.
+  var barre = document.getElementById("barre"), fil = un(".fil", barre);
+  var proches = new Set(), prevue = false;
+  var passe = function(){
+    prevue = false;
+    var vh = innerHeight, y = scrollY, total = racine.scrollHeight - vh, lus = [];
+    proches.forEach(function(el){ if (el.offsetParent !== null) lus.push([el, el.getBoundingClientRect()]); });
+    barre.classList.toggle("posee", y > 8);
+    fil.style.transform = "scaleX(" + (total > 0 ? borne(y / total, 0, 1) : 0).toFixed(4) + ")";
+    lus.forEach(function(l){ l[0].auDefilement(l[1], vh); });
+  };
+  var demander = function(){ if (!prevue){ prevue = true; requestAnimationFrame(passe); } };
+  addEventListener("scroll", demander, {passive:true});
+  addEventListener("resize", demander);
+  surChangement.push(demander);
+  demander();
+
+  if (!anime){ window.causePret = true; return; }
+
+  // ── LE MOUVEMENT ───────────────────────────────────────────────────────
+
+  var grand = window.matchMedia && matchMedia("(min-width:960px)").matches;
+
+  var veilleProche = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting) proches.add(e.target); else proches.delete(e.target); });
+    demander();
+  }, {rootMargin:"30% 0px 30% 0px"});
+  var suivre = function(el, fn){ el.auDefilement = fn; veilleProche.observe(el); };
+
+  // Les titres : chaque mot dans son cache ; le titre garde son texte entier
+  // pour qui l'écoute.
+  var decouper = function(el){
+    var rang = 0, entier = el.textContent.replace(/\s+/g, " ").trim();
+    var traiter = function(noeud){
+      Array.prototype.slice.call(noeud.childNodes).forEach(function(n){
+        if (n.nodeType === 3){
+          var frag = document.createDocumentFragment();
+          n.textContent.split(/([ \n\t]+)/).forEach(function(m){
+            if (!m) return;
+            if (/^[ \n\t]+$/.test(m)){ frag.appendChild(document.createTextNode(" ")); return; }
+            var cache = document.createElement("span"), mot = document.createElement("span");
+            cache.className = "mt"; mot.className = "mi"; mot.style.setProperty("--i", rang++); mot.textContent = m;
+            cache.appendChild(mot); frag.appendChild(cache);
+          });
+          noeud.replaceChild(frag, n);
+        } else if (n.nodeType === 1) traiter(n);
+      });
+    };
+    traiter(el);
+    if (/^H[1-6]$/.test(el.tagName)) el.setAttribute("aria-label", entier);
+  };
+  tous("[data-monte]").forEach(decouper);
+
+  // Ce qui se joue en entrant dans l'écran, une fois. Un élément d'une forme
+  // cachée n'entre jamais : il attend qu'on la montre.
+  var guets = {};
+  var guetter = function(el, seuil){
+    var cle = String(seuil);
+    if (!guets[cle]) guets[cle] = new IntersectionObserver(function(es, o){
+      es.forEach(function(e){ if (e.isIntersecting){ o.unobserve(e.target); e.target.classList.add("vu"); } });
+    }, {rootMargin:"0px 0px " + (grand ? "-8%" : "-12%") + " 0px", threshold:seuil});
+    guets[cle].observe(el);
+  };
+  tous("[data-monte]").forEach(function(el){ guetter(el, 0.35); });
+  tous(".entre").forEach(function(el){ guetter(el, 0.2); });
+  tous("[data-vu]").forEach(function(el){ guetter(el, Number(el.getAttribute("data-vu")) || 0.2); });
+
+  // La lettre s'écrit dès qu'elle se montre : elle est l'ouverture de sa
+  // forme, on ne la fait pas attendre. La signature se trace quand le
+  // dernier paragraphe est écrit.
+  var lettre = document.getElementById("lettre");
+  var paragraphes = tous(".ecrit", lettre);
+  lettre.style.setProperty("--fin-lettre", ((paragraphes.length - 2) * 420 + 700) + "ms");
+  guetter(lettre, 0.05);
+
+  // La profondeur des téléphones (le site) : « t » vaut 1 à l'entrée par le
+  // bas, 0 une fois posé, un peu moins que 0 en sortant par le haut.
+  tous("[data-t]").forEach(function(socle){
+    suivre(socle, function(r, vh){
+      var h = Math.min(r.height, vh * .8);
+      var entre = borne((vh - r.top) / h, 0, 1), sorti = borne((72 - r.top) / r.height, 0, 1);
+      var t = (1 - lisse(0, .75, entre)) - .3 * lisse(.3, 1, sorti);
+      socle.style.setProperty("--t", t.toFixed(3)); socle.style.setProperty("--tp", Math.max(0, t).toFixed(3));
+      socle.classList.toggle("repos", Math.abs(t) < .0005);
+    });
+  });
+
+  // Les bandes nuit montent étroites et s'élargissent (le site).
+  tous(".nuit.nappe").forEach(function(bande){
+    suivre(bande, function(r, vh){
+      var e = 1 - lisse(vh * .34, vh, vh * 1.34 - r.top);
+      bande.style.setProperty("--e", e.toFixed(3));
+      bande.classList.toggle("entre-etroite", e > .001 && r.top < vh);
+    });
+  });
+
+  // Le fil de la journée : l'or le remplit jusqu'à la ligne des yeux (un peu
+  // au-dessus du milieu de l'écran), le soleil roule au bout, et chaque
+  // heure qu'il a passée prend sa couleur.
+  var frise = document.getElementById("frise"), rail = un(".rail", frise), plein = un(".rail-plein", rail), soleil = un(".soleil", rail);
+  var etapes = tous(".etape", frise);
+  suivre(frise, function(r, vh){
+    var rr = rail.getBoundingClientRect(), yeux = vh * .58;
+    var p = borne((yeux - rr.top) / rr.height, 0, 1);
+    plein.style.setProperty("--p", p.toFixed(4));
+    soleil.style.setProperty("--y", (p * rr.height).toFixed(1) + "px");
+    etapes.forEach(function(et){
+      var rep = un(".repere", et).getBoundingClientRect();
+      et.classList.toggle("passee", rep.top + rep.height / 2 <= yeux);
+    });
+  });
+
+  window.causePret = true;
+})();
+</script>
+</body>
+</html>

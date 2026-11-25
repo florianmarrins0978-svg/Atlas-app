@@ -1,5 +1,9 @@
 # État du projet
 
+## LA PAGE « QUI SOMMES-NOUS » DU SITE (24 novembre 2026) : UNE PLANCHE EN TROIS FORMES, À CHOISIR
+
+`appli/vente/qui-sommes-nous.html` : la journée, la lettre, nos mains. Rien dans `src/`, le site retenu inchangé. Attend sa forme, ses photos et ses mots sur les phrases écrites par moi (`docs/qui-sommes-nous.md`).
+
 ## DEUX LOTS RÉUNIS SUR `claude/laughing-wright-xxntzg` (23 novembre 2026) : LA PILE DU ROBINET EN 3D ET LES ÉCARTEMENTS DE RAIN BIRD
 
 Sa demande : réunir les lots qui attendent une batterie, puis une seule batterie. Darcy et Moody en est sorti sur sa décision (*« Prends avec Rain Bird »*, devant `appli/arrosage-rainbird-et-darcy.html`) : réuni, il faisait passer son jardin de 3 réseaux à 2. `TODO.md` dit ce que coûte de le laisser de côté.

@@ -35,6 +35,14 @@ const ligne = (premier, intitule, valeur, sous, extra = "") =>
   (sous ? `<span class="mt-1 block text-[13.5px] leading-[1.4]" ${DOUX}>${sous}</span>` : "") +
   extra + `</dd></div>`;
 const releve = (lignes) => `<dl class="mt-[18px] rounded-[14px] px-[18px]" style="background-color: var(--atlas-card, #faf9f5);">${lignes.join("")}</dl>`;
+// Sa demande du 24 novembre : le chemin pour résilier, dessiné, pour être
+// transparent. Les mots de l'appli : l'onglet « Réglages », l'écran
+// « Abonnement », le bouton « Résilier » (rouge, comme `AbonnementClient`).
+const chemin = () =>
+  `<div class="ec-chemin" data-dit="Dans l'appli : Réglages, en bas ; puis Abonnement ; puis « Résilier », en rouge.">` +
+  `<span class="ec-pas">Réglages</span><span class="ec-trait"></span>` +
+  `<span class="ec-pas">Abonnement</span><span class="ec-trait"></span>` +
+  `<span class="ec-pas ec-rouge">Résilier</span></div>`;
 const plein = (mot, va, dit = "") =>
   `<button type="button" class="flex min-h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold" style="background: var(--atlas-plein, #7d9a6d); color: var(--atlas-card, #faf9f5);" data-va="${va}"${dit ? ` data-dit="${dit}"` : ""}>${mot}</button>`;
 const discret = (mot, attrs) =>
@@ -59,7 +67,8 @@ const essai = ecran(
     // Sa demande du 24 novembre : dire comment arrêter, pour ne pas effrayer.
     // La phrase garde sa place ; le chemin est celui de l'appli (Réglages,
     // Abonnement, « Résilier », `AbonnementClient.tsx`).
-    phrase(`Arrêtez avant le ${M.finCourt} : vous ne payez rien. Il suffit de toucher « Résilier » dans Réglages, Abonnement.`, "mt-[14px]"),
+    phrase(`Arrêtez avant le ${M.finCourt} : vous ne payez rien. Il suffit de toucher « Résilier » dans Réglages, Abonnement.`, "mt-[14px]") +
+    chemin(),
   plein("Ajouter ma carte", "paiement") + discret("Plus tard", 'data-va="sans-carte" data-dit="Dans l\'appli : la session se ferme, et la prochaine ouverture redemande la carte."'),
 );
 
@@ -91,10 +100,27 @@ const pagePaiement = (refus) => ({
 
 const sansCarte = ecran(
   titre("Il manque votre carte.") +
-    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours. Pour arrêter avant, touchez « Résilier » dans Réglages, Abonnement.`) +
+    phrase(`Votre essai démarre dès qu’elle est enregistrée. Rien n’est débité avant 15 jours. Pour arrêter avant et ne rien payer, touchez « Résilier » dans Réglages, Abonnement.`) +
+    chemin() +
     releve([ligne(true, "Votre formule", `${M.formule} avec les outils`, M.total)]),
   plein("Ajouter ma carte", "paiement") + discret("Se déconnecter", 'data-dit="Dans l\'appli : ferme la session."'),
 );
+
+const rappel = {
+  ...pret,
+  html:
+    `<main class="ml"><div class="ml-col">` +
+    `<p class="ml-quand">Reçu le 6 décembre, trois jours avant le premier prélèvement</p>` +
+    `<div class="ml-carte">` +
+    `<p class="ml-de">Cause</p>` +
+    `<p class="ml-objet">Votre essai se termine le ${M.finCourt}</p>` +
+    `<p>Bonjour Jean,</p>` +
+    `<p>Votre essai de Cause se termine le ${M.finCourt}. Ce jour-là, ${M.ttc} seront prélevés pour ${M.formule} avec les outils, puis chaque mois.</p>` +
+    `<p>Pour continuer, vous n’avez rien à faire.</p>` +
+    `<p>Pour arrêter sans rien payer, touchez « Résilier » dans Réglages, Abonnement, avant le ${M.finCourt}.</p>` +
+    `<p>Florian, pour Cause</p>` +
+    `</div></div></main>`,
+};
 
 const etats = [
   { nom: "conditions", etape: "conditions", corps: conditions },
@@ -104,6 +130,7 @@ const etats = [
   { nom: "pret", etape: "pret", corps: pret },
   { nom: "accueil", etape: "accueil", corps: accueil },
   { nom: "sans-carte", etape: "sans-carte", corps: sansCarte },
+  { nom: "rappel", etape: "rappel", corps: rappel },
 ].map((e) => ({ ...e, corps: { ...e.corps, html: enHauteurStable(e.corps.html) } }));
 
 const ETAPES = [
@@ -114,6 +141,7 @@ const ETAPES = [
   { va: "pret", mot: "C'est fait" },
   { va: "accueil", mot: "L'appli" },
   { va: "sans-carte", mot: "Sans carte" },
+  { va: "rappel", mot: "Le rappel" },
 ];
 
 const retouches = (etat, d) => {
@@ -143,6 +171,17 @@ const retouches = (etat, d) => {
 
 const css = enHauteurStable(readFileSync(`${S}/css.txt`, "utf8")) + `
 .ec-changer{display:inline-flex;align-items:center;min-height:44px;margin-top:2px;padding:0;border:0;background:none;font:inherit;font-size:15px;font-weight:600;color:var(--atlas-or,#B98B47);cursor:pointer}
+.ec-chemin{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:12px;cursor:default}
+.ec-pas{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background-color:var(--atlas-card,#faf9f5);box-shadow:inset 0 0 0 1px var(--atlas-line,rgba(28,28,26,0.12));font-size:14.5px;font-weight:600;color:var(--atlas-ink,#1c1c1a)}
+.ec-rouge{color:var(--atlas-alerte,#da8c81)}
+.ec-trait{display:inline-block;width:12px;height:1px;background:var(--atlas-chevron,rgba(233,232,222,0.28))}
+.ml{min-height:100svh;background:#f4f3ef;color:#1c1c1a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 18px 40px}
+.ml-col{max-width:440px;margin:0 auto}
+.ml-quand{margin:0 0 12px;font-size:13px;font-weight:600;color:#6a6a62}
+.ml-carte{padding:20px 18px;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);font-size:15.5px;line-height:1.5}
+.ml-carte p{margin:0 0 12px}
+.ml-de{font-size:13px;font-weight:600;color:#6a6a62}
+.ml-objet{font-size:18px;font-weight:700;line-height:1.3}
 .pp{min-height:100svh;background:#f6f7f9;color:#1a1f36;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 20px 40px}
 .pp-col{max-width:420px;margin:0 auto}
 .pp-chez{margin:0 0 18px;font-size:13px;font-weight:600;color:#5b6170}
