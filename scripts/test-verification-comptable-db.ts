@@ -90,7 +90,7 @@ async function main() {
   const id = (lib: string) => lignes.find((l) => l.libelle === `CB ${lib}`)!.id;
   assert.equal((await relierTicket(ctx, id("GASOIL"), ticket.id, "patron")).ok, true);
   assert.equal((await marquerTicketPerdu(ctx, id("POSTE"))).ok, true);
-  const range = await rangerDossier(ctx, { du: "2026-01-01", au: "2026-01-31", fichierCle: "entreprises/x/dossiers/janvier.pdf", tailleOctets: 4000, empreinte: "a".repeat(64), gardeJusquAu: "2036-01-31" });
+  const range = await rangerDossier(ctx, { du: "2026-01-01", au: "2026-01-31", fichierCle: "entreprises/x/dossiers/janvier.pdf", tailleOctets: 4000, empreinte: "a".repeat(64), gardeJusquAu: "2036-01-31", excelCle: null, fecCle: null });
   assert.ok(range.ok);
   const dossierId = (range as { id: string }).id;
 
@@ -182,7 +182,7 @@ async function main() {
   await test("une autre entreprise ne crée pas de lien sur ce dossier, et son lien n'atteint pas ces lignes", async () => {
     assert.deepEqual(await creerLienComptable(autre, dossierId, MAINTENANT), { ok: false, raison: "Ce dossier n'existe pas." });
     await ajouterMouvements(autre, [sortie("AUTRE", "2026-01-05", "9.00")]);
-    const sien = await rangerDossier(autre, { du: "2026-01-01", au: "2026-01-31", fichierCle: "b", tailleOctets: 1, empreinte: "b".repeat(64), gardeJusquAu: "2036-01-31" });
+    const sien = await rangerDossier(autre, { du: "2026-01-01", au: "2026-01-31", fichierCle: "b", tailleOctets: 1, empreinte: "b".repeat(64), gardeJusquAu: "2036-01-31", excelCle: null, fecCle: null });
     const lien = await creerLienComptable(autre, (sien as { id: string }).id, MAINTENANT);
     const jetonB = (lien as { jeton: string }).jeton;
     const d = (await dossierParJeton(jetonB, MAINTENANT))!;

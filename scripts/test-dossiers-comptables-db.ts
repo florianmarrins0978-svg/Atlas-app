@@ -116,6 +116,23 @@ async function main() {
     assert.equal(octets.subarray(0, 5).toString("latin1"), "%PDF-");
   });
 
+  // Ses choix du 24 novembre 2026 : le dossier sort en trois fichiers, rangés
+  // ensemble au même instant, et chaque pièce porte un numéro.
+  await test("l'Excel et le FEC d'import sont rangés avec le PDF, et relus du stockage", async () => {
+    const f = await fichierDuDossier(ctx, premierId);
+    assert.ok(f?.excelCle && f.fecCle, "le dossier n'a pas ses trois fichiers");
+    const excel = await lireObjet(f.excelCle);
+    assert.equal(excel.subarray(0, 2).toString("latin1"), "PK", "l'Excel n'est pas un classeur");
+    const fec = (await lireObjet(f.fecCle)).toString("latin1").split("\r\n").filter(Boolean);
+    assert.match(fec[0]!, /^JournalCode\tJournalLib\tEcritureNum/);
+    // Deux tickets perdus, rangés « À classer » : chacun au 471 contre la banque.
+    assert.equal(fec.length, 1 + 4, fec.join("\n"));
+    assert.deepEqual([...new Set(fec.slice(1).map((l) => l.split("\t")[8]))], ["A 001", "A 002"], "les pièces ne portent pas leur numéro");
+    assert.ok(fec.slice(1).some((l) => l.split("\t")[4] === "471"));
+    const [d] = (await listerDossiers(ctx)).filter((x) => x.id === premierId);
+    assert.deepEqual([d?.excel, d?.fec], [true, true]);
+  });
+
   await test("le dossier suivant part du lendemain, et la date demandée est ignorée", async () => {
     assert.deepEqual(await dossierEnCours(ctx, MAINTENANT), { du: "2026-07-01", au: "2026-10-24", premier: false });
     const r = await arreterLeDossier(ctx, { du: "2025-01-01", au: "2026-09-30", maintenant: MAINTENANT });
@@ -125,7 +142,7 @@ async function main() {
   });
 
   await test("le même dossier ne se range pas deux fois (deux appuis rapprochés)", async () => {
-    const r = await rangerDossier(ctx, { du: "2026-07-01", au: "2026-09-30", fichierCle: "x", tailleOctets: 1, empreinte: "0".repeat(64), gardeJusquAu: "2036-09-30" });
+    const r = await rangerDossier(ctx, { du: "2026-07-01", au: "2026-09-30", fichierCle: "x", tailleOctets: 1, empreinte: "0".repeat(64), gardeJusquAu: "2036-09-30", excelCle: null, fecCle: null });
     assert.deepEqual(r, { ok: false, raison: "Ce dossier est déjà rangé." });
   });
 

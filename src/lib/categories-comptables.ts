@@ -208,7 +208,9 @@ export function categorieProposee(l: {
   factureEmise: boolean;
 }): CleCompta {
   if (l.sens === "entree") {
-    if (l.factureEmise) return "clients";
+    // Une facture faite hors de Cause que le client paie est une vente comme
+    // une autre : son argent va au client, jamais en « remboursement ».
+    if (l.factureEmise || l.justification === "facture_hors_atlas") return "clients";
     switch (l.motif) {
       case "perso":
         return "apport";

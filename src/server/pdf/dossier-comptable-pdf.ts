@@ -4,47 +4,39 @@ import { couleursDocument } from "@/lib/design-tokens";
 import { logger } from "../logger";
 import { enEuros } from "@/lib/euros";
 import { texteDuPapier } from "@/lib/texte-pdf";
-import { NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
 import { ligneDuTotal, type LigneImprimee } from "@/lib/ticket-imprime";
-import {
-  libelleMotif,
-  libellePeriode,
-  jourComplet,
-  jourEnMots,
-  suiteDeLaPiece,
-  ecartSignale,
-  totalSigne,
-  type Categorie,
-  type Ecart,
-  type Motif,
-} from "@/lib/pour-mon-comptable";
+import { couleurDe, nomCategorie, type CleCompta } from "@/lib/categories-comptables";
+import { ordreDesCategories, tauxDuRegistre, tauxEnMots, tvaAuTaux, type LigneComptable, type RangDuRegistre } from "@/lib/dossier-du-comptable";
+import { libelleMotif, jourComplet, jourEnMots, suiteDeLaPiece, ecartSignale, totalSigne, type Categorie, type Ecart, type Motif } from "@/lib/pour-mon-comptable";
 
 /**
- * LE DOSSIER DU COMPTABLE, EN PDF — lot 3 de « Pour mon comptable ».
+ * LE DOSSIER DU COMPTABLE, EN PDF : rangé par catégorie, avec son registre des
+ * ventes et le numéro de chaque pièce.
  *
- * Ses choix du 24 octobre 2026 (`TODO.md`) : **côte à côte**, la ligne de
- * banque à gauche et sa pièce réécrite à droite, le total de la pièce
- * surligné en bleu gris ; « Voir la photo » vers les vraies photos rangées
- * TOUT AU BOUT, chacune avec « Retour à la ligne » ; les sorties en rouge et
- * les entrées en vert (son choix B).
+ * **Ses choix du 24 novembre 2026** (`appli/soignee/comptable-trois-fichiers.html`,
+ * `TODO.md`) : le registre des ventes d'abord ; puis les dépenses catégorie
+ * par catégorie, chacune sur sa page, sous son numéro de compte, ligne par
+ * ligne dans l'ordre des dates ; **le côte à côte reste** : la ligne de banque
+ * à gauche, sa pièce réécrite à droite, le total surligné en bleu gris ; chaque
+ * pièce porte son numéro (A 041), le même dans l'Excel et le FEC.
  *
- * **Sa planche du 26 octobre 2026** (`appli/soignee/comptable-dossier.html`)
- * l'a resserré sans rien changer de tout cela : la première page dit d'abord
- * que tout est justifié, puis les chiffres, les mois et les catégories ;
- * chaque mois commence sa page, sous des colonnes titrées ; la case de la pièce
- * prend la hauteur de son contenu (elle réservait 118 points pour un ticket de
- * trois lignes) ; la date d'une ligne mince ne touche plus le trait du dessus ;
- * les tickets perdus suivent le dernier mois, avec leur total.
+ * **Le ticket est sa planche B** (`appli/soignee/ticket-lisible.html`) : réécrit
+ * dans une écriture droite et pleine, plus grande que l'ancien Courier, avec
+ * dessous la photo recadrée et nettoyée au téléphone. La vraie photo reste au
+ * bout du dossier, « Voir la photo en grand ».
  *
- * **Les liens visent une PAGE, jamais un nom** : les lecteurs de téléphone
- * suivent mal les destinations nommées (sa remarque du 23 octobre, « ça marche
- * pas »).
+ * **Ce qui n'a pas changé depuis le 24 octobre** : les vraies photos TOUT AU
+ * BOUT, chacune avec son « Retour à la ligne » ; les sorties en rouge et les
+ * entrées en vert ; **les liens visent une PAGE, jamais un nom** (les lecteurs
+ * de téléphone suivent mal les destinations nommées, sa remarque du
+ * 23 octobre) ; une pièce illisible n'empêche pas le dossier de sortir.
  *
  * **Ce qui n'y est pas, et ne s'invente pas** : le solde de la banque au début
- * et à la fin de chaque mois. La lecture d'Enable Banking ne le rapporte pas
- * encore (`TODO.md`). Le dossier donne les totaux du mois, qui se lisent sur
- * les lignes.
+ * et à la fin de la période (Enable Banking ne le rapporte pas encore,
+ * `TODO.md`).
  */
+
+export type Fichier = { octets: Uint8Array; nature: "image" | "pdf" };
 
 export type PieceDeLaLigne =
   | {
@@ -54,22 +46,18 @@ export type PieceDeLaLigne =
       totalTtc: string | null;
       tva: string | null;
       photo: Fichier | null;
+      /** La photo recadrée et nettoyée au téléphone (migration 0198), posée sous le ticket réécrit. */
+      photoNette: Fichier | null;
       /** Le ticket recopié ligne par ligne (lot 5), ou `null` pour un ticket d'avant : il garde alors son résumé. */
       lignes: LigneImprimee[] | null;
     }
   | { genre: "facture"; societe: string; nom: string; totalTtc: string | null; fichier: Fichier | null }
   | { genre: "facture-emise"; numero: string }
-  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150) : son total lu, ou tapé, et son fichier. */
+  /** Une facture faite hors de Cause (migration 0150) : son total lu, ou tapé, et son fichier. */
   | { genre: "facture-hors-atlas"; sortie?: boolean; totalTtc: string | null; fichier: Fichier | null };
 
-export type Fichier = { octets: Uint8Array; nature: "image" | "pdf" };
-
-export type LignePourLeDossier = {
-  jour: string;
-  libelle: string;
-  sens: "entree" | "sortie";
-  montant: string;
-  categorie: Categorie;
+/** Une ligne de banque : ce que les trois fichiers en lisent, plus ce que seul le PDF montre. */
+export type LignePourLeDossier = LigneComptable & {
   piece: PieceDeLaLigne | null;
   ticketPerdu: boolean;
   motif: Motif | null;
@@ -88,8 +76,18 @@ export type DonneesDossier = {
   au: string;
   rangeLe: string;
   gardeJusquAu: string;
+  /** Les lignes du relevé, dans son ordre. */
   lignes: LignePourLeDossier[];
+  /** Le registre (`registreDesVentes`) : les ventes de la période, et celles d'avant payées pendant. */
+  ventes: { periode: RangDuRegistre[]; avant: RangDuRegistre[] };
+  /** Les numéros que le registre et les phrases citent, tels que Réglages les donne. */
+  comptes: Record<"ventes" | "clients" | "tvaCollectee" | "tvaEnAttente" | "tvaDeductible" | "tvaImmobilisations", string>;
+  exigibilite: "encaissements" | "debits";
+  franchise: boolean;
 };
+
+/** Le PDF, et la page où commence chaque catégorie : l'onglet Achats de l'Excel la cite. */
+export type DossierCompose = { pdf: Uint8Array; pageDe: Partial<Record<CleCompta, number>> };
 
 const LARGEUR = 595.28;
 const HAUTEUR = 841.89;
@@ -100,18 +98,17 @@ const BAS = 50;
 const UTILE = LARGEUR - 2 * MARGE;
 const ORIGINE = charte("origine").jetons;
 
-// Les quatre colonnes d'un mois, celles de la planche : Date, Ligne de banque,
-// Montant, Justificatif. La date a six points de plus que sur la planche :
-// « 22 septembre » s'y écrit en entier.
-const X_LIBELLE = MARGE + 58 + 10;
+// Les cinq colonnes d'une catégorie, celles de la planche : Pièce, Date, Ligne
+// de banque, TTC, Justificatif.
+const L_REF = 54;
+const X_DATE = MARGE + L_REF + 6;
+const X_LIBELLE = X_DATE + 30 + 8;
 const L_PIECE = 186;
 const X_PIECE = LARGEUR - MARGE - L_PIECE;
 /** Le bord droit des montants. */
 const X_MONTANT = X_PIECE - 12;
 const L_LIBELLE = X_MONTANT - 72 - 10 - X_LIBELLE;
-/** La première rangée d'une page de mois, sous les titres des colonnes. */
-const Y_RANGEES = HAUT - 61;
-/** Le bas des rangées : sous la dernière, la place de « Suite d'octobre page 12 ». */
+/** Le bas des rangées : sous la dernière, la place de « Suite page 12 ». */
 const BAS_RANGEES = BAS + 20;
 
 function couleur(hex: string) {
@@ -153,7 +150,7 @@ const COULEUR_CAT: Record<Categorie, Teinte> = {
   recu: couleur(ORIGINE.catRecu),
 };
 
-type Polices = { sans: PDFFont; gras: PDFFont; oblique: PDFFont; serif: PDFFont; mono: PDFFont; monoGras: PDFFont };
+type Polices = { sans: PDFFont; gras: PDFFont; oblique: PDFFont; serif: PDFFont };
 
 /**
  * Le texte pour les polices du PDF. Les lettres en exposant de « 1ᵉʳ » n'y
@@ -179,6 +176,13 @@ function ecrire(page: PDFPage, texte: string, x: number, y: number, police: PDFF
 function ecrireADroite(page: PDFPage, texte: string, xDroit: number, y: number, police: PDFFont, taille: number, teinte = ENCRE) {
   const t = papier(texte);
   page.drawText(t, { x: xDroit - police.widthOfTextAtSize(t, taille), y, size: taille, font: police, color: teinte });
+}
+
+/** Le plus grand corps, entre deux bornes, auquel un texte tient dans sa largeur. */
+function corpsQuiTient(texte: string, police: PDFFont, plusGrand: number, plusPetit: number, largeur: number): number {
+  const t = papier(texte);
+  for (let c = plusGrand; c > plusPetit; c -= 0.5) if (police.widthOfTextAtSize(t, c) <= largeur) return c;
+  return plusPetit;
 }
 
 /** Un morceau de phrase dans sa police et sa teinte : « Justifié par sa nature : » puis, en gras, « un loyer ». */
@@ -223,32 +227,31 @@ function poserLignes(page: PDFPage, lignes: Bout[][], x: number, y: number, tail
   });
 }
 
-/** Des bouts posés sur une ligne, finissant au bord droit. */
-function poserADroite(page: PDFPage, bouts: Bout[], xDroit: number, y: number, taille: number) {
+/** Des bouts posés sur une ligne, finissant au bord droit. Rend leur largeur. */
+function poserADroite(page: PDFPage, bouts: Bout[], xDroit: number, y: number, taille: number): number {
   const propres = bouts.map((b) => ({ ...b, t: papier(b.t) }));
-  const largeur = propres.reduce((s, b) => s + b.police.widthOfTextAtSize(b.t, taille), 0);
+  const largeur = largeurDe(propres, taille);
   poserLignes(page, [propres], xDroit - largeur, y, taille, 0);
+  return largeur;
 }
+const largeurDe = (bouts: Bout[], taille: number) => bouts.reduce((s, b) => s + b.police.widthOfTextAtSize(papier(b.t), taille), 0);
 
-const signe = (l: LignePourLeDossier) => `${l.sens === "entree" ? "+" : "-"}${enEuros(l.montant)}`;
-const centimes = (m: string) => Math.round(Number(m) * 100);
-const somme = (lignes: LignePourLeDossier[], sens: LignePourLeDossier["sens"]) => lignes.filter((l) => l.sens === sens).reduce((s, l) => s + centimes(l.montant), 0);
+const euros = (centimes: number) => enEuros(centimes / 100);
+const signe = (l: LignePourLeDossier) => `${l.sens === "entree" ? "+" : "-"}${euros(l.ttc)}`;
+const somme = <X>(xs: readonly X[], f: (x: X) => number) => xs.reduce((s, x) => s + f(x), 0);
 /** Un total avec son signe, la règle des écrans (`totalSigne`), le trait d'union en plus. */
 const signeDuTotal = (c: number, sens: LignePourLeDossier["sens"]) => totalSigne(c, sens, "-");
 const pluriel = (n: number, un: string, plusieurs: string) => `${n} ${n > 1 ? plusieurs : un}`;
 /** « impôts, cotisations » : le mot d'un motif au milieu d'une phrase. */
 const enMinuscule = (t: string) => `${t.charAt(0).toLocaleLowerCase("fr-FR")}${t.slice(1)}`;
+/** « 22/10 » : la date d'une rangée ; l'année est celle du dossier, écrite en tête. */
+const jjmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+const jjmmaaaa = (iso: string) => `${jjmm(iso)}/${iso.slice(0, 4)}`;
 
 /** « du 1er janvier au 25 octobre » dans une même année ; l'année de chaque bout sinon. */
 function entreLesDeux(du: string, au: string, anneeALaFin: boolean): string {
   if (du.slice(0, 4) !== au.slice(0, 4)) return `du ${jourComplet(du)} au ${jourComplet(au)}`;
   return `du ${jourEnMots(du)} au ${anneeALaFin ? jourComplet(au) : jourEnMots(au)}`;
-}
-
-/** « d'octobre », « de septembre » : « Suite d'octobre page 12 ». */
-function duMois(cle: string): string {
-  const nom = libellePeriode(cle).split(" ")[0].toLocaleLowerCase("fr-FR");
-  return /^[aeioué]/.test(nom) ? `d'${nom}` : `de ${nom}`;
 }
 
 /** Un lien qui mène à une page, posé sur un rectangle d'une autre. */
@@ -268,6 +271,8 @@ function poserLiens(doc: PDFDocument, liens: Lien[]) {
   }
 }
 
+type Embarque = { genre: "image"; objet: PDFImage } | { genre: "page"; objet: PDFEmbeddedPage };
+
 /** Ce que tout le dossier partage pendant qu'il se compose. */
 type Composition = {
   doc: PDFDocument;
@@ -275,6 +280,8 @@ type Composition = {
   liens: Lien[];
   /** Ce qui s'écrit une fois toutes les pages connues : les numéros de page. */
   apres: (() => void)[];
+  /** Un fichier ne s'embarque qu'une fois, même posé deux fois (la vignette et la photo du bout). */
+  embarques: Map<Fichier, Promise<Embarque | null>>;
 };
 
 const numero = (c: Composition, page: PDFPage) => c.doc.getPages().indexOf(page) + 1;
@@ -286,10 +293,28 @@ function etiquette(page: PDFPage, p: Polices, texte: string, x: number, y: numbe
   else ecrire(page, texte.toUpperCase(), x, y, p.gras, 7.5, ENCRE);
 }
 
-/** Le titre d'une page, ce qu'elle porte à droite, et le trait noir dessous. Rend le bas du trait. */
-function enTete(page: PDFPage, p: Polices, titre: string, droite: Bout[], yHaut = HAUT): number {
-  page.drawText(papier(titre), { x: MARGE, y: yHaut - 18, size: 22, font: p.serif, color: ENCRE });
-  if (droite.length > 0) poserADroite(page, droite, LARGEUR - MARGE, yHaut - 18, 10);
+/**
+ * Le titre d'une page, son numéro de compte en gras à sa suite, ce qu'elle
+ * porte à droite, et le trait noir dessous. Un long nom de catégorie se
+ * resserre plutôt que de se couper. Rend le bas du trait.
+ */
+function enTete(page: PDFPage, p: Polices, titre: string, droite: Bout[], options: { compte?: string; pastille?: Teinte; yHaut?: number } = {}): number {
+  const yHaut = options.yHaut ?? HAUT;
+  const yb = yHaut - 18;
+  const aDroite = droite.length > 0 ? largeurDe(droite, 10) + 16 : 0;
+  const compte = options.compte ? papier(options.compte) : "";
+  const lCompte = compte ? p.gras.widthOfTextAtSize(compte, 12) + 8 : 0;
+  let x = MARGE;
+  if (options.pastille) {
+    page.drawCircle({ x: x + 4, y: yb + 5, size: 4, color: options.pastille });
+    x += 14;
+  }
+  const place = LARGEUR - MARGE - aDroite - lCompte - x;
+  const corps = corpsQuiTient(titre, p.serif, 22, 14, place);
+  const t = ajuste(titre, p.serif, corps, place);
+  page.drawText(t, { x, y: yb, size: corps, font: p.serif, color: ENCRE });
+  if (compte) page.drawText(compte, { x: x + p.serif.widthOfTextAtSize(t, corps) + 8, y: yb, size: 12, font: p.gras, color: ENCRE });
+  if (droite.length > 0) poserADroite(page, droite, LARGEUR - MARGE, yb, 10);
   page.drawLine({ start: { x: MARGE, y: yHaut - 32 }, end: { x: LARGEUR - MARGE, y: yHaut - 32 }, thickness: 0.8, color: ENCRE });
   return yHaut - 32;
 }
@@ -304,13 +329,65 @@ function appareil(page: PDFPage, x: number, yHaut: number, taille: number, teint
   page.drawSvgPath("M15.5 13a3.5 3.5 0 1 1-7 0a3.5 3.5 0 1 1 7 0z", trace);
 }
 
+// ─── Les fichiers posés : la vignette sous le ticket, les photos du bout ─────
+
+/** Une image, ou la première page d'un PDF, prête à poser. */
+function embarquer(c: Composition, f: Fichier): Promise<Embarque | null> {
+  const deja = c.embarques.get(f);
+  if (deja) return deja;
+  const promesse = (async (): Promise<Embarque | null> => {
+    try {
+      if (f.nature === "pdf") {
+        // **La page s'éprouve d'abord sur un PDF de brouillon.** pdf-lib remet
+        // l'embarquement à l'enregistrement, et garde dans sa liste une page qui
+        // a échoué : une facture vide ou abîmée passait ici sans bruit, puis
+        // faisait tomber le dossier ENTIER au moment de l'écrire. Un seul mauvais
+        // fichier aurait empêché d'arrêter l'année. Elle n'entre dans le vrai
+        // dossier qu'une fois qu'elle a prouvé qu'elle se pose.
+        const brouillon = await PDFDocument.create();
+        const [essai] = await brouillon.embedPdf(f.octets, [0]);
+        if (!essai) return null;
+        await essai.embed();
+        const [objet] = await c.doc.embedPdf(f.octets, [0]);
+        return { genre: "page", objet };
+      }
+      const png = f.octets[0] === 0x89 && f.octets[1] === 0x50;
+      return { genre: "image", objet: png ? await c.doc.embedPng(f.octets) : await c.doc.embedJpg(f.octets) };
+    } catch (err) {
+      // Un fichier que pdf-lib ne sait pas lire n'empêche pas le dossier de
+      // sortir : sa place le dit sur le PDF, et le journal dit pourquoi.
+      logger.warn("Une pièce du dossier du comptable n'a pas pu être posée dans le PDF", {
+        nature: f.nature,
+        erreur: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    }
+  })();
+  c.embarques.set(f, promesse);
+  return promesse;
+}
+
+/** Le fichier posé au bout pour une ligne : une facture prend une page, un ticket un sixième. */
+function fichierDe(l: LignePourLeDossier): { fichier: Fichier; pleinePage: boolean } | null {
+  const piece = l.piece;
+  // Au bout, le ticket nettoyé quand il existe : c'est lui qui se lit. La
+  // photo d'origine reste dans Cause, telle quelle.
+  if (piece?.genre === "ticket") {
+    const f = piece.photoNette ?? piece.photo;
+    return f ? { fichier: f, pleinePage: false } : null;
+  }
+  if (piece?.genre === "facture" || piece?.genre === "facture-hors-atlas") return piece.fichier ? { fichier: piece.fichier, pleinePage: true } : null;
+  return null;
+}
+
 // ─── La pièce réécrite ───────────────────────────────────────────────────────
 
-/** L'interligne d'un ticket recopié : 7,6 points à 1,42, celui de la planche. */
-const PAS_TICKET = 10.8;
 /** Le blanc d'une case autour de sa pièce, en haut et en bas, puis sur les côtés. */
 const BLANC_HAUT = 6;
 const BLANC_COTE = 8;
+/** La vignette du ticket nettoyé, sous sa case : la largeur de la planche, et une hauteur bornée. */
+const L_VIGNETTE = 96;
+const H_VIGNETTE_MAX = 150;
 
 /**
  * Une rangée d'une case de pièce. La case se mesure rangée par rangée : elle
@@ -318,10 +395,15 @@ const BLANC_COTE = 8;
  * rangées, jamais au milieu d'une.
  */
 type Rang =
-  | { genre: "centre"; t: string; police: PDFFont; taille: number; h: number }
-  | { genre: "titre"; t: string; police: PDFFont; taille: number; teinte: Teinte; h: number }
+  | { genre: "titre"; t: string; police: PDFFont; taille: number; h: number }
   | { genre: "deux"; g: string; d: string | null; police: PDFFont; taille: number; h: number; surligne: boolean; retrait: number }
   | { genre: "blanc"; h: number };
+
+/** « REAL THAI LAIT COCO » se lit « Real thai lait coco » : les capitales d'un ticket se lisent mal (planche B). */
+function enPhrase(t: string): string {
+  const bas = t.toLocaleLowerCase("fr-FR");
+  return t === t.toLocaleUpperCase("fr-FR") ? `${bas.charAt(0).toLocaleUpperCase("fr-FR")}${bas.slice(1)}` : t;
+}
 
 /**
  * Les lignes d'un ticket recopié, celle du total surlignée (`ligneDuTotal`).
@@ -331,30 +413,35 @@ type Rang =
 function lignesDuTicket(piece: Extract<PieceDeLaLigne, { genre: "ticket" }>): { g: string; d: string | null; surligne: boolean }[] | null {
   if (!piece.lignes || piece.lignes.length === 0) return null;
   const total = ligneDuTotal(piece.lignes, piece.totalTtc ? Number(piece.totalTtc) : null);
-  const lignes = piece.lignes.map((l, k) => ({ g: l.gauche, d: l.droite, surligne: k === total }));
-  if (total < 0) lignes.push({ g: "TOTAL TTC", d: piece.totalTtc ? enEuros(piece.totalTtc) : "non lu", surligne: true });
+  const lignes = piece.lignes.map((l, k) => ({ g: enPhrase(l.gauche), d: l.droite, surligne: k === total }));
+  if (total < 0) lignes.push({ g: "Total TTC", d: piece.totalTtc ? enEuros(piece.totalTtc) : "non lu", surligne: true });
   return lignes;
 }
 
-/** Ce qu'une case porte, rangée par rangée ; `null` pour une pièce qui se dit d'une phrase. */
+/**
+ * Ce qu'une case porte, rangée par rangée ; `null` pour une pièce qui se dit
+ * d'une phrase. Le ticket s'écrit dans la police droite du document, à 8,8
+ * points au lieu des 7,6 du Courier d'avant, et son total plus grand encore
+ * (planche B du 24 novembre 2026).
+ */
 function rangsDeLaPiece(piece: PieceDeLaLigne, p: Polices): Rang[] | null {
-  const totalTtc = (t: string | null): Rang => ({ genre: "deux", g: "Total TTC", d: t ? enEuros(t) : "non lu", police: p.gras, taille: 8.5, h: 14, surligne: true, retrait: 4 });
-  const nom = (t: string): Rang => ({ genre: "titre", t, police: p.serif, taille: 10.5, teinte: ENCRE, h: 12.6 });
+  const totalTtc = (t: string | null): Rang => ({ genre: "deux", g: "Total TTC", d: t ? enEuros(t) : "non lu", police: p.gras, taille: 9.5, h: 15, surligne: true, retrait: 3 });
+  const nom = (t: string): Rang => ({ genre: "titre", t, police: p.serif, taille: 10.5, h: 12.6 });
   switch (piece.genre) {
     case "ticket": {
       const recopie = lignesDuTicket(piece);
-      const rang = (g: string, d: string | null, surligne: boolean): Rang => ({ genre: "deux", g, d, police: surligne ? p.monoGras : p.mono, taille: 7.6, h: PAS_TICKET, surligne, retrait: 2 });
-      if (recopie) return recopie.map((l) => rang(l.g, l.d, l.surligne));
-      return [
-        { genre: "centre", t: piece.fournisseur.toUpperCase(), police: p.monoGras, taille: 7.6, h: PAS_TICKET },
-        { genre: "centre", t: jourComplet(piece.date), police: p.mono, taille: 7.6, h: PAS_TICKET },
+      const rang = (g: string, d: string | null, surligne: boolean): Rang =>
+        surligne ? { genre: "deux", g, d, police: p.gras, taille: 9.8, h: 15, surligne, retrait: 3 } : { genre: "deux", g, d, police: p.sans, taille: 8.8, h: 12.4, surligne, retrait: 2 };
+      const tete: Rang[] = [
+        { genre: "titre", t: piece.fournisseur, police: p.gras, taille: 10.5, h: 13.5 },
+        { genre: "titre", t: jourComplet(piece.date), police: p.sans, taille: 8.8, h: 12.4 },
         { genre: "blanc", h: 3 },
-        rang("TOTAL TTC", piece.totalTtc ? enEuros(piece.totalTtc) : "non lu", true),
-        ...(piece.tva ? [rang("dont TVA", enEuros(piece.tva), false)] : []),
       ];
+      if (recopie) return [...tete, ...recopie.map((l) => rang(l.g, l.d, l.surligne))];
+      return [...tete, rang("Total TTC", piece.totalTtc ? enEuros(piece.totalTtc) : "non lu", true), ...(piece.tva ? [rang("dont TVA", enEuros(piece.tva), false)] : [])];
     }
     case "facture":
-      return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8, teinte: ENCRE, h: 10.6 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
+      return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8.5, h: 11 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-hors-atlas":
       return [nom(piece.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-emise":
@@ -375,11 +462,8 @@ function dessinerCase(page: PDFPage, rangs: readonly Rang[], yHaut: number): num
   for (const r of rangs) {
     if (r.genre !== "blanc") {
       const base = y - (r.h + 0.7 * r.taille) / 2;
-      if (r.genre === "centre") {
-        const t = ajuste(r.t, r.police, r.taille, droite - gauche);
-        page.drawText(t, { x: X_PIECE + (L_PIECE - r.police.widthOfTextAtSize(t, r.taille)) / 2, y: base, size: r.taille, font: r.police, color: ENCRE });
-      } else if (r.genre === "titre") {
-        ecrire(page, r.t, gauche, base, r.police, r.taille, r.teinte, droite - gauche);
+      if (r.genre === "titre") {
+        ecrire(page, r.t, gauche, base, r.police, r.taille, ENCRE, droite - gauche);
       } else {
         if (r.surligne) page.drawRectangle({ x: gauche, y: y - r.h, width: droite - gauche, height: r.h, color: SURLIGNE });
         const d = r.d ? papier(r.d) : "";
@@ -409,27 +493,22 @@ function nomDeLaPiece(piece: PieceDeLaLigne): string {
   }
 }
 
-/** Le fichier d'une pièce, posé au bout ; une facture prend une page, un ticket un sixième. */
-function fichierDe(l: LignePourLeDossier): { fichier: Fichier; pleinePage: boolean } | null {
-  const piece = l.piece;
-  if (piece?.genre === "ticket") return piece.photo ? { fichier: piece.photo, pleinePage: false } : null;
-  if (piece?.genre === "facture" || piece?.genre === "facture-hors-atlas") return piece.fichier ? { fichier: piece.fichier, pleinePage: true } : null;
-  return null;
-}
-
 /** Une ligne, mesurée avant d'être posée : on sait ainsi si elle tient sur la page. */
 type Plan = {
   l: LignePourLeDossier;
   libelle: Bout[][];
-  /** La case de la pièce, ou la phrase qui la remplace (une facture d'Atlas, un motif, un ticket perdu). */
+  /** Sous le libellé : son hors taxe et sa TVA, ou ce qu'il reste à lire. */
+  sous: string | null;
+  /** La case de la pièce, ou la phrase qui la remplace (une facture de Cause, un motif, un ticket perdu). */
   rangs: Rang[] | null;
   phrase: Bout[][];
-  /** Sous la case : son écart, puis « Voir la photo » ou « Voir la facture ». */
+  /** Sous la case : son écart, la vignette du ticket nettoyé, puis « Voir la photo en grand ». */
   ecart: Bout[][];
+  vignette: { pose: Embarque; l: number; h: number } | null;
   voir: string | null;
 };
 
-function planifier(l: LignePourLeDossier, p: Polices): Plan {
+function planifier(l: LignePourLeDossier, p: Polices, vignette: Embarque | null): Plan {
   // Le libellé de la banque tient sur trois lignes ; au-delà, la troisième dit
   // qu'il continue (« ... ») plutôt que de le couper sans un signe.
   const coupe = enLignes([{ t: l.libelle, police: p.gras, teinte: ENCRE }], 9.5, L_LIBELLE);
@@ -456,40 +535,32 @@ function planifier(l: LignePourLeDossier, p: Polices): Plan {
     phrase = [{ t: "Aucune pièce", police: p.sans, teinte: ENCRE }];
   }
   const fichier = fichierDe(l);
+  const posee =
+    vignette && rangs
+      ? (() => {
+          const echelle = Math.min(L_VIGNETTE / vignette.objet.width, H_VIGNETTE_MAX / vignette.objet.height);
+          return { pose: vignette, l: vignette.objet.width * echelle, h: vignette.objet.height * echelle };
+        })()
+      : null;
   return {
     l,
     libelle,
+    sous: l.tvaNonLue ? "TVA à lire sur la pièce" : l.tva > 0 ? `HT ${euros(l.ht)}, TVA ${euros(l.tva)}` : null,
     rangs,
     phrase: enLignes(phrase, 9, L_PIECE),
     ecart: rangs && suite && l.piece ? enLignes([{ t: `${nomDeLaPiece(l.piece)}${suite}`, police: p.gras, teinte: teinteDeLaSuite }], 8, L_PIECE) : [],
-    voir: fichier ? (fichier.pleinePage ? "Voir la facture" : "Voir la photo") : null,
+    vignette: posee,
+    voir: fichier ? (fichier.pleinePage ? "Voir la facture" : posee ? "Voir la photo en grand" : "Voir la photo") : null,
   };
 }
 
-const hauteurGauche = (pl: Plan) => 34 + 12 * (pl.libelle.length - 1);
-const hauteurDessous = (pl: Plan) => (pl.ecart.length > 0 ? 4 + 10 * pl.ecart.length : 0) + (pl.voir ? 16 : 0);
+const hauteurGauche = (pl: Plan) => 30 + 12 * (pl.libelle.length - 1) + (pl.sous ? 12 : 0);
+const hauteurDessous = (pl: Plan) => (pl.ecart.length > 0 ? 4 + 10 * pl.ecart.length : 0) + (pl.vignette ? 6 + pl.vignette.h : 0) + (pl.voir ? 16 : 0);
 const hauteurDroite = (pl: Plan) => (pl.rangs ? 8 + hauteurDeCase(pl.rangs) + hauteurDessous(pl) : 20 + 12 * (pl.phrase.length - 1));
 const hauteurDeLaLigne = (pl: Plan) => Math.max(hauteurGauche(pl), hauteurDroite(pl)) + 8;
 
-/** Une page de mois qui se remplit, et ce qu'on sait d'elle. */
+/** Une page de catégorie qui se remplit, et ce qu'on sait d'elle. */
 type PageDuReleve = { page: PDFPage; y: number; suite: boolean; lignes: number };
-
-function pageDuReleve(c: Composition, m: string, suite: boolean, bilan: Bout[]): PageDuReleve {
-  const page = nouvellePage(c);
-  enTete(page, c.p, suite ? `${libellePeriode(m)}, suite` : libellePeriode(m), bilan);
-  const y = HAUT - 50;
-  etiquette(page, c.p, "Date", MARGE, y);
-  etiquette(page, c.p, "Ligne de banque", X_LIBELLE, y);
-  etiquette(page, c.p, "Montant", X_MONTANT, y, true);
-  etiquette(page, c.p, "Justificatif", X_PIECE, y);
-  page.drawLine({ start: { x: MARGE, y: HAUT - 60 }, end: { x: LARGEUR - MARGE, y: HAUT - 60 }, thickness: 0.8, color: ENCRE });
-  return { page, y: Y_RANGEES, suite, lignes: 0 };
-}
-
-/** La page d'un mois se ferme : une page de suite dit combien de lignes elle porte. */
-function fermer(c: Composition, pg: PageDuReleve) {
-  if (pg.suite) poserADroite(pg.page, [{ t: pluriel(pg.lignes, "ligne", "lignes"), police: c.p.sans, teinte: ENCRE }], LARGEUR - MARGE, HAUT - 18, 10);
-}
 
 type Liaisons = {
   /** Là où mène « Retour à la ligne » : la page où se trouve « Voir la photo ». */
@@ -498,32 +569,78 @@ type Liaisons = {
   photo: Map<LignePourLeDossier, { page: PDFPage; y: number }>;
 };
 
+/** Ce qu'une catégorie dit sous son titre : où va sa TVA, ou ce qu'elle est. */
+function motDeLaCategorie(k: CleCompta, lignes: readonly LignePourLeDossier[], d: DonneesDossier): string | null {
+  if (k === "salaires") return "Le virement de chaque salaire. Le salaire lui-même est passé par votre cabinet depuis la fiche de paie.";
+  if (k === "clients") return "Chaque paiement porte le numéro de sa facture, celui du registre des ventes.";
+  if (k === "aClasser") return "Les lignes que Cause n'a pas su ranger, à votre comptable de les classer.";
+  const comptesTva = [...new Set(lignes.filter((l) => l.tva > 0 && l.compteTva).map((l) => l.compteTva!))];
+  if (comptesTva.length > 0) return `TVA déduite au ${comptesTva.join(" et au ")}.`;
+  if (d.franchise && lignes.some((l) => l.sens === "sortie")) return "Entreprise en franchise de TVA : rien ne se déduit.";
+  return null;
+}
+
+/** L'en-tête d'une page de catégorie : son nom, son compte, ses totaux, ses colonnes. */
+function pageDeCategorie(c: Composition, k: CleCompta, compte: string, suite: boolean, bilan: Bout[], mot: string | null): PageDuReleve {
+  const page = nouvellePage(c);
+  const titre = k === "clients" ? "Les paiements des clients" : nomCategorie(k);
+  let y = enTete(page, c.p, suite ? `${titre}, suite` : titre, bilan, { compte, pastille: COULEUR_CAT[couleurDe(k)] });
+  if (mot && !suite) {
+    const lignes = enLignes([{ t: mot, police: c.p.sans, teinte: ENCRE }], 9, UTILE);
+    poserLignes(page, lignes, MARGE, y - 14, 9, 12);
+    y -= 8 + 12 * lignes.length;
+  }
+  y -= 18;
+  etiquette(page, c.p, "Pièce", MARGE, y);
+  etiquette(page, c.p, "Date", X_DATE, y);
+  etiquette(page, c.p, "Ligne de banque", X_LIBELLE, y);
+  etiquette(page, c.p, "TTC", X_MONTANT, y, true);
+  etiquette(page, c.p, "Justificatif", X_PIECE, y);
+  page.drawLine({ start: { x: MARGE, y: y - 10 }, end: { x: LARGEUR - MARGE, y: y - 10 }, thickness: 0.8, color: ENCRE });
+  return { page, y: y - 11, suite, lignes: 0 };
+}
+
+/** La page d'une catégorie se ferme : une page de suite dit combien de lignes elle porte. */
+function fermer(c: Composition, pg: PageDuReleve) {
+  if (pg.suite) poserADroite(pg.page, [{ t: pluriel(pg.lignes, "ligne", "lignes"), police: c.p.sans, teinte: ENCRE }], LARGEUR - MARGE, HAUT - 18, 10);
+}
+
 /**
- * Un mois du relevé, la ligne la plus récente en haut. **Il commence toujours
- * sa page** (la planche du 26 octobre) : un mois se retrouve d'un coup d'œil,
- * au prix d'un blanc en bas de la page d'avant. Rend sa première page, que le
- * sommaire vise, et la dernière avec la place qui y reste, pour les tickets
- * perdus qui suivent.
+ * Une catégorie, la ligne la plus ancienne en haut. **Elle commence toujours
+ * sa page** : une catégorie se retrouve d'un coup d'œil, au prix d'un blanc en
+ * bas de la page d'avant. Rend sa première page, que le sommaire vise, et la
+ * dernière avec la place qui y reste, pour les tickets perdus qui suivent.
  */
-function moisDuReleve(c: Composition, m: string, lignes: LignePourLeDossier[], liaisons: Liaisons): { premiere: PDFPage; derniere: PageDuReleve } {
+function categorie(c: Composition, d: DonneesDossier, k: CleCompta, lignes: LignePourLeDossier[], liaisons: Liaisons, vignettes: Map<LignePourLeDossier, Embarque | null>): { premiere: PDFPage; derniere: PageDuReleve } {
   const { p } = c;
+  const sens = lignes[0]!.sens;
+  const ttc = somme(lignes, (l) => l.ttc);
+  const tva = somme(lignes, (l) => l.tva);
   const bilan: Bout[] = [
-    { t: "Sorties ", police: p.sans, teinte: ENCRE },
-    { t: signeDuTotal(somme(lignes, "sortie"), "sortie"), police: p.gras, teinte: SORTIE },
-    { t: "     Entrées ", police: p.sans, teinte: ENCRE },
-    { t: signeDuTotal(somme(lignes, "entree"), "entree"), police: p.gras, teinte: ENTREE },
-    { t: `     ${pluriel(lignes.length, "ligne", "lignes")}`, police: p.sans, teinte: ENCRE },
+    ...(tva > 0
+      ? [
+          { t: "HT ", police: p.sans, teinte: ENCRE },
+          { t: euros(ttc - tva), police: p.gras, teinte: ENCRE },
+          { t: ", TVA ", police: p.sans, teinte: ENCRE },
+          { t: euros(tva), police: p.gras, teinte: ENCRE },
+          { t: ", ", police: p.sans, teinte: ENCRE },
+        ]
+      : []),
+    { t: "TTC ", police: p.sans, teinte: ENCRE },
+    { t: signeDuTotal(ttc, sens), police: p.gras, teinte: sens === "entree" ? ENTREE : SORTIE },
   ];
-  let pg = pageDuReleve(c, m, false, bilan);
+  const compte = lignes[0]!.compte;
+  let pg = pageDeCategorie(c, k, compte, false, bilan, motDeLaCategorie(k, lignes, d));
   const premiere = pg.page;
   const changer = () => {
-    const suivante = pageDuReleve(c, m, true, []);
-    ecrireADroite(pg.page, `Suite ${duMois(m)} page ${numero(c, suivante.page)}`, LARGEUR - MARGE, pg.y - 14, p.sans, 8.5, ENCRE);
+    const suivante = pageDeCategorie(c, k, compte, true, [], null);
+    ecrireADroite(pg.page, `Suite page ${numero(c, suivante.page)}`, LARGEUR - MARGE, pg.y - 14, p.sans, 8.5, ENCRE);
     fermer(c, pg);
     pg = suivante;
   };
-  for (const l of [...lignes].sort((a, b) => b.jour.localeCompare(a.jour))) {
-    const plan = planifier(l, p);
+  const dansLOrdre = lignes.map((l, i) => ({ l, i })).sort((a, b) => a.l.jour.localeCompare(b.l.jour) || a.i - b.i);
+  for (const { l } of dansLOrdre) {
+    const plan = planifier(l, p, vignettes.get(l) ?? null);
     // Une ligne qui ne tient pas passe à la page suivante, entière. Seul un
     // long ticket recopié commence là où il reste une vraie place, et continue
     // ensuite : il n'est jamais réduit à un résumé.
@@ -544,11 +661,11 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
   // La première ligne de base descend de seize points sous le trait du dessus :
   // la date d'un virement ne le touche plus.
   const yL = haut - 16;
-  ecrire(pg.page, jourEnMots(l.jour), MARGE, yL, p.sans, 8.5, ENCRE, 58);
+  const corpsRef = corpsQuiTient(l.ref, p.gras, 8.5, 6, L_REF);
+  ecrire(pg.page, l.ref, MARGE, yL, p.gras, corpsRef, ENCRE, L_REF);
+  ecrire(pg.page, jjmm(l.jour), X_DATE, yL, p.sans, 8.5, ENCRE, 30);
   poserLignes(pg.page, plan.libelle, X_LIBELLE, yL, 9.5, 12);
-  const yCat = yL - 12 * (plan.libelle.length - 1) - 14;
-  pg.page.drawCircle({ x: X_LIBELLE + 3, y: yCat + 2.8, size: 3, color: COULEUR_CAT[l.categorie] });
-  ecrire(pg.page, NOM_CATEGORIE[l.categorie], X_LIBELLE + 10, yCat, p.sans, 8.5, ENCRE, L_LIBELLE - 10);
+  if (plan.sous) ecrire(pg.page, plan.sous, X_LIBELLE, yL - 12 * plan.libelle.length - 1, l.tvaNonLue ? p.oblique : p.sans, 8.5, l.tvaNonLue ? ECART : ENCRE, L_LIBELLE);
   ecrireADroite(pg.page, signe(l), X_MONTANT, yL, p.serif, 11.5, l.sens === "entree" ? ENTREE : SORTIE);
   pg.lignes += 1;
   let bas = haut - hauteurGauche(plan);
@@ -563,17 +680,18 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
       const libre = yCase - BAS_RANGEES - 8 - 2 * BLANC_HAUT;
       let n = 0;
       while (n < reste.length && hauteurDesRangs(reste.slice(0, n + 1)) <= libre) n += 1;
-      // Le dernier morceau garde sous lui l'écart et « Voir la photo ».
+      // Le dernier morceau garde sous lui l'écart, la vignette et « Voir la photo ».
       if (n === reste.length && hauteurDesRangs(reste) + hauteurDessous(plan) > libre && n > 1) n -= 1;
       n = Math.max(1, n);
       yCase -= dessinerCase(pg.page, reste.slice(0, n), yCase);
       reste = reste.slice(n);
       if (reste.length === 0) break;
-      // « Suite d'octobre page 12 » s'écrit sous ce qui est déjà posé.
+      // « Suite page 12 » s'écrit sous ce qui est déjà posé.
       pg.y = Math.min(bas, yCase) - 8;
       changer();
       pg = courante();
       haut = pg.y;
+      ecrire(pg.page, l.ref, MARGE, haut - 16, p.gras, corpsRef, ENCRE, L_REF);
       ecrire(pg.page, l.libelle, X_LIBELLE, haut - 16, p.gras, 9.5, ENCRE, L_LIBELLE);
       ecrire(pg.page, `Suite du ticket du ${jourComplet(l.jour)}`, X_LIBELLE, haut - 30, p.sans, 8.5, ENCRE, L_LIBELLE);
       pg.lignes += 1;
@@ -584,11 +702,23 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
       poserLignes(pg.page, plan.ecart, X_PIECE, yCase - 11, 8, 10);
       yCase -= 4 + 10 * plan.ecart.length;
     }
+    if (plan.vignette) {
+      const v = plan.vignette;
+      const pos = { x: X_PIECE, y: yCase - 6 - v.h, width: v.l, height: v.h };
+      if (v.pose.genre === "image") pg.page.drawImage(v.pose.objet, pos);
+      else pg.page.drawPage(v.pose.objet, pos);
+      pg.page.drawRectangle({ ...pos, borderColor: FILET, borderWidth: 0.6 });
+      yCase -= 6 + v.h;
+    }
     if (plan.voir) {
       const yb = yCase - 16;
       appareil(pg.page, X_PIECE, yb + 12, 9, LIEN);
-      ecrire(pg.page, plan.voir, X_PIECE + 13, yb + 4, p.gras, 8, LIEN, L_PIECE - 13);
       const page = pg.page;
+      // Le numéro de la page de la photo n'est connu qu'au bout.
+      c.apres.push(() => {
+        const cible = liaisons.photo.get(l);
+        ecrire(page, cible ? `${plan.voir}, page ${numero(c, cible.page)}` : plan.voir!, X_PIECE + 13, yb + 4, p.gras, 8, LIEN, L_PIECE - 13);
+      });
       c.liens.push({ page, x: X_PIECE, y: yb, l: L_PIECE, h: 14, vers: () => liaisons.photo.get(l)! });
       liaisons.retour.set(l, { page, y: haut + 4 });
       yCase = yb;
@@ -600,12 +730,51 @@ function poserLaLigne(c: Composition, plan: Plan, courante: () => PageDuReleve, 
   pg.y = bas;
 }
 
-// ─── La première page ────────────────────────────────────────────────────────
+// ─── Les tableaux : le sommaire et le registre ───────────────────────────────
 
 /** Une page qui se remplit de haut en bas, et en ouvre une autre quand elle est pleine. */
 type Flux = { page: PDFPage; y: number };
 
-function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMois: Map<string, PDFPage>, pageDesPerdus: () => PDFPage | null) {
+/** Une colonne d'un tableau : son titre, son bord (gauche, ou droit pour un montant). */
+type Colonne = { titre: string; x: number; aDroite: boolean };
+
+/**
+ * Un tableau : sa phrase, ses titres, ses rangées de la hauteur qu'elles
+ * demandent. Vide, il ne s'écrit pas. Une page qui se remplit en ouvre une
+ * autre, qui reprend les titres.
+ */
+function tableau<T>(c: Composition, flux: Flux, suite: () => void, titre: string | null, colonnes: Colonne[], rangees: readonly T[], hauteur: (r: T) => number, rangee: (r: T, page: PDFPage, ligneDeBase: number) => void) {
+  if (rangees.length === 0) return;
+  const titres = () => {
+    for (const k of colonnes) etiquette(flux.page, c.p, k.titre, k.x, flux.y, k.aDroite);
+    flux.page.drawLine({ start: { x: MARGE, y: flux.y - 7.7 }, end: { x: LARGEUR - MARGE, y: flux.y - 7.7 }, thickness: 0.8, color: ENCRE });
+    flux.y -= 7.7;
+  };
+  // Un titre seul en bas de page, son tableau sur la suivante, ne se lirait pas.
+  if (flux.y - 80 < BAS) suite();
+  if (titre) {
+    ecrire(flux.page, titre, MARGE, flux.y - 13, c.p.serif, 12.5, ENCRE, UTILE);
+    flux.y -= 31;
+  } else {
+    flux.y -= 12;
+  }
+  titres();
+  for (const r of rangees) {
+    const h = hauteur(r);
+    if (flux.y - h < BAS) {
+      suite();
+      titres();
+    }
+    rangee(r, flux.page, flux.y - 13);
+    flux.page.drawLine({ start: { x: MARGE, y: flux.y - h }, end: { x: LARGEUR - MARGE, y: flux.y - h }, thickness: 0.6, color: SEPARATION });
+    flux.y -= h;
+  }
+}
+
+/** Les sections du dossier, dans son ordre, telles que la première page les annonce. */
+type Section = { cle: CleCompta | "perdus" | "photos"; compte: string; nom: string; pastille: Teinte | null; pieces: string; total: string; teinte: Teinte };
+
+function couverture(c: Composition, d: DonneesDossier, sections: Section[], pageDe: Map<Section["cle"], PDFPage>) {
   const { p } = c;
   const page = nouvellePage(c);
   ecrire(page, "POUR MON COMPTABLE", MARGE, HAUTEUR - 52, p.gras, 7.5, ENCRE);
@@ -633,7 +802,7 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
     ],
     [
       "Rangé",
-      [`le ${jourComplet(d.rangeLe)},`, `gardé jusqu'au ${jourComplet(d.gardeJusquAu)}`].flatMap((t) => enLignes([{ t, police: p.sans, teinte: ENCRE }], 9.5, l2)),
+      [`le ${jourComplet(d.rangeLe)},`, `gardé jusqu'au ${jourComplet(d.gardeJusquAu)},`, "avec son Excel et son FEC"].flatMap((t) => enLignes([{ t, police: p.sans, teinte: ENCRE }], 9.5, l2)),
       MARGE + l1 + l2 + 28,
     ],
   ];
@@ -646,20 +815,19 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
   }
 
   // Ce que le comptable vient vérifier, d'abord.
-  y = Math.min(basDesColonnes - 20, HAUTEUR - 223);
+  y = Math.min(basDesColonnes - 20, HAUTEUR - 237);
   page.drawRectangle({ x: MARGE, y: y - 34, width: UTILE, height: 34, color: ATTESTE_FOND });
   coche(page, MARGE + 12, y - 9, 16, ATTESTE);
   ecrire(page, "Chaque ligne de la banque a son justificatif, ou sa mention de ticket perdu.", MARGE + 40, y - 21, p.gras, 11, ATTESTE, UTILE - 52);
   y -= 44;
 
-  // Les quatre chiffres.
-  const sorties = somme(d.lignes, "sortie");
-  const perdus = d.lignes.filter((l) => l.ticketPerdu);
+  // Les quatre chiffres, ceux de la planche.
+  const ventes = d.ventes.periode;
   const quatre: [string, string, Teinte][] = [
-    ["Sorties", signeDuTotal(sorties, "sortie"), SORTIE],
-    ["Entrées", signeDuTotal(somme(d.lignes, "entree"), "entree"), ENTREE],
-    ["Lignes de banque", String(d.lignes.length), ENCRE],
-    ["Tickets perdus", String(perdus.length), ENCRE],
+    ["Facturé hors taxe", euros(somme(ventes, (v) => v.ht)), ENCRE],
+    ["Encaissé", signeDuTotal(somme(d.lignes.filter((l) => l.cle === "clients"), (l) => l.ttc), "entree"), ENTREE],
+    ["Reste dû", euros(somme(ventes, (v) => v.reste)), ENCRE],
+    ["Dépenses", signeDuTotal(somme(d.lignes.filter((l) => l.sens === "sortie"), (l) => l.ttc), "sortie"), SORTIE],
   ];
   const lc = UTILE / 4;
   page.drawLine({ start: { x: MARGE, y }, end: { x: LARGEUR - MARGE, y }, thickness: 0.6, color: FILET });
@@ -672,116 +840,190 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
   });
   y -= 50;
 
-  // Ce que contient le dossier. La page des tickets perdus n'est connue qu'au
-  // bout : la phrase se mesure avec le plus long numéro, et s'écrit à la fin.
-  const n = (genres: PieceDeLaLigne["genre"][], sens?: LignePourLeDossier["sens"]) => d.lignes.filter((l) => l.piece && genres.includes(l.piece.genre) && (!sens || l.sens === sens)).length;
-  const contient = (pagePerdus: number | null) =>
-    [
-      n(["ticket"]) && pluriel(n(["ticket"]), "ticket", "tickets"),
-      n(["facture"]) + n(["facture-hors-atlas"], "sortie") > 0 &&
-        pluriel(n(["facture"]) + n(["facture-hors-atlas"], "sortie"), "facture de fournisseur", "factures de fournisseur"),
-      n(["facture-emise", "facture-hors-atlas"], "entree") && pluriel(n(["facture-emise", "facture-hors-atlas"], "entree"), "virement reçu et sa facture", "virements reçus et leur facture"),
-      perdus.length && `${pluriel(perdus.length, "ticket perdu déclaré", "tickets perdus déclarés")}${pagePerdus === null ? "" : ` (page ${pagePerdus})`}`,
-    ]
-      .filter((t): t is string => typeof t === "string")
-      .join(", ");
-  const enMots = (t: string) => enLignes([{ t: `${t}.`, police: p.sans, teinte: ENCRE }], 9.5, UTILE);
-  const mesure = contient(999);
-  if (mesure) {
-    const yContient = y - 18;
-    c.apres.push(() => {
-      const perdue = pageDesPerdus();
-      poserLignes(page, enMots(contient(perdue && numero(c, perdue))), MARGE, yContient, 9.5, 13);
-    });
-    y = yContient - 13 * (enMots(mesure).length - 1);
-  }
-
-  // Les mois, puis les catégories : deux tableaux l'un sous l'autre, chacun
-  // avec sa phrase (ses deux questions du 26 octobre : côte à côte, la première
-  // catégorie se lisait comme le premier mois).
-  const flux: Flux = { page, y: y - 15 };
+  // Ce que range le dossier : chaque section sous son compte, et sa page.
+  const flux: Flux = { page, y: y - 6 };
   const suite = () => {
     flux.page = nouvellePage(c);
     flux.y = enTete(flux.page, p, "Dossier justifié, suite", []) - 14;
   };
-  const xSorties = LARGEUR - MARGE - 191;
-  const xEntrees = LARGEUR - MARGE - 53;
-  tableau(c, flux, suite, "Mois par mois", [["Mois", MARGE, false], ["Sorties", xSorties, true], ["Entrées", xEntrees, true], ["Page", LARGEUR - MARGE, true]], mois, (m, pg, yb) => {
-    const L = d.lignes.filter((l) => l.jour.startsWith(m));
-    ecrire(pg, libellePeriode(m), MARGE, yb, p.sans, 9.5, ENCRE, 200);
-    ecrireADroite(pg, signeDuTotal(somme(L, "sortie"), "sortie"), xSorties, yb, p.sans, 9.5, SORTIE);
-    ecrireADroite(pg, signeDuTotal(somme(L, "entree"), "entree"), xEntrees, yb, p.sans, 9.5, ENTREE);
-    c.apres.push(() => ecrireADroite(pg, String(numero(c, pageDuMois.get(m)!)), LARGEUR - MARGE, yb, p.gras, 9.5, LIEN));
-    c.liens.push({ page: pg, x: MARGE, y: yb - 6, l: UTILE, h: 18, vers: () => ({ page: pageDuMois.get(m)!, y: HAUTEUR }) });
-  });
-
-  const xMontant = LARGEUR - MARGE - 70;
-  const parCategorie = ORDRE_CATEGORIES.map((cat) => ({ cat, total: d.lignes.filter((l) => l.sens === "sortie" && l.categorie === cat).reduce((s, l) => s + centimes(l.montant), 0) })).filter((x) => x.total > 0);
-  flux.y -= 10;
-  tableau(c, flux, suite, `Les dépenses ${entreLesDeux(d.du, d.au, false)}, par catégorie`, [["Catégorie", MARGE, false], ["Montant", xMontant, true], ["Part", LARGEUR - MARGE, true]], parCategorie, ({ cat, total }, pg, yb) => {
-    pg.drawCircle({ x: MARGE + 3, y: yb + 3, size: 3, color: COULEUR_CAT[cat] });
-    ecrire(pg, cat === "virement" ? "Virements envoyés" : NOM_CATEGORIE[cat], MARGE + 12, yb, p.sans, 9.5, ENCRE, 220);
-    ecrireADroite(pg, enEuros(total / 100), xMontant, yb, p.sans, 9.5, ENCRE);
-    // La part d'une petite catégorie ne s'arrondit pas à zéro : elle existe.
-    const part = Math.round((total * 100) / sorties);
-    ecrireADroite(pg, part === 0 ? "moins de 1\u00a0%" : `${part}\u00a0%`, LARGEUR - MARGE, yb, p.sans, 9.5, ENCRE);
-  });
-}
-
-/** Un tableau de la première page : sa phrase, ses titres, ses rangées de vingt points. Vide, il ne s'écrit pas. */
-function tableau<T>(c: Composition, flux: Flux, suite: () => void, titre: string, colonnes: [string, number, boolean][], rangees: readonly T[], rangee: (r: T, page: PDFPage, ligneDeBase: number) => void) {
-  if (rangees.length === 0) return;
-  const titres = () => {
-    for (const [t, x, aDroite] of colonnes) etiquette(flux.page, c.p, t, x, flux.y, aDroite);
-    flux.page.drawLine({ start: { x: MARGE, y: flux.y - 7.7 }, end: { x: LARGEUR - MARGE, y: flux.y - 7.7 }, thickness: 0.8, color: ENCRE });
-    flux.y -= 7.7;
-  };
-  // Un titre seul en bas de page, son tableau sur la suivante, ne se lirait pas.
-  if (flux.y - 80 < BAS) suite();
-  ecrire(flux.page, titre, MARGE, flux.y - 13, c.p.serif, 12.5, ENCRE, UTILE);
-  flux.y -= 31;
-  titres();
-  for (const r of rangees) {
-    if (flux.y - 20 < BAS) {
-      suite();
-      titres();
+  const xNom = MARGE + 50;
+  const xPieces = LARGEUR - MARGE - 168;
+  const xTtc = LARGEUR - MARGE - 46;
+  tableau(
+    c,
+    flux,
+    suite,
+    "Ce que range le dossier",
+    [
+      { titre: "Compte", x: MARGE, aDroite: false },
+      { titre: "Catégorie", x: xNom, aDroite: false },
+      { titre: "Pièces", x: xPieces, aDroite: true },
+      { titre: "TTC", x: xTtc, aDroite: true },
+      { titre: "Page", x: LARGEUR - MARGE, aDroite: true },
+    ],
+    sections,
+    () => 20,
+    (s, pg, yb) => {
+      ecrire(pg, s.compte, MARGE, yb, p.gras, 9.5, ENCRE, 46);
+      if (s.pastille) pg.drawCircle({ x: xNom + 3, y: yb + 3, size: 3, color: s.pastille });
+      ecrire(pg, s.nom, xNom + (s.pastille ? 12 : 0), yb, s.cle === "ventes" ? p.gras : p.sans, 9.5, ENCRE, xPieces - xNom - 70);
+      ecrireADroite(pg, s.pieces, xPieces, yb, p.sans, 9.5, ENCRE);
+      ecrireADroite(pg, s.total, xTtc, yb, p.sans, 9.5, s.teinte);
+      c.apres.push(() => {
+        const cible = pageDe.get(s.cle);
+        if (cible) ecrireADroite(pg, String(numero(c, cible)), LARGEUR - MARGE, yb, p.gras, 9.5, LIEN);
+      });
+      c.liens.push({ page: pg, x: MARGE, y: yb - 6, l: UTILE, h: 18, vers: () => ({ page: pageDe.get(s.cle) ?? pg, y: HAUTEUR }) });
     }
-    rangee(r, flux.page, flux.y - 13);
-    flux.page.drawLine({ start: { x: MARGE, y: flux.y - 20 }, end: { x: LARGEUR - MARGE, y: flux.y - 20 }, thickness: 0.6, color: SEPARATION });
-    flux.y -= 20;
-  }
+  );
+  const fin = enLignes([{ t: "Le fichier au format FEC joint remplit votre logiciel. Le FEC de l'exercice reste celui que votre logiciel produit à la clôture.", police: p.sans, teinte: ENCRE }], 9.5, UTILE);
+  if (flux.y - 18 - 13 * fin.length < BAS) suite();
+  poserLignes(flux.page, fin, MARGE, flux.y - 18, 9.5, 13);
 }
 
-// ─── Les tickets perdus, après le dernier mois ───────────────────────────────
+/** Le registre des ventes (son choix 1) : une ligne par facture de la période, puis celles d'avant payées pendant. */
+function registre(c: Composition, d: DonneesDossier): PDFPage {
+  const { p } = c;
+  const { periode, avant } = d.ventes;
+  const taux = d.franchise ? [] : tauxDuRegistre(periode);
+  const factures = periode.filter((r) => r.genre === "facture");
+  const page = nouvellePage(c);
+  const bilan: Bout[] = [
+    { t: `${pluriel(factures.length, "facture", "factures")}, HT `, police: p.sans, teinte: ENCRE },
+    { t: euros(somme(periode, (r) => r.ht)), police: p.gras, teinte: ENCRE },
+  ];
+  let y = enTete(page, p, "Registre des ventes", bilan, { compte: d.comptes.ventes });
+  const mot = d.franchise
+    ? `Une ligne par facture de la période. Clients au ${d.comptes.clients}. TVA non applicable, article 293 B du CGI.`
+    : d.exigibilite === "encaissements"
+      ? `Une ligne par facture de la période. Clients au ${d.comptes.clients}, TVA en attente du paiement au ${d.comptes.tvaEnAttente}, due au ${d.comptes.tvaCollectee} quand le client paie.`
+      : `Une ligne par facture de la période. Clients au ${d.comptes.clients}, TVA due au ${d.comptes.tvaCollectee} dès la facture.`;
+  const lignesDuMot = enLignes([{ t: mot, police: p.sans, teinte: ENCRE }], 9, UTILE);
+  poserLignes(page, lignesDuMot, MARGE, y - 14, 9, 12);
+  y -= 8 + 12 * lignesDuMot.length;
+  const flux: Flux = { page, y };
+  const suite = () => {
+    flux.page = nouvellePage(c);
+    flux.y = enTete(flux.page, p, "Registre des ventes, suite", [], { compte: d.comptes.ventes }) - 6;
+  };
+
+  // Les montants de droite à gauche : reste dû, payée le, TTC, les taux, HT.
+  const L_MONTANT = 54;
+  const xReste = LARGEUR - MARGE;
+  const xPayee = xReste - L_MONTANT - 8;
+  const xTtc = xPayee - 50;
+  const xTaux = taux.map((_, i) => xTtc - L_MONTANT - 4 - (taux.length - 1 - i) * (L_MONTANT - 6));
+  const xHt = (xTaux[0] ?? xTtc) - L_MONTANT - 4;
+  const xDate = MARGE + 66;
+  const xClient = xDate + 34;
+  const lClient = xHt - L_MONTANT - xClient;
+  const un = (r: RangDuRegistre) => (r.genre === "avoir" ? `Avoir sur ${r.facture}` : (r.chantier ?? ""));
+
+  tableau(
+    c,
+    flux,
+    suite,
+    null,
+    [
+      { titre: "N°", x: MARGE, aDroite: false },
+      { titre: "Date", x: xDate, aDroite: false },
+      { titre: "Client, chantier", x: xClient, aDroite: false },
+      { titre: "HT", x: xHt, aDroite: true },
+      ...taux.map((t, i) => ({ titre: `TVA ${tauxEnMots(t)}`, x: xTaux[i]!, aDroite: true })),
+      { titre: "TTC", x: xTtc, aDroite: true },
+      { titre: "Payée le", x: xPayee, aDroite: true },
+      { titre: "Reste dû", x: xReste, aDroite: true },
+    ],
+    [...periode, null],
+    (r) => (r === null ? 22 : 28),
+    (r, pg, yb) => {
+      if (r === null) {
+        ecrire(pg, "Total", xClient, yb, p.gras, 8.5, ENCRE, lClient);
+        ecrireADroite(pg, euros(somme(periode, (x) => x.ht)), xHt, yb, p.gras, 8.5);
+        taux.forEach((t, i) => ecrireADroite(pg, euros(somme(periode, (x) => tvaAuTaux(x, t))), xTaux[i]!, yb, p.gras, 8.5));
+        ecrireADroite(pg, euros(somme(periode, (x) => x.ttc)), xTtc, yb, p.gras, 8.5);
+        ecrireADroite(pg, euros(somme(periode, (x) => x.reste)), xReste, yb, p.gras, 8.5, SORTIE);
+        return;
+      }
+      ecrire(pg, r.numero, MARGE, yb, p.gras, corpsQuiTient(r.numero, p.gras, 8.5, 6, 64), ENCRE, 64);
+      ecrire(pg, jjmm(r.date), xDate, yb, p.sans, 8.5, ENCRE, 32);
+      ecrire(pg, r.client, xClient, yb, p.gras, 8.5, ENCRE, lClient);
+      ecrire(pg, un(r), xClient, yb - 11, p.sans, 8, ENCRE, lClient);
+      ecrireADroite(pg, euros(r.ht), xHt, yb, p.sans, 8.5);
+      taux.forEach((t, i) => ecrireADroite(pg, euros(tvaAuTaux(r, t)), xTaux[i]!, yb, p.sans, 8.5));
+      ecrireADroite(pg, euros(r.ttc), xTtc, yb, p.sans, 8.5);
+      if (r.genre === "facture") {
+        ecrireADroite(pg, r.payeeLe ? jjmm(r.payeeLe) : "pas encore", xPayee, yb, p.sans, 8.5);
+        if (r.enPartie) ecrireADroite(pg, "en partie", xPayee, yb - 11, p.sans, 8);
+        ecrireADroite(pg, euros(r.reste), xReste, yb, r.reste > 0 ? p.gras : p.sans, 8.5, r.reste > 0 ? SORTIE : ENCRE);
+      }
+    }
+  );
+
+  flux.y -= 6;
+  const xAvantTtc = xPayee - 70;
+  tableau(
+    c,
+    flux,
+    suite,
+    `Payées ${entreLesDeux(d.du, d.au, false)}, facturées avant`,
+    [
+      { titre: "N°", x: MARGE, aDroite: false },
+      { titre: "Facturée le", x: xDate, aDroite: false },
+      { titre: "Client, chantier", x: xClient + 34, aDroite: false },
+      { titre: "TTC", x: xAvantTtc, aDroite: true },
+      { titre: "Payée le", x: xPayee, aDroite: true },
+      { titre: "Reste dû", x: xReste, aDroite: true },
+    ],
+    avant,
+    () => 22,
+    (r, pg, yb) => {
+      ecrire(pg, r.numero, MARGE, yb, p.gras, corpsQuiTient(r.numero, p.gras, 8.5, 6, 64), ENCRE, 64);
+      ecrire(pg, jjmmaaaa(r.date), xDate, yb, p.sans, 8.5, ENCRE, 54);
+      ecrire(pg, [r.client, r.chantier].filter(Boolean).join(", "), xClient + 34, yb, p.sans, 8.5, ENCRE, xAvantTtc - 64 - xClient - 34);
+      ecrireADroite(pg, euros(r.ttc), xAvantTtc, yb, p.sans, 8.5);
+      ecrireADroite(pg, r.payeeLe ? jjmm(r.payeeLe) : "", xPayee, yb, p.sans, 8.5);
+      ecrireADroite(pg, euros(r.reste), xReste, yb, p.sans, 8.5, r.reste > 0 ? SORTIE : ENCRE);
+    }
+  );
+  const fin = enLignes([{ t: "Chaque facture se retrouve sous son numéro dans l'onglet Ventes de l'Excel et dans le FEC.", police: p.sans, teinte: ENCRE }], 9, UTILE);
+  if (flux.y - 18 - 12 * fin.length < BAS) suite();
+  poserLignes(flux.page, fin, MARGE, flux.y - 18, 9, 12);
+  return page;
+}
+
+// ─── Les tickets perdus, après la dernière catégorie ─────────────────────────
 
 /**
- * Les tickets perdus, avec leur total, sous le dernier mois s'il reste la
- * place de les y poser en entier ; sur la page suivante sinon. Rend la page où
- * ils commencent, que la première page annonce.
+ * Les tickets perdus, avec leur total, sous la dernière catégorie s'il reste
+ * la place de les y poser en entier ; sur la page suivante sinon. Chacun reste
+ * aussi dans sa catégorie, avec sa mention : cette page les réunit pour la TVA
+ * qui n'a pas été déduite. Rend la page où ils commencent.
  */
 function ticketsPerdus(c: Composition, perdus: LignePourLeDossier[], apres: PageDuReleve | null): PDFPage | null {
   if (perdus.length === 0) return null;
   const { p } = c;
   const RANG = 22;
-  const phrase = enLignes([{ t: "Ces dépenses restent dans le relevé, avec leur mention. Leur TVA n'a pas été déduite, faute de ticket.", police: p.sans, teinte: ENCRE }], 9.5, UTILE);
+  const phrase = enLignes([{ t: "Ces dépenses restent dans leur catégorie, avec leur mention. Leur TVA n'a pas été déduite, faute de ticket.", police: p.sans, teinte: ENCRE }], 9.5, UTILE);
   const hauteur = 26 + 32 + 10 + (perdus.length + 1) * RANG + 18 + 13 * phrase.length;
   const flux: Flux = apres && apres.y - hauteur >= BAS ? { page: apres.page, y: apres.y - 26 } : { page: nouvellePage(c), y: HAUT };
   const premiere = flux.page;
-  flux.y = enTete(flux.page, p, "Les tickets perdus", [{ t: pluriel(perdus.length, "ligne", "lignes"), police: p.sans, teinte: ENCRE }], flux.y) - 10;
-  const rang = (gauche: string, milieu: string, montant: string, police: PDFFont) => {
+  flux.y = enTete(flux.page, p, "Les tickets perdus", [{ t: pluriel(perdus.length, "ligne", "lignes"), police: p.sans, teinte: ENCRE }], { yHaut: flux.y }) - 10;
+  const rang = (ref: string, jour: string, milieu: string, montant: string, police: PDFFont) => {
     if (flux.y - RANG < BAS) {
       flux.page = nouvellePage(c);
       flux.y = enTete(flux.page, p, "Les tickets perdus, suite", []) - 10;
     }
     const yb = flux.y - 14.5;
-    ecrire(flux.page, gauche, MARGE, yb, p.sans, 9.5, ENCRE, 86);
-    ecrire(flux.page, milieu, MARGE + 90, yb, police, 9.5, ENCRE, UTILE - 190);
+    ecrire(flux.page, ref, MARGE, yb, p.gras, 9.5, ENCRE, 50);
+    ecrire(flux.page, jour, MARGE + 54, yb, p.sans, 9.5, ENCRE, 86);
+    ecrire(flux.page, milieu, MARGE + 144, yb, police, 9.5, ENCRE, UTILE - 244);
     ecrireADroite(flux.page, montant, LARGEUR - MARGE, yb, police, 9.5, SORTIE);
     flux.page.drawLine({ start: { x: MARGE, y: flux.y - RANG }, end: { x: LARGEUR - MARGE, y: flux.y - RANG }, thickness: 0.6, color: SEPARATION });
     flux.y -= RANG;
   };
-  for (const l of perdus) rang(jourComplet(l.jour), l.libelle, signe(l), p.sans);
-  rang("", "Total", signeDuTotal(somme(perdus, "sortie"), "sortie"), p.gras);
+  for (const l of perdus) rang(l.ref, jourComplet(l.jour), l.libelle, signe(l), p.sans);
+  rang("", "", "Total", signeDuTotal(somme(perdus, (l) => l.ttc), "sortie"), p.gras);
   if (flux.y - 18 - 13 * phrase.length < BAS) {
     flux.page = nouvellePage(c);
     flux.y = enTete(flux.page, p, "Les tickets perdus, suite", []) - 10;
@@ -792,46 +1034,14 @@ function ticketsPerdus(c: Composition, perdus: LignePourLeDossier[], apres: Page
 
 // ─── Les vraies photos, tout au bout ─────────────────────────────────────────
 
-type Embarque = { genre: "image"; objet: PDFImage } | { genre: "page"; objet: PDFEmbeddedPage };
-
-/** Une image, ou la première page d'un PDF, prête à poser. */
-async function embarquer(doc: PDFDocument, f: Fichier): Promise<Embarque | null> {
-  try {
-    if (f.nature === "pdf") {
-      // **La page s'éprouve d'abord sur un PDF de brouillon.** pdf-lib remet
-      // l'embarquement à l'enregistrement, et garde dans sa liste une page qui
-      // a échoué : une facture vide ou abîmée passait ici sans bruit, puis
-      // faisait tomber le dossier ENTIER au moment de l'écrire. Un seul mauvais
-      // fichier aurait empêché d'arrêter l'année. Elle n'entre dans le vrai
-      // dossier qu'une fois qu'elle a prouvé qu'elle se pose.
-      const brouillon = await PDFDocument.create();
-      const [essai] = await brouillon.embedPdf(f.octets, [0]);
-      if (!essai) return null;
-      await essai.embed();
-      const [objet] = await doc.embedPdf(f.octets, [0]);
-      return { genre: "page", objet };
-    }
-    const png = f.octets[0] === 0x89 && f.octets[1] === 0x50;
-    return { genre: "image", objet: png ? await doc.embedPng(f.octets) : await doc.embedJpg(f.octets) };
-  } catch (err) {
-    // Un fichier que pdf-lib ne sait pas lire n'empêche pas le dossier de
-    // sortir : sa place le dit sur le PDF, et le journal dit pourquoi.
-    logger.warn("Une pièce du dossier du comptable n'a pas pu être posée dans le PDF", {
-      nature: f.nature,
-      erreur: err instanceof Error ? err.message : String(err),
-    });
-    return null;
-  }
-}
-
-/** Une photo dans son cadre, sa ligne de banque en légende, et son retour dessous. */
+/** Une photo dans son cadre, sa pièce et sa ligne de banque en légende, et son retour dessous. */
 async function poserLaPhoto(c: Composition, page: PDFPage, l: LignePourLeDossier, f: Fichier, x: number, yHaut: number, lw: number, lh: number, fond: Teinte, liaisons: Liaisons) {
   const { p } = c;
-  ecrire(page, l.libelle, x, yHaut - 9, p.gras, 8.5, ENCRE, lw);
+  ecrire(page, `${l.ref} ${l.libelle}`, x, yHaut - 9, p.gras, 8.5, ENCRE, lw);
   poserLignes(page, [[{ t: papier(`${jourComplet(l.jour)}, `), police: p.sans, teinte: ENCRE }, { t: papier(signe(l)), police: p.sans, teinte: l.sens === "entree" ? ENTREE : SORTIE }]], x, yHaut - 21, 8.5, 0);
   const cadre = { x, y: yHaut - lh + 19, w: lw, h: lh - 45 };
   page.drawRectangle({ x: cadre.x, y: cadre.y, width: cadre.w, height: cadre.h, color: fond });
-  const pose = await embarquer(c.doc, f);
+  const pose = await embarquer(c, f);
   if (pose) {
     const echelle = Math.min(cadre.w / pose.objet.width, cadre.h / pose.objet.height);
     const w = pose.objet.width * echelle;
@@ -845,26 +1055,31 @@ async function poserLaPhoto(c: Composition, page: PDFPage, l: LignePourLeDossier
   liaisons.photo.set(l, { page, y: yHaut + 10 });
   const yb = yHaut - lh;
   page.drawRectangle({ x, y: yb, width: lw, height: 15, borderColor: FILET, borderWidth: 0.6 });
-  ecrire(page, `Retour à la ligne du ${jourEnMots(l.jour)}`, x + 7, yb + 4.5, p.gras, 8, LIEN, lw - 14);
+  c.apres.push(() => {
+    const retour = liaisons.retour.get(l);
+    ecrire(page, retour ? `Retour à la ligne, page ${numero(c, retour.page)}` : "Retour à la ligne", x + 7, yb + 4.5, p.gras, 8, LIEN, lw - 14);
+  });
   c.liens.push({ page, x, y: yb, l: lw, h: 15, vers: () => liaisons.retour.get(l)! });
 }
 
 /**
  * Les tickets d'abord, six par page ; les factures ensuite, une page chacune
  * pour rester lisibles. Mêlés, un ticket après une facture rouvrirait une page
- * pour lui seul.
+ * pour lui seul. Ils suivent l'ordre du dossier : catégorie, puis date.
  */
-async function photos(c: Composition, d: DonneesDossier, liaisons: Liaisons) {
+async function photos(c: Composition, lignesDansLOrdre: LignePourLeDossier[], liaisons: Liaisons): Promise<PDFPage | null> {
   const { p } = c;
-  const avec = d.lignes.flatMap((l) => {
+  const avec = lignesDansLOrdre.flatMap((l) => {
     const f = fichierDe(l);
     return f ? [{ l, ...f }] : [];
   });
+  let premiere: PDFPage | null = null;
   const tickets = avec.filter((x) => !x.pleinePage);
   const titre = "Les photos des justificatifs";
   for (let k = 0; k < tickets.length; k += 6) {
     const lot = tickets.slice(k, k + 6);
     const page = nouvellePage(c);
+    premiere ??= page;
     const haut = enTete(page, p, titre, [{ t: pluriel(lot.length, "ticket", "tickets"), police: p.sans, teinte: ENCRE }]) - 14;
     const lw = (UTILE - 24) / 3;
     const lh = (haut - BAS - 16) / 2;
@@ -874,12 +1089,14 @@ async function photos(c: Composition, d: DonneesDossier, liaisons: Liaisons) {
   }
   for (const x of avec.filter((a) => a.pleinePage)) {
     const page = nouvellePage(c);
+    premiere ??= page;
     const haut = enTete(page, p, titre, [{ t: "Facture", police: p.sans, teinte: ENCRE }]) - 14;
     await poserLaPhoto(c, page, x.l, x.fichier, MARGE, haut, UTILE, haut - BAS, PAPIER, liaisons);
   }
+  return premiere;
 }
 
-export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8Array> {
+export async function composerDossierComptable(d: DonneesDossier): Promise<DossierCompose> {
   const doc = await PDFDocument.create();
   doc.setTitle(texteDuPapier(`Dossier justifié du ${jourComplet(d.du)} au ${jourComplet(d.au)}`));
   doc.setAuthor(texteDuPapier(d.entreprise.nom));
@@ -891,29 +1108,51 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
       gras: await doc.embedFont(StandardFonts.HelveticaBold),
       oblique: await doc.embedFont(StandardFonts.HelveticaOblique),
       serif: await doc.embedFont(StandardFonts.TimesRoman),
-      mono: await doc.embedFont(StandardFonts.Courier),
-      monoGras: await doc.embedFont(StandardFonts.CourierBold),
     },
     liens: [],
     apres: [],
+    embarques: new Map(),
   };
   const liaisons: Liaisons = { retour: new Map(), photo: new Map() };
-  const mois = [...new Set(d.lignes.map((l) => l.jour.slice(0, 7)))].sort();
-  // Les pages des mois et des tickets perdus ne sont connues qu'après : la
-  // première page les lit au moment d'écrire leurs numéros.
-  const pageDuMois = new Map<string, PDFPage>();
-  let pageDesPerdus: PDFPage | null = null;
 
-  couverture(c, d, mois, pageDuMois, () => pageDesPerdus);
+  // Les vignettes des tickets nettoyés s'embarquent avant la mise en page : leur
+  // hauteur décide de celle de la ligne.
+  const vignettes = new Map<LignePourLeDossier, Embarque | null>();
+  for (const l of d.lignes) if (l.piece?.genre === "ticket" && l.piece.photoNette) vignettes.set(l, await embarquer(c, l.piece.photoNette));
+
+  const cles = ordreDesCategories().filter((k) => d.lignes.some((l) => l.cle === k));
+  const lignesDe = (k: CleCompta) => d.lignes.filter((l) => l.cle === k);
+  const perdus = d.lignes.filter((l) => l.ticketPerdu);
+  const avecUnFichier = d.lignes.filter((l) => fichierDe(l)).length;
+  const aUnRegistre = d.ventes.periode.length + d.ventes.avant.length > 0;
+  const sections: Section[] = [
+    ...(aUnRegistre
+      ? [{ cle: "ventes" as const, compte: d.comptes.ventes, nom: "Registre des ventes", pastille: null, pieces: pluriel(d.ventes.periode.filter((r) => r.genre === "facture").length, "facture", "factures"), total: signeDuTotal(somme(d.ventes.periode, (r) => r.ttc), "entree"), teinte: ENTREE }]
+      : []),
+    ...cles.map((k): Section => {
+      const L = lignesDe(k);
+      const sens = L[0]!.sens;
+      return { cle: k, compte: L[0]!.compte, nom: k === "clients" ? "Les paiements des clients" : nomCategorie(k), pastille: COULEUR_CAT[couleurDe(k)], pieces: String(L.length), total: signeDuTotal(somme(L, (l) => l.ttc), sens), teinte: sens === "entree" ? ENTREE : SORTIE };
+    }),
+    ...(perdus.length > 0 ? [{ cle: "perdus" as const, compte: "", nom: "Les tickets perdus", pastille: null, pieces: String(perdus.length), total: signeDuTotal(somme(perdus, (l) => l.ttc), "sortie"), teinte: SORTIE }] : []),
+    ...(avecUnFichier > 0 ? [{ cle: "photos" as const, compte: "", nom: "Les photos et les factures", pastille: null, pieces: String(avecUnFichier), total: "", teinte: ENCRE }] : []),
+  ];
+  // Les pages des sections ne sont connues qu'après : la première page les lit
+  // au moment d'écrire leurs numéros.
+  const pageDe = new Map<Section["cle"], PDFPage>();
+  couverture(c, d, sections, pageDe);
+  if (aUnRegistre) pageDe.set("ventes", registre(c, d));
   let derniere: PageDuReleve | null = null;
-  for (const m of mois) {
-    const lu = moisDuReleve(c, m, d.lignes.filter((l) => l.jour.startsWith(m)), liaisons);
-    pageDuMois.set(m, lu.premiere);
+  for (const k of cles) {
+    const lu = categorie(c, d, k, lignesDe(k), liaisons, vignettes);
+    pageDe.set(k, lu.premiere);
     fermer(c, lu.derniere);
     derniere = lu.derniere;
   }
-  pageDesPerdus = ticketsPerdus(c, d.lignes.filter((l) => l.ticketPerdu), derniere);
-  await photos(c, d, liaisons);
+  const pagePerdus = ticketsPerdus(c, perdus, derniere);
+  if (pagePerdus) pageDe.set("perdus", pagePerdus);
+  const premierePhoto = await photos(c, cles.flatMap(lignesDe), liaisons);
+  if (premierePhoto) pageDe.set("photos", premierePhoto);
 
   // ─── Les pieds de page, les numéros, puis les liens (toutes les pages existent)
   const pages = doc.getPages();
@@ -924,5 +1163,8 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
   });
   for (const f of c.apres) f();
   poserLiens(doc, c.liens);
-  return doc.save();
+  const pageDeLaCategorie: Partial<Record<CleCompta, number>> = {};
+  for (const k of cles) pageDeLaCategorie[k] = numero(c, pageDe.get(k)!);
+  if (aUnRegistre) pageDeLaCategorie.ventes = numero(c, pageDe.get("ventes")!);
+  return { pdf: await doc.save(), pageDe: pageDeLaCategorie };
 }

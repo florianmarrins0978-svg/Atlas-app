@@ -1,4 +1,4 @@
-import { asc, count, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq, min } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { bilansComptables, dossiersComptables, mouvementsBancaires } from "../db/schema";
 import { lignesDeLaPeriode } from "./pour-mon-comptable";
@@ -19,6 +19,19 @@ export async function dernierAu(ctx: Ctx): Promise<string | null> {
   });
 }
 
+/**
+ * Le premier jour du tout premier dossier, ou rien. Les numéros de pièce
+ * comptent les lignes rangées depuis ce jour-là (`numerosDesPieces`) : une
+ * ligne d'avant le premier dossier n'a jamais reçu de numéro, la compter
+ * ferait commencer le premier dossier à A 061 sans qu'A 001 existe nulle part.
+ */
+export async function premierJourDesDossiers(ctx: Ctx): Promise<string | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ du: min(dossiersComptables.du) }).from(dossiersComptables);
+    return d?.du ?? null;
+  });
+}
+
 /** La période du dossier en cours : du lendemain du dernier arrêt jusqu'à aujourd'hui. */
 export async function dossierEnCours(ctx: Ctx, maintenant: Date): Promise<{ du: string; au: string; premier: boolean }> {
   const fin = await dernierAu(ctx);
@@ -34,6 +47,9 @@ export type DossierRange = {
   lignes: number;
   gardeJusquAu: string;
   arreteLe: Date;
+  /** Son Excel et son FEC d'import (migration 0198) : un dossier d'avant n'a que son PDF. */
+  excel: boolean;
+  fec: boolean;
   bilans: { id: string; fichierNom: string | null; nature: "photo" | "pdf"; ajouteLe: Date }[];
 };
 
@@ -57,6 +73,8 @@ export async function listerDossiers(ctx: Ctx): Promise<DossierRange[]> {
       lignes: lignes[i],
       gardeJusquAu: d.gardeJusquAu,
       arreteLe: d.arreteLe,
+      excel: d.excelCle !== null,
+      fec: d.fecCle !== null,
       bilans: bilans
         .filter((b) => b.dossierId === d.id)
         .map((b) => ({ id: b.id, fichierNom: b.fichierNom, nature: b.nature, ajouteLe: b.ajouteLe })),
@@ -71,7 +89,7 @@ export async function listerDossiers(ctx: Ctx): Promise<DossierRange[]> {
  */
 export async function rangerDossier(
   ctx: Ctx,
-  d: { du: string; au: string; fichierCle: string; tailleOctets: number; empreinte: string; gardeJusquAu: string }
+  d: { du: string; au: string; fichierCle: string; tailleOctets: number; empreinte: string; gardeJusquAu: string; excelCle: string | null; fecCle: string | null }
 ): Promise<{ ok: true; id: string } | { ok: false; raison: string }> {
   try {
     return await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -88,11 +106,11 @@ export async function rangerDossier(
   }
 }
 
-/** Le fichier d'un dossier de l'entreprise, ou rien. */
-export async function fichierDuDossier(ctx: Ctx, id: string): Promise<{ cle: string; du: string; au: string } | null> {
+/** Les fichiers d'un dossier de l'entreprise, ou rien. L'Excel et le FEC manquent à un dossier d'avant. */
+export async function fichierDuDossier(ctx: Ctx, id: string): Promise<{ cle: string; excelCle: string | null; fecCle: string | null; du: string; au: string } | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx
-      .select({ cle: dossiersComptables.fichierCle, du: dossiersComptables.du, au: dossiersComptables.au })
+      .select({ cle: dossiersComptables.fichierCle, excelCle: dossiersComptables.excelCle, fecCle: dossiersComptables.fecCle, du: dossiersComptables.du, au: dossiersComptables.au })
       .from(dossiersComptables)
       .where(eq(dossiersComptables.id, id))
       .limit(1);

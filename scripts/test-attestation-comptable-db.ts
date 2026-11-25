@@ -100,7 +100,7 @@ async function main() {
   const id = (lib: string) => lignes.find((l) => l.libelle === `CB ${lib}`)!.id;
   assert.equal((await marquerTicketPerdu(ctx, id("POSTE"))).ok, true);
   assert.equal((await marquerTicketPerdu(ctx, id("GASOIL"))).ok, true);
-  const range = await rangerDossier(ctx, { du: "2026-01-01", au: "2026-01-31", fichierCle: "entreprises/x/dossiers/janvier.pdf", tailleOctets: 4000, empreinte: "b".repeat(64), gardeJusquAu: "2036-01-31" });
+  const range = await rangerDossier(ctx, { du: "2026-01-01", au: "2026-01-31", fichierCle: "entreprises/x/dossiers/janvier.pdf", tailleOctets: 4000, empreinte: "b".repeat(64), gardeJusquAu: "2036-01-31", excelCle: null, fecCle: null });
   assert.ok(range.ok);
   const dossierId = (range as { id: string }).id;
   const lien = await creerLienComptable(ctx, dossierId, MAINTENANT);

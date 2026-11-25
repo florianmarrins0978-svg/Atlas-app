@@ -87,6 +87,7 @@ test("ce que la pièce dit se range seul, le reste va « À classer »", () => {
   assert.equal(categorieProposee(ligne({ justification: "facture" })), "aClasser");
   assert.equal(categorieProposee(ligne({ justification: "ticket_perdu" })), "aClasser");
   assert.equal(categorieProposee(ligne({ sens: "entree", factureEmise: true })), "clients");
+  assert.equal(categorieProposee(ligne({ sens: "entree", justification: "facture_hors_atlas" })), "clients");
   assert.equal(categorieProposee(ligne({ sens: "entree", justification: "motif", motif: "aide" })), "aide");
 });
 
