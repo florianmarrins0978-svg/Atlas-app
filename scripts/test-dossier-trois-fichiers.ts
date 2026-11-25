@@ -271,6 +271,9 @@ async function main() {
     const soldeTotal = [...balance.matchAll(/<c r="F(\d+)"[^>]*><f>[^<]*<\/f><v>([^<]*)<\/v>/g)].at(-1);
     assert.equal(Number(soldeTotal?.[2]), 0, "la balance du dossier ne retombe pas à zéro");
     assert.match(fichiers.get("xl/worksheets/sheet2.xml")!, /Facture 2026-418/);
+    // La balance nomme un compte par son intitulé, jamais par celui d'une de
+    // ses lignes (« TVA en attente, 20 % » n'est pas le nom du 44574).
+    assert.doesNotMatch(balance, /%/, "l'intitulé d'un compte de la balance porte le taux d'une de ses lignes");
     // Les sorties de l'onglet Achats suivent l'ordre du PDF : catégorie, puis date.
     assert.deepEqual(sortiesDansLOrdre(lignes).map((l) => l.cle), ["materiaux", "carburant", "assurances", "salaires"]);
     assert.ok(ordreDesCategories().indexOf("clients") === 0);

@@ -1,4 +1,4 @@
-import { nomCategorie, type CleCompta } from "./categories-comptables";
+import { intituleDuCompte, nomCategorie, type CleCompta } from "./categories-comptables";
 import { ordreDesCategories, tauxDuRegistre, tauxEnMots, tvaAuTaux, type LigneComptable, type RangDuRegistre } from "./dossier-du-comptable";
 import type { ComptesDuDossier, EcritureFec } from "./fec-import";
 import { colonne, type Cellule, type Feuille } from "./xlsx";
@@ -141,7 +141,9 @@ export function feuillesDuDossier(e: EntreeDeLExcel): Feuille[] {
   // La balance : ce que les écritures du FEC mettent sur chaque compte.
   const parCompte = new Map<string, { lib: string; debit: number; credit: number }>();
   for (const x of e.ecritures) {
-    const b = parCompte.get(x.compte) ?? { lib: x.compteLib, debit: 0, credit: 0 };
+    // L'intitulé du COMPTE, pas celui d'une de ses lignes : une ligne de TVA
+    // porte son taux (« …, 20 % »), le compte n'en a pas.
+    const b = parCompte.get(x.compte) ?? { lib: intituleDuCompte(x.compte) ?? x.compteLib, debit: 0, credit: 0 };
     b.debit += x.debit;
     b.credit += x.credit;
     parCompte.set(x.compte, b);
