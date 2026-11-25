@@ -4,6 +4,9 @@ import { colors, font } from "@/lib/design-tokens";
 import { checkUp, echeanceProche, jourComplet, jourEnMots, tailleEtLignes } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerDossiers } from "@/server/repositories/dossiers-comptables";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { nomDuFec } from "@/lib/fec-import";
+import { nomDeLExcel } from "@/lib/excel-du-dossier";
 import { facturesRecuesLibres, ticketsLibres, type TicketDeLaLigne } from "@/server/repositories/pour-mon-comptable";
 import { verificationsDesDossiers, type VerificationDuDossier } from "@/server/repositories/verification-comptable";
 import { facturesARapprocher } from "@/server/banque/questions";
@@ -29,7 +32,7 @@ export default async function PageMesDossiers() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   const aujourdhui = jourIso(new Date());
-  const [dossiers, verifications, factures, enAttente] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx), facturesARapprocher(ctx)]);
+  const [dossiers, verifications, factures, enAttente, entreprise] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx), facturesARapprocher(ctx), getEntreprise(ctx)]);
   const verificationDe = new Map(verifications.map((v) => [v.dossierId, v]));
   // Les tickets encore libres, pour proposer celui du même montant à côté d'un
   // rejet : seulement s'il y a des rejets, la lecture couvre toute la garde.
@@ -42,6 +45,12 @@ export default async function PageMesDossiers() {
     annee: Number(d.au.slice(0, 4)),
     detail: `Rangé le ${jourComplet(jourIso(d.arreteLe))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}`,
     fichier: tailleEtLignes(d.tailleOctets, d.lignes),
+    // Ses deux autres fichiers, rangés avec lui depuis le 24 novembre 2026 ;
+    // un dossier d'avant n'a que son PDF, et rien ne se réécrit.
+    autres: [
+      ...(d.excel ? [{ forme: "excel" as const, nom: nomDeLExcel(nomDuFec(entreprise?.siret ?? null, d.du, d.au)), quoi: "Pour son tableur" }] : []),
+      ...(d.fec ? [{ forme: "fec" as const, nom: nomDuFec(entreprise?.siret ?? null, d.du, d.au), quoi: "Pour son logiciel comptable" }] : []),
+    ],
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
     verification: verificationAffichee(verificationDe.get(d.id), tickets, enAttente),
     attestation: attestationAffichee(verificationDe.get(d.id)),

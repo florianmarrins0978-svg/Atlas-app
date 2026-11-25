@@ -20,6 +20,8 @@ export type DossierAffiche = {
   detail: string;
   /** « 774 Ko, 60 lignes » : ce que dit sa ligne de fichier. */
   fichier: string;
+  /** Son Excel et son FEC d'import, rangés avec le PDF (ses choix du 24 novembre 2026). */
+  autres: { forme: "excel" | "fec"; nom: string; quoi: string }[];
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
   bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
@@ -368,6 +370,36 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
           <Icone nom="suivant" taille={20} epaisseur={2} />
         </span>
       </Link>
+
+      {/* L'Excel et le FEC sous le PDF, chacun sa ligne de fichier : ils ne se
+          regardent pas dans la visionneuse, un appui les range. */}
+      {d.autres.map((f) => (
+        <BoutonTelechargerDocument
+          key={f.forme}
+          fichier={`/termines/comptable/dossiers/${d.id}/${f.forme}`}
+          nom={f.nom}
+          className="mt-2 flex min-h-[72px] w-full items-center gap-3.5 rounded-[18px] px-3.5 py-3 text-left"
+          style={styleCreux}
+          dataAtlas={`telecharger-${f.forme}`}
+        >
+          <span
+            className="flex h-[56px] w-[46px] flex-none items-end justify-center rounded-[8px] pb-1.5 text-[11px] font-bold tracking-[0.06em]"
+            style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: f.forme === "excel" ? colors.carteVertTexte : colors.ink }}
+            aria-hidden="true"
+          >
+            {f.forme === "excel" ? "XLSX" : "FEC"}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[16px] font-semibold leading-[1.3] [overflow-wrap:anywhere]">{f.nom}</span>
+            <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+              {f.quoi}
+            </span>
+          </span>
+          <span style={{ color: colors.or }}>
+            <Icone nom="telecharger" taille={20} />
+          </span>
+        </BoutonTelechargerDocument>
+      ))}
 
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={geste} style={styleCreux} dataAtlas="telecharger-dossier">
