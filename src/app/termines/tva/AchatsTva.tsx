@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, voile } from "@/lib/design-tokens";
-import { nettoyerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
+import { preparerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
 import FeuilleAchat, { type DepartDeLaFeuille } from "./FeuilleAchat";
 import { rangerTicketAction } from "./actions";
 import {
@@ -75,7 +75,7 @@ export default function AchatsTva({
   // La feuille se remonte neuve à chaque ouverture (sa `key`) : ses champs
   // repartent de ce qui vient d'être lu, jamais de la saisie d'avant.
   const [ouvertures, setOuvertures] = useState(0);
-  const [depart, setDepart] = useState<DepartDeLaFeuille>({ photoCle: null, lu: null, lecture: null, refus: null });
+  const [depart, setDepart] = useState<DepartDeLaFeuille>({ photoCle: null, photoNetteCle: null, avis: null, lu: null, lecture: null, refus: null });
 
   function ouvrir(d: DepartDeLaFeuille) {
     setDepart(d);
@@ -86,16 +86,18 @@ export default function AchatsTva({
   async function photographier(fichier: File) {
     setEnCours(true);
     const fd = new FormData();
-    // Trouvée, redressée et réduite AVANT de partir (lot 5 de « Pour mon
-    // comptable ») : la photo rangée est celle qui sera relue dans le dossier.
-    fd.set("ticket", await nettoyerPhotoDuTicket(fichier));
+    // L'originale, et le ticket trouvé, redressé et nettoyé dans le téléphone
+    // (sa planche B du 24 novembre 2026) : la nettoyée se lit dans le dossier.
+    const photo = await preparerPhotoDuTicket(fichier);
+    fd.set("ticket", photo.originale);
+    if (photo.nette) fd.set("ticketNet", photo.nette);
     const r = await rangerTicketAction(fd);
     setEnCours(false);
     if (!r.ok) {
-      ouvrir({ photoCle: null, lu: null, lecture: null, refus: r.raison });
+      ouvrir({ photoCle: null, photoNetteCle: null, avis: null, lu: null, lecture: null, refus: r.raison });
       return;
     }
-    ouvrir({ photoCle: r.cle, lu: r.lu, lecture: r.lecture, refus: null });
+    ouvrir({ photoCle: r.cle, photoNetteCle: r.cleNette, avis: photo.avis, lu: r.lu, lecture: r.lecture, refus: null });
   }
 
   function apresEnregistrement(date: string) {
@@ -200,7 +202,7 @@ export default function AchatsTva({
         </button>
         <button
           type="button"
-          onClick={() => ouvrir({ photoCle: null, lu: null, lecture: null, refus: null })}
+          onClick={() => ouvrir({ photoCle: null, photoNetteCle: null, avis: null, lu: null, lecture: null, refus: null })}
           className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[15px] font-semibold"
           style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }}
         >

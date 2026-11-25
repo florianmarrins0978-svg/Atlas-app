@@ -13,7 +13,9 @@ import { jourIso } from "../src/lib/jour";
  * recopié ligne par ligne.
  *
  *   1. « Photographier le ticket » ouvre la prise de vue SUR la carte, pas Ma TVA ;
- *   2. la photo part redressée et réduite (le ticket, pas la table) ;
+ *   2. la photo d'origine part entière, et à côté d'elle le ticket seul,
+ *      redressé et nettoyé dans le téléphone (sa planche B du 24 novembre
+ *      2026, `appli/soignee/ticket-lisible.html`) ;
  *   3. la feuille de Ma TVA s'ouvre, et « Ajouter aux achats » relie le ticket
  *      à SA ligne : la carte s'en va ;
  *   4. un ticket recopié se lit en entier sur la page du comptable, sa ligne
@@ -129,12 +131,16 @@ async function main() {
     assert.ok(r[0].achat_id);
   });
 
-  await test("la photo rangée est le ticket redressé et réduit, pas la table", async () => {
-    const { rows: r } = await pool.query(`SELECT photo_cle FROM achats_tva WHERE fournisseur = $1`, [`${MARQUE} QUINCAILLERIE`]);
+  await test("la photo d'origine est gardée entière, et le ticket redressé est rangé à côté", async () => {
+    const { rows: r } = await pool.query(`SELECT photo_cle, photo_nette_cle FROM achats_tva WHERE fournisseur = $1`, [`${MARQUE} QUINCAILLERIE`]);
     assert.ok(r[0]?.photo_cle, "le ticket n'a pas gardé sa photo");
-    const meta = await sharp(path.join(RACINE_STOCKAGE, r[0].photo_cle)).metadata();
-    assert.equal(meta.width, 1000, `la photo fait ${meta.width} px de large : elle n'a pas été redressée`);
-    assert.ok((meta.height ?? 0) / 1000 > 2 && (meta.height ?? 0) / 1000 < 2.7, `proportions ${meta.height}/1000 : ce n'est pas le ticket`);
+    const origine = await sharp(path.join(RACINE_STOCKAGE, r[0].photo_cle)).metadata();
+    assert.deepEqual([origine.width, origine.height], [1200, 1600], "la photo d'origine a été recadrée : la pièce n'est plus celle prise");
+    assert.ok(r[0].photo_nette_cle, "le ticket redressé n'a pas été rangé");
+    const nette = await sharp(path.join(RACINE_STOCKAGE, r[0].photo_nette_cle)).metadata();
+    // Le ticket fait 440 × 1 040 dans la photo : redressé, il garde sa finesse et ses proportions.
+    assert.ok(Math.abs((nette.width ?? 0) - 440) < 30, `le ticket redressé fait ${nette.width} px de large : ce n'est pas le ticket`);
+    assert.ok(Math.abs((nette.height ?? 0) / (nette.width ?? 1) - 1040 / 440) < 0.15, `proportions ${nette.height}/${nette.width} : ce n'est pas le ticket`);
   });
 
   await test("un ticket recopié se lit en entier chez le comptable, son total surligné", async () => {

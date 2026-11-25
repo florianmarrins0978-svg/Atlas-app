@@ -127,6 +127,8 @@ export async function creerAchatTva(
     pourquoi?: string | null;
     justificatif?: boolean;
     photoCle?: string | null;
+    /** La photo recadrée et nettoyée au téléphone (migration 0198), à côté de l'originale. */
+    photoNetteCle?: string | null;
     lignesImprimees?: LigneImprimee[] | null;
     saisie: SaisieAchat;
   }
@@ -171,6 +173,7 @@ export async function creerAchatTva(
         pourquoi,
         justificatif,
         photoCle: data.photoCle ?? null,
+        photoNetteCle: data.photoNetteCle ?? null,
         lignesImprimees: data.lignesImprimees ?? null,
         saisie: data.saisie,
         createdBy: ctx.utilisateurId,

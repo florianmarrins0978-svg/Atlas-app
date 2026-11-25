@@ -36,6 +36,10 @@ export type TicketLuAffiche = {
 /** Ce avec quoi la feuille s'ouvre : une photo rangée et ce qu'on en a lu, ou rien. */
 export type DepartDeLaFeuille = {
   photoCle: string | null;
+  /** La photo nettoyée au téléphone, rangée à côté de l'originale. */
+  photoNetteCle: string | null;
+  /** Ce que le téléphone dit de la photo avant de la garder : floue, ou ticket trop loin. */
+  avis: string | null;
   lu: TicketLuAffiche | null;
   /** Ce que la lecture a su faire, ou n'a pas su — dit au patron tel quel. */
   lecture: string | null;
@@ -140,6 +144,7 @@ export default function FeuilleAchat({
     }
     fd.set("saisie", photoCle ? "scan" : "main");
     if (photoCle) fd.set("photoCle", photoCle);
+    if (depart.photoNetteCle) fd.set("photoNetteCle", depart.photoNetteCle);
     if (lu?.lignes) fd.set("lignes", JSON.stringify(lu.lignes));
     if (mouvementId && suite !== "sansLaLigne") fd.set("mouvementId", mouvementId);
     if (suite === "malgreEcart") fd.set("malgreEcart", "oui");
@@ -324,7 +329,7 @@ export default function FeuilleAchat({
 
       <p className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]" style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}>
         {photoCle
-          ? `${depart.lecture ? `${depart.lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier, la photo ne le remplace pas.`
+          ? `${depart.avis ? `${depart.avis} ` : ""}${depart.lecture ? `${depart.lecture} ` : "Ticket lu. Vérifiez les montants avant d’ajouter. "}Gardez le papier, la photo ne le remplace pas.`
           : "La TVA se calcule depuis le total et le taux. Si votre ticket en affiche une autre, écrivez la sienne : c’est elle qui fait foi."}
       </p>
 

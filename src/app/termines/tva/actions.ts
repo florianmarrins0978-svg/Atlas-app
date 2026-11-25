@@ -44,6 +44,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   const dateAchat = String(formData.get("dateAchat") ?? "").trim();
   const saisie = String(formData.get("saisie") ?? "main") as SaisieAchat;
   const photoCle = String(formData.get("photoCle") ?? "").trim() || null;
+  const photoNetteCle = String(formData.get("photoNetteCle") ?? "").trim() || null;
   // Les lignes lues reviennent du navigateur : relues par la MÊME règle que la
   // lecture, jamais crues telles quelles (`ticket-imprime.ts`).
   const lignes = lignesDuFormulaire(formData.get("lignes"));
@@ -120,7 +121,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
    * serveur produit — et le préfixe porte l'entreprise, donc il tranche.
    */
   const prefixeAttendu = `entreprises/${ctx.entrepriseId}/tickets/`;
-  if (photoCle && !photoCle.startsWith(prefixeAttendu)) {
+  if ((photoCle && !photoCle.startsWith(prefixeAttendu)) || (photoNetteCle && !photoNetteCle.startsWith(prefixeAttendu))) {
     return { ok: false, raison: "Cette photo de ticket n'est pas reconnue." };
   }
 
@@ -147,6 +148,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
     pourquoi: String(formData.get("pourquoi") ?? ""),
     justificatif: formData.get("justificatif") === "oui",
     photoCle,
+    photoNetteCle,
     lignesImprimees: lignes,
     saisie,
   });
@@ -195,7 +197,7 @@ export async function supprimerAchatAction(id: string): Promise<{ ok: boolean }>
 }
 
 export type ResultatTicket =
-  | { ok: true; cle: string; lu: TicketLu | null; lecture: string | null }
+  | { ok: true; cle: string; cleNette: string | null; lu: TicketLu | null; lecture: string | null }
   | { ok: false; raison: string };
 
 /**
@@ -231,12 +233,22 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   const prete = await preparerPhotoEntrante(formData.get("ticket"), "ticket de TVA");
   if (!prete.ok) return { ok: false, raison: prete.raison };
 
-  const octets = prete.photo.octets;
-  const objet = await enregistrerObjet(
-    `entreprises/${ctx.entrepriseId}/tickets`,
-    octets,
-    prete.photo.extension
-  );
+  // **La photo nettoyée au téléphone part À CÔTÉ de l'originale** (sa planche
+  // B du 24 novembre 2026) : l'originale reste la pièce, telle que prise ; la
+  // nettoyée est celle qui se lit dans le dossier. Elle passe par le même
+  // nettoyage d'entrée : rien de ce que le navigateur envoie ne se croit.
+  // Absente (le téléphone n'a pas trouvé le ticket avec assurance), la photo
+  // part seule, comme avant.
+  const nette = formData.get("ticketNet");
+  const preteNette = nette instanceof File && nette.size > 0 ? await preparerPhotoEntrante(nette, "ticket de TVA") : null;
+  if (preteNette && !preteNette.ok) return { ok: false, raison: preteNette.raison };
+
+  const dossier = `entreprises/${ctx.entrepriseId}/tickets`;
+  const objet = await enregistrerObjet(dossier, prete.photo.octets, prete.photo.extension);
+  const objetNet = preteNette?.ok ? await enregistrerObjet(dossier, preteNette.photo.octets, preteNette.photo.extension) : null;
+  // L'IA lit la photo nettoyée quand il y en a une : le ticket seul, droit,
+  // sans le genou ni l'ombre. Une seule lecture, comme avant.
+  const lue = preteNette?.ok ? preteNette.photo : prete.photo;
 
   // **La photo est rangée AVANT la lecture, et le reste quoi qu'elle donne.**
   // Si le fournisseur d'IA est absent, refuse ou se trompe, le patron garde sa
@@ -245,7 +257,7 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   let lu: TicketLu | null = null;
   let lecture: string | null = null;
   try {
-    const r = await lireTicket(octets.toString("base64"), prete.photo.mimeType);
+    const r = await lireTicket(lue.octets.toString("base64"), lue.mimeType);
     if (r.ok) {
       lu = r.ticket;
       lecture = r.ticket.reserve;
@@ -260,7 +272,7 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
     lecture = "La lecture automatique n’a pas abouti. Recopiez les montants.";
   }
 
-  return { ok: true, cle: objet.storageKey, lu, lecture };
+  return { ok: true, cle: objet.storageKey, cleNette: objetNet?.storageKey ?? null, lu, lecture };
 }
 
 // ---------------------------------------------------------------------------

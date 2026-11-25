@@ -8,7 +8,7 @@ import { ecartDeMontant, ecartEnMots, justesDAbord, libelleMotif, motifsDuSens, 
 import { enEuros } from "@/lib/euros";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import { jourIso } from "@/lib/jour";
-import { nettoyerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
+import { preparerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
 import FeuilleAchat, { type DepartDeLaFeuille } from "../tva/FeuilleAchat";
 import { rangerTicketAction } from "../tva/actions";
 import {
@@ -125,13 +125,17 @@ export default function CarteARegarder({
     setRefus(null);
     demarrer(async () => {
       const fd = new FormData();
-      fd.set("ticket", await nettoyerPhotoDuTicket(fichier));
+      const photo = await preparerPhotoDuTicket(fichier);
+      fd.set("ticket", photo.originale);
+      if (photo.nette) fd.set("ticketNet", photo.nette);
       const r = await rangerTicketAction(fd);
       const aujourdHui = jourIso(new Date());
       setFeuille(
         r.ok
           ? {
               photoCle: r.cle,
+              photoNetteCle: r.cleNette,
+              avis: photo.avis,
               lu: r.lu,
               lecture: r.lecture,
               refus: null,
@@ -139,6 +143,8 @@ export default function CarteARegarder({
             }
           : {
               photoCle: null,
+              photoNetteCle: null,
+              avis: null,
               lu: null,
               lecture: null,
               refus: r.raison,
@@ -155,7 +161,10 @@ export default function CarteARegarder({
     demarrer(async () => {
       const fd = new FormData();
       fd.set("mouvementId", a.id);
-      fd.set("fichier", fichier.type.startsWith("image/") ? await nettoyerPhotoDuTicket(fichier) : fichier);
+      // Une facture photographiée part redressée quand le téléphone la trouve
+      // avec assurance, entière sinon : une seule pièce, comme avant.
+      const photo = fichier.type.startsWith("image/") ? await preparerPhotoDuTicket(fichier) : null;
+      fd.set("fichier", photo ? (photo.nette ?? photo.originale) : fichier);
       const r = await deposerFactureHorsAtlasAction(fd);
       if (r.ok) return fini(r.fait);
       if (r.piece && r.ecart) {
