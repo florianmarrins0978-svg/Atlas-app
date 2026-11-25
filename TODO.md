@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : QUI SOMMES-NOUS, EN TROIS FORMES (24 novembre 2026)
+
+**Sa demande :** *« sur le site internet, il faudrait créer une page qui
+suis-je : nous sommes une équipe d'artisans, paysagistes et élagueurs, qui
+avons créé et développé une application pour répondre le plus près possible
+aux besoins des artisans ; une application créée par des artisans pour des
+artisans »*. À « quelle forme ? » : *« fais les 3, je choisirai après »* ; à
+« des photos ? » : *« oui, je les enverrai »*.
+
+`appli/vente/qui-sommes-nous.html`, liée depuis `appli/essais.html`. Trois
+formes dans une page, le bandeau noir du haut passe de l'une à l'autre : la
+journée, la lettre, nos mains. Le détail, ce qui vient de lui et ce qui vient
+de moi : `docs/qui-sommes-nous.md`. Rien dans `src/`, le site retenu n'a pas
+bougé.
+
+**Ce qui l'attend, et rien d'autre :** la forme retenue ; les photos (une de
+l'équipe, deux de chantier) ; ses mots sur les phrases écrites par moi (les
+heures de la journée, « nos soirées, trop souvent, à refaire des devis »,
+« un outil qui tienne dans la poche », les cinq outils de l'établi).
+**Une fois choisie** : les deux autres formes et le bandeau partent, et la
+page entre dans le site par un lien « Qui sommes-nous » dans la barre, le menu
+et le pied de `cause-2-visite.html` (et `appli/tests/e2e.js`, « le site
+retenu », l'ajoute à sa liste). Pas regardée sur Safari.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE TICKET LISIBLE (24 novembre 2026)
 
 **Sa remarque :** *« quand je prenais un ticket en photo et que tu le recréais
