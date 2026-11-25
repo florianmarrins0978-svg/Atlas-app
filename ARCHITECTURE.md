@@ -38426,3 +38426,19 @@ contrat et deux adresses.
 contradictoire : Super PDP d'abord, la candidature ensuite. Les exigences
 officielles sont relevées dans `TODO.md` ; la première qui pèse est la
 certification ISO 27001 (ou SecNumCloud).
+
+## §611 : Le dossier du comptable sort en trois fichiers d'un seul modèle
+
+**Ses choix du 24 novembre 2026** (`appli/soignee/comptable-trois-fichiers.html`, `appli/soignee/ticket-lisible.html`, `TODO.md`) : le PDF rangé par catégorie avec son registre des ventes, l'Excel à quatre onglets, le FEC d'import ; chaque pièce numérotée du même numéro dans les trois.
+
+**Un seul modèle, trois écritures.** `arreterLeDossier` (`src/server/dossier-comptable.ts`) calcule une fois, pour chaque ligne de banque, sa catégorie (`categorieDeLaLigneComptable`), son numéro de compte (`numeroDuCompte`, le sien s'il l'a changé dans Réglages), le numéro de sa pièce (`numerosDesPieces`), son hors taxe et sa TVA (`montantsDeLaLigne`), et le registre des ventes (`registreDesVentes`). Le PDF (`dossier-comptable-pdf.ts`), le FEC (`fec-import.ts`) et l'Excel (`excel-du-dossier.ts`) ne font qu'écrire ce modèle : deux calculs du hors taxe d'une même ligne finiraient par donner au comptable deux chiffres. Les trois fichiers se rangent au même instant (`dossiers_comptables.excel_cle`, `fec_cle`, migration 0198), et la table ne se met toujours pas à jour : un dossier d'avant n'a que son PDF.
+
+**Le TTC est celui de la banque.** Une pièce d'un autre total (un écart accepté) voit sa TVA ramenée au prorata du payé. Une pièce dont la TVA n'a pas été lue rend zéro ET le dit (`tvaNonLue`, « TVA à lire sur la pièce ») : un zéro muet serait une déduction perdue en silence. Ne déduisent jamais : une entrée, une franchise, une catégorie sans TVA, un ticket perdu.
+
+**Le numéro de pièce** repart à A 001 chaque 1er janvier et compte les lignes de l'année rangées depuis le tout premier dossier (`premierJourDesDossiers`) : compter les lignes d'avant ferait commencer le premier dossier à A 061 sans qu'A 001 existe. Une ligne payée par une facture de Cause porte le numéro de la facture. Limite connue : un dossier à cheval sur deux années peut porter deux A 001, que leur date distingue.
+
+**Le FEC d'import n'est pas le FEC de l'exercice.** Son nom n'imite jamais `SirenFECAAAAMMJJ` (`nomDuFec`), sa colonne ValidDate reste vide : seul le logiciel qui tient la comptabilité produit le FEC légal et valide une écriture. Trois journaux : VT les ventes (TVA au 44574 aux encaissements, passée au 44571 au prorata de chaque paiement ; au 44571 dès la facture aux débits ; rien en franchise), HA les factures de fournisseur (puis leur paiement en BQ, lettrés), BQ le reste, droit de la banque au compte. Une vente ne se lettre que si ce fichier la solde, avoirs compris : une facture payée en espèces reste ouverte, la lettrer mentirait.
+
+**L'Excel s'écrit à la main** (`src/lib/xlsx.ts`, sur `archive-zip.ts`), pour la raison de `lire-classeur.ts` : une dépendance qui sait tout Office pour quatre onglets de chiffres serait une surface d'attaque. Son onglet Comptes est la balance tirée des écritures du FEC : elle doit retomber à zéro, et `test-dossier-trois-fichiers.ts` le vérifie.
+
+**Le ticket se recadre dans le téléphone, par UNE règle** (`src/lib/redresser-ticket.ts`), celle de la planche, qui remplace celle d'octobre : blancheur et deux seuils d'Otsu, trous bouchés, tache la plus pleine, bords pris parallèles à leur vis-à-vis (le coin sous un pouce se retrouve), finesse gardée jusqu'à 2 400 pixels, netteté mesurée. **L'originale ne se remplace plus** : elle part à côté du ticket nettoyé (`achats_tva.photo_nette_cle`) et reste la pièce ; la nettoyée est celle que l'IA lit et que le PDF pose sous le ticket réécrit, et au bout du dossier. Dans le doute (`sur` faux), seule l'originale part.

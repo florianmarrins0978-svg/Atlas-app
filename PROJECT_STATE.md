@@ -1,5 +1,9 @@
 # État du projet
 
+## LE DOSSIER DU COMPTABLE EN TROIS FICHIERS : CODÉ (25 novembre 2026), SUR `claude/dossier-comptable-exports-yzwp5f`
+
+Ses choix du 24 et son « on code tout ». Le PDF : registre des ventes, une page par catégorie sous son numéro de compte, chaque pièce numérotée (A 041), le ticket réécrit lisible avec sa photo nettoyée dessous (B). L'Excel à quatre onglets et le FEC d'import, rangés avec lui (migration 0198), sous lui dans Mes dossiers. Les numéros de compte dans Réglages, la catégorie d'une ligne choisie sur le relevé. Le ticket recadré dans le téléphone par la règle de la planche, l'originale gardée. Une seule batterie pour l'ensemble, avec le flux de publication des planches en deux jobs. Reste : les coins au doigt (planche), l'autoliquidation, la caisse (`TODO.md`).
+
 ## LA PAGE « QUI SOMMES-NOUS » DU SITE (24 novembre 2026) : UNE PLANCHE EN TROIS FORMES, À CHOISIR
 
 `appli/vente/qui-sommes-nous.html` : la journée, la lettre, nos mains. Rien dans `src/`, le site retenu inchangé. Attend sa forme, ses photos et ses mots sur les phrases écrites par moi (`docs/qui-sommes-nous.md`).

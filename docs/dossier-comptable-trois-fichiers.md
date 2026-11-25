@@ -2,7 +2,54 @@
 
 Demande du 24 novembre 2026. Planche :
 https://florianmarrins0978-svg.github.io/Atlas-app/soignee/comptable-trois-fichiers.html
-(fichier `appli/soignee/comptable-trois-fichiers.html`). **Rien n'est codé dans `src/`.**
+(fichier `appli/soignee/comptable-trois-fichiers.html`). **Codé le 25 novembre 2026** : voir la
+première partie ci-dessous ; le reste du document est la planche et ses vérifications, telles qu'elles
+lui ont été montrées le 24.
+
+## Le codage du 25 novembre 2026 : verdict point par point
+
+Ses réponses : *« B ticket, 2 catégories cotisation. On code tout et à la fin on jouera une seule
+batterie pour l'ensemble. »*
+
+| Point | Verdict | Où |
+|---|---|---|
+| Registre des ventes d'abord | **fait** : n°, date, client et chantier, HT, TVA par taux, TTC, payée le, reste dû au dernier jour du dossier ; les avoirs en négatif ; puis les factures d'avant payées pendant | `src/lib/dossier-du-comptable.ts` (`registreDesVentes`), `src/server/repositories/ventes-du-dossier.ts` |
+| Dépenses par catégorie, chacune sa page, par date, côte à côte | **fait** : la ligne de banque à gauche, sa pièce réécrite à droite, le total surligné bleu gris ; sous le libellé, son HT et sa TVA | `src/server/pdf/dossier-comptable-pdf.ts` |
+| Numéro de compte à côté de chaque catégorie, modifiable dans Réglages, repris dans les trois fichiers | **fait** : Réglages, « Numéros de compte » ; un numéro changé part dans le PDF, l'Excel et le FEC | `src/lib/categories-comptables.ts`, `src/app/reglages/comptes/` |
+| Salaires au 421, la fiche de paie en pièce | **fait** : la page des salaires le dit en tête | idem |
+| Un numéro par pièce (A 041), le même dans les trois fichiers | **fait** : la suite repart à A 001 chaque 1er janvier, et ne compte que les lignes rangées depuis le premier dossier ; une ligne payée par une facture de Cause porte le numéro de la facture | `numerosDesPieces` |
+| Les catégories ajoutées, « À classer » (471) à la place de « Autre » | **fait** | `CATEGORIES_COMPTABLES` |
+| Deux catégories de cotisations | **fait** : celles des salariés (431), les vôtres (646) | idem |
+| L'Excel à quatre onglets | **fait** : Ventes, Achats, Banque, Comptes ; dates en dates, montants en nombres, totaux en formules, filtres, première ligne figée | `src/lib/excel-du-dossier.ts`, `src/lib/xlsx.ts` |
+| Le FEC d'import | **fait** : 18 colonnes, tabulation, ISO 8859-15, journaux VT, HA, BQ, lettrage ; jamais le nom du FEC légal | `src/lib/fec-import.ts` |
+| Ticket B | **fait** : réécrit dans une écriture droite plus grande, en phrase plutôt qu'en capitales, le total plus grand ; dessous la photo nettoyée ; « Voir la photo en grand » mène au bout | PDF, `nettoyer-photo.ts` |
+| Le ticket recadré sans IA | **fait autrement, à la racine** : l'appli recadrait déjà le ticket avant l'envoi depuis octobre, par une règle plus faible, qui REMPLAÇAIT la photo d'origine. Elle est remplacée par celle de la planche, la seule, et l'originale reste gardée à côté | `src/lib/redresser-ticket.ts` |
+| Aucun gris dans les documents | **fait** (le 24, sur `main`) ; les nouvelles pages relues par le même contrôle | `test-dossier-comptable-pdf.ts` |
+
+**Décidé par moi, faute de planche :** le geste qui donne sa catégorie à une ligne du relevé suit
+celui qui la justifie ; l'Excel et le FEC prennent chacun une ligne de fichier sous celle du PDF dans
+Mes dossiers, qui ne bouge pas.
+
+**Corrigé noir sur blanc :**
+
+- le 24 au soir, je vous ai annoncé que « les coins du ticket s'ajusteraient au doigt quand le
+  téléphone doute ». **Ce n'est pas codé** : c'est un écran neuf dans la prise de photo, il passe par
+  une planche. Quand le téléphone doute, seule l'originale part, et le dossier n'a pas de vignette
+  sous ce ticket ;
+- la planche du ticket écrivait « aujourd'hui, la vraie photo est au bout du dossier ». C'était
+  inexact : depuis octobre, la photo rangée était déjà le ticket découpé quand l'appli le trouvait,
+  et l'originale était perdue. Elle est désormais gardée.
+
+**Trouvé en relisant, corrigé :** un paiement de client sur une facture faite hors de Cause partait en
+« remboursement » (471) ; il va au client (411).
+
+**Ce qui n'est pas fait, et pourquoi :** l'autoliquidation d'un sous-traitant (à voir avec votre
+comptable, ci-dessous) ; un règlement en espèces n'a pas de journal de caisse dans le FEC (la facture
+reste ouverte au 411) ; la date d'une facture reçue n'est pas lue (son achat se date du jour de la
+banque) ; la page du comptable ne propose pas l'Excel ni le FEC (vous les lui envoyez depuis Mes
+dossiers).
+
+**Les chiffres de la batterie :** BATTERIE_A_REMPLIR
 
 ## Ce que la planche montre
 
@@ -15,7 +62,7 @@ https://florianmarrins0978-svg.github.io/Atlas-app/soignee/comptable-trois-fichi
 | Un numéro par pièce, le même partout | A 181 à A 205 pour octobre ; toucher un numéro le surligne et donne sa page, sa ligne d'onglet, sa ligne de banque et ses lignes de FEC | partout |
 | Le FEC officiel reste celui du comptable | écrit au dessus du FEC, et en bas de la première page du PDF | onglet Le FEC |
 
-**Aucun texte gris** (sa demande du 24 novembre, après la première version) : les trois documents s'écrivent en noir, et ce qui doit ressortir passe par le gras ou la serif. Le vrai PDF (`src/server/pdf/dossier-comptable-pdf.ts`) écrit encore en gris : à reprendre au codage.
+**Aucun texte gris** (sa demande du 24 novembre, après la première version) : les trois documents s'écrivent en noir, et ce qui doit ressortir passe par le gras ou la serif. Le vrai PDF l'est aussi depuis le 24 au soir.
 
 **Un seul jeu de données** (octobre 2026, inventé) nourrit les trois fichiers.
 Vérifié sur les fichiers téléchargés, pas sur l'écran :
@@ -164,11 +211,11 @@ le FEC légal laissé au logiciel comptable.
 | Point | Qui |
 |---|---|
 | La liste des numéros, relue une fois | son comptable |
-| Cotisations du patron (646) et des salariés (431) dans une seule catégorie : le comptable sépare, ou Cause en fait deux | lui |
+| ~~Cotisations du patron (646) et des salariés (431) dans une seule catégorie~~ | **tranché le 24 : deux catégories** |
 | L'autoliquidation d'un sous-traitant (clôture, terrassement) : facture sans TVA, le FEC doit l'ajouter des deux côtés. Aucun texte ne nomme l'aménagement paysager ; l'élagage seul n'y est pas soumis (rescrit BOI-RES-TVA-000269 du 9 septembre 2026) | à vérifier avec son comptable avant le codage |
 | Les photos des pièces nommées A 189, A 190, en plus des trois fichiers, comme Pennylane | lui |
 | Un numéro de facture comme `F-2026-041` fait 10 caractères : Quadra en refuse plus de 8 | à vérifier si son comptable est sur Quadra |
-| Où se posent les trois fichiers dans Pour mon comptable | la planche suivante, sur son vrai écran |
+| ~~Où se posent les trois fichiers dans Pour mon comptable~~ | **décidé par moi le 25** : sous le PDF dans Mes dossiers |
 
 **Vu en lisant les sources, hors de ce lot :** l'appli ne déduit pas la TVA d'un
 repas sans client (`src/lib/achat-tva.ts`, « repas perso, 0 % »). Le repas d'un

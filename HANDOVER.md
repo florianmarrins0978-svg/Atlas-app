@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LE DOSSIER DU COMPTABLE EN TROIS FICHIERS (25 novembre 2026)
+
+**Avant d'y toucher** : lire `ARCHITECTURE.md` §611. Quatre pièges. **Un chiffre se change dans le modèle, jamais dans un fichier** : `src/lib/dossier-du-comptable.ts` calcule, le PDF, l'Excel et le FEC écrivent. **Le FEC d'import ne prend jamais le nom du FEC légal** (`nomDuFec`, `test-dossier-trois-fichiers.ts` le refuse). **La photo d'un ticket est rangée deux fois** : `photo_cle` l'originale, `photo_nette_cle` le ticket nettoyé ; ne plus jamais remplacer l'une par l'autre. **Le ticket se recadre par une seule règle** (`redresser-ticket.ts`), celle que sa planche a éprouvée sur sa vraie photo : la retoucher, c'est la confronter de nouveau à `appli/soignee/ticket-sur-le-genou.jpg` dans un navigateur, en plus de `test-redresser-ticket.ts`.
+
 ## LA PAGE « QUI SOMMES-NOUS » DU SITE : TROIS FORMES, PAS ENCORE CHOISIE (24 novembre 2026)
 
 `appli/vente/qui-sommes-nous.html`, une planche. **Avant d'y toucher** : les trois formes vivent dans trois `<main data-forme>` d'un seul fichier, le bandeau noir en montre une et cache les autres (`hidden`) ; un élément d'une forme cachée n'entre jamais dans l'écran, il attend qu'on la montre. Le monde, la barre, le menu et le pied sont recopiés du site retenu (`cause-2-visite.html`) : une retouche du site ne s'y reporte pas toute seule. Les traits dessinés (outils, signature) partent de `stroke-dasharray:1 2` et d'un décalage de 1,02, jamais de 1 : un trait de longueur nulle garde ses bouts arrondis et se peignait en points. Les relevés du détecteur Impeccable propres au monde du site y sont acceptés comme sur le site (`.impeccable/config.json`). Ce qui l'attend : `TODO.md`, en tête.

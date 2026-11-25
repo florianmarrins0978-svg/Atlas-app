@@ -6,6 +6,13 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-25
+
+- **Le dossier du comptable sort en trois fichiers** (ses choix du 24, `appli/soignee/comptable-trois-fichiers.html`, et son « on code tout »). Le PDF : le registre des ventes (avoirs en négatif, reste dû au dernier jour, factures d'avant payées pendant), puis une page par catégorie sous son numéro de compte, par date, chaque pièce numérotée (A 041) du même numéro dans l'Excel et le FEC, son hors taxe et sa TVA sous la ligne de banque ; la première page dit ce que range le dossier, compte par compte, avec sa page. L'Excel (Ventes, Achats, Banque, Comptes) et le FEC d'import (18 colonnes, ISO 8859-15, journaux VT, HA, BQ, lettrage, jamais le nom du FEC légal) se rangent au même instant (migration 0198) et se téléchargent sous le PDF dans Mes dossiers. Un seul modèle les nourrit (`src/lib/dossier-du-comptable.ts`, `ARCHITECTURE.md` §611).
+- **Le ticket du dossier se lit** (sa planche B) : réécrit dans une écriture droite plus grande, en phrase plutôt qu'en capitales, le total plus grand, et dessous la photo nettoyée.
+- **Le ticket se recadre par la règle de la planche, et l'originale reste.** La règle d'octobre, qui découpait déjà le ticket avant l'envoi, échouait sur un ticket tenu sur le genou sous une lampe, ramenait le ticket à 1 000 pixels et remplaçait la photo d'origine. Celle de la planche la remplace (deux seuils, coin retrouvé sous le pouce, 2 400 pixels, netteté mesurée) ; l'originale et le ticket nettoyé se rangent l'un à côté de l'autre. Aucun jeton d'IA.
+- **Les numéros de compte dans Réglages, la catégorie d'une ligne sur le relevé** : deux catégories de cotisations (431, 646), « À classer » (471) à la place de « Autre ». Un paiement de client sur une facture faite hors de Cause partait en « remboursement » : il va au client.
+
 ## 2026-11-24
 
 - **Planche « Qui sommes-nous », en trois formes** (`appli/vente/qui-sommes-nous.html`, sa demande du 24 : *« nous sommes une équipe d'artisans, paysagistes et élagueurs [...] une application créée par des artisans pour des artisans »*, puis *« fais les 3, je choisirai après »*). La journée (un fil d'or et son soleil, de 7 h au soir libre), la lettre (elle s'écrit, puis se signe), nos mains (les outils dessinés au trait, puis le téléphone qui s'allume sur la vraie appli). Dans le monde du site retenu, sans un écart ; les places des photos marquées « à venir ». Aucun nombre, prénom ni témoignage inventé ; ce qui est de moi est listé dans `docs/qui-sommes-nous.md`. Rien dans `src/`, le site n'a pas bougé.

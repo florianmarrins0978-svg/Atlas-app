@@ -1,21 +1,40 @@
 # Prochaines tâches
 
-## 🔨 EN COURS : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, À CODER EN ENTIER (24 novembre 2026, tard)
+## ✅ LE DOSSIER DU COMPTABLE EN TROIS FICHIERS : CODÉ (25 novembre 2026), sur `claude/dossier-comptable-exports-yzwp5f`
 
 **Ses réponses, à ne pas lui redemander :** *« B ticket, 2 catégories
 cotisation. On code tout et à la fin on jouera une seule batterie pour
-l'ensemble, ne me pose plus la question. »*
+l'ensemble, ne me pose plus la question. »* Le détail, verdict par verdict :
+`docs/dossier-comptable-trois-fichiers.md`. L'architecture : `ARCHITECTURE.md`
+§611.
 
 | | |
 |---|---|
-| **le ticket dans le dossier** | B : le ticket réécrit lisible, la photo nettoyée dessous |
-| **cotisations** | deux catégories : celles des salariés (431), les siennes (646) |
-| **ce qui se code** | tout le dossier des planches `comptable-trois-fichiers.html` et `ticket-lisible.html` : catégories et numéros de compte (réglage), choix de la catégorie d'une ligne, PDF rangé par catégorie avec registre des ventes et numéros de pièce, Excel à quatre onglets, FEC d'import, recadrage du ticket à la photo |
-| **la batterie** | UNE seule, à la fin, pour l'ensemble (avec la correction du flux de publication en deux jobs), **sans lui redemander son « oui »** : c'est son « oui » donné d'avance |
+| **les catégories et leurs numéros** | `src/lib/categories-comptables.ts` ; Réglages, « Numéros de compte » ; la catégorie d'une ligne se choisit sur le relevé (migration 0198) |
+| **le PDF** | registre des ventes, puis une page par catégorie sous son compte, chaque pièce numérotée (A 041), le ticket réécrit lisible et sa photo nettoyée dessous (B) |
+| **l'Excel et le FEC d'import** | rangés avec le PDF au même instant, sous lui dans Mes dossiers |
+| **le ticket** | recadré dans le téléphone par la règle de la planche, l'originale gardée à côté |
+| **la batterie** | UNE seule pour l'ensemble, avec le flux de publication en deux jobs, sur son « oui » donné d'avance |
 
 **Décidé par moi, faute de planche, et à lui dire :** le geste qui donne sa
-catégorie à une ligne (rien ne le dessinait) suit celui qui existe pour la
-justifier ; les coins du ticket ne s'ajustent que quand le téléphone doute.
+catégorie à une ligne suit celui qui existe pour la justifier ; l'Excel et le
+FEC prennent chacun une ligne de fichier sous celle du PDF, qui ne bouge pas.
+
+**Ce qui reste, et n'est pas fait :**
+
+- **ajuster les coins du ticket au doigt quand le téléphone doute.** Annoncé le
+  24 au soir comme décidé ; pas codé : c'est un écran neuf dans la prise de
+  photo, il passe par une planche (`CLAUDE.md` §3 bis). En attendant, quand le
+  téléphone doute, seule l'originale part et le dossier n'a pas de vignette ;
+- **la sous-traitance en autoliquidation** (terrassement, clôture) : le FEC
+  n'ajoute pas encore la TVA de chaque côté (point « À trancher » de la
+  planche) ;
+- **un règlement en espèces** n'a pas de journal de caisse dans le FEC : la
+  facture reste ouverte au 411, et le registre la dit payée ;
+- **la page du comptable** (`/comptable/[jeton]`) ne propose ni l'Excel ni le
+  FEC : le patron les lui envoie depuis Mes dossiers ;
+- **la date d'une facture reçue** n'est pas lue : son achat au journal HA se
+  date du jour de la banque.
 
 ## ⏳ UNE PLANCHE À REGARDER : QUI SOMMES-NOUS, EN TROIS FORMES (24 novembre 2026)
 
@@ -41,7 +60,9 @@ page entre dans le site par un lien « Qui sommes-nous » dans la barre, le menu
 et le pied de `cause-2-visite.html` (et `appli/tests/e2e.js`, « le site
 retenu », l'ajoute à sa liste). Pas regardée sur Safari.
 
-## ⏳ UNE PLANCHE À REGARDER : LE TICKET LISIBLE (24 novembre 2026)
+## ✅ LE TICKET LISIBLE : B CHOISI LE 24, CODÉ LE 25 NOVEMBRE 2026
+
+**Choisi (B) et codé : voir l'entrée du haut.** Ce qui suit est le chemin de la planche.
 
 **Sa remarque :** *« quand je prenais un ticket en photo et que tu le recréais
 dans l'application, on voyait quasiment rien »*, puis *« garder seulement le
@@ -92,7 +113,9 @@ photo d'origine telle quelle, c'est la pièce ; la version nettoyée sert à lir
 quand la détection doute. Rien dans `src/` avant son choix. Au codage, le même
 calcul (fonction pure, `src/lib/`) sert au téléphone et au serveur.
 
-## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE (24 novembre 2026)
+## ✅ LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE : CODÉ LE 25 NOVEMBRE 2026
+
+**Codé : voir l'entrée du haut.** Ce qui suit est le chemin de la planche.
 
 **Ses choix du 24 novembre, à ne pas lui redemander :** trois fichiers séparés
 dans le même envoi (PDF, Excel, FEC), le comptable prend celui qu'il veut ; le
