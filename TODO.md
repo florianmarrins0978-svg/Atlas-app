@@ -3339,7 +3339,20 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      prêt, prérequis ISO 27001. Ordre de grandeur, confiance faible : 10 000
      à 30 000 € la première année. **Trois questions à la DGFiP avant tout
      achat** : périmètre de l'ISO 27001 en marque blanche, SecNumCloud pour
-     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ; Seconde capture, même soir : la
+     notre hébergeur, et nos fournisseurs hors UE (IA, sessions de code) ;
+   - **réponse de Super PDP, reçue le 26 novembre** (leur page
+     « Authentification », recopiée par lui) : OAuth 2.1, `authorization_code`
+     pour nos artisans (aucune portée, adresse de retour déclarée dans leur
+     interface), `client_id` et `client_secret` pris dans leur interface ;
+     jeton d'accès de 30 minutes, jeton de rafraîchissement d'un an **qui
+     change à chaque usage** (garder le nouveau à chaque fois, sinon
+     l'artisan est déconnecté) ; révocation `https://api.superpdp.tech/oauth2/revoke`.
+     Préremplissage de `/oauth2/authorize` : `login_hint`, le SIREN
+     (`superpdp_company_number` + `_scheme=fr_siren`, ou `sandbox` en essai),
+     et `superpdp_send_and_receive` (`receive` force l'inscription à
+     l'annuaire pour recevoir ses factures fournisseurs, obligatoire depuis
+     le 1er septembre 2026). Exemple : github.com/superpdp/examples, `erp.go`.
+     **Pas encore de réponse sur le contrat ni le prix de gros** ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
