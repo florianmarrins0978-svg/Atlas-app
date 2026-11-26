@@ -3363,7 +3363,17 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      1er du mois ; résiliation par eux avec 30 jours de préavis (impayé,
      manquement, faillite) ; réversibilité gratuite des données sous 3 mois ;
      responsabilité plafonnée à ce que Cause a payé sur 12 mois ; prélèvement
-     SEPA ou carte ; Cause garantit Super PDP contre un usage non conforme ; Seconde capture, même soir : la
+     SEPA ou carte ; Cause garantit Super PDP contre un usage non conforme ;
+   - **assurance RC pro et cyber** (projet Dattak par Assur'Up, reçu le
+     26 novembre, valable jusqu'au 23 février 2027) : 833,81 € TTC par an,
+     plafond 250 000 € toutes garanties confondues, franchise 1 000 €. Ses
+     conditions touchent Cause : **sauvegarde au moins tous les 7 jours, hors
+     ligne ou dans un nuage protégé par double authentification** ; aucune
+     clause limitant sa responsabilité ou l'aggravant acceptée sans le
+     déclarer (or les CGU de Cause plafonnent la nôtre, celles de Super PDP
+     plafonnent la leur et nous font les garantir) ; la transmission des
+     factures électroniques n'y est pas nommée. Questions posées à lui de
+     transmettre au courtier avant signature ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
