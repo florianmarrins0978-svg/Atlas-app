@@ -23,6 +23,15 @@
   code ça » du 23 novembre 2026, l'écran du plan au robinet montre la même pile
   (src/app/paysage/arrosage/Robinet3D.tsx).
 
+  LE MONTAGE SANS PROGRAMMATEUR (sa remarque du 24 novembre 2026) : « on a oublié de faire un montage.
+  C'est sans programmateur. Donc, c'est-à-dire juste une double sortie d'arrosage. Ou pas, si le client
+  n'en veut pas. Et ensuite, tout de suite, le 25 taraudé 3/4 ou le 32 taraudé 3/4 qui viendrait se
+  visser sur la double sortie ou directement sur le robinet, et le 25 ou le 32. » La composition le
+  savait déjà (robinet-3d/composition.js, `programmateur: null`, et la double sortie en interrupteur,
+  comme dans l'écran du plan au robinet) : seule la planche ne le proposait pas. Sans programmateur, le
+  départ est le raccord femelle 25 x 3/4" (ou 32 x 3/4", le même à l'oeil, sa règle) et le PEHD. La
+  double sortie se retire aussi sous un programmateur : c'est l'interrupteur de l'écran du plan.
+
   SI LE TÉLÉPHONE NE SAIT PAS : une phrase à la place de la vue, jamais un cadre vide.
 -->
 <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js" } }</script>
@@ -65,7 +74,7 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>Le robinet en 3D</h1>
-  <p>Touchez la pile pour l’éclater, tournez avec le doigt. Rien n’est codé.</p>
+  <p>Touchez la pile pour l’éclater, tournez avec le doigt. Codée dans le plan au robinet.</p>
 </div>
 <main class="ecran">
   <h2>Au nez de robinet</h2>
@@ -82,7 +91,11 @@
   </div>
   <span class="caps" id="l-prog">Programmateur</span>
   <div class="voies" role="group" aria-labelledby="l-prog">
-    <button type="button" data-prog="solem" aria-pressed="true">Solem</button><button type="button" data-prog="rainbird" aria-pressed="false">Rain Bird</button><button type="button" data-prog="buddy" aria-pressed="false">Buddy</button>
+    <button type="button" data-prog="solem" aria-pressed="true">Solem</button><button type="button" data-prog="rainbird" aria-pressed="false">Rain Bird</button><button type="button" data-prog="buddy" aria-pressed="false">Buddy</button><button type="button" data-prog="sans" aria-pressed="false">Sans</button>
+  </div>
+  <span class="caps" id="l-double">Double sortie</span>
+  <div class="voies" role="group" aria-labelledby="l-double">
+    <button type="button" data-double="avec" aria-pressed="true">Avec</button><button type="button" data-double="sans" aria-pressed="false">Sans</button>
   </div>
   <span class="caps" id="l-depart">Départ</span>
   <div class="voies" role="group" aria-labelledby="l-depart">
@@ -113,16 +126,25 @@ import { ouvrirRobinet } from "./robinet-3d/vue.js";
 import { PROGRAMMATEURS, DEPARTS } from "./robinet-3d/composition.js";
 
 var $ = function (id) { return document.getElementById(id); }, toile = $("scene");
-var etat = { eclatee: false, vue: "face", prog: "solem", depart: "pe25" }, V = null;
+var etat = { eclatee: false, vue: "face", prog: "solem", depart: "pe25", double: true }, V = null;
 
 function boutons() {
   document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.montage === "eclatee") === etat.eclatee)); });
   document.querySelectorAll("[data-vue]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.vue === etat.vue)); });
   document.querySelectorAll("[data-prog]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.prog === etat.prog)); });
-  document.querySelectorAll("[data-depart]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.depart === etat.depart)); });
-  $("sous-titre").textContent = "Double sortie, programmateur " + PROGRAMMATEURS[etat.prog].nom + ", départ " + DEPARTS[etat.depart].nom + ".";
+  document.querySelectorAll("[data-double]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.dataset.double === "avec") === etat.double)); });
+  // Sans programmateur, le départ est le 25 ou le 32 taraudé 3/4" : le Ø16 ne se propose pas.
+  document.querySelectorAll("[data-depart]").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.depart === etat.depart));
+    b.hidden = etat.prog === "sans" && b.dataset.depart !== "pe25";
+  });
+  var prog = etat.prog === "sans" ? "sans programmateur" : "programmateur " + PROGRAMMATEURS[etat.prog].nom;
+  $("sous-titre").textContent = (etat.double ? "Double sortie, " : "Sans double sortie, ") + prog + ", départ " + DEPARTS[etat.depart].nom + ".";
 }
-function reposer() { V.montrer({ programmateur: etat.prog, double: true, depart: etat.depart }); boutons(); }
+function reposer() {
+  if (etat.prog === "sans") etat.depart = "pe25";
+  V.montrer({ programmateur: etat.prog === "sans" ? null : etat.prog, double: etat.double, depart: etat.depart }); boutons();
+}
 
 document.addEventListener("click", function (e) {
   if (!V) return;
@@ -131,6 +153,7 @@ document.addEventListener("click", function (e) {
   else if (b.dataset.vue) V.regarder(b.dataset.vue);
   else if (b.dataset.prog) { etat.prog = b.dataset.prog; reposer(); }
   else if (b.dataset.depart) { etat.depart = b.dataset.depart; reposer(); }
+  else if (b.dataset.double) { etat.double = b.dataset.double === "avec"; reposer(); }
 });
 
 try {

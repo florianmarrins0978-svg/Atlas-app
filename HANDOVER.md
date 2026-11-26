@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## LA PAGE « QUI SOMMES-NOUS » DU SITE : TROIS FORMES, PAS ENCORE CHOISIE (24 novembre 2026)
+
+`appli/vente/qui-sommes-nous.html`, une planche. **Avant d'y toucher** : les trois formes vivent dans trois `<main data-forme>` d'un seul fichier, le bandeau noir en montre une et cache les autres (`hidden`) ; un élément d'une forme cachée n'entre jamais dans l'écran, il attend qu'on la montre. Le monde, la barre, le menu et le pied sont recopiés du site retenu (`cause-2-visite.html`) : une retouche du site ne s'y reporte pas toute seule. Les traits dessinés (outils, signature) partent de `stroke-dasharray:1 2` et d'un décalage de 1,02, jamais de 1 : un trait de longueur nulle garde ses bouts arrondis et se peignait en points. Les relevés du détecteur Impeccable propres au monde du site y sont acceptés comme sur le site (`.impeccable/config.json`). Ce qui l'attend : `TODO.md`, en tête.
+
 ## LES TURBINES AUX ÉCARTEMENTS DE RAIN BIRD (22 novembre 2026)
 
 **Avant de toucher à la pose d'une zone** : lire `ARCHITECTURE.md` §609. Une turbine passe par `poseRainBird` (carré 1,1 × la portée, ou rectangle 1,2 × et 1,0 ×, sans vent), une tuyère par l'ancienne recherche à 80 %. Ne pas remettre les tuyères sous Rain Bird : il l'a refusé (« Mes 7 en quinconce »). Les instantanés `appli/arrosage-*-calcul.js` des planches ne sont pas reconstruits.

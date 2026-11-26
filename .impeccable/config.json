@@ -912,6 +912,60 @@
         ],
         "createdAt": "2026-11-22T20:07:48.572Z",
         "reason": "la police de titre du site de vente, charte retenue le 6 novembre 2026 : la même que sur cause-2-visite.html, dont cette page est les mentions légales"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:52:47.072Z",
+        "reason": "monde hérité du site retenu (cause-2-visite.html, choisi par lui le 22 novembre 2026) : le bouton or sur vert nuit y porte la même ombre, à l'identique"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:58:01.166Z",
+        "reason": "monde hérité du site retenu (cause-2-visite.html, choisi par lui le 22 novembre 2026), où le même relevé est déjà accepté : la charte du site de vente"
+      },
+      {
+        "rule": "italic-serif-display",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:58:01.176Z",
+        "reason": "monde hérité du site retenu (cause-2-visite.html, choisi par lui le 22 novembre 2026), où le même relevé est déjà accepté : la charte du site de vente"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:58:01.185Z",
+        "reason": "monde hérité du site retenu (cause-2-visite.html, choisi par lui le 22 novembre 2026), où le même relevé est déjà accepté : la charte du site de vente"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:58:01.195Z",
+        "reason": "monde hérité du site retenu (cause-2-visite.html, choisi par lui le 22 novembre 2026), où le même relevé est déjà accepté : la charte du site de vente"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/vente/qui-sommes-nous.html"
+        ],
+        "createdAt": "2026-11-24T23:58:01.205Z",
+        "reason": "faux positif, identique sur cause-2-visite.html : des bandes de pleine largeur dont le contenu est retenu par .large ; les formes cachées mesurent zéro"
       }
     ]
   }

@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { PDFDocument, rgb } from "pdf-lib";
 import { composerDossierComptable, type DonneesDossier, type LignePourLeDossier } from "../src/server/pdf/dossier-comptable-pdf";
+import { textesGris } from "./_couleurs-du-texte-pdf";
 
 // POUR MON COMPTABLE, LOT 3 — le PDF du dossier, ouvert et relu.
 //
@@ -171,6 +172,18 @@ async function main() {
 
   await test("une photo illisible n'empêche pas le dossier de sortir, et sa place le dit", async () => {
     assert.match(texte, /Photo non lisible ici/);
+  });
+
+  // Sa demande du 24 novembre 2026, devant la planche des trois fichiers :
+  // « vu que c'est des documents comptables, il faut que ça soit lisible
+  // facilement ; tout ce qui est gris clair, tu le mets en noir ; ce que tu
+  // veux faire ressortir, soit tu modifies la police, soit tu mets en gras ».
+  await test("aucun texte n'est écrit en gris : un document comptable se lit en noir", async () => {
+    const { total, encre, grises } = await textesGris(octets);
+    // Une relecture qui ne trouverait aucun texte ne prouverait rien.
+    assert.ok(total > 50, "presque aucun texte relu : le contrôle ne mesure rien");
+    assert.ok(encre, "l'encre du document n'a pas été relue");
+    assert.deepEqual(grises, [], `des textes sont écrits en gris : ${grises.join(", ")}`);
   });
 
   await test("la première page dit d'abord que tout est justifié, puis les chiffres, les mois et les catégories", async () => {

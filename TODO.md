@@ -1,14 +1,230 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER : LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D (23 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : QUI SOMMES-NOUS, EN TROIS FORMES (24 novembre 2026)
+
+**Sa demande :** *« sur le site internet, il faudrait créer une page qui
+suis-je : nous sommes une équipe d'artisans, paysagistes et élagueurs, qui
+avons créé et développé une application pour répondre le plus près possible
+aux besoins des artisans ; une application créée par des artisans pour des
+artisans »*. À « quelle forme ? » : *« fais les 3, je choisirai après »* ; à
+« des photos ? » : *« oui, je les enverrai »*.
+
+`appli/vente/qui-sommes-nous.html`, liée depuis `appli/essais.html`. Trois
+formes dans une page, le bandeau noir du haut passe de l'une à l'autre : la
+journée, la lettre, nos mains. Le détail, ce qui vient de lui et ce qui vient
+de moi : `docs/qui-sommes-nous.md`. Rien dans `src/`, le site retenu n'a pas
+bougé.
+
+**Ce qui l'attend, et rien d'autre :** la forme retenue ; les photos (une de
+l'équipe, deux de chantier) ; ses mots sur les phrases écrites par moi (les
+heures de la journée, « nos soirées, trop souvent, à refaire des devis »,
+« un outil qui tienne dans la poche », les cinq outils de l'établi).
+**Une fois choisie** : les deux autres formes et le bandeau partent, et la
+page entre dans le site par un lien « Qui sommes-nous » dans la barre, le menu
+et le pied de `cause-2-visite.html` (et `appli/tests/e2e.js`, « le site
+retenu », l'ajoute à sa liste). Pas regardée sur Safari.
+
+## ⏳ UNE PLANCHE À REGARDER : LE TICKET LISIBLE (24 novembre 2026)
+
+**Sa remarque :** *« quand je prenais un ticket en photo et que tu le recréais
+dans l'application, on voyait quasiment rien »*, puis *« garder seulement le
+ticket, c'est faisable ? Beaucoup de tickets vont être pris sur les genoux ou
+dans une main. Ça coûte de l'IA ou pas ? »*
+
+**Lu dans le code :** le dossier PDF réécrit le ticket en Courier de 7,6 points
+(`dossier-comptable-pdf.ts`, `rang`, police standard à trait fin) dans une
+colonne de 186 points ; sur un téléphone, environ 5 pixels. La page du
+comptable (`Reconstituee`, `Verification.tsx`) l'écrit en 11,5 px. Où il l'a
+vu au juste n'a pas été regardé sur son écran (question posée, sans réponse :
+le PDF supposé).
+
+**Planche :** `appli/soignee/ticket-lisible.html`. Le recadrage y tourne pour
+de vrai, dans le navigateur, sans IA : le papier est clair et peu coloré, la
+plus grande tache claire est gardée, ses bords prolongés retrouvent un coin
+caché sous le pouce, une homographie redresse, une division par le fond efface
+les ombres. 20 à 40 ms sur la photo d'essai ; il peut l'essayer sur ses photos.
+**Éprouvé sur SA photo du 24 novembre** (un long ticket Leclerc froissé, sur un
+parquet, sous une lampe) : le premier calcul collait le reflet de la lampe au
+ticket. Corrigé : deux seuils (le second, pris dans le clair, sépare le papier
+d'un reflet), les trous du texte bouchés, et la tache la plus pleine gagne.
+Trouvé en 69 ms, lisible. **Sa photo n'est pas dans le dépôt**, qui est public.
+**Sa réponse : « la photo était floue, du coup on voit rien ».** Deux causes,
+mesurées : le ticket redressé était plafonné à 1 100 px de haut (un long
+ticket y perdait la moitié de sa finesse : plafond monté à 2 400) ; et sa photo
+est arrivée ici en 1 512 px (l'appli de conversation réduit ; son téléphone en
+prend sans doute 4 032, non vérifié), le ticket n'y fait que 490 px de large.
+Ajouté : une mesure de netteté (contours rapportés au contraste, à la taille
+des lettres) et de taille du ticket, qui demandent de reprendre la photo ;
+vérifiée sur sa photo floutée (2,4 et 1,9 contre 9,9 nette, seuil 6). Et les
+bords parallèles à leur vis-à-vis, qui retrouvent un coin sous le pouce.
+**À vérifier dans l'appli au codage :** que la photo du ticket part en pleine
+taille (aucune réduction trouvée côté téléphone dans `AchatsTva.tsx`).
+**Sa remarque suivante : « le montant c'est pas 85, c'est 47 ».** Le 85,50 €
+était le ticket d'exemple (Leroy Merlin, inventé), mais la variante B posait
+SA photo Leclerc sous ce texte : corrigé, « Dans le dossier » ne montre plus que
+l'exemple, texte et photo. La planche ne lit pas les tickets (aucune IA ici).
+Son ticket : total 57,82 € TTC, dont 47,63 € HT à 5,5 % et 6,31 € HT à 20 %.
+Puis le ticket du dossier : A (réécrit lisible, écriture pleine, total plus
+grand), B (A, plus la photo nettoyée dessous).
+
+**Refusé, et dit :** une photo « réaliste » générée par l'IA (faux
+justificatif dans un dossier comptable, et un coût par image). **Gardé :** la
+photo d'origine telle quelle, c'est la pièce ; la version nettoyée sert à lire.
+
+**À trancher par lui :** A ou B ; ajuster les coins à chaque photo ou seulement
+quand la détection doute. Rien dans `src/` avant son choix. Au codage, le même
+calcul (fonction pure, `src/lib/`) sert au téléphone et au serveur.
+
+## ⏳ UNE PLANCHE À REGARDER : LE DOSSIER DU COMPTABLE EN TROIS FICHIERS, RANGÉ PAR CATÉGORIE (24 novembre 2026)
+
+**Ses choix du 24 novembre, à ne pas lui redemander :** trois fichiers séparés
+dans le même envoi (PDF, Excel, FEC), le comptable prend celui qu'il veut ; le
+registre des ventes d'abord (numéro, date, client, chantier, HT, TVA par taux,
+TTC, payée le, reste dû) ; puis chaque catégorie de dépense sur sa page, par
+date, avec le côte à côte du dossier actuel (ligne de banque à gauche, pièce
+réécrite à droite, total surligné bleu gris) ; un numéro de compte à côté de
+chaque catégorie, proposé par Cause, modifiable dans Réglages et repris dans les
+trois fichiers ; les salaires : le comptable calcule la paie (jours travaillés,
+paniers) et envoie la fiche, l'entreprise vire, le virement va en Salaires au
+**421** (jamais 641 : compté deux fois) avec la fiche comme pièce ; chaque pièce
+porte un numéro (A 189), le même dans les trois fichiers, renvoyant à sa ligne
+de banque. Catégories : matériaux et plants, petit outillage, sous-traitance,
+loyer, assurances, téléphone et internet, frais de banque, impôts et taxes,
+salaires, cotisations sociales, matériel de plus de 500 €, emprunt, prélèvement
+personnel, et À classer (471) à la place d'Autre.
+
+**Planche :** `appli/soignee/comptable-trois-fichiers.html` (les quatre pages
+du PDF, l'Excel à quatre onglets, le FEC, le réglage des numéros ; l'Excel et le
+FEC se téléchargent pour de vrai). Elle remplace le brouillon du même nom laissé
+sur `claude/determined-sagan-62y464`. Les numéros, leurs sources et ce qui a été
+corrigé (hôtel 6256, sous-traitance 604, aides 741, 60622 hors PCG) :
+`docs/dossier-comptable-trois-fichiers.md`.
+
+**Le fichier FEC de Cause est un fichier d'import, jamais le FEC de
+l'exercice** (BOI-CF-IOR-60-40-20 § 40) : il ne prend pas le nom légal
+`SirenFECAAAAMMJJ` (`123456789_import_FEC_2026-10.txt`), et son ValidDate reste
+vide. Planche et PDF le disent.
+
+**Sa règle du 24 novembre, pour les trois fichiers : aucun texte gris.** *« Vu
+que c'est des documents comptables, il faut que ça soit lisible facilement. Tout
+ce qui est gris clair, tu le mets en noir. Ce que tu veux faire ressortir, soit
+tu modifies la police, soit tu mets en gras. »* Appliqué à la planche le jour
+même. **Le vrai PDF aussi, sur sa demande du même soir** (*« va vérifier dans le
+document comptable qu'on a déjà ; pareil, tout ce qui est en gris, passe-le en
+noir »*) : `DOUX` et `GRIS` retirés de `src/server/pdf/dossier-comptable-pdf.ts`
+(83 textes), et `test-dossier-comptable-pdf.ts` refuse désormais tout texte
+gris (vu rouge avant, vert après). **L'attestation du comptable aussi**, sur son « oui, passe en noir » :
+`DOUX` retiré de `attestation-comptable-pdf.ts` (14 textes), même contrôle dans
+`test-attestation-comptable.ts`, la relecture des couleurs étant partagée
+(`scripts/_couleurs-du-texte-pdf.ts`). **Sur `main` le 24 novembre au soir**,
+sur son « oui » : niveau 2 au vert (`npm run verifier:avant-fusion`, cinq suites
+navigateur : jours-dans-equipe, pages-publiques-sans-navigation,
+photo-du-check-up, retour-comptable, verification-comptable).
+
+**Sa question du même soir, et la réponse :** *« est-ce que tu es sûr d'avoir
+tous les numéros, qu'il manque rien ? Loyer, achat de petites fournitures »*.
+Non : quatorze catégories manquaient (location de matériel 6135, garage 6155,
+leasing 6122, électricité 6061, bureau 6064, logiciels 6135, publicité 623,
+honoraires 6226, cotisations professionnelles 6281, formation 6228, déchets
+verts 6288, vêtements de travail 6063, retraite et mutuelle des salariés 437,
+impôt prélevé sur les salaires 4421). Ajoutées, rangées par familles. Le paysage
+cotise à la **MSA**, pas à l'URSSAF : la ligne d'essai est corrigée.
+
+**Ce qu'il avait compris de travers, et qu'il ne faut pas lui laisser croire :**
+les trois fichiers ne s'allument pas entre eux. Le surlignage est un geste de la
+planche pour montrer où le numéro de pièce est imprimé ; chez le comptable, ce
+sont trois fichiers séparés que relie ce numéro. **Où ils se rangent, proposé :**
+dans Mes dossiers, sous le dossier arrêté, à la place du PDF seul
+(`MesDossiers.tsx`, `pdfDuDossier`), et sur la page du lien du comptable
+(`src/app/comptable/[jeton]`). Cette planche se fige sur ses vrais écrans, ce
+qui demande de lancer l'appli ici : son « oui » d'abord (`CLAUDE.md` §5).
+
+**À trancher par lui :** cotisations du patron (646) et des salariés (431) dans
+une seule catégorie ou deux ; les photos des pièces nommées par leur numéro en
+plus des trois fichiers. **Par son comptable, avant le codage :** la liste des
+numéros ; l'autoliquidation d'un sous-traitant en travaux immobiliers (le FEC
+doit alors porter la TVA des deux côtés, pas encore dessiné). Rien dans `src/`
+avant son choix. Avant de la lui redemander, chercher `comptable-trois-fichiers`
+dans `src/`.
+
+## ✅ LE ROBINET SANS PROGRAMMATEUR : C'EST LE ROBINET AVEC REGARD (24 novembre 2026)
+
+Sa remarque : *« on a oublié de faire un montage. C'est sans programmateur [...] juste une double
+sortie d'arrosage. Ou pas, si le client n'en veut pas. Et ensuite, tout de suite, le 25 taraudé 3/4 ou
+le 32 taraudé 3/4 [...] et le 25 ou le 32. »* Planche : `appli/arrosage-robinet-3d.html`, « Sans » au
+programmateur, et la double sortie Avec ou Sans. L'écran du plan au robinet montre déjà cette pile
+quand le programmateur est à la nourrice (`Robinet3D`, `programmateur: null`). ~~**À lui de dire** si ce
+montage doit aussi exister sans aucun programmateur dans le plan (un arrosage ouvert à la main).~~ Sa
+réponse : *« en fait, à quoi ça sert ? »* ; au robinet, c'est avec regard (nourrice et BL-IP) ou sans
+regard (programmateur en nez de robinet), et au compteur toujours un regard. Ses mots : *« si on se
+repique après compteur, il faut forcément un regard. Mais si on se repique sur un robinet, on peut soit
+avoir un regard, soit ne pas avoir de regard et du coup avoir un programmateur en [nez de robinet] »*,
+et *« les programmateurs en [nez de robinet], c'est seulement si on n'a pas de regard »*. Le choix
+existe déjà à l'écran (« Le montage » : « Programmateur en nez de robinet » ou « Avec la nourrice »).
+**Sa règle attend d'entrer dans `.claude/rules/arrosage.md`** : c'est de l'outillage (niveau 2), écrit
+sur la branche `claude/laughing-wright-xxntzg`, en attente de son accord pour le contrôle.
+
+## ⚠️ LES LOTS ÉGARÉS : CODÉS SUR UNE BRANCHE, JAMAIS ARRIVÉS SUR `main` (relevé le 24 novembre 2026)
+
+Sa demande, après avoir vu qu'Entreprise ouvrait encore les outils de paysage :
+*« va chercher s'il n'y a pas des lots pareils qui se sont égarés, qu'on n'a pas
+mis dans l'application, qui attendent de jouer une batterie »*.
+
+**Comment c'est relevé, et comment le refaire.** Sur un historique COMPLET
+(`git fetch --unshallow origin` d'abord : un clone de session est superficiel,
+et c'est lui qui faisait croire « aucune histoire commune ») : pour chaque
+branche `claude/*`, les commits que `git cherry origin/main` dit absents ; pour
+chacun, son code (`src/`, `drizzle/`) appliqué à l'envers sur `main`, puis à
+l'endroit ; et la part de ses lignes ajoutées qu'on retrouve dans `main`. Une
+part haute veut dire « arrivé, retouché depuis » ; une part nulle, « jamais
+arrivé ».
+
+**Codés, jamais sur `main`, et rien ne le disait sur `main` :**
+
+| Branche | Date | Ce que c'est | Où il en est |
+|---|---|---|---|
+| `claude/happy-cannon-2rci5s` | 19 nov. | le module Paysage à 6 € pour les trois formules, Artisan un seul accès, un plan et un diagnostic offerts | son « oui » du 24 novembre : réuni au lot du changement de formule, une seule version 4 des conditions |
+| `claude/vigilant-ramanujan-kxr0np` | 19 et 20 nov. | la fiche de diagnostic soignée, les dossiers des diagnostics avec leurs notes, les photos de référence qui défilent | sa branche dit « codé, pas sur `main` » ; `main` disait « pas codé » (corrigé) |
+| `claude/upbeat-pascal-mzremi` | 21 nov. | la nourrice de l'outil dessinée avec ses photos vues du dessus (sept commits) | rien sur `main` ; la nourrice en 3D est arrivée depuis, à lui de dire si ce dessin sert encore |
+
+**En route, dans la batterie commune de la session du SIREN**
+(`claude/modest-pascal-l7ma19`) : l'essai par SIREN et le registre, la carte de
+la visite guidée, l'arrosage des deux nourrices (`claude/laughing-wright-xxntzg` :
+le PE au plus court, 0,3 bar au dernier arroseur, GAG, une vanne de plus), et
+le changement de formule. **Gardé hors de `main` par sa décision** : Darcy et
+Moody (`claude/adoring-mendel-e8roex`, « Prends avec Rain Bird »).
+
+**Plus anciens, à lui de dire s'ils servent encore** (le code de `main` a bougé
+depuis, aucun ne se fusionne tel quel) :
+
+| Branche | Date | Ce que c'est | Ce qu'on en sait |
+|---|---|---|---|
+| `claude/intervention-filter-month-year-vo4q29` | 22 et 23 sept. | filtrer les retours d'intervention au mois, avec la roue | moins d'un tiers de son code sur `main` |
+| `claude/unites-dictees` | 29 sept. | une dictée n'écrit que ses unités : « 2 u », jamais « 2 souche » | sa branche attendait sa réponse sur le prix à la bûche |
+| `claude/travaux-supplementaires-facture-0ffzq7` | 1er sept. | les travaux en plus sur la facture, chacun son taux de TVA | refait autrement sur `main` le 4 novembre, probablement dépassé |
+| `claude/legal-quote-terms-25aceo` | 30 août | la forme juridique et le n° de TVA sur le devis | en partie sur `main` ; attendait sa décision sur le capital et le RCS |
+| `claude/green-rounded-send-button-gqxt0c` | 18 août | l'envoi au client plus visible | les écrans ont été refaits depuis, probablement dépassé |
+| `claude/load-testing-model-selection-wtkrgh` | 30 août au 11 oct. | un établi de qualification hors de l'appli | un outil, pas un écran |
+
+**Écartés par lui, rien à faire** : « Payé par » en bouts ronds (non repris le
+29 octobre). **Arrivés sur `main`, retouchés depuis** (plus des trois quarts de
+leurs lignes s'y retrouvent) : la fiche de chantier soignée, « Solde », le
+répertoire des métiers, « J'ai reçu le paiement », la date d'un chantier
+terminé, la visionneuse des retours, l'assistant hors métier, les tubes
+d'arrosage, Jours travaillés.
+
+## ⏳ LE GOUTTE-À-GOUTTE EN GAG SUR LA NOURRICE EN 3D : CHOISI, CODÉ SUR LA BRANCHE DES DEUX NOURRICES (23 novembre 2026)
 
 Sa demande, devant les mots « goutte-à-goutte » qui s'empilent au bout des colonnes : *« tu les mets
 en escalier [...] tu mets une goutte à goutte et l'autre GAG. Et tous les autres GAG. »* Planche :
 `appli/arrosage-nourrice-3d-gag.html`, la vraie nourrice, « Aujourd'hui » et « Proposé ». Le mot
 entier sous la première voie, GAG sous les suivantes ; un mot qui en couvrirait un autre se décale sur
 le côté libre, sinon d'une marche. Sur 90 nourrices, 84 se chevauchent aujourd'hui, aucune proposée.
-**À lui de choisir**, puis porter les deux changements dans `appli/nourrice-3d/reperes.js` (la
-planche en garde la copie, prête à recopier), que l'écran du plan emploie.
+~~**À lui de choisir**~~ : *« C'est bien »*, puis *« pareil pour 12 vannes : une goutte à goutte et le
+reste GAG »*. La planche va désormais de 1 à 12 voies, toutes en goutte-à-goutte au besoin (elle
+s'arrêtait à six voies, celle des deux nourrices à quatre en goutte-à-goutte : des limites de planche,
+pas de l'appli). Codé dans `appli/nourrice-3d/reperes.js` sur la branche `claude/laughing-wright-xxntzg`,
+avec les deux nourrices : il arrive sur `main` avec leur batterie, sur son accord.
 
 ## ⚠️ LA BARRE DU BAS FIGÉE : LES BOUTONS FLOTTANTS DES PLANCHES PASSENT SOUS ELLE SUR IPHONE (vu le 23 novembre 2026)
 
@@ -115,7 +331,7 @@ Sa demande : *« Regarde les sessions qui attendent de jouer une batterie et fus
 
 - **Darcy et Moody n'y sont pas, sur sa décision.** Réuni aux écartements de Rain Bird, Darcy faisait rougir la règle du té égal (18 octobre) : sur son jardin de 12 × 12 et 8 × 8, la pression au dernier arroseur tombait de 2,21 à 1,80 bar, et le plan passait de 3 réseaux à 2, dont un qui arrosait les deux pelouses. Devant la planche qui le montre (`appli/arrosage-rainbird-et-darcy.html`), sa réponse : *« Prends avec Rain Bird »*. Le lot reste sur `claude/adoring-mendel-e8roex`.
 - **Ce que cela coûte, et qu'il doit savoir le jour où il y revient** : sans Darcy, le calcul garde Hazen-Williams, que la session Darcy a trouvé trop optimiste de 4 à 25 % sur la perte du tuyau (le dernier arroseur reçoit un peu moins que ce que l'outil annonce). Le reprendre, c'est accepter le plan réuni de la planche, ou trancher autrement.
-- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : sa branche n'a plus d'histoire commune avec `main`, et son sujet est l'argent.
+- **L'abonnement** (`claude/happy-cannon-2rci5s`) n'y est pas : son sujet est l'argent. ~~sa branche n'a plus d'histoire commune avec `main`~~ **faux, corrigé le 24 novembre 2026** : c'était une copie partielle de l'historique (clone superficiel). Sa base commune avec `main` est `d495de84`, et il ne lui manque que trois commits.
 
 ## TRANCHÉ : LA DOUBLE SORTIE DU ROBINET RESTE UN INTERRUPTEUR (22 novembre 2026)
 ## LE MANUEL RAIN BIRD : LES TURBINES CODÉES LE 22 NOVEMBRE 2026, CE QUI RESTE
@@ -1235,7 +1451,7 @@ même (`CHANGELOG.md`). **Il n'a pas encore vu cette version.**
   film « Une photo. » la montrent), et le film se retourne. Le lien vers la
   licence (creativecommons.org) n'a pas pu être ouvert depuis ce poste, son
   mandataire le refuse ; celui de la photo répond.
-- **Les dossiers ne sont pas codés.** Le film « Vos dossiers. » est tourné
+- ~~**Les dossiers ne sont pas codés.**~~ **Faux, relevé le 24 novembre 2026** : ils sont codés le 20 novembre sur `claude/vigilant-ramanujan-kxr0np`, jamais arrivés sur `main` (voir « LES LOTS ÉGARÉS », en tête). Le film « Vos dossiers. » est tourné
   sur sa planche du 20 novembre (`appli/soignee/diagnostic-dossiers.html`,
   posée par une autre session, qui n'en a rien écrit ici) ; sa réponse à
   cette planche n'est écrite nulle part, et ses deux questions restent

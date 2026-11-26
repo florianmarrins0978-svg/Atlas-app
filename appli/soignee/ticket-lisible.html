@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le ticket lisible</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE TICKET LISIBLE, sa remarque du 24 novembre 2026 : « quand je prenais un
+  ticket en photo et que tu le recréais dans l'application, on voyait
+  quasiment rien sur le ticket que tu recrées ». Puis : « garder seulement le
+  ticket, c'est faisable ? Beaucoup de tickets vont être pris sur les genoux
+  ou dans une main, virer les nuisibles. Ça coûte de l'IA ou pas ? »
+
+  CE QUI EST VRAI AUJOURD'HUI, lu dans le code : le dossier PDF
+  (src/server/pdf/dossier-comptable-pdf.ts) réécrit le ticket en Courier de
+  7,6 points, une police à trait très fin, dans une colonne de 186 points.
+  Ouvert sur un téléphone, une page A4 tient dans 390 pixels : ces lettres
+  font environ 5 pixels. La vraie photo est déjà au bout du dossier.
+
+  CE QUI EST PROPOSÉ, sans un seul jeton d'IA de plus :
+    la photo se recadre sur le ticket, se redresse et se nettoie comme un
+      scan, dans le téléphone lui-même : le papier est clair et peu coloré,
+      un jean, une main, une table ne le sont pas. Ce que fait cette planche
+      est le calcul lui-même, pas une image de lui ;
+    le ticket réécrit du dossier devient lisible (A), et peut porter à côté
+      la photo nettoyée (B).
+
+  REFUSÉ : une photo « réaliste » fabriquée par l'IA. Elle ressemblerait à un
+  ticket sans en être un : dans un dossier comptable, c'est un faux
+  justificatif, et chaque image coûterait de l'ordre de quelques centimes.
+
+  La photo d'origine reste gardée telle quelle : c'est elle la pièce. La
+  version nettoyée sert à lire.
+
+  Photo d'essai dessinée pour la planche (ticket-sur-le-genou.jpg).
+*/
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.pl-notes { margin: 8px auto 0 !important; }
+.scene { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; max-width: 1000px; margin: 0 auto; width: 100%; }
+.pl-etats { justify-content: center; }
+.rang { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bouton-doux { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; font: 600 15px/1 var(--sans);
+               color: #2f3b2f; background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.12); cursor: pointer; }
+.bouton-doux .ico { width: 18px; height: 18px; }
+.bouton-doux[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; box-shadow: none; }
+.bouton-doux:focus-visible, .pl-etats button:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+.dit { min-height: 20px; margin: 0; text-align: center; font-size: 15px; font-weight: 600; color: #1c1c1a; }
+.dit.doute { color: #806031; }
+.quoi { margin: 0; text-align: center; font-size: 15px; line-height: 1.45; color: #1c1c1a; }
+input[type="file"] { display: none; }
+
+/* ─── Redresser : la photo à gauche, ce qui est gardé à droite ─────────────── */
+.atelier { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .atelier { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.cote { display: grid; gap: 8px; }
+.legende { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1c1c1a; text-align: center; }
+.photo { position: relative; border-radius: 12px; overflow: hidden; background: #1c1c1a; touch-action: none; user-select: none; }
+.photo canvas { display: block; width: 100%; height: auto; }
+.photo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.poignee { cursor: grab; }
+.gardee { border-radius: 12px; background: #d9d5cc; padding: 14px; display: grid; place-items: center; min-height: 240px; }
+.gardee canvas { display: block; max-width: 100%; height: auto; background: #fff; box-shadow: 0 8px 20px -8px rgba(28,28,26,0.5); }
+/* Lire en grand : le ticket à la finesse de la photo, qu'on fait glisser du doigt */
+.gardee.grand { display: block; max-height: 78vh; overflow: auto; place-items: initial; }
+.gardee.grand canvas { max-width: none; width: auto; }
+
+/* ─── Dans le dossier : la ligne de banque et sa pièce, comme le PDF ───────── */
+.bureau { border-radius: 14px; background: #d9d5cc; padding: 14px; overflow: auto; }
+.bureau.ecran-tel { padding: 10px; }
+.bande { width: 595px; background: #fff; color: #1c1c1a; font: 400 9.5px/1.4 var(--sans); box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4);
+         padding: 14px 42px 16px; zoom: var(--echelle, 1); margin: 0 auto; }
+.bande + .bande { margin-top: 12px; }
+.bande-titre { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 6px; border-bottom: 1px solid #1c1c1a; }
+.bande-titre b { font: 400 15px/1.2 var(--serif); }
+.bande-titre span { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.rang-doc { display: grid; grid-template-columns: 50px minmax(0, 1fr) 72px 186px; gap: 0 12px; padding: 8px 0 4px; align-items: start; }
+.rang-doc .jour { font-size: 9px; padding-top: 1px; }
+.rang-doc .lib { font-size: 9.5px; font-weight: 600; }
+.rang-doc .cat { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 8.5px; }
+.rang-doc .cat i { width: 6px; height: 6px; border-radius: 50%; background: #9c6123; }
+.rang-doc .mt { text-align: right; font: 400 11.5px/1.2 var(--serif); color: #b3392b; font-variant-numeric: tabular-nums; }
+.piece { border: 1px solid #e4e0d6; border-radius: 2px; padding: 6px 8px; background: #faf9f5; }
+.piece .r { display: flex; justify-content: space-between; gap: 6px; padding: 0 2px; }
+.piece .tot { background: #ebf0f4; font-weight: 700; border-radius: 1px; }
+/* Aujourd'hui : le Courier de 7,6 points, à trait fin, comme le PDF */
+.piece.courier { font: 400 7.6px/1.42 "Courier New", Courier, monospace; }
+.piece.courier .c { text-align: center; }
+.piece.courier .gras { font-weight: 700; }
+/* Proposé : une écriture droite et pleine, plus grande, le total plus grand encore */
+.piece.lisible { font: 500 9.2px/1.45 var(--sans); font-variant-numeric: tabular-nums; }
+.piece.lisible .nom { font: 700 10.5px/1.3 var(--sans); }
+.piece.lisible .tot { font-size: 10.5px; padding: 2px 3px; margin-top: 2px; }
+.voir { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 8px; font-weight: 700; color: #8b6835; }
+.photo-nette { display: block; width: 96px; height: auto; margin-top: 5px; border: 1px solid #e4e0d6; background: #fff; }
+.etiquette { margin: 0 0 6px; text-align: center; font-size: 14px; font-weight: 700; color: #1c1c1a; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="comptable-trois-fichiers.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Trois fichiers pour le comptable</a>
+  <h1 class="pl-titre">Le ticket lisible</h1>
+  <p class="pl-verdict">Votre vraie photo, <b>recadrée sur le ticket, redressée et nettoyée comme un scan</b>, sans le genou ni la main. Tout se calcule dans le téléphone : <b>aucun jeton d'IA</b>. Essayez avec une de vos photos.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="scene">
+    <div class="pl-etats" id="vues" role="group" aria-label="Ce que montre la planche">
+      <button type="button" data-vue="redresser" aria-pressed="true">Redresser la photo</button>
+      <button type="button" data-vue="dossier" aria-pressed="false">Dans le dossier</button>
+    </div>
+
+    <!-- ═══ REDRESSER ═══ -->
+    <section id="vue-redresser">
+      <div class="rang">
+        <button type="button" class="bouton-doux" id="ma-photo"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg>Essayer avec ma photo</button>
+        <button type="button" class="bouton-doux" id="exemple">La photo d'exemple</button>
+        <button type="button" class="bouton-doux" id="recoins"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Coins trouvés</button>
+      </div>
+      <input type="file" id="fichier" accept="image/*">
+      <p class="dit" id="dit" aria-live="polite" style="margin-top:10px"></p>
+      <div class="atelier" style="margin-top:6px">
+        <div class="cote">
+          <p class="legende">Votre photo</p>
+          <div class="photo" id="photo"><canvas id="toile-photo"></canvas><svg id="cadre" aria-label="Les quatre coins du ticket, à déplacer du doigt"></svg></div>
+        </div>
+        <div class="cote">
+          <p class="legende">Gardé pour le comptable</p>
+          <div class="rang" role="group" aria-label="L'allure du ticket gardé">
+            <button type="button" class="bouton-doux" data-rendu="scan" aria-pressed="true">Comme un scan</button>
+            <button type="button" class="bouton-doux" data-rendu="couleur" aria-pressed="false">Couleur d'origine</button>
+          </div>
+          <div class="gardee" id="gardee"><canvas id="toile-garde"></canvas></div>
+          <div class="rang"><button type="button" class="bouton-doux" id="en-grand" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>Lire en grand</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ DANS LE DOSSIER ═══ -->
+    <section id="vue-dossier" hidden>
+      <div class="rang" role="group" aria-label="La taille de lecture">
+        <button type="button" class="bouton-doux" data-taille="tel" aria-pressed="true">Sur votre téléphone</button>
+        <button type="button" class="bouton-doux" data-taille="papier" aria-pressed="false">À la taille du papier</button>
+      </div>
+      <p class="quoi" id="quoi-dossier" style="margin-top:10px"></p>
+      <div class="bureau ecran-tel" id="bureau" style="margin-top:10px">
+        <p class="etiquette">Aujourd'hui</p>
+        <div class="bande" id="bande-aujourdhui"></div>
+        <p class="etiquette" style="margin-top:16px">Proposé A : le ticket réécrit, lisible</p>
+        <div class="bande" id="bande-a"></div>
+        <p class="etiquette" style="margin-top:16px">Proposé B : A, avec la photo nettoyée dessous</p>
+        <div class="bande" id="bande-b"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Comment ça marche</h2>
+    <ul>
+      <li>Vous prenez le ticket en photo, comme aujourd'hui, sur le genou ou dans la main.</li>
+      <li>Le téléphone cherche le papier : il est clair et peu coloré, un jean, une main ou une table ne le sont pas. Il garde ce rectangle, le redresse, et efface les ombres.</li>
+      <li>Un coin caché sous le pouce se retrouve en prolongeant les deux bords du ticket.</li>
+      <li>Si le téléphone se trompe, vous déplacez un coin du doigt. S'il doute, il le dit.</li>
+      <li>Une photo floue, ou un ticket trop petit dans l'image, se signale tout de suite : on la reprend, le ticket encore en main. C'est le seul moment où elle peut encore être bonne.</li>
+      <li>La lecture par l'IA reste celle d'aujourd'hui, une seule fois par ticket : elle lit déjà le magasin, les lignes et la TVA. Ce recadrage ne coûte rien de plus.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La photo d'origine reste gardée telle quelle : c'est elle la pièce. La version nettoyée sert à lire.</li>
+      <li>Le ticket réécrit, le total surligné bleu gris, la photo au bout du dossier.</li>
+    </ul>
+    <h2>Refusé, et pourquoi</h2>
+    <ul>
+      <li>Une photo réaliste fabriquée par l'IA : elle ressemblerait à un ticket sans en être un. Dans un dossier comptable, c'est un faux justificatif, et chaque image coûterait de l'ordre de quelques centimes.</li>
+      <li>Rendre nette une photo floue : il faudrait inventer les lettres qui manquent. Le téléphone demande de la reprendre plutôt.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>A ou B dans le dossier : le ticket réécrit seul, ou avec la photo nettoyée dessous.</li>
+      <li>Ajuster les coins à chaque photo, ou seulement quand le téléphone n'est pas sûr de lui.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="comptable-trois-fichiers.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Trois fichiers</a>
+  <a href="comptable-dossier.html">Le dossier d'aujourd'hui<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ═══ TROUVER LE TICKET DANS LA PHOTO ═════════════════════════════════
+     Rien ne sort du téléphone, et aucun modèle n'est appelé : le papier
+     d'un ticket est CLAIR et PEU COLORÉ, ce qu'un jean, une main, une table
+     en bois ne sont pas. On garde la plus grande tache de papier, son
+     enveloppe, et les quatre bords qui la portent. */
+  var DETECTION = 640;
+
+  function blancheur(r, g, b) {
+    var mi = Math.min(r, g, b), ma = Math.max(r, g, b);
+    return mi - 0.6 * (ma - mi);
+  }
+  function seuilOtsu(valeurs) {
+    var h = new Array(256).fill(0), n = valeurs.length;
+    for (var i = 0; i < n; i++) h[Math.max(0, Math.min(255, valeurs[i] | 0))]++;
+    var somme = 0; for (var t = 0; t < 256; t++) somme += t * h[t];
+    var sB = 0, wB = 0, meilleur = 0, seuil = 128;
+    for (t = 0; t < 256; t++) {
+      wB += h[t]; if (!wB) continue;
+      var wF = n - wB; if (!wF) break;
+      sB += t * h[t];
+      var mB = sB / wB, mF = (somme - sB) / wF, v = wB * wF * (mB - mF) * (mB - mF);
+      if (v > meilleur) { meilleur = v; seuil = t; }
+    }
+    return seuil;
+  }
+  /* La plus grande tache de papier, en 4 voisins, sans récursion. */
+  function plusGrandeTache(masque, w, h) {
+    var etiquette = new Int32Array(w * h), pile = new Int32Array(w * h), meilleure = 0, taille = 0, num = 0;
+    for (var d = 0; d < w * h; d++) {
+      if (!masque[d] || etiquette[d]) continue;
+      num++; var haut = 0, n = 0; pile[haut++] = d; etiquette[d] = num;
+      while (haut) {
+        var p = pile[--haut]; n++;
+        var x = p % w, y = (p / w) | 0;
+        if (x > 0 && masque[p - 1] && !etiquette[p - 1]) { etiquette[p - 1] = num; pile[haut++] = p - 1; }
+        if (x < w - 1 && masque[p + 1] && !etiquette[p + 1]) { etiquette[p + 1] = num; pile[haut++] = p + 1; }
+        if (y > 0 && masque[p - w] && !etiquette[p - w]) { etiquette[p - w] = num; pile[haut++] = p - w; }
+        if (y < h - 1 && masque[p + w] && !etiquette[p + w]) { etiquette[p + w] = num; pile[haut++] = p + w; }
+      }
+      if (n > taille) { taille = n; meilleure = num; }
+    }
+    return { etiquette: etiquette, num: meilleure, taille: taille };
+  }
+  function enveloppe(points) {
+    points.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    function cross(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+    var bas = [], haut = [];
+    points.forEach(function (p) { while (bas.length >= 2 && cross(bas[bas.length - 2], bas[bas.length - 1], p) <= 0) bas.pop(); bas.push(p); });
+    for (var i = points.length - 1; i >= 0; i--) { var p = points[i]; while (haut.length >= 2 && cross(haut[haut.length - 2], haut[haut.length - 1], p) <= 0) haut.pop(); haut.push(p); }
+    haut.pop(); bas.pop();
+    return bas.concat(haut);
+  }
+  function intersection(a1, a2, b1, b2) {
+    var d = (a1[0] - a2[0]) * (b1[1] - b2[1]) - (a1[1] - a2[1]) * (b1[0] - b2[0]);
+    if (Math.abs(d) < 1e-6) return null;
+    var t = ((a1[0] - b1[0]) * (b1[1] - b2[1]) - (a1[1] - b1[1]) * (b1[0] - b2[0])) / d;
+    return [a1[0] + t * (a2[0] - a1[0]), a1[1] + t * (a2[1] - a1[1])];
+  }
+  /* Les trous d'une tache (le texte du ticket) se bouchent : tout ce qui est
+     sombre sans toucher le bord de l'image est enfermé dans le papier. */
+  function boucherLesTrous(masque, w, h) {
+    var dehors = new Uint8Array(w * h), pile = new Int32Array(w * h), haut = 0;
+    function poser(p) { if (!masque[p] && !dehors[p]) { dehors[p] = 1; pile[haut++] = p; } }
+    for (var x = 0; x < w; x++) { poser(x); poser((h - 1) * w + x); }
+    for (var y = 0; y < h; y++) { poser(y * w); poser(y * w + w - 1); }
+    while (haut) {
+      var p = pile[--haut], px = p % w, py = (p / w) | 0;
+      if (px > 0) poser(p - 1); if (px < w - 1) poser(p + 1); if (py > 0) poser(p - w); if (py < h - 1) poser(p + w);
+    }
+    for (var k = 0; k < w * h; k++) if (!dehors[k]) masque[k] = 1;
+  }
+  /* Une tache, son enveloppe, ses quatre bords, et sa plénitude : un ticket
+     est plein une fois ses trous bouchés ; un reflet sur un parquet est fait
+     de traits qui laissent passer le fond, et ne l'est pas. */
+  function ticketAuSeuil(score, w, h, seuil) {
+    var masque = new Uint8Array(w * h);
+    for (var i = 0; i < w * h; i++) masque[i] = score[i] > seuil ? 1 : 0;
+    boucherLesTrous(masque, w, h);
+    var t = plusGrandeTache(masque, w, h);
+    if (t.taille < w * h * 0.04) return null;
+    var bord = [];
+    for (var y = 1; y < h - 1; y++) for (var x = 1; x < w - 1; x++) {
+      var k = y * w + x;
+      if (t.etiquette[k] !== t.num) continue;
+      if (t.etiquette[k - 1] !== t.num || t.etiquette[k + 1] !== t.num || t.etiquette[k - w] !== t.num || t.etiquette[k + w] !== t.num) bord.push([x, y]);
+    }
+    var env = enveloppe(bord);
+    if (env.length < 4) return null;
+    var aireEnv = Math.abs(env.reduce(function (s, p, n) { var q = env[(n + 1) % env.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+    /* Les quatre extrêmes en diagonale découpent l'enveloppe en quatre bords */
+    function extreme(f) { var m = 0; env.forEach(function (p, j) { if (f(p) > f(env[m])) m = j; }); return m; }
+    var coins = [extreme(function (p) { return -p[0] - p[1]; }), extreme(function (p) { return p[0] - p[1]; }),
+                 extreme(function (p) { return p[0] + p[1]; }), extreme(function (p) { return -p[0] + p[1]; })];
+    /* Chaque bord est porté par le plus long segment de l'enveloppe entre deux
+       extrêmes : un pouce sur un coin y fait un pan coupé, plus court que le bord. */
+    var bords = [], chaines = [];
+    for (var b = 0; b < 4; b++) {
+      var de = coins[b], a = coins[(b + 1) % 4], long = -1, seg = null, j = de, chaine = [];
+      while (j !== a) {
+        var s2 = (j + 1) % env.length, l = Math.hypot(env[s2][0] - env[j][0], env[s2][1] - env[j][1]);
+        chaine.push({ seg: [env[j], env[s2]], l: l });
+        if (l > long) { long = l; seg = [env[j], env[s2]]; }
+        j = s2;
+        if (j === de) break;
+      }
+      if (!seg) return null;
+      bords.push(seg); chaines.push({ morceaux: chaine, long: long });
+    }
+    /* Un ticket est un rectangle : chaque bord est parallèle à celui d'en face.
+       Le pan coupé d'un pouce peut être plus long que le bout de bord resté
+       visible ; on préfère alors le morceau, assez long, le plus parallèle au
+       bord opposé. Deux passes, pour que deux côtés abîmés se corrigent. */
+    function angle(sg) { return Math.atan2(sg[1][1] - sg[0][1], sg[1][0] - sg[0][0]); }
+    function ecart(a1, a2) { var d = Math.abs(a1 - a2) % Math.PI; return Math.min(d, Math.PI - d); }
+    for (var passe = 0; passe < 2; passe++) for (b = 0; b < 4; b++) {
+      var face = angle(bords[(b + 2) % 4]), mieux = bords[b], score = ecart(angle(bords[b]), face);
+      chaines[b].morceaux.forEach(function (m) {
+        if (m.l < 0.25 * chaines[b].long) return;
+        var e2 = ecart(angle(m.seg), face);
+        if (e2 + 0.02 < score) { score = e2; mieux = m.seg; }
+      });
+      bords[b] = mieux;
+    }
+    function aireDe(q) { return Math.abs(q.reduce(function (s, p, n) { var r = q[(n + 1) % 4]; return s + p[0] * r[1] - r[0] * p[1]; }, 0)) / 2; }
+    var prolonge = [], direct = [], dehors = false;
+    for (b = 0; b < 4; b++) {
+      var p = intersection(bords[(b + 3) % 4][0], bords[(b + 3) % 4][1], bords[b][0], bords[b][1]) || env[coins[b]];
+      if (p[0] < -0.03 * w || p[0] > 1.03 * w || p[1] < -0.03 * h || p[1] > 1.03 * h) dehors = true;
+      prolonge.push(p);
+      direct.push(env[coins[b]]);
+    }
+    /* Les bords prolongés retrouvent un coin caché ; mais si le pouce a mangé
+       un bord presque entier, c'est le pan coupé qui passe pour lui, et le
+       coin part dans le vide. Le cadre qui déborde trop du papier ne se croit
+       pas : on revient aux coins visibles, et l'on dit qu'on doute. */
+    var fiable = !dehors && aireDe(prolonge) <= 1.25 * aireEnv;
+    var choisi = fiable ? prolonge : direct;
+    var quad = choisi.map(function (p) { return [Math.max(0, Math.min(1, p[0] / w)), Math.max(0, Math.min(1, p[1] / h))]; });
+    return { quad: quad, plenitude: t.taille / Math.max(1, aireEnv), aire: aireDe(quad), fiable: fiable };
+  }
+  /* Rend les quatre coins (haut gauche, haut droit, bas droit, bas gauche), en
+     fraction de l'image, et si le téléphone est sûr de lui. Deux seuils : le
+     premier sépare le clair du sombre ; le second, pris dans le clair, sépare le
+     papier d'un reflet de lampe. La tache la plus pleine l'emporte. */
+  function trouverLeTicket(image) {
+    var echelle = Math.min(1, DETECTION / Math.max(image.width, image.height));
+    var w = Math.round(image.width * echelle), h = Math.round(image.height * echelle);
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var cx = c.getContext("2d"); cx.drawImage(image, 0, 0, w, h);
+    var px = cx.getImageData(0, 0, w, h).data, score = new Float32Array(w * h);
+    for (var i = 0; i < w * h; i++) score[i] = blancheur(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]);
+    var t1 = seuilOtsu(score), clairs = [];
+    for (i = 0; i < w * h; i++) if (score[i] > t1) clairs.push(score[i]);
+    var essais = [ticketAuSeuil(score, w, h, t1)];
+    if (clairs.length > 100) essais.push(ticketAuSeuil(score, w, h, seuilOtsu(clairs)));
+    var meilleur = null;
+    essais.forEach(function (e) { if (e && (!meilleur || e.plenitude > meilleur.plenitude)) meilleur = e; });
+    if (!meilleur) return null;
+    return { quad: meilleur.quad, sur: meilleur.fiable && meilleur.aire > 0.04 && meilleur.plenitude > 0.9 };
+  }
+
+  /* ═══ REDRESSER ET NETTOYER ═══════════════════════════════════════════ */
+  function resoudre(A, b) {
+    var n = b.length;
+    for (var i = 0; i < n; i++) {
+      var m = i; for (var r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r;
+      var t = A[i]; A[i] = A[m]; A[m] = t; t = b[i]; b[i] = b[m]; b[m] = t;
+      for (r = i + 1; r < n; r++) { var f = A[r][i] / A[i][i]; for (var c = i; c < n; c++) A[r][c] -= f * A[i][c]; b[r] -= f * b[i]; }
+    }
+    var x = new Array(n);
+    for (i = n - 1; i >= 0; i--) { var s = b[i]; for (c = i + 1; c < n; c++) s -= A[i][c] * x[c]; x[i] = s / A[i][i]; }
+    return x;
+  }
+  /* L'homographie qui envoie le rectangle de sortie sur le quadrilatère de la photo */
+  function homographie(de, vers) {
+    var A = [], b = [];
+    for (var i = 0; i < 4; i++) {
+      var x = de[i][0], y = de[i][1], u = vers[i][0], v = vers[i][1];
+      A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
+      A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
+    }
+    var h = resoudre(A, b); h.push(1);
+    return h;
+  }
+  function redresser(image, quad, rendu, sortie) {
+    var W0 = image.naturalWidth || image.width, H0 = image.naturalHeight || image.height;
+    var src = document.createElement("canvas"); src.width = W0; src.height = H0;
+    var sx = src.getContext("2d"); sx.drawImage(image, 0, 0);
+    var data = sx.getImageData(0, 0, W0, H0).data;
+    var q = quad.map(function (p) { return [p[0] * W0, p[1] * H0]; });
+    var largeur = Math.max(Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]), Math.hypot(q[2][0] - q[3][0], q[2][1] - q[3][1]));
+    var hauteur = Math.max(Math.hypot(q[3][0] - q[0][0], q[3][1] - q[0][1]), Math.hypot(q[2][0] - q[1][0], q[2][1] - q[1][1]));
+    /* Le ticket garde toute la finesse de la photo : la première version le
+       ramenait à 1 100 pixels de haut, et un long ticket y perdait la moitié de
+       sa netteté (sa photo du 24 novembre). Le plafond ne sert qu'à la mémoire. */
+    var e = Math.min(1, 2400 / Math.max(largeur, hauteur));
+    var W = Math.max(40, Math.round(largeur * e)), H = Math.max(40, Math.round(hauteur * e));
+    var Hm = homographie([[0, 0], [W, 0], [W, H], [0, H]], q);
+    sortie.width = W; sortie.height = H;
+    var ox = sortie.getContext("2d"), out = ox.createImageData(W, H), o = out.data;
+    var gris = new Float32Array(W * H);
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var z = Hm[6] * x + Hm[7] * y + 1, u = (Hm[0] * x + Hm[1] * y + Hm[2]) / z, v = (Hm[3] * x + Hm[4] * y + Hm[5]) / z;
+      var x0 = Math.max(0, Math.min(W0 - 2, u | 0)), y0 = Math.max(0, Math.min(H0 - 2, v | 0)), fx = Math.min(1, Math.max(0, u - x0)), fy = Math.min(1, Math.max(0, v - y0));
+      var k = (y * W + x) * 4;
+      for (var c = 0; c < 3; c++) {
+        var a = data[(y0 * W0 + x0) * 4 + c], b2 = data[(y0 * W0 + x0 + 1) * 4 + c], c2 = data[((y0 + 1) * W0 + x0) * 4 + c], d2 = data[((y0 + 1) * W0 + x0 + 1) * 4 + c];
+        o[k + c] = (a * (1 - fx) + b2 * fx) * (1 - fy) + (c2 * (1 - fx) + d2 * fx) * fy;
+      }
+      o[k + 3] = 255;
+      gris[y * W + x] = 0.299 * o[k] + 0.587 * o[k + 1] + 0.114 * o[k + 2];
+    }
+    mesure = { nettete: nettete(gris, W, H), largeur: Math.round(largeur) };
+    if (rendu === "scan") nettoyer(gris, W, H, o);
+    ox.putImageData(out, 0, 0);
+  }
+  /* LA NETTETÉ, mesurée à la taille des lettres : le ticket ramené à 420 pixels
+     de large (une quarantaine de caractères par ligne, dix pixels chacun), la
+     force moyenne des contours, divisée par le contraste du papier. Une photo
+     floue n'a plus de contours francs, quelle que soit sa taille. */
+  function nettete(gris, W, H) {
+    var f = Math.max(1, W / 420), w = Math.max(8, Math.floor(W / f)), h = Math.max(8, Math.floor(H / f)), r = new Float32Array(w * h);
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      var s = 0, n = 0;
+      for (var yy = Math.floor(y * f); yy < Math.min(H, Math.floor((y + 1) * f)); yy++) for (var xx = Math.floor(x * f); xx < Math.min(W, Math.floor((x + 1) * f)); xx++) { s += gris[yy * W + xx]; n++; }
+      r[y * w + x] = n ? s / n : 0;
+    }
+    var somme = 0, k = 0;
+    for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
+      var i = y * w + x;
+      somme += Math.abs(4 * r[i] - r[i - 1] - r[i + 1] - r[i - w] - r[i + w]); k++;
+    }
+    var tri = Array.prototype.slice.call(r).sort(function (a, b) { return a - b; });
+    var contraste = tri[Math.floor(tri.length * 0.95)] - tri[Math.floor(tri.length * 0.05)];
+    return k ? (somme / k) / Math.max(10, contraste) * 100 : 0;
+  }
+  /* Comme un scan : le fond (un grand flou) divise l'image, ce qui efface les
+     ombres ; puis le papier passe au blanc et l'encre au noir. */
+  function nettoyer(gris, W, H, o) {
+    /* Un léger renforcement des contours : il ne crée rien, il rend franc ce
+       que la photo porte déjà. */
+    var net = new Float32Array(W * H);
+    for (var yy = 0; yy < H; yy++) for (var xx = 0; xx < W; xx++) {
+      var j = yy * W + xx, m = 0, c = 0;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var u = xx + dx, v2 = yy + dy; if (u >= 0 && u < W && v2 >= 0 && v2 < H) { m += gris[v2 * W + u]; c++; } }
+      net[j] = gris[j] + 0.8 * (gris[j] - m / c);
+    }
+    gris = net;
+    var I = new Float64Array((W + 1) * (H + 1));
+    for (var y = 0; y < H; y++) { var ligne = 0; for (var x = 0; x < W; x++) { ligne += gris[y * W + x]; I[(y + 1) * (W + 1) + x + 1] = I[y * (W + 1) + x + 1] + ligne; } }
+    var R = Math.max(8, Math.round(Math.min(W, H) / 14)), v = new Float32Array(W * H);
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      var x1 = Math.max(0, x - R), x2 = Math.min(W, x + R + 1), y1 = Math.max(0, y - R), y2 = Math.min(H, y + R + 1);
+      var fond = (I[y2 * (W + 1) + x2] - I[y1 * (W + 1) + x2] - I[y2 * (W + 1) + x1] + I[y1 * (W + 1) + x1]) / ((x2 - x1) * (y2 - y1));
+      v[y * W + x] = Math.min(1.2, gris[y * W + x] / Math.max(1, fond));
+    }
+    var tri = Array.prototype.slice.call(v).sort(function (a, b) { return a - b; });
+    var bas = tri[Math.floor(tri.length * 0.01)], haut = tri[Math.floor(tri.length * 0.5)];
+    for (var i = 0; i < W * H; i++) {
+      var t = Math.max(0, Math.min(1, (v[i] - bas) / Math.max(0.02, haut - bas)));
+      var g = 255 * Math.pow(t, 1.3);
+      o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = g;
+    }
+  }
+
+  /* ═══ L'ATELIER : la photo, ses coins, ce qui est gardé ═══════════════ */
+  var image = new Image(), quad = null, trouve = null, rendu = "scan", minuteur = 0, mesure = null;
+  var SEUIL_NET = 6, LARGEUR_MIN = 650;
+  var toile = document.getElementById("toile-photo"), cadre = document.getElementById("cadre"), garde = document.getElementById("toile-garde");
+  var dit = document.getElementById("dit");
+
+  function dessinerPhoto() {
+    var e = Math.min(1, 900 / Math.max(image.naturalWidth, image.naturalHeight));
+    toile.width = Math.round(image.naturalWidth * e); toile.height = Math.round(image.naturalHeight * e);
+    toile.getContext("2d").drawImage(image, 0, 0, toile.width, toile.height);
+    cadre.setAttribute("viewBox", "0 0 " + toile.width + " " + toile.height);
+  }
+  function dessinerCadre() {
+    if (!quad) { cadre.innerHTML = ""; return; }
+    var W = toile.width, H = toile.height, r = Math.max(W, H) / 28;
+    var pts = quad.map(function (p) { return (p[0] * W).toFixed(1) + "," + (p[1] * H).toFixed(1); }).join(" ");
+    cadre.innerHTML = '<polygon points="' + pts + '" fill="rgba(185,139,71,0.16)" stroke="#e8c27a" stroke-width="' + (r / 4) + '"/>' +
+      quad.map(function (p, i) {
+        return '<circle class="poignee" data-coin="' + i + '" cx="' + p[0] * W + '" cy="' + p[1] * H + '" r="' + r + '" fill="rgba(28,28,26,0.35)" stroke="#fff" stroke-width="' + (r / 4) + '"/>';
+      }).join("");
+  }
+  /* La photo d'exemple nettoyée, gardée à part : « Dans le dossier » montre
+     le ticket d'exemple, son texte ET sa photo. Sa remarque du 24 novembre :
+     votre photo Leclerc était posée sous le texte du Leroy Merlin d'exemple,
+     et le montant de l'un passait pour celui de l'autre. */
+  var exemple = { actif: true, photo: "" };
+  function garder() {
+    if (!quad) return;
+    redresser(image, quad, rendu, garde);
+    window.__mesure = mesure;
+    if (exemple.actif) exemple.photo = garde.toDataURL("image/jpeg", 0.85);
+  }
+  /* Ce que la photo ne pourra jamais donner, dit avant de la garder : une
+     photo floue ne devient pas nette sans inventer, et une pièce inventée
+     est une fausse pièce. Le geste juste est de la reprendre, ticket en main. */
+  function avisSurLaPhoto() {
+    if (!mesure) return null;
+    if (mesure.nettete < SEUIL_NET) return "Photo floue : le texte ne se lira pas mieux. Reprenez-la sans bouger, avec plus de lumière.";
+    if (mesure.largeur < LARGEUR_MIN) return "Le ticket est petit dans la photo : approchez le téléphone, ou prenez un long ticket en deux fois.";
+    return null;
+  }
+  function chercher() {
+    var t0 = performance.now();
+    trouve = trouverLeTicket(image);
+    var ms = Math.round(performance.now() - t0);
+    if (trouve) {
+      quad = trouve.quad.map(function (p) { return p.slice(); });
+      dit.className = "dit" + (trouve.sur ? "" : " doute");
+      dit.textContent = trouve.sur
+        ? "Ticket trouvé en " + ms + " ms, dans le téléphone, sans IA. Un coin se déplace du doigt."
+        : "Le téléphone n'est pas sûr de lui : vérifiez les quatre coins.";
+    } else {
+      quad = [[0.15, 0.12], [0.85, 0.12], [0.85, 0.88], [0.15, 0.88]];
+      dit.className = "dit doute";
+      dit.textContent = "Pas de ticket trouvé sur cette photo : placez les quatre coins à la main.";
+    }
+    dessinerCadre(); garder(); dessinerBandes();
+    var avis = avisSurLaPhoto();
+    if (avis) { dit.className = "dit doute"; dit.textContent = avis; }
+  }
+  function charger(src) {
+    exemple.actif = src === "ticket-sur-le-genou.jpg";
+    image = new Image();
+    image.onload = function () { dessinerPhoto(); chercher(); };
+    image.onerror = function () { dit.className = "dit doute"; dit.textContent = "Cette image ne s'ouvre pas ici."; };
+    image.src = src;
+  }
+
+  /* Déplacer un coin du doigt : la photo gardée suit, un peu après */
+  var tenu = null;
+  function versImage(e) {
+    var r = toile.getBoundingClientRect();
+    return [Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height))];
+  }
+  cadre.addEventListener("pointerdown", function (e) {
+    var c = e.target.closest("[data-coin]");
+    if (!c || !quad) {
+      /* Toucher la photo hors d'un coin y amène le coin le plus proche */
+      if (!quad) return;
+      var p = versImage(e), meilleur = 0;
+      quad.forEach(function (q, i) { if (Math.hypot(q[0] - p[0], q[1] - p[1]) < Math.hypot(quad[meilleur][0] - p[0], quad[meilleur][1] - p[1])) meilleur = i; });
+      tenu = meilleur;
+    } else tenu = +c.getAttribute("data-coin");
+    cadre.setPointerCapture(e.pointerId);
+    quad[tenu] = versImage(e); dessinerCadre();
+    e.preventDefault();
+  });
+  cadre.addEventListener("pointermove", function (e) {
+    if (tenu === null) return;
+    quad[tenu] = versImage(e); dessinerCadre();
+    clearTimeout(minuteur); minuteur = setTimeout(garder, 60);
+  });
+  function lacher() {
+    if (tenu === null) return;
+    tenu = null; garder(); dessinerBandes();
+    dit.className = "dit"; dit.textContent = "Coin déplacé : le ticket gardé a suivi.";
+  }
+  cadre.addEventListener("pointerup", lacher);
+  cadre.addEventListener("pointercancel", lacher);
+
+  document.getElementById("ma-photo").addEventListener("click", function () { document.getElementById("fichier").click(); });
+  document.getElementById("fichier").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var lecteur = new FileReader();
+    lecteur.onload = function () { charger(lecteur.result); };
+    lecteur.readAsDataURL(f);
+    dit.className = "dit"; dit.textContent = "Votre photo reste sur ce téléphone : rien n'est envoyé.";
+  });
+  document.getElementById("exemple").addEventListener("click", function () { charger("ticket-sur-le-genou.jpg"); });
+  document.getElementById("recoins").addEventListener("click", function () {
+    if (!trouve) { dit.className = "dit doute"; dit.textContent = "Aucun coin trouvé sur cette photo : placez-les à la main."; return; }
+    quad = trouve.quad.map(function (p) { return p.slice(); });
+    dessinerCadre(); garder(); dessinerBandes();
+    dit.className = "dit"; dit.textContent = "Les coins trouvés par le téléphone sont revenus.";
+  });
+  document.getElementById("en-grand").addEventListener("click", function () {
+    var g = document.getElementById("gardee"), grand = !g.classList.contains("grand");
+    g.classList.toggle("grand", grand);
+    this.setAttribute("aria-pressed", String(grand));
+    this.lastChild.textContent = grand ? "Voir le ticket entier" : "Lire en grand";
+  });
+  document.querySelectorAll("[data-rendu]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      rendu = b.getAttribute("data-rendu");
+      document.querySelectorAll("[data-rendu]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      garder(); dessinerBandes();
+    });
+  });
+
+  /* ═══ DANS LE DOSSIER ═════════════════════════════════════════════════ */
+  var LIGNES = [["GEOTEXTILE 1X10M", "48,90"], ["AGRAFES SOL x50", "12,90"], ["SAC TERREAU 50L x3", "23,70"]];
+  function rangDoc(piece) {
+    return '<div class="bande-titre"><b>Octobre 2026</b><span>Ligne de banque, justificatif</span></div>' +
+      '<div class="rang-doc"><span class="jour">23 octobre</span><div><div class="lib">CB LEROY MERLIN CHOLET</div><div class="cat"><i></i>Matériaux et plants</div></div>' +
+      '<div class="mt">−85,50 €</div><div>' + piece + "</div></div>";
+  }
+  function courier() {
+    return '<div class="piece courier"><div class="c gras">LEROY MERLIN</div><div class="c">23 octobre 2026</div>' +
+      LIGNES.map(function (l) { return '<div class="r"><span>' + l[0] + "</span><span>" + l[1] + "</span></div>"; }).join("") +
+      '<div class="r tot"><span>TOTAL TTC</span><span>85,50</span></div><div class="r"><span>DONT TVA 20%</span><span>14,25</span></div></div>' +
+      '<span class="voir">Voir la photo</span>';
+  }
+  function lisible() {
+    return '<div class="piece lisible"><div class="nom">Leroy Merlin, Cholet</div><div style="margin-bottom:3px">23 octobre 2026</div>' +
+      LIGNES.map(function (l) { return '<div class="r"><span>' + l[0].charAt(0) + l[0].slice(1).toLowerCase() + "</span><span>" + l[1] + "</span></div>"; }).join("") +
+      '<div class="r tot"><span>Total TTC</span><span>85,50 €</span></div><div class="r"><span>dont TVA 20 %</span><span>14,25 €</span></div></div>' +
+      '<span class="voir">Voir la photo</span>';
+  }
+  function dessinerBandes() {
+    document.getElementById("bande-aujourdhui").innerHTML = rangDoc(courier());
+    document.getElementById("bande-a").innerHTML = rangDoc(lisible());
+    /* B : la photo nettoyée SOUS le ticket réécrit, pour ne pas tasser ses lignes. */
+    var vignette = exemple.photo ? '<img class="photo-nette" alt="La photo nettoyée du ticket d\'exemple" src="' + exemple.photo + '">' : "";
+    document.getElementById("bande-b").innerHTML = rangDoc(lisible().replace('<span class="voir">Voir la photo</span>', vignette + '<span class="voir">Voir la photo en grand</span>'));
+    echelle();
+  }
+  var taille = "tel";
+  function echelle() {
+    var bureau = document.getElementById("bureau");
+    /* Sur votre téléphone : la page A4 entière dans la largeur de l'écran, comme
+       la visionneuse de l'appli ; à la taille du papier : un point, un pixel. */
+    var e = taille === "papier" ? 1 : Math.min(1, (Math.min(window.innerWidth, 430) - 52) / 595);
+    document.querySelectorAll(".bande").forEach(function (b) { b.style.setProperty("--echelle", e.toFixed(4)); });
+    bureau.classList.toggle("ecran-tel", taille === "tel");
+    document.getElementById("quoi-dossier").innerHTML = taille === "tel"
+      ? "<b>La page A4 entière dans la largeur d'un téléphone.</b> Le Courier d'aujourd'hui ne se lit plus ; la proposition se lit d'un coup de zoom."
+      : "<b>À la taille du papier imprimé.</b> Faites glisser pour lire la ligne entière.";
+    document.getElementById("quoi-dossier").innerHTML += "<br>Ici, le ticket d'exemple Leroy Merlin. Dans l'appli, le texte réécrit vient de la lecture de votre photo par l'IA, faite une seule fois.";
+  }
+  document.querySelectorAll("[data-taille]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      taille = b.getAttribute("data-taille");
+      document.querySelectorAll("[data-taille]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      echelle();
+    });
+  });
+
+  document.querySelectorAll("#vues button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var v = b.getAttribute("data-vue");
+      document.querySelectorAll("#vues button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      document.getElementById("vue-redresser").hidden = v !== "redresser";
+      document.getElementById("vue-dossier").hidden = v !== "dossier";
+      if (v === "dossier") dessinerBandes();
+    });
+  });
+  window.addEventListener("resize", echelle);
+  charger("ticket-sur-le-genou.jpg");
+})();
+</script>
+</body>
+</html>

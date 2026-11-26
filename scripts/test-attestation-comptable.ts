@@ -8,6 +8,8 @@ import {
   texteDuTampon,
   type LigneAttestee,
 } from "../src/lib/attestation-comptable";
+import { composerAttestation } from "../src/server/pdf/attestation-comptable-pdf";
+import { textesGris } from "./_couleurs-du-texte-pdf";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // L'ATTESTATION DU COMPTABLE — la règle pure (sa planche du 27 octobre 2026)
@@ -137,5 +139,34 @@ test("le tampon : le cabinet en haut, la conclusion au centre, la date en bas", 
   assert.equal(texteDuTampon("conforme", "X", "2026-01-01").bas, "LE 1ER JANVIER 2026");
 });
 
-console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
-if (failed > 0) process.exit(1);
+/** Un PNG d'un pixel, la signature d'essai : pdf-lib ne sait pas en produire. */
+const SIGNATURE = Uint8Array.from(
+  Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", "base64")
+);
+
+// Sa demande du 24 novembre 2026 : « tout ce qui est gris, il faut que tu me
+// le passes en noir », pour l'attestation comme pour le dossier. Le PDF est
+// relu tel qu'il sort, avec des observations et une ligne rejetée, pour que
+// chaque texte de l'attestation y passe.
+async function surLePapier() {
+  const lu = lireLaSaisie({ conclusion: "reserves", observations: "Deux tickets peu lisibles.", signataire: SIGNATAIRE });
+  try {
+    assert.ok(lu.ok);
+    const c = contenuDeLAttestation({ entreprise: "Jardins Exemple", du: "2026-10-01", au: "2026-10-27", conclusion: "reserves", observations: lu.valeur.observations, lignes: LIGNES, signataire: lu.valeur.signataire, signeLe: "2026-10-27", empreinteDuDossier: "9f3c21ab7d40e8b5".repeat(4) });
+    const { total, encre, grises } = await textesGris(await composerAttestation(c, SIGNATURE, texteDuTampon("reserves", "Cabinet Bernard", "2026-10-27"), "Claire Bernard"));
+    assert.ok(total > 15, "presque aucun texte relu : le contrôle ne mesure rien");
+    assert.ok(encre, "l'encre de l'attestation n'a pas été relue");
+    assert.deepEqual(grises, [], `des textes sont écrits en gris : ${grises.join(", ")}`);
+    console.log("✅ aucun texte de l'attestation n'est écrit en gris");
+    passed++;
+  } catch (err) {
+    console.error("❌ aucun texte de l'attestation n'est écrit en gris");
+    console.error(`   ${err instanceof Error ? err.message : err}`);
+    failed++;
+  }
+}
+
+surLePapier().then(() => {
+  console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
+  if (failed > 0) process.exit(1);
+});
