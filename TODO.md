@@ -3352,7 +3352,18 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      et `superpdp_send_and_receive` (`receive` force l'inscription à
      l'annuaire pour recevoir ses factures fournisseurs, obligatoire depuis
      le 1er septembre 2026). Exemple : github.com/superpdp/examples, `erp.go`.
-     **Pas encore de réponse sur le contrat ni le prix de gros** ; Seconde capture, même soir : la
+     **Suite du mail (Tristan Pontet, Super PDP)** : sandbox gratuite en
+     créant un compte ; une seule application OAuth, celle de Cause, et
+     chaque artisan fait lui-même le flux ; **prix = la grille publique pour
+     tout le monde**, Super PDP ne facture que l'éditeur (factures émises et
+     reçues de ses clients, et KYC/KYB de chacun), la marge est libre ;
+     **contrat = leurs conditions générales** (superpdp.tech/legal/11),
+     acceptées en créant l'application de production. Lues le 26 novembre :
+     mois reconduit tacitement, sans engagement ; prix changés seulement le
+     1er du mois ; résiliation par eux avec 30 jours de préavis (impayé,
+     manquement, faillite) ; réversibilité gratuite des données sous 3 mois ;
+     responsabilité plafonnée à ce que Cause a payé sur 12 mois ; prélèvement
+     SEPA ou carte ; Cause garantit Super PDP contre un usage non conforme ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
