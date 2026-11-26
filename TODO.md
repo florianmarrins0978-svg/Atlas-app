@@ -3373,7 +3373,15 @@ pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
      déclarer (or les CGU de Cause plafonnent la nôtre, celles de Super PDP
      plafonnent la leur et nous font les garantir) ; la transmission des
      factures électroniques n'y est pas nommée. Questions posées à lui de
-     transmettre au courtier avant signature ; Seconde capture, même soir : la
+     transmettre au courtier avant signature ; **Corrigé après lecture des conditions
+     générales (CG-CS Dattak 202510)** : les clauses de nos contrats clients
+     et d'hébergement sont admises (Partie 5, « Conventions usuelles ») ; le
+     doute reste pour Super PDP, qui n'est pas un hébergeur. Le vrai trou :
+     amendes et pénalités exclues (Cyber n° 14 et n° 28, « réglementation
+     fiscale »), donc une pénalité fiscale subie par un artisan après une
+     erreur de transmission n'est sûre d'être couverte que si le courtier
+     l'écrit. Sinistre cyber : plainte sous 72 heures ; tout sinistre déclaré
+     sous 15 jours ; Seconde capture, même soir : la
      page s'ouvre, mais avec le seul onglet « Intégrations » (« Gérer les
      accès accordés aux applications tierces », vide) et **aucun onglet
      Développeurs**, donc pas de jeton possible sur sa formule. Cette page
