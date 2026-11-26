@@ -60,7 +60,12 @@ officielle des impôts.*
 | **B2Brouter** | plateforme, offre API pour éditeurs | prix sur devis |
 | **FactPulse** | une couche entre le logiciel et une plateforme | fabrique la Factur-X, ce que Cause fait déjà, et passe quand même par une plateforme ; 29 €/mois pour 500 factures. Écartée |
 | **Pennylane** | plateforme, et logiciel de comptabilité | son API ne s'ouvre qu'en Essentiel. Gardée pour plus tard, pour l'artisan déjà chez Pennylane |
-| Seqino, Docoon, Serensia, Cecurity | plateformes avec une offre marque blanche | non regardées en détail |
+| **Cecurity** | plateforme, API pour logiciels, marque blanche ou grise | seule à afficher un prix : 30 € par an et par entreprise cliente, pour 500 clients, quel que soit le nombre de factures. Plus cher que Super PDP au départ |
+| **Seqino** | plateforme certifiée ISO 27001, marque grise, ou blanche avec agrément du logiciel sur une instance hébergée SecNumCloud | prix non publiés ; la piste la plus nette pour l'agrément de Cause, avec Iopole |
+| **Docoon** | plateforme, API pour éditeurs en marque blanche ou grise | prix non publiés |
+| Serensia | plateforme, marque blanche par API | non regardée en détail |
+
+*Lu le 26 novembre 2026 sur leurs pages pour éditeurs. Aucune des quatre ne publie de sandbox ni ne dit suivre la norme AFNOR XP Z12-013 sur ces pages (B2Brouter parle d'une sandbox ; Docoon cite la norme une fois) : à leur demander.*
 
 ## Ce qui reste à toi, dans l'ordre
 
