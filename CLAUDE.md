@@ -86,11 +86,13 @@ relevé sur son extrait Kbis du 19 novembre 2026.
 | Début d'activité | 17/11/2026 |
 | Activité déclarée | Édition de logiciels applicatifs et mise à disposition par abonnement en ligne d'un logiciel de gestion destiné aux artisans |
 | Son entreprise de paysage | Eden Nature (celle qui sert à éprouver l'appli) |
+| Adresse | 10 rue Denfert Rochereau, 78200 Mantes-la-Jolie |
+| Téléphone | 06 79 98 45 24 |
+| E-mail | edennature.contact@gmail.com |
 
-**Ce dépôt est PUBLIC.** Ce qui est ici se lit par n'importe qui : rien n'y
-entre qui ne soit déjà public au registre du commerce. Son adresse et son
-téléphone n'y sont pas, faute de son accord pour les publier ; sa date de
-naissance n'y entre jamais.
+**Ce dépôt est PUBLIC.** Ce qui est ici se lit par n'importe qui. Son adresse
+et son téléphone y sont sur son « oui » du 27 novembre 2026, donné en le
+sachant ; sa date de naissance n'y entre jamais.
 
 ## 1. Reprendre le travail : la première chose à faire
 
