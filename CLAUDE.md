@@ -71,6 +71,27 @@ bloquait à tort.
 
 ---
 
+## 0 bis. Son entreprise : ne plus jamais le lui redemander
+
+**Sa colère du 27 novembre 2026 :** *« nom, prénom, numéro de Kbis, numéro de
+téléphone, c'est des infos que tu me demandes 10 fois par jour »*. Une session
+ne garde rien de la précédente : ce qui n'est pas ici est perdu. Le voici,
+relevé sur son extrait Kbis du 19 novembre 2026.
+
+| | |
+|---|---|
+| Nom | Florian Martins |
+| Entreprise | entreprise individuelle, nom commercial **Cause** |
+| Immatriculation | RCS Versailles 133 027 037 (SIREN 133 027 037), le 19/11/2026 |
+| Début d'activité | 17/11/2026 |
+| Activité déclarée | Édition de logiciels applicatifs et mise à disposition par abonnement en ligne d'un logiciel de gestion destiné aux artisans |
+| Son entreprise de paysage | Eden Nature (celle qui sert à éprouver l'appli) |
+
+**Ce dépôt est PUBLIC.** Ce qui est ici se lit par n'importe qui : rien n'y
+entre qui ne soit déjà public au registre du commerce. Son adresse et son
+téléphone n'y sont pas, faute de son accord pour les publier ; sa date de
+naissance n'y entre jamais.
+
 ## 1. Reprendre le travail : la première chose à faire
 
 Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre :
